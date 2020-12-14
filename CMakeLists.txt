@@ -2,8 +2,6 @@ cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
 project (Libpll)
 
-add_subdirectory(src)
-
 set(PLL_EXPORTED_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
 
 option(BUILD_DOC "Build documentation" OFF)
@@ -28,3 +26,15 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
+
+
+add_subdirectory(src)
+
+option(PLL_TESTS_ENABLED "Enable and build the tests" ON)
+
+if (PLL_TESTS_ENABLED)
+  enable_testing()
+  add_subdirectory(test)
+endif(PLL_TESTS_ENABLED)
+
+

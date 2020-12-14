@@ -4,3 +4,4 @@ src/parse_utree.h
 src/parse_phylip.h
 *.o$
 *.so
+build/*
