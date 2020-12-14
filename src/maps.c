@@ -23,6 +23,8 @@
 
 /* maps for encoding sequences */
 
+// clang-format off
+
 const pll_state_t pll_map_bin[256] =
  {
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1282,3 +1284,4 @@ const double pll_aa_freqs_lg4x[4][20] =
     0.028797 , 0.105352 , 0.007864 , 0.007477 , 0.083595 ,
     0.055726 , 0.047711 , 0.003975 , 0.010088 , 0.027159}
    };
+// clang-format on
