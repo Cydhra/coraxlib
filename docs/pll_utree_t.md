@@ -60,8 +60,9 @@ Fields:
 
 ----
 
-It might be useful to at the above figure when looking at this structure, since
-most of the complexity is in the behavior of the `next` and `back` pointers.
+It might be useful to look at the above figure when thinking about this
+structure, since most of the complexity is in the behavior of the `next` and
+`back` pointers.
 
 ```
 typedef struct pll_unode_s
