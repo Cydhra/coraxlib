@@ -180,6 +180,6 @@ If a full traversal is desired, the callback should return 1 for all inputs.
 PLL_EXPORT pll_utree_t * pll_utree_clone(const pll_utree_t * root);
 ```
 
-Clones a tree. This is a semi-deep copy. The feilds `label` and a nodes `next`
+Clones a tree. This is a semi-deep copy. The fields `label` and a nodes `next`
 and `back` pointers are deep copied, but the `data` field is just a shallow
 copy.
