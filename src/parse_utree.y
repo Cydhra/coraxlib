@@ -619,7 +619,7 @@ static pll_utree_t * utree_parse_newick(const char * filename, int auto_unroot)
   return tree;
 }
 
-PLL_EXPORT pll_utree_t * pll_utree_parse_newick(const char * filename)
+PLL_EXPORT pll_utree_t * pll_utree_parse_newick_old(const char * filename)
 {
   return utree_parse_newick(filename, 0);
 }
@@ -683,7 +683,7 @@ static pll_utree_t * utree_parse_newick_string(const char * s, int auto_unroot)
   return tree;
 }
 
-PLL_EXPORT pll_utree_t * pll_utree_parse_newick_string(const char * s)
+PLL_EXPORT pll_utree_t * pll_utree_parse_newick_string_old(const char * s)
 {
   return utree_parse_newick_string(s, 0);
 }

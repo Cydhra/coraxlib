@@ -3,6 +3,7 @@ find_package(GTest)
 
 set(LIBPLL_TEST_SOURCES
   src/dummy.cpp
+  src/newick.cpp
   src/main.cpp)
 
 add_executable(libpll-test ${LIBPLL_TEST_SOURCES})
