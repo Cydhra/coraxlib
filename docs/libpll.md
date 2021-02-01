@@ -1,7 +1,7 @@
 Scope
 --------------------------------------------------------------------------------
 
-The goal of this documentation is th explain how to interact with `libpll`,
+The goal of this documentation is to explain how to interact with `libpll`,
 as long as the reader already knows the broad strokes of phylogenetic inference.
 As such, there will be some terms which are present in the text, but explaining
 the terms completely is outside of the scope of this documentation.
@@ -134,7 +134,7 @@ Notable Parameters:
 Once the sumtable is computed, we can use it to repeatedly call the derivatives
 function. This evaluates the derivative of the model _at a point_. The intended
 use case is to repeatedly evaluate first and second derivatives of one branch in
-order to optimize it using NR-optimization.
+order to optimize it using Newton-Raphson optimization.
 
 ```
 pll_export int pll_compute_likelihood_derivatives(pll_partition_t * partition,
