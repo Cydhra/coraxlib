@@ -529,63 +529,62 @@ TEST(NewickParser, simple11) {
   pll_utree_destroy(t, nullptr);
 }
 
-/*
 TEST(TreeReader, badtrees1) {
   EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e)))"),
                std::runtime_error);
 }
 
 TEST(TreeReader, badtrees2) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b);,(c,(d, e)))"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b);,(c,(d, e)))"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees3) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b)(c,(d, e):0.5));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b)(c,(d, e):0.5));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees4) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, e)));wtf"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e)));wtf"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees5) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, e:0.1));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e:0.1));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees6) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("(a,b),(c,(d, e:0.1)));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("(a,b),(c,(d, e:0.1)));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees7) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, ())));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, ())));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees8) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, (e))));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, (e))));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees9) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, e):0.5 label));"),
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e):0.5 label));"),
                std::runtime_error);
 }
 
 TEST(TreeReader, badtrees10) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, e):0.a5));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e):0.a5));"),
+               std::runtime_error);
 }
 
 TEST(TreeReader, badtrees11) {
-  auto tr = TreeReader();
-  EXPECT_THROW(tr.readTree("((a,b),(c,(d, e:0.0:0.1)));"), std::runtime_error);
+  EXPECT_THROW(pll_utree_parse_newick_string("((a,b),(c,(d, e:0.0:0.1)));"),
+               std::runtime_error);
 }
 
+/*
 TEST(TreeReader, manytrees) {
   auto        treefile    = env->get_datafile();
   size_t      line_number = 1;

@@ -1,19 +1,27 @@
 #include "pll.h"
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 void delete_unode(pll_unode_t *node) {
   if (node->label) { free(node->label); }
+  node->label = nullptr;
   free(node);
 }
 
-inline void close_node_loop(pll_unode_t *start) {
-  pll_unode_t *cur = start;
-  while (cur->next != nullptr) { cur = cur->next; }
+inline size_t close_node_loop(pll_unode_t *start) {
+  size_t       node_count = 1;
+  pll_unode_t *cur        = start;
+  while (cur->next != nullptr) {
+    cur = cur->next;
+    node_count++;
+  }
   cur->next = start;
+  return node_count;
 }
 
 inline void set_mutual_back_pointers(pll_unode_t *a, pll_unode_t *b) {
@@ -24,6 +32,20 @@ inline void set_mutual_back_pointers(pll_unode_t *a, pll_unode_t *b) {
   } else {
     b->length = a->length;
   }
+}
+
+inline void free_node_exception(pll_unode_t *n) {
+  if (n == nullptr) { return; }
+
+  auto s = n->next;
+  while (s != n && s != nullptr) {
+    if (s->back != nullptr) { free_node_exception(s->back); }
+    auto tmp = s->next;
+    if (s) { delete_unode(s); }
+    s = tmp;
+  }
+
+  delete_unode(n);
 }
 
 static void fill_nodes_recursive(pll_unode_t * node,
@@ -82,8 +104,8 @@ pll_unode_t *unode_unroot(pll_unode_t *vroot) {
   lchild->back = rchild;
   rchild->back = lchild;
 
-  free(vroot->next);
-  free(vroot);
+  delete_unode(vroot->next);
+  delete_unode(vroot);
 
   if (lchild->next != nullptr) { return lchild; }
   return rchild;
@@ -328,20 +350,31 @@ private:
 };
 
 pll_utree_t *newick_parser_t::parse_utree() {
-  auto root_node = parse_subtree();
-  root_node      = trim_node(root_node);
-  /* We overcounted, because we assume there is an "upper" branch still */
-  _edge_count--;
-  auto new_root_node = unode_unroot(root_node);
-  if (new_root_node != root_node) {
-    _inner_count--;
+  pll_unode_t *root_node = nullptr;
+
+  try {
+    root_node = parse_subtree();
+    root_node = trim_node(root_node);
+    /* We overcounted, because we assume there is an "upper" branch still */
     _edge_count--;
-    root_node = new_root_node;
-  }
-  _lexer.expect(SEMICOLON);
-  if (!_lexer.at_end()) {
-    throw std::runtime_error{
-        "There were extra charcters when we finished parsing"};
+    auto new_root_node = unode_unroot(root_node);
+    if (new_root_node != root_node) {
+      _inner_count--;
+      _edge_count--;
+      root_node = new_root_node;
+    }
+
+    _lexer.expect(SEMICOLON);
+    if (!_lexer.at_end()) {
+      throw std::runtime_error{
+          "There were extra charcters when we finished parsing"};
+    }
+  } catch (...) {
+    if (root_node != nullptr) {
+      free_node_exception(root_node->back);
+      free_node_exception(root_node);
+    }
+    throw;
   }
 
   auto current_tree         = (pll_utree_t *)calloc(sizeof(pll_utree_t), 1);
@@ -381,33 +414,51 @@ pll_unode_t *newick_parser_t::parse_subtree() {
 }
 
 pll_unode_t *newick_parser_t::parse_internal() {
-  _lexer.expect(OPENING_PAREN);
+  pll_unode_t *extra_node   = nullptr;
+  pll_unode_t *current_node = nullptr;
 
-  auto extra_node   = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
-  auto current_node = parse_node_set();
-  extra_node->next  = current_node;
-  close_node_loop(extra_node);
+  try {
+    _lexer.expect(OPENING_PAREN);
+    extra_node       = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
+    current_node     = parse_node_set();
+    extra_node->next = current_node;
+    auto node_count  = close_node_loop(extra_node);
+    if (node_count < 3) {
+      throw std::runtime_error{std::string("Got a singleton subtree around ") +
+                               std::string(_lexer.describe_position())};
+    }
 
-  _lexer.expect(CLOSING_PAREN);
+    _lexer.expect(CLOSING_PAREN);
 
-  parse_node_attrs(extra_node);
+    parse_node_attrs(extra_node);
 
-  _inner_count++;
-
-  return extra_node;
+    _inner_count++;
+    return extra_node;
+  } catch (...) {
+    free_node_exception(extra_node);
+    throw;
+  }
 }
 
 pll_unode_t *newick_parser_t::parse_node_set() {
-  auto current_node = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
-  auto child        = parse_subtree();
-  set_mutual_back_pointers(current_node, child);
-  auto token = _lexer.peak();
-  if (token == COMMA) {
-    _lexer.consume();
-    auto next          = parse_node_set();
-    current_node->next = next;
+  pll_unode_t *current_node = nullptr;
+  pll_unode_t *child        = nullptr;
+  try {
+    current_node = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
+    auto child   = parse_subtree();
+    set_mutual_back_pointers(current_node, child);
+    auto token = _lexer.peak();
+    if (token == COMMA) {
+      _lexer.consume();
+      current_node->next = parse_node_set();
+    }
+    return current_node;
+  } catch (...) {
+    free_node_exception(current_node->back);
+    free_node_exception(current_node);
+    free_node_exception(child);
+    throw;
   }
-  return current_node;
 }
 
 void newick_parser_t::parse_node_attrs(pll_unode_t *current_node) {
@@ -417,16 +468,21 @@ void newick_parser_t::parse_node_attrs(pll_unode_t *current_node) {
 }
 
 pll_unode_t *newick_parser_t::parse_leaf() {
-  // auto current_node = std::make_shared<Node>();
-  auto current_node = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
-  parse_node_attrs(current_node);
-  if (current_node->label == nullptr) {
-    throw std::runtime_error{
-        std::string("Got a leaf with an empty name around ") +
-        std::string(_lexer.describe_position())};
+  pll_unode_t *current_node = nullptr;
+  try {
+    current_node = (pll_unode_t *)calloc(sizeof(pll_unode_t), 1);
+    parse_node_attrs(current_node);
+    if (current_node->label == nullptr) {
+      throw std::runtime_error{
+          std::string("Got a leaf with an empty name around ") +
+          std::string(_lexer.describe_position())};
+    }
+    _tip_count++;
+    return current_node;
+  } catch (...) {
+    free_node_exception(current_node);
+    throw;
   }
-  _tip_count++;
-  return current_node;
 }
 
 void newick_parser_t::parse_length(pll_unode_t *current_node) {
