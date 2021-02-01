@@ -5,8 +5,8 @@ Concepts
 ================================================================================
 
 Throughout this documentation, there is an intended difference between the terms
-`pll_unode_t` and node. One refers to the actual datastructure that is used to
-represent a vertex in a phylogenetic tree, while a node refers to that actual
+`pll_unode_t` and *node*. The former refers to the actual datastructure that is used to
+represent a vertex in a phylogenetic tree, while a *node* refers to that actual
 vertex.  Each node in a phylogenetic tree is made up of 1 or more
 `pll_unode_t`s. 
 
@@ -56,7 +56,8 @@ Fields:
   part of inner nodes, but the number of interior nodes of a phylogenetic tree.
 - `edge_count`: the number of edges in the tree.
 - `nodes`: an array of pointers to nodes.
-- `vroot`: A pointer to the virutal root. Is it aways an inner node?
+- `vroot`: A pointer to the virutal root. By convention, this is always an inner node.
+  All tree manipulation functions such as `pll_utree_wraptree` obey to this convention.
 
 ----
 
