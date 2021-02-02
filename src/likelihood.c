@@ -777,7 +777,8 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t * partition,
   unsigned int scaler_size = ((partition->attributes & PLL_ATTRIB_RATE_SCALERS) ?
                              sites*rate_cats : sites) * sizeof(unsigned int);
   unsigned int * temp_scaler = (unsigned int *) pll_aligned_alloc(scaler_size, partition->alignment);
-  unsigned int pmat_size = states_padded * states * rate_cats * sizeof(double);
+  unsigned int displacement = (states_padded - states) * (states_padded) * sizeof(double);
+  unsigned int pmat_size = states_padded * states * rate_cats * sizeof(double) + displacement;
   double * ident_pmat = (double *) pll_aligned_alloc(pmat_size, partition->alignment);
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
@@ -788,12 +789,13 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t * partition,
   }
 
   // init identity matrix
+  memset(ident_pmat, 0, pmat_size);
   double * pmat = ident_pmat;
   for (i = 0; i < rate_cats; ++i)
   {
     for (j = 0; j < states; ++j)
     {
-      for (k = 0; k < states; ++k)
+      for (k = 0; k < states_padded; ++k)
         pmat[j*states_padded + k] = (j == k) ? 1 : 0;
     }
 

@@ -269,7 +269,7 @@ char * utree_export_newick(const pll_unode_t * root,
     subtree2 = newick_utree_recurse(root, cb_serialize, 0);
 
     size_alloced = asprintf(&newick,
-                            "(%s,(%s)%s:%f):0.0;",
+                            "(%s,(%s)%s:%f);",
                             subtree1,
                             subtree2,
                             root->label ? root->label : "",
@@ -281,7 +281,7 @@ char * utree_export_newick(const pll_unode_t * root,
     subtree2 = newick_utree_recurse(root, cb_serialize, 0);
 
     size_alloced = asprintf(&newick,
-                            "(%s,%s)%s:0.0;",
+                            "(%s,%s)%s;",
                             subtree1,
                             subtree2,
                             root->label ? root->label : "");
@@ -812,9 +812,9 @@ PLL_EXPORT void pll_utree_create_pars_buildops(pll_unode_t * const* trav_buffer,
 
     if (node->next)
     {
-      ops[*ops_count].parent_score_index = node->clv_index;
-      ops[*ops_count].child1_score_index = node->next->back->clv_index;
-      ops[*ops_count].child2_score_index = node->next->next->back->clv_index;
+      ops[*ops_count].parent_score_index = node->node_index;
+      ops[*ops_count].child1_score_index = node->next->back->node_index;
+      ops[*ops_count].child2_score_index = node->next->next->back->node_index;
 
       *ops_count = *ops_count + 1;
     }
