@@ -52,7 +52,7 @@ static void case_tiptip(pll_partition_t * partition,
 
 
   /* and update CLV at inner node */
-  pll_core_update_partial_tt(partition->states,
+  pll_core_update_clv_tt(partition->states,
                              sites,
                              partition->rate_cats,
                              parent_clv,
@@ -112,7 +112,7 @@ static void case_tipinner(pll_partition_t * partition,
   }
   
 
-  pll_core_update_partial_ti(partition->states,
+  pll_core_update_clv_ti(partition->states,
                              sites,
                              partition->rate_cats,
                              parent_clv,
@@ -161,7 +161,7 @@ static void case_innerinner(pll_partition_t * partition,
   else
     right_scaler = NULL;
 
-  pll_core_update_partial_ii(partition->states,
+  pll_core_update_clv_ii(partition->states,
                              sites,
                              partition->rate_cats,
                              parent_clv,
@@ -214,7 +214,7 @@ static void case_repeats(pll_partition_t * partition,
     right_scaler = NULL;
 
   /* call the function with the shortest clv on the left */
-  pll_core_update_partial_repeats(partition->states,
+  pll_core_update_clv_repeats(partition->states,
                                 parent_sites,
                                 inv  ? left_sites   : right_sites,
                                 !inv ? left_sites   : right_sites,
@@ -234,15 +234,15 @@ static void case_repeats(pll_partition_t * partition,
                                 partition->attributes);
 }
 
-PLL_EXPORT void pll_update_partials(pll_partition_t * partition,
+PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
                                     const pll_operation_t * operations,
                                     unsigned int count)
 {
-  pll_update_partials_rep(partition, operations, count, 1);
+  pll_update_clvs_rep(partition, operations, count, 1);
 }
 
 
-PLL_EXPORT void pll_update_partials_rep(pll_partition_t * partition,
+PLL_EXPORT void pll_update_clvs_rep(pll_partition_t * partition,
                                     const pll_operation_t * operations,
                                     unsigned int count,
                                     unsigned int update_repeats)

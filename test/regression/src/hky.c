@@ -110,7 +110,7 @@ int main(int argc, char * argv[])
                              branch_lengths,
                              4);
 
-    pll_update_partials(partition, operations, 3);
+    pll_update_clvs(partition, operations, 3);
 
     printf("\n\n TEST ti/tv = %.4f\n\n", titv[i]);
 

@@ -307,7 +307,7 @@ int main(int argc, char * argv[])
 
   /* use the operations array to compute 4 CLVs. Operations will be carried out
      starting from operation 0 to 3 */
-  pll_update_partials(partition, operations, 4);
+  pll_update_clvs(partition, operations, 4);
 
   /* print out the CLVs at tip and inner nodes*/
   printf ("Tip 0: ");
@@ -352,7 +352,7 @@ int main(int argc, char * argv[])
                            5);
 
   /* recompute the CLVs using the same traversal */
-  pll_update_partials(partition, operations, 4);
+  pll_update_clvs(partition, operations, 4);
 
   /* re-evaluate the log-likelihood */
   logl = pll_compute_root_loglikelihood(partition,8,3,params_indices,NULL);
@@ -370,7 +370,7 @@ int main(int argc, char * argv[])
                            5);
 
   /* recompute the CLVs using the same traversal */
-  pll_update_partials(partition, operations, 4);
+  pll_update_clvs(partition, operations, 4);
 
   /* re-evaluate the log-likelihood */
   logl = pll_compute_root_loglikelihood(partition,8,3,params_indices,NULL);

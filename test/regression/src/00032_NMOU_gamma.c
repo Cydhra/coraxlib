@@ -202,7 +202,7 @@ int main (int argc, char * argv[])
                                  branch_lengths,
                                  4);
 
-        pll_update_partials (partition, operations, 3);
+        pll_update_clvs (partition, operations, 3);
 
         for (j = 0; j < 4; ++j)
         {

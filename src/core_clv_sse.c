@@ -386,7 +386,7 @@ static void pshow_sse(char * name, __m128d x)
 
 
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -420,7 +420,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4_sse(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ii_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -645,7 +645,7 @@ PLL_EXPORT void pll_core_update_partial_ii_4x4_sse(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_tt_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -664,7 +664,7 @@ PLL_EXPORT void pll_core_update_partial_tt_sse(unsigned int states,
 
   if (states == 4)
   {
-    pll_core_update_partial_tt_4x4_sse(sites,
+    pll_core_update_clv_tt_4x4_sse(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -696,7 +696,7 @@ PLL_EXPORT void pll_core_update_partial_tt_sse(unsigned int states,
 }
 
 
-PLL_EXPORT void pll_core_update_partial_ii_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -719,7 +719,7 @@ PLL_EXPORT void pll_core_update_partial_ii_sse(unsigned int states,
   /* dedicated functions for 4x4 matrices */
   if (states == 4)
   {
-    pll_core_update_partial_ii_4x4_sse(sites,
+    pll_core_update_clv_ii_4x4_sse(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -875,7 +875,7 @@ PLL_EXPORT void pll_core_update_partial_ii_sse(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic_sse(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1052,7 +1052,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic_sse(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1306,7 +1306,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4_sse(unsigned int sites,
   pll_aligned_free(lookup);
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1332,7 +1332,7 @@ PLL_EXPORT void pll_core_update_partial_ti_sse(unsigned int states,
   /* dedicated functions for 4x4 matrices */
   if (states == 4)
   {
-    pll_core_update_partial_ti_4x4_sse(sites,
+    pll_core_update_clv_ti_4x4_sse(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,

@@ -307,7 +307,7 @@ int eval(pll_partition_t * partition, double alpha, double pinv)
                            matrix_count);
 
   printf("recompute CLVs: %d\n", ops_count);
-  pll_update_partials(partition, operations, ops_count);
+  pll_update_clvs(partition, operations, ops_count);
 
   show_scaler(partition, root->back->clv_index);
 //  show_clv(partition, root->back->clv_index, 53);
@@ -349,7 +349,7 @@ int eval(pll_partition_t * partition, double alpha, double pinv)
   op.child1_scaler_index = scaler_idx(partition, op.child1_clv_index);
   op.child2_scaler_index = scaler_idx(partition, op.child2_clv_index);
 
-  pll_update_partials(partition, &op, 1);
+  pll_update_clvs(partition, &op, 1);
 
   // test derivatives
   comp_derivatives(partition, new_root, 1.0, &d_f, &dd_f);

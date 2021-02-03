@@ -160,7 +160,7 @@ int main(int argc, char * argv[])
 
   /* use the operations array to compute 4 CLVs. Operations will be carried out
      starting from operation 0 to 3 */
-  pll_update_partials(partition, operations, 2);
+  pll_update_clvs(partition, operations, 2);
 
   /* print out the CLVs at inner nodes*/
   printf ("CLV 4: ");
@@ -189,7 +189,7 @@ int main(int argc, char * argv[])
                    matrix_count,
                    branch_lengths);
 
-  pll_update_partials(partition, operations, 2);
+  pll_update_clvs(partition, operations, 2);
   logl = pll_compute_edge_loglikelihood(partition,4,0,5,1,4,freqs_indices, NULL);
 
   printf("Log-L (Inv+Gamma 0.5): %f\n", logl);
@@ -202,7 +202,7 @@ int main(int argc, char * argv[])
                    matrix_count,
                    branch_lengths);
 
-  pll_update_partials(partition, operations, 2);
+  pll_update_clvs(partition, operations, 2);
   logl = pll_compute_edge_loglikelihood(partition,4,0,5,1,4,freqs_indices, NULL);
 
   printf("Log-L (Inv+Gamma 0.75): %f\n", logl);

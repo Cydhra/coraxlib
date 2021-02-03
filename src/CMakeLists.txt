@@ -48,7 +48,7 @@ set(CORAX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
   ${FLEX_lex_rtree_t_OUTPUTS}
   ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/core_partials.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/core_clv.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix.c
   ${CMAKE_CURRENT_SOURCE_DIR}/derivatives.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fasta.c
@@ -61,7 +61,7 @@ set(CORAX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
   ${CMAKE_CURRENT_SOURCE_DIR}/models.c
   ${CMAKE_CURRENT_SOURCE_DIR}/output.c
   ${CMAKE_CURRENT_SOURCE_DIR}/parsimony.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/partials.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/clv.c
   ${CMAKE_CURRENT_SOURCE_DIR}/phylip.c
   ${CMAKE_CURRENT_SOURCE_DIR}/pll.c
   ${CMAKE_CURRENT_SOURCE_DIR}/random.c
@@ -76,21 +76,21 @@ set(CORAX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
 
 file(GLOB CORAX_SSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_sse.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_sse.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/core_clv_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fast_parsimony_sse.c
   )
 
 file(GLOB CORAX_AVX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_avx.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_avx.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/core_clv_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fast_parsimony_avx.c
   )
 
 file(GLOB CORAX_AVX2_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_avx2.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_avx2.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/core_clv_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fast_parsimony_avx2.c
   )

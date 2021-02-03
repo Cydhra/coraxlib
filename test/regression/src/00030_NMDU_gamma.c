@@ -107,7 +107,7 @@ double test_lk(pll_partition_t * partition, int gamma_mode)
   operations[2].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
 
   pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 4);
-  pll_update_partials(partition, operations, 3);
+  pll_update_clvs(partition, operations, 3);
 
   for (j = 0; j < 4; ++j)
   {
@@ -159,7 +159,7 @@ double test_lk(pll_partition_t * partition, int gamma_mode)
   operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
   operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
 
-  pll_update_partials(partition, operations, 1);
+  pll_update_clvs(partition, operations, 1);
 
   lk_score = pll_compute_edge_loglikelihood(partition,
                                             7,

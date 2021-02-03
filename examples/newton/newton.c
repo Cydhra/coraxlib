@@ -197,7 +197,7 @@ int main(int argc, char * argv[])
 
   /* use the operations array to compute 2 CLVs. Operations will be carried out
      going from operation 0 to 1 */
-  pll_update_partials(partition, operations, 2);
+  pll_update_clvs(partition, operations, 2);
 
   /* print out the CLVs at tip and inner nodes*/
   printf ("Tip 0: ");

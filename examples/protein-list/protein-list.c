@@ -405,7 +405,7 @@ int main(int argc, char * argv[])
 
     /* use the operations array to compute all tip_count-2 inner CLVs. Operations
        will be carried out sequentially starting from operation 0 and upwards */
-    pll_update_partials(partition, operations, ops_count);
+    pll_update_clvs(partition, operations, ops_count);
 
     /* Uncomment to print on screen the CLVs at tip and inner nodes. From 0 to
        tip_count-1 are tip CLVs, the rest are inner node CLVs.

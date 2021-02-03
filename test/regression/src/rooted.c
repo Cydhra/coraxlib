@@ -258,7 +258,7 @@ int main(int argc, char * argv[])
 
     /* use the operations array to compute all ops_count inner CLVs. Operations
        will be carried out sequentially starting from operation 0 towrds ops_count-1 */
-    pll_update_partials(partition, operations, ops_count);
+    pll_update_clvs(partition, operations, ops_count);
 
     /* compute the likelihood on an edge of the unrooted tree by specifying
        the CLV indices at the two end-point of the branch, the probability matrix

@@ -45,7 +45,7 @@ static void fill_parent_scaler(unsigned int scaler_size,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4(unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
                                                unsigned int * parent_scaler,
@@ -79,7 +79,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -98,7 +98,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
     if (states == 4)
-      pll_core_update_partial_tt_4x4_sse(sites,
+      pll_core_update_clv_tt_4x4_sse(sites,
                                          rate_cats,
                                          parent_clv,
                                          parent_scaler,
@@ -107,7 +107,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
                                          lookup,
                                          attrib);
     else
-      pll_core_update_partial_tt_sse(states,
+      pll_core_update_clv_tt_sse(states,
                                      sites,
                                      rate_cats,
                                      parent_clv,
@@ -126,7 +126,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
     if (states == 4)
-      pll_core_update_partial_tt_4x4_avx(sites,
+      pll_core_update_clv_tt_4x4_avx(sites,
                                          rate_cats,
                                          parent_clv,
                                          parent_scaler,
@@ -135,7 +135,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
                                          lookup,
                                          attrib);
     else
-      pll_core_update_partial_tt_avx(states,
+      pll_core_update_clv_tt_avx(states,
                                      sites,
                                      rate_cats,
                                      parent_clv,
@@ -153,7 +153,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
     if (states == 4)
-      pll_core_update_partial_tt_4x4_avx(sites,
+      pll_core_update_clv_tt_4x4_avx(sites,
                                          rate_cats,
                                          parent_clv,
                                          parent_scaler,
@@ -162,7 +162,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
                                          lookup,
                                          attrib);
     else
-      pll_core_update_partial_tt_avx(states,
+      pll_core_update_clv_tt_avx(states,
                                      sites,
                                      rate_cats,
                                      parent_clv,
@@ -199,7 +199,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4(unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
                                                unsigned int * parent_scaler,
@@ -224,7 +224,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
   #ifdef HAVE_SSE3
   if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
-    pll_core_update_partial_ti_4x4_sse(sites,
+    pll_core_update_clv_ti_4x4_sse(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -240,7 +240,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
   #ifdef HAVE_AVX
   if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
-    pll_core_update_partial_ti_4x4_avx(sites,
+    pll_core_update_clv_ti_4x4_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -256,7 +256,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
   #ifdef HAVE_AVX2
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
-    pll_core_update_partial_ti_4x4_avx(sites,
+    pll_core_update_clv_ti_4x4_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -351,7 +351,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -378,7 +378,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
     if (states == 4)
-      pll_core_update_partial_ti_4x4_sse(sites,
+      pll_core_update_clv_ti_4x4_sse(sites,
                                          rate_cats,
                                          parent_clv,
                                          parent_scaler,
@@ -389,7 +389,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
                                          right_scaler,
                                          attrib);
     else
-      pll_core_update_partial_ti_sse(states,
+      pll_core_update_clv_ti_sse(states,
                                      sites,
                                      rate_cats,
                                      parent_clv,
@@ -408,7 +408,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
 #ifdef HAVE_AVX
   if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
-    pll_core_update_partial_ti_avx(states,
+    pll_core_update_clv_ti_avx(states,
                                    sites,
                                    rate_cats,
                                    parent_clv,
@@ -427,7 +427,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
 #ifdef HAVE_AVX2
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
-    pll_core_update_partial_ti_avx2(states,
+    pll_core_update_clv_ti_avx2(states,
                                     sites,
                                     rate_cats,
                                     parent_clv,
@@ -446,7 +446,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
 
   if (states == 4)
   {
-    pll_core_update_partial_ti_4x4(sites,
+    pll_core_update_clv_ti_4x4(sites,
                                    rate_cats,
                                    parent_clv,
                                    parent_scaler,
@@ -507,7 +507,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats(unsigned int states,
                                                 unsigned int parent_sites,
                                                 unsigned int left_sites,
                                                 unsigned int right_sites,
@@ -526,7 +526,7 @@ PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
                                                 double * bclv_buffer,
                                                 unsigned int attrib)
 {
-  void (*core_update_partials) (unsigned int states,
+  void (*core_update_clvs) (unsigned int states,
                                unsigned int parent_sites,
                                unsigned int left_sites,
                                unsigned int right_sites,
@@ -548,48 +548,48 @@ PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
   unsigned int use_bclv = (bclv_buffer && (left_sites < ((parent_sites * 2) / 3) + 1));
 
   if (use_bclv) 
-    core_update_partials = pll_core_update_partial_repeatsbclv_generic;
+    core_update_clvs = pll_core_update_clv_repeatsbclv_generic;
   else  
-    core_update_partials = pll_core_update_partial_repeats_generic;
+    core_update_clvs = pll_core_update_clv_repeats_generic;
 #ifdef HAVE_AVX 
   if (attrib & PLL_ATTRIB_ARCH_AVX &&  PLL_STAT(avx_present))
   { 
     if (states == 4) 
     {
       if (use_bclv)
-        core_update_partials = pll_core_update_partial_repeatsbclv_4x4_avx;
+        core_update_clvs = pll_core_update_clv_repeatsbclv_4x4_avx;
       else  
-        core_update_partials = pll_core_update_partial_repeats_4x4_avx;
+        core_update_clvs = pll_core_update_clv_repeats_4x4_avx;
     } else {
       if (use_bclv)
-        core_update_partials = pll_core_update_partial_repeatsbclv_generic_avx;
+        core_update_clvs = pll_core_update_clv_repeatsbclv_generic_avx;
       else  
-        core_update_partials = pll_core_update_partial_repeats_generic_avx;
+        core_update_clvs = pll_core_update_clv_repeats_generic_avx;
     }
   }
 #endif
 #ifdef HAVE_SSE3
   if (attrib & PLL_ATTRIB_ARCH_SSE &&  PLL_STAT(sse3_present))
   {
-    core_update_partials = pll_core_update_partial_repeats_generic_sse;
+    core_update_clvs = pll_core_update_clv_repeats_generic_sse;
   }
 
 #endif
 #ifdef HAVE_AVX2 
   if (attrib & PLL_ATTRIB_ARCH_AVX2 &&  PLL_STAT(avx2_present))
   { 
-    core_update_partials = pll_core_update_partial_repeats_generic_avx2;
+    core_update_clvs = pll_core_update_clv_repeats_generic_avx2;
     if (states == 4) 
     {
       // for DNA, avx is faster than avx2
       if (use_bclv)
-        core_update_partials = pll_core_update_partial_repeatsbclv_4x4_avx;
+        core_update_clvs = pll_core_update_clv_repeatsbclv_4x4_avx;
       else  
-        core_update_partials = pll_core_update_partial_repeats_4x4_avx;
+        core_update_clvs = pll_core_update_clv_repeats_4x4_avx;
     }
   }
 #endif
-   core_update_partials(states,
+   core_update_clvs(states,
                 parent_sites,
                 left_sites,
                 right_sites,
@@ -609,7 +609,7 @@ PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
                 attrib);
 }
 
-PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -636,7 +636,7 @@ PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
 #ifdef HAVE_SSE3
   if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
-    pll_core_update_partial_ii_sse(states,
+    pll_core_update_clv_ii_sse(states,
                                    sites,
                                    rate_cats,
                                    parent_clv,
@@ -654,7 +654,7 @@ PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
 #ifdef HAVE_AVX
   if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
-    pll_core_update_partial_ii_avx(states,
+    pll_core_update_clv_ii_avx(states,
                                    sites,
                                    rate_cats,
                                    parent_clv,
@@ -672,7 +672,7 @@ PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
 #ifdef HAVE_AVX2
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
-    pll_core_update_partial_ii_avx2(states,
+    pll_core_update_clv_ii_avx2(states,
                                     sites,
                                     rate_cats,
                                     parent_clv,
@@ -764,7 +764,7 @@ PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic(unsigned int states,
                                                         unsigned int parent_sites,
                                                         unsigned int left_sites,
                                                         unsigned int right_sites,
@@ -879,7 +879,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_generic(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,

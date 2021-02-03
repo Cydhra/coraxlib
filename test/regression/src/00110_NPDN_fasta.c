@@ -230,7 +230,7 @@ static int smalltest (unsigned int attributes, pll_bool_t oneliner)
   pll_set_frequencies (partition, 0, frequencies);
   pll_set_category_rates (partition, rate_cats);
   pll_update_prob_matrices (partition, params_indices, matrix_indices, branch_lengths, 4);
-  pll_update_partials (partition, operations, 3);
+  pll_update_clvs (partition, operations, 3);
 
   printf ("logL: %17.6f\n", 
   pll_compute_edge_loglikelihood(partition,

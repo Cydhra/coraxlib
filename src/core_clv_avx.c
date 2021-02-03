@@ -399,7 +399,7 @@ PLL_EXPORT void pll_core_create_lookup_4x4_avx(unsigned int rate_cats,
   pll_aligned_free(lookupr);
 }
 
-PLL_EXPORT void pll_core_update_partial_ii_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ii_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -564,7 +564,7 @@ PLL_EXPORT void pll_core_update_partial_ii_4x4_avx(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_4x4_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_4x4_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -758,7 +758,7 @@ PLL_EXPORT void pll_core_update_partial_repeatsbclv_4x4_avx(unsigned int states,
 }
 
 
-PLL_EXPORT void pll_core_update_partial_repeats_4x4_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_4x4_avx(unsigned int states,
                                                         unsigned int parent_sites,
                                                         unsigned int left_sites,
                                                         unsigned int right_sites,
@@ -939,7 +939,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_4x4_avx(unsigned int states,
 }
 
 
-PLL_EXPORT void pll_core_update_partial_tt_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -958,7 +958,7 @@ PLL_EXPORT void pll_core_update_partial_tt_avx(unsigned int states,
 
   if (states == 4)
   {
-    pll_core_update_partial_tt_4x4_avx(sites,
+    pll_core_update_clv_tt_4x4_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -989,7 +989,7 @@ PLL_EXPORT void pll_core_update_partial_tt_avx(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1028,7 +1028,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4_avx(unsigned int sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1055,7 +1055,7 @@ PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
   /* dedicated functions for 4x4 matrices (DNA) */
   if (states == 4)
   {
-    pll_core_update_partial_ti_4x4_avx(sites,
+    pll_core_update_clv_ti_4x4_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -1071,7 +1071,7 @@ PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
   /* dedicated functions for 20x20 matrices (AA) */
   if (states == 20)
   {
-    pll_core_update_partial_ti_20x20_avx(sites,
+    pll_core_update_clv_ti_20x20_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,
@@ -1307,7 +1307,7 @@ PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1505,7 +1505,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4_avx(unsigned int sites,
   pll_aligned_free(lookup);
 }
 
-PLL_EXPORT void pll_core_update_partial_ti_20x20_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_20x20_avx(unsigned int sites,
                                                      unsigned int rate_cats,
                                                      double * parent_clv,
                                                      unsigned int * parent_scaler,
@@ -1750,7 +1750,7 @@ PLL_EXPORT void pll_core_update_partial_ti_20x20_avx(unsigned int sites,
   pll_aligned_free(lookup);
 }
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1988,7 +1988,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic_avx(unsigned int states,
   }
 }
 
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_generic_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -2256,7 +2256,7 @@ PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic_avx(unsigned int sta
 }
 
 
-PLL_EXPORT void pll_core_update_partial_ii_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -2280,7 +2280,7 @@ PLL_EXPORT void pll_core_update_partial_ii_avx(unsigned int states,
   /* dedicated functions for 4x4 matrices */
   if (states == 4)
   {
-    pll_core_update_partial_ii_4x4_avx(sites,
+    pll_core_update_clv_ii_4x4_avx(sites,
                                        rate_cats,
                                        parent_clv,
                                        parent_scaler,

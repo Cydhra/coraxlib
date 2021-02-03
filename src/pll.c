@@ -592,7 +592,7 @@ PLL_EXPORT pll_partition_t * pll_partition_create(unsigned int tips,
 
   /* allocate transition probability matrices in contiguous space, in order
      to save the 'displacement' amount of memory per matrix, which is
-     required for updating partials when the number of states is not a multiple
+     required for updating CLVs when the number of states is not a multiple
      of states_padded. */
   size_t displacement = (states_padded - states) * (states_padded) * sizeof(double);
   partition->pmatrix[0] = pll_aligned_alloc(partition->prob_matrices *

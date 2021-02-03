@@ -786,13 +786,13 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
                                                  double * ident_pmat);
 
 
-/* functions in partials.c */
+/* functions in clvs.c */
 
-PLL_EXPORT void pll_update_partials(pll_partition_t * partition,
+PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
                                     const pll_operation_t * operations,
                                     unsigned int count);
 
-PLL_EXPORT void pll_update_partials_rep(pll_partition_t * partition,
+PLL_EXPORT void pll_update_clvs_rep(pll_partition_t * partition,
                                         const pll_operation_t * operations,
                                         unsigned int count,
                                         unsigned int update_repeats);
@@ -1018,7 +1018,7 @@ PLL_EXPORT void pll_rtree_create_pars_recops(pll_rnode_t * const* trav_buffer,
                                              pll_pars_recop_t * ops,
                                              unsigned int * ops_count);
 
-/* functions in core_partials.c */
+/* functions in core_clvs.c */
 
 PLL_EXPORT void pll_core_create_lookup(unsigned int states,
                                        unsigned int rate_cats,
@@ -1029,7 +1029,7 @@ PLL_EXPORT void pll_core_create_lookup(unsigned int states,
                                        unsigned int tipmap_size,
                                        unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -1041,7 +1041,7 @@ PLL_EXPORT void pll_core_update_partial_tt(unsigned int states,
                                            const double * lookup,
                                            unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -1055,7 +1055,7 @@ PLL_EXPORT void pll_core_update_partial_ti(unsigned int states,
                                            unsigned int tipmap_size,
                                            unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii(unsigned int states,
                                            unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
@@ -1068,7 +1068,7 @@ PLL_EXPORT void pll_core_update_partial_ii(unsigned int states,
                                            const unsigned int * right_scaler,
                                            unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats(unsigned int states,
                                                 unsigned int parent_sites,
                                                 unsigned int left_sites,
                                                 unsigned int right_sites,
@@ -1087,7 +1087,7 @@ PLL_EXPORT void pll_core_update_partial_repeats(unsigned int states,
                                                 double * bclv_buffer,
                                                 unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic(unsigned int states,
                                            unsigned int parent_sites,
                                            unsigned int left_sites,
                                            unsigned int right_sites,
@@ -1106,7 +1106,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic(unsigned int states,
                                            double * bclv_buffer,
                                            unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_generic(unsigned int states,
                                            unsigned int parent_sites,
                                            unsigned int left_sites,
                                            unsigned int right_sites,
@@ -1130,7 +1130,7 @@ PLL_EXPORT void pll_core_create_lookup_4x4(unsigned int rate_cats,
                                            const double * left_matrix,
                                            const double * right_matrix);
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4(unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
                                                unsigned int * parent_scaler,
@@ -1139,7 +1139,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4(unsigned int sites,
                                                const double * lookup,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4(unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
                                                unsigned int * parent_scaler,
@@ -1387,7 +1387,7 @@ PLL_EXPORT double pll_core_root_loglikelihood(unsigned int states,
                                               double * persite_lnl,
                                               unsigned int attrib);
 
-/* functions in core_partials_sse.c */
+/* functions in core_clvs_sse.c */
 
 #ifdef HAVE_SSE3
 PLL_EXPORT void pll_core_create_lookup_sse(unsigned int states,
@@ -1403,7 +1403,7 @@ PLL_EXPORT void pll_core_create_lookup_4x4_sse(unsigned int rate_cats,
                                                const double * left_matrix,
                                                const double * right_matrix);
 
-PLL_EXPORT void pll_core_update_partial_tt_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1414,7 +1414,7 @@ PLL_EXPORT void pll_core_update_partial_tt_sse(unsigned int states,
                                                unsigned int tipstates_count,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1423,7 +1423,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4_sse(unsigned int sites,
                                                    const double * lookup,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1438,7 +1438,7 @@ PLL_EXPORT void pll_core_update_partial_ti_sse(unsigned int states,
                                                unsigned int attrib);
 
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1449,7 +1449,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4_sse(unsigned int sites,
                                                    const unsigned int * right_scaler,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1462,7 +1462,7 @@ PLL_EXPORT void pll_core_update_partial_ii_sse(unsigned int states,
                                                const unsigned int * right_scaler,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii_4x4_sse(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1474,7 +1474,7 @@ PLL_EXPORT void pll_core_update_partial_ii_4x4_sse(unsigned int sites,
                                                    const unsigned int * right_scaler,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic_sse(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic_sse(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1494,7 +1494,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic_sse(unsigned int states,
                                                             unsigned int attrib);
 #endif
 
-/* functions in core_partials_avx.c */
+/* functions in core_clvs_avx.c */
 
 #ifdef HAVE_AVX
 PLL_EXPORT void pll_core_create_lookup_avx(unsigned int states,
@@ -1517,7 +1517,7 @@ PLL_EXPORT void pll_core_create_lookup_20x20_avx(unsigned int rate_cats,
                                                const pll_state_t * tipmap,
                                                unsigned int tipmap_size);
 
-PLL_EXPORT void pll_core_update_partial_tt_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_tt_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1528,7 +1528,7 @@ PLL_EXPORT void pll_core_update_partial_tt_avx(unsigned int states,
                                                unsigned int tipstates_count,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_tt_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_tt_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1537,7 +1537,7 @@ PLL_EXPORT void pll_core_update_partial_tt_4x4_avx(unsigned int sites,
                                                    const double * lookup,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1551,7 +1551,7 @@ PLL_EXPORT void pll_core_update_partial_ti_avx(unsigned int states,
                                                unsigned int tipmap_size,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1562,7 +1562,7 @@ PLL_EXPORT void pll_core_update_partial_ti_4x4_avx(unsigned int sites,
                                                    const unsigned int * right_scaler,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ti_20x20_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ti_20x20_avx(unsigned int sites,
                                                      unsigned int rate_cats,
                                                      double * parent_clv,
                                                      unsigned int * parent_scaler,
@@ -1575,7 +1575,7 @@ PLL_EXPORT void pll_core_update_partial_ti_20x20_avx(unsigned int sites,
                                                      unsigned int tipmap_size,
                                                      unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii_avx(unsigned int states,
                                                unsigned int sites,
                                                unsigned int rate_cats,
                                                double * parent_clv,
@@ -1588,7 +1588,7 @@ PLL_EXPORT void pll_core_update_partial_ii_avx(unsigned int states,
                                                const unsigned int * right_scaler,
                                                unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii_4x4_avx(unsigned int sites,
+PLL_EXPORT void pll_core_update_clv_ii_4x4_avx(unsigned int sites,
                                                    unsigned int rate_cats,
                                                    double * parent_clv,
                                                    unsigned int * parent_scaler,
@@ -1600,7 +1600,7 @@ PLL_EXPORT void pll_core_update_partial_ii_4x4_avx(unsigned int sites,
                                                    const unsigned int * right_scaler,
                                                    unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1619,7 +1619,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_generic_avx(unsigned int states,
                                                             double * bclv_buffer,
                                                             unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats_4x4_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_4x4_avx(unsigned int states,
                                                         unsigned int parent_sites,
                                                         unsigned int left_sites,
                                                         unsigned int right_sites,
@@ -1639,7 +1639,7 @@ PLL_EXPORT void pll_core_update_partial_repeats_4x4_avx(unsigned int states,
                                                         unsigned int attrib);
 
                                                         
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_4x4_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_4x4_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1658,7 +1658,7 @@ PLL_EXPORT void pll_core_update_partial_repeatsbclv_4x4_avx(unsigned int states,
                                                             double * bclv_buffer,
                                                             unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic_avx(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeatsbclv_generic_avx(unsigned int states,
                                                             unsigned int parent_sites,
                                                             unsigned int left_sites,
                                                             unsigned int right_sites,
@@ -1678,10 +1678,10 @@ PLL_EXPORT void pll_core_update_partial_repeatsbclv_generic_avx(unsigned int sta
                                                             unsigned int attrib);
 #endif
 
-/* functions in core_partials_avx2.c */
+/* functions in core_clvs_avx2.c */
 
 #ifdef HAVE_AVX2
-PLL_EXPORT void pll_core_update_partial_ti_avx2(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ti_avx2(unsigned int states,
                                                 unsigned int sites,
                                                 unsigned int rate_cats,
                                                 double * parent_clv,
@@ -1696,7 +1696,7 @@ PLL_EXPORT void pll_core_update_partial_ti_avx2(unsigned int states,
                                                 unsigned int attrib);
 
 PLL_EXPORT
-void pll_core_update_partial_ti_20x20_avx2(unsigned int sites,
+void pll_core_update_clv_ti_20x20_avx2(unsigned int sites,
                                            unsigned int rate_cats,
                                            double * parent_clv,
                                            unsigned int * parent_scaler,
@@ -1709,7 +1709,7 @@ void pll_core_update_partial_ti_20x20_avx2(unsigned int sites,
                                            unsigned int tipmap_size,
                                            unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_ii_avx2(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_ii_avx2(unsigned int states,
                                                 unsigned int sites,
                                                 unsigned int rate_cats,
                                                 double * parent_clv,
@@ -1722,7 +1722,7 @@ PLL_EXPORT void pll_core_update_partial_ii_avx2(unsigned int states,
                                                 const unsigned int * right_scaler,
                                                 unsigned int attrib);
 
-PLL_EXPORT void pll_core_update_partial_repeats_generic_avx2(unsigned int states,
+PLL_EXPORT void pll_core_update_clv_repeats_generic_avx2(unsigned int states,
                                                              unsigned int parent_sites,
                                                              unsigned int left_sites,
                                                              unsigned int right_sites,

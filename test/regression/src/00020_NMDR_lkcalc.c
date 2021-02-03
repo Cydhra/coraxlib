@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
   pll_set_category_rates(partition, rate_cats);
 
   pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 4);
-  pll_update_partials(partition, operations, 4);
+  pll_update_clvs(partition, operations, 4);
 
   for (j = 0; j < 4; ++j)
   {
@@ -193,7 +193,7 @@ int main(int argc, char * argv[])
   operations[1].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
   operations[1].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
 
-  pll_update_partials(partition, operations, 2);
+  pll_update_clvs(partition, operations, 2);
 
   lk_score = pll_compute_root_loglikelihood(partition,
                                             8,

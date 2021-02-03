@@ -184,7 +184,7 @@ int main(int argc, char * argv[])
       printf ("\n");
     }
 
-    pll_update_partials(partition, operations, 3);
+    pll_update_clvs(partition, operations, 3);
     
     printf ("CLV 5: ");
     pll_show_clv(partition,5,PLL_SCALE_BUFFER_NONE,FLOAT_PRECISION+1);

@@ -258,7 +258,7 @@ int main(int argc, char * argv[])
 
     /* use the operations array to compute all ops_count inner CLVs. Operations
        will be carried out sequentially starting from operation 0 towrds ops_count-1 */
-    pll_update_partials(partition, operations, ops_count);
+    pll_update_clvs(partition, operations, ops_count);
 
 //    for (i = tip_nodes_count; i < nodes_count; ++i)
 //    {

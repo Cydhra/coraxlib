@@ -44,9 +44,9 @@ operations is placed in `ops_count`.
 ----
 
 ```
-PLL_EXPORT void pll_update_partials(pll_partition_t * partition,
-                                    const pll_operation_t * operations,
-                                    unsigned int count);
+PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
+                                const pll_operation_t * operations,
+                                unsigned int count);
 ```
 
 Computes the CLVS for all the trees in the nodes specified in the `operations`

@@ -173,7 +173,7 @@ int main(int argc, char * argv[])
         }
 
         pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 4);
-        pll_update_partials(partition, operations, 3);
+        pll_update_clvs(partition, operations, 3);
 
         lk_scores[k*NUM_ALPHAS + i] = pll_compute_edge_loglikelihood(partition,
                                                            6,
@@ -254,7 +254,7 @@ int main(int argc, char * argv[])
 
 
         /* move to a tip branch */
-        pll_update_partials(partition, operations + 3, 1);
+        pll_update_clvs(partition, operations + 3, 1);
 
         lk_scores[k*NUM_ALPHAS + i] = pll_compute_edge_loglikelihood(partition,
                                                            4,

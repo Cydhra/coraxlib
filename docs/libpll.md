@@ -73,10 +73,10 @@ Core Tasks
 
 In terms of calculations, `libpll` has optimized routines for 4 main tasks:
 
-- Partials
+- Conditional Likelihood Vectors (CLVs)
 - Derivatives
 - Likelihood
-- Probability Matrices
+- Probability Matrices (P-matrices)
 
 In order to calculate the likelihood of a tree from scratch only Probability
 Matrices, Partials, and Likelihood routines are required. The Derivatives
@@ -86,19 +86,19 @@ tree.
 A sample tree inference cycle might be:
 
 1. Calculate Probability Matrices,
-2. Calculate Partials,
+2. Calculate CLVs,
 3. Calculate Likelihood,
 4. Optimize Numeric Model Parameters/Branch Lengths,
 5. Propose Change to Tree,
 6. Optimize Numeric Model Parameters/Branch Lengths,
 7. Repeat from 5 until done.
 
-### Partials
+### CLVs
 
 ```
-PLL_EXPORT void pll_update_partials(pll_partition_t * partition,
-                                    const pll_operation_t * operations,
-                                    unsigned int count);
+PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
+                                const pll_operation_t * operations,
+                                unsigned int count);
 ```
 
 This function will compute the CLVs in the nodes specified in the `operations`

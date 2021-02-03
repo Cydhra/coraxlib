@@ -153,7 +153,7 @@ int main(int argc, char * argv[])
         free(rate_cats);
 
         pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 4);
-        pll_update_partials(partition, operations, 3);
+        pll_update_clvs(partition, operations, 3);
 
         for (j = 0; j < 4; ++j)
         {

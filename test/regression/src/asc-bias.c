@@ -92,7 +92,7 @@ static double eval(pll_partition_t * partition,
                            matrix_indices,
                            branch_lengths,
                            matrix_count);
-  pll_update_partials(partition, operations, ops_count);
+  pll_update_clvs(partition, operations, ops_count);
   logl = pll_compute_edge_loglikelihood(partition,
                                         node->clv_index,
                                         node->scaler_index,

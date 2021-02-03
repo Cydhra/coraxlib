@@ -688,19 +688,19 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
   if (other_clv_index < partition->tips &&
       (partition->attributes & PLL_ATTRIB_PATTERN_TIP))
   {
-    pll_core_update_partial_ti(states,
-                               sites,
-                               rate_cats,
-                               temp_clv,
-                               temp_scaler,
-                               partition->tipchars[other_clv_index],
-                               node_clv,
-                               pmat,
-                               ident_pmat,
-                               node_scaler,
-                               partition->tipmap,
-                               partition->maxstates,
-                               partition->attributes);
+    pll_core_update_clv_ti(states,
+                           sites,
+                           rate_cats,
+                           temp_clv,
+                           temp_scaler,
+                           partition->tipchars[other_clv_index],
+                           node_clv,
+                           pmat,
+                           ident_pmat,
+                           node_scaler,
+                           partition->tipmap,
+                           partition->maxstates,
+                           partition->attributes);
   }
   else
   {
@@ -708,18 +708,18 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
     unsigned int * other_scaler = (other_scaler_index == PLL_SCALE_BUFFER_NONE) ?
                               NULL : partition->scale_buffer[other_scaler_index];
 
-    pll_core_update_partial_ii(states,
-                               sites,
-                               rate_cats,
-                               temp_clv,
-                               temp_scaler,
-                               node_clv,
-                               other_clv,
-                               ident_pmat,
-                               pmat,
-                               node_scaler,
-                               other_scaler,
-                               partition->attributes);
+    pll_core_update_clv_ii(states,
+                           sites,
+                           rate_cats,
+                           temp_clv,
+                           temp_scaler,
+                           node_clv,
+                           other_clv,
+                           ident_pmat,
+                           pmat,
+                           node_scaler,
+                           other_scaler,
+                           partition->attributes);
   }
 
   double * clvp = temp_clv;
