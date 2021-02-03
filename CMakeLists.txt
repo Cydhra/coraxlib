@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
-project (Libpll)
+project (corax)
 
-set(PLL_EXPORTED_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
+#set(PLL_EXPORTED_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
 
 option(BUILD_DOC "Build documentation" OFF)
 
@@ -30,11 +30,11 @@ endif (DOXYGEN_FOUND)
 
 add_subdirectory(src)
 
-option(PLL_TESTS_ENABLED "Enable and build the tests" ON)
+option(CORAX_TESTS_ENABLED "Enable and build the tests" ON)
 
-if (PLL_TESTS_ENABLED)
+if (CORAX_TESTS_ENABLED)
   enable_testing()
   add_subdirectory(test)
-endif(PLL_TESTS_ENABLED)
+endif(CORAX_TESTS_ENABLED)
 
 

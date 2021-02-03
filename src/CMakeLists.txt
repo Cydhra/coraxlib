@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.0.2)
 
 include(CheckIncludeFile) 
 
-set (LIBPLL_BASE_FLAGS "-Wall -Wsign-compare -D_GNU_SOURCE -O3 -fPIC ")
+set (CORAX_BASE_FLAGS "-Wall -Wsign-compare -D_GNU_SOURCE -O3 -fPIC ")
 
-if(PLLMOD_DEBUG)
-  set(LIBPLL_BASE_FLAGS "${LIBPLL_BASE_FLAGS} -DDEBUG")
+if(CORAX_DEBUG)
+  set(CORAX_BASE_FLAGS "${CORAX_BASE_FLAGS} -DDEBUG")
 endif()
 
 set (SSE_FLAGS "-msse3")
@@ -14,23 +14,23 @@ set (AVX2_FLAGS "-mfma -mavx2")
 
 find_package(BISON)
 find_package(FLEX)
-set(LIBPLL_BISON_FLAGS "-y -d -p pll_utree_")
-set(LIBPLL_FLEX_FLAGS "-P pll_utree_")
+set(CORAX_BISON_FLAGS "-y -d -p pll_utree_")
+set(CORAX_FLEX_FLAGS "-P pll_utree_")
 BISON_TARGET(parse_utree_t 
   ${CMAKE_CURRENT_SOURCE_DIR}/parse_utree.y ${CMAKE_CURRENT_BINARY_DIR}/parse_utree.c
-  COMPILE_FLAGS ${LIBPLL_BISON_FLAGS})
+  COMPILE_FLAGS ${CORAX_BISON_FLAGS})
 FLEX_TARGET(lex_utree_t 
   ${CMAKE_CURRENT_SOURCE_DIR}/lex_utree.l ${CMAKE_CURRENT_BINARY_DIR}/lex_utree.c
-  COMPILE_FLAGS ${LIBPLL_FLEX_FLAGS})
+  COMPILE_FLAGS ${CORAX_FLEX_FLAGS})
 ADD_FLEX_BISON_DEPENDENCY(lex_utree_t parse_utree_t)
-set(LIBPLL_BISON_FLAGS "-y -d -p pll_rtree_")
-set(LIBPLL_FLEX_FLAGS "-P pll_rtree_")
+set(CORAX_BISON_FLAGS "-y -d -p pll_rtree_")
+set(CORAX_FLEX_FLAGS "-P pll_rtree_")
 BISON_TARGET(parse_rtree_t 
   ${CMAKE_CURRENT_SOURCE_DIR}/parse_rtree.y ${CMAKE_CURRENT_BINARY_DIR}/parse_rtree.c
-  COMPILE_FLAGS ${LIBPLL_BISON_FLAGS})
+  COMPILE_FLAGS ${CORAX_BISON_FLAGS})
 FLEX_TARGET(lex_rtree_t 
   ${CMAKE_CURRENT_SOURCE_DIR}/lex_rtree.l ${CMAKE_CURRENT_BINARY_DIR}/lex_rtree.c
-  COMPILE_FLAGS ${LIBPLL_FLEX_FLAGS})
+  COMPILE_FLAGS ${CORAX_FLEX_FLAGS})
 ADD_FLEX_BISON_DEPENDENCY(lex_rtree_t parse_rtree_t)
 
 # needed for bison files
@@ -41,7 +41,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_utree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
 SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_rtree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
 
-set(LIBPLL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
+set(CORAX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
   ${BISON_parse_utree_t_OUTPUTS}
   ${FLEX_lex_utree_t_OUTPUTS}
   ${BISON_parse_rtree_t_OUTPUTS}
@@ -74,21 +74,21 @@ set(LIBPLL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compress.c
   ${CMAKE_CURRENT_SOURCE_DIR}/newick/newick.cpp
   )
 
-file(GLOB LIBPLL_SSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_sse.c
+file(GLOB CORAX_SSE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_sse.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fast_parsimony_sse.c
   )
 
-file(GLOB LIBPLL_AVX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx.c
+file(GLOB CORAX_AVX_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_avx.c
   ${CMAKE_CURRENT_SOURCE_DIR}/fast_parsimony_avx.c
   )
 
-file(GLOB LIBPLL_AVX2_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx2.c
+file(GLOB CORAX_AVX2_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/core_derivatives_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_likelihood_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_partials_avx2.c
   ${CMAKE_CURRENT_SOURCE_DIR}/core_pmatrix_avx2.c
@@ -115,7 +115,7 @@ if (ENABLE_SSE)
   TRY_COMPILE(SSE_COMPILED ${CMAKE_CURRENT_BINARY_DIR} ${_file}
     COMPILE_DEFINITIONS ${SSE_FLAGS})
   if (NOT SSE_COMPILED)
-    message(STATUS "Disable sse simd, because not supported") 
+    message(STATUS "Disable SSE simd, because not supported") 
     set(ENABLE_SSE "False")
   endif()
 endif()
@@ -127,7 +127,7 @@ if (ENABLE_AVX)
   TRY_COMPILE(AVX_COMPILED ${CMAKE_CURRENT_BINARY_DIR} ${_file}
     COMPILE_DEFINITIONS ${AVX_FLAGS})
   if (NOT AVX_COMPILED)
-    message(STATUS "Disable avx simd, because not supported") 
+    message(STATUS "Disable AVX simd, because not supported") 
     set(ENABLE_AVX "False")
   endif()
 endif()
@@ -139,7 +139,7 @@ if (ENABLE_AVX2)
   TRY_COMPILE(AVX2_COMPILED ${CMAKE_CURRENT_BINARY_DIR} ${_file}
     COMPILE_DEFINITIONS ${AVX2_FLAGS})
   if (NOT AVX2_COMPILED)
-    message(STATUS "Disable avx2 simd, because not supported") 
+    message(STATUS "Disable AVX2 simd, because not supported") 
     set(ENABLE_AVX2 "False")
   endif()
 endif()
@@ -150,68 +150,70 @@ if (ENABLE_SSE)
   add_definitions(-DHAVE_SSE3)
   set(SIMD_FLAGS "${SIMD_FLAGS} ${SSE_FLAGS}")
   message(STATUS "SSE enabled. To disable it, run cmake with -DENABLE_SSE=false")
-  set(LIBPLL_SOURCES ${LIBPLL_SOURCES} ${LIBPLL_SSE_SOURCES})
-  SET_SOURCE_FILES_PROPERTIES( ${LIBPLL_SSE_SOURCES} PROPERTIES COMPILE_FLAGS ${SSE_FLAGS} )
+  set(CORAX_SOURCES ${CORAX_SOURCES} ${CORAX_SSE_SOURCES})
+  SET_SOURCE_FILES_PROPERTIES( ${CORAX_SSE_SOURCES} PROPERTIES COMPILE_FLAGS ${SSE_FLAGS} )
 endif ()
 if (ENABLE_AVX)
   add_definitions(-DHAVE_AVX)
   set(SIMD_FLAGS "${SIMD_FLAGS} ${AVX_FLAGS}")
   message(STATUS "AVX enabled. To disable it, run cmake with -DENABLE_AVX=false")
-  set(LIBPLL_SOURCES ${LIBPLL_SOURCES} ${LIBPLL_AVX_SOURCES})
-  SET_SOURCE_FILES_PROPERTIES( ${LIBPLL_AVX_SOURCES} PROPERTIES COMPILE_FLAGS ${AVX_FLAGS} )
+  set(CORAX_SOURCES ${CORAX_SOURCES} ${CORAX_AVX_SOURCES})
+  SET_SOURCE_FILES_PROPERTIES( ${CORAX_AVX_SOURCES} PROPERTIES COMPILE_FLAGS ${AVX_FLAGS} )
 endif ()
 if (ENABLE_AVX2)
   add_definitions(-DHAVE_AVX2)
   set(SIMD_FLAGS "${SIMD_FLAGS} ${AVX2_FLAGS}")
   message(STATUS "AVX2 enabled. To disable it, run cmake with -DENABLE_AVX2=false")
-  set(LIBPLL_SOURCES ${LIBPLL_SOURCES} ${LIBPLL_AVX2_SOURCES})
-  SET_SOURCE_FILES_PROPERTIES( ${LIBPLL_AVX2_SOURCES} PROPERTIES COMPILE_FLAGS ${AVX2_FLAGS} )
+  set(CORAX_SOURCES ${CORAX_SOURCES} ${CORAX_AVX2_SOURCES})
+  SET_SOURCE_FILES_PROPERTIES( ${CORAX_AVX2_SOURCES} PROPERTIES COMPILE_FLAGS ${AVX2_FLAGS} )
 endif ()
 
 add_definitions(-DHAVE_X86INTRIN_H)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LIBPLL_BASE_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CORAX_BASE_FLAGS}")
 
-# Set BUILD_LIBPLL_SHARED and BUILD_LIBPLL_SHARED if both are unset
+# Set BUILD_CORAX_SHARED and BUILD_CORAX_SHARED if both are unset
 # Use BUILD_SHARED_LIBS to decide whether we should build shared or static libraries
-if(NOT DEFINED BUILD_LIBPLL_SHARED AND NOT DEFINED BUILD_LIBPLL_STATIC)
-  set(BUILD_LIBPLL_SHARED ${BUILD_SHARED_LIBS})
+if(NOT DEFINED BUILD_CORAX_SHARED AND NOT DEFINED BUILD_CORAX_STATIC)
+  set(BUILD_CORAX_SHARED ${BUILD_SHARED_LIBS})
   if (BUILD_SHARED_LIBS)
-    set(BUILD_LIBPLL_STATIC FALSE)
+    set(BUILD_CORAX_STATIC FALSE)
   else()
-    set(BUILD_LIBPLL_STATIC TRUE)
+    set(BUILD_CORAX_STATIC TRUE)
   endif()
 endif()
 
-add_library(pll_obj OBJECT ${LIBPLL_SOURCES})
+add_library(corax_obj OBJECT ${CORAX_SOURCES})
+
+set(CORAX_LIBRARIES "")
   
 # Build shared library
-if(BUILD_LIBPLL_SHARED)
-  message(STATUS "Libpll shared build enabled")
-  set_property(TARGET pll_obj PROPERTY POSITION_INDEPENDENT_CODE 1) 
-  add_library(pll_shared  SHARED $<TARGET_OBJECTS:pll_obj>)
-  target_include_directories(pll_shared INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-  set(PLL_LIBRARIES
-    pll_shared
+if(BUILD_CORAX_SHARED)
+  message(STATUS "Coraxlib shared build enabled")
+  set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1) 
+  add_library(corax_shared  SHARED $<TARGET_OBJECTS:pll_obj>)
+  target_include_directories(corax_shared INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  set(CORAX_LIBRARIES
+    corax_shared
     CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
 endif()
 
 # Build static library
-if(BUILD_LIBPLL_STATIC)
-  message(STATUS "Libpll static build enabled")
-  add_library(pll_static STATIC $<TARGET_OBJECTS:pll_obj>)
-  target_include_directories(pll_static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-  set(PLL_LIBRARIES 
-    pll_static ${PLL_LIBRARIES}
+if(BUILD_CORAX_STATIC)
+  message(STATUS "Coraxlib static build enabled")
+  add_library(corax_static STATIC $<TARGET_OBJECTS:corax_obj>)
+  target_include_directories(corax_static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  set(CORAX_LIBRARIES 
+    corax_static ${CORAX_LIBRARIES}
     CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
 endif()
 
-message(STATUS "${PLL_LIBRARIES}")
-set_target_properties(${PLL_LIBRARIES} PROPERTIES OUTPUT_NAME "pll")
+message(STATUS "${CORAX_LIBRARIES}")
+set_target_properties(${CORAX_LIBRARIES} PROPERTIES OUTPUT_NAME "corax")
 
 
-# Export PLL_LIBRARIES and PLL_INCLUDE_DIRS as CACHE entries
-set(PLL_INCLUDE_DIRS
+# Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
+set(CORAX_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
   CACHE INTERNAL "${PROJECT_NAME}: Include dirs")
 

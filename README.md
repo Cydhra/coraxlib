@@ -9,7 +9,7 @@ Please read the wiki for more information.
 
 # Compilation instructions
 
-Please make sure you have CMake 2.8.10 or later installed on your system.
+Please make sure you have CMake 3.0.2 or later installed on your system.
 
 Then, use following commands to clone and build `coraxlib`:
 
