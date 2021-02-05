@@ -101,10 +101,10 @@ logl = pll_compute_edge_loglikelihood(partition,
 
 ## Instructions to compile
 
-Before proceeding with the compilation, make sure that `pll.h` is accessible,
+Before proceeding with the compilation, make sure that `corax.h` is accessible,
 by copying it to the current example directory, or modifying the line
 
-`#include "pll.h"`
+`#include "corax.h"`
 
 You will also need to make the shared object `libpll.so` accessible by either
 placing it in your system's library directory (typically `/lib` or

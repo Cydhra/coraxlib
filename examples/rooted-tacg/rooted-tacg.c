@@ -19,7 +19,7 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#include "pll.h"
+#include "corax.h"
 
 /* encodes the sequence in a TACG order (CLVs and p-matrix). Note that it
    would be more elegant to do it with a map, i.e. create a pll_map_nt_tacg

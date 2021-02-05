@@ -27,8 +27,10 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_subdirectory(src)
+add_subdirectory(src/corax)
 
 option(CORAX_TESTS_ENABLED "Enable and build the tests" ON)
 

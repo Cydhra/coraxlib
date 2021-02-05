@@ -18,7 +18,7 @@
     Exelixis Lab, Heidelberg Instutute for Theoretical Studies
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
-#include "pll.h"
+#include "corax.h"
 
 #define NUM_TESTS 10
 #define N_STATES_NT 4

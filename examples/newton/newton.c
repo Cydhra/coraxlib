@@ -19,7 +19,7 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#include "pll.h"
+#include "corax.h"
 
 #define RATES 4         /* number of rate categories */
 #define STATES 4        /* number of states */

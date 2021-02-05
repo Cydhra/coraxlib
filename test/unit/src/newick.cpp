@@ -1,4 +1,4 @@
-#include "pll.h"
+#include "corax.h"
 #include <gtest/gtest.h>
 
 TEST(NewickParser, simple0) {
