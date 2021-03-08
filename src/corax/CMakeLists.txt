@@ -26,19 +26,19 @@ set(CORAX_SRC_DIR_CORE_KERNEL_AVX2 ${CORAX_SRC_DIR_CORE_KERNEL}/avx2)
 
 find_package(BISON)
 find_package(FLEX)
-set(CORAX_BISON_FLAGS "-y -d -p pll_utree_")
-set(CORAX_FLEX_FLAGS "-P pll_utree_")
+#set(CORAX_BISON_FLAGS "-y -d -p pll_utree_")
+#set(CORAX_FLEX_FLAGS "-P pll_utree_")
 
 set(CORAX_BISON_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/core/tree)
 file(MAKE_DIRECTORY ${CORAX_BISON_OUT_DIR})
 
-BISON_TARGET(parse_utree_t 
-  ${CORAX_SRC_DIR_CORE_TREE}/parse_utree.y ${CORAX_BISON_OUT_DIR}/parse_utree.c
-  COMPILE_FLAGS ${CORAX_BISON_FLAGS})
-FLEX_TARGET(lex_utree_t 
-  ${CORAX_SRC_DIR_CORE_TREE}/lex_utree.l ${CORAX_BISON_OUT_DIR}/lex_utree.c
-  COMPILE_FLAGS ${CORAX_FLEX_FLAGS})
-ADD_FLEX_BISON_DEPENDENCY(lex_utree_t parse_utree_t)
+#BISON_TARGET(parse_utree_t 
+#  ${CORAX_SRC_DIR_CORE_TREE}/parse_utree.y ${CORAX_BISON_OUT_DIR}/parse_utree.c
+#  COMPILE_FLAGS ${CORAX_BISON_FLAGS})
+#FLEX_TARGET(lex_utree_t 
+#  ${CORAX_SRC_DIR_CORE_TREE}/lex_utree.l ${CORAX_BISON_OUT_DIR}/lex_utree.c
+#  COMPILE_FLAGS ${CORAX_FLEX_FLAGS})
+#ADD_FLEX_BISON_DEPENDENCY(lex_utree_t parse_utree_t)
 set(CORAX_BISON_FLAGS "-y -d -p pll_rtree_")
 set(CORAX_FLEX_FLAGS "-P pll_rtree_")
 BISON_TARGET(parse_rtree_t 
