@@ -278,7 +278,7 @@ PLL_EXPORT pll_rtree_t * pll_rtree_wraptree(pll_rnode_t * root,
   if (tip_count < 2 && tip_count != 0)
   {
     snprintf(pll_errmsg, 200, "Invalid tip_count value (%u).", tip_count);
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
@@ -288,7 +288,7 @@ PLL_EXPORT pll_rtree_t * pll_rtree_wraptree(pll_rnode_t * root,
     if (tip_count < 2)
     {
       snprintf(pll_errmsg, 200, "Input tree contains no inner nodes.");
-      pll_errno = PLL_ERROR_PARAM_INVALID;
+      pll_errno = PLL_ERROR_INVALID_TREE;
       return PLL_FAILURE;
     }
   }

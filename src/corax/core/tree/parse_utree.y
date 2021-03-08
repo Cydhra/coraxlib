@@ -452,7 +452,7 @@ static pll_utree_t * utree_wraptree(pll_unode_t * root,
   if (tip_count < 3 && tip_count != 0)
   {
     snprintf(pll_errmsg, 200, "Invalid tip_count value (%u).", tip_count);
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
   
@@ -467,7 +467,7 @@ static pll_utree_t * utree_wraptree(pll_unode_t * root,
       if (inner_count != tip_count - 2)
       {
         snprintf(pll_errmsg, 200, "Input tree is not strictly bifurcating.");
-        pll_errno = PLL_ERROR_PARAM_INVALID;
+        pll_errno = PLL_ERROR_INVALID_TREE;
         return PLL_FAILURE;
       }
     }
@@ -488,7 +488,7 @@ static pll_utree_t * utree_wraptree(pll_unode_t * root,
   if (!tip_count)
   {
     snprintf(pll_errmsg, 200, "Input tree contains no inner nodes.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_TREE;
     return PLL_FAILURE;
   }
 
@@ -617,7 +617,7 @@ static pll_utree_t * utree_parse_newick(const char * filename, int auto_unroot,
   if (unode_is_rooted(root) && !allow_rooted)
   {
     pll_utree_graph_destroy(root,NULL);
-    pll_errno = PLL_ERROR_TREE_INVALID;
+    pll_errno = PLL_ERROR_INVALID_TREE;
     snprintf(pll_errmsg, 200, "Rooted tree parsed but unrooted tree is expected.");
     return PLL_FAILURE;
   }
@@ -689,7 +689,7 @@ static pll_utree_t * utree_parse_newick_string(const char * s, int auto_unroot,
   if (unode_is_rooted(root) && !allow_rooted)
   {
     pll_utree_graph_destroy(root,NULL);
-    pll_errno = PLL_ERROR_TREE_INVALID;
+    pll_errno = PLL_ERROR_INVALID_TREE;
     snprintf(pll_errmsg, 200, "Rooted tree parsed but unrooted tree is expected.");
     return PLL_FAILURE;
   }

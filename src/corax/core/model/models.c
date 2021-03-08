@@ -188,7 +188,7 @@ static double ** create_ratematrix(double * params,
   double ** qmatrix;
 
   /* normalize substitution parameters */
-  unsigned int params_count = (states*states - states) / 2;
+  unsigned int params_count = pll_subst_rate_count(states);
   double * params_normalized = (double *)malloc(sizeof(double) * params_count);
   if (!params_normalized)
     return NULL;
@@ -288,6 +288,11 @@ static unsigned int eliminate_zero_states(double **mat, double *forg,
   }
 
   return new_states;
+}
+
+PLL_EXPORT unsigned int pll_subst_rate_count(unsigned int states)
+{
+  return states * (states - 1) / 2;
 }
 
 PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
@@ -483,10 +488,10 @@ PLL_EXPORT void pll_set_subst_params(pll_partition_t * partition,
                                      unsigned int params_index,
                                      const double * params)
 {
-  unsigned int count = partition->states * (partition->states-1) / 2;
+  unsigned int count = pll_subst_rate_count(partition->states);
 
   memcpy(partition->subst_params[params_index],
-         params, count*sizeof(double));
+         params, count * sizeof(double));
   partition->eigen_decomp_valid[params_index] = 0;
 
   /* NOTE: For protein models PLL/RAxML do a rate scaling by 10.0/max_rate */

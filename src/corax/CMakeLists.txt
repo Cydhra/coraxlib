@@ -57,7 +57,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_utree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
 SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_rtree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
 
-set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/partition.c
+set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
+  ${CORAX_SRC_DIR_CORE}/partition.c
   ${CORAX_SRC_DIR_CORE}/repeats.c
 
   ${CORAX_SRC_DIR_CORE_IO}/fasta.c
@@ -204,34 +205,45 @@ if(NOT DEFINED BUILD_CORAX_SHARED AND NOT DEFINED BUILD_CORAX_STATIC)
   endif()
 endif()
 
-add_library(corax_obj OBJECT ${CORAX_SOURCES})
+macro(add_corax_lib _target _sources)
+  add_library(${_target}_obj OBJECT ${_sources})
+  set_property(TARGET ${_target}_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
+  target_include_directories(${_target}_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  if(BUILD_CORAX_SHARED)
+    add_library(${_target}_shared SHARED $<TARGET_OBJECTS:${_target}_obj>)
+    set_target_properties(${_target}_shared PROPERTIES OUTPUT_NAME "${_target}")
+    if(NOT ${_target} STREQUAL "corax")
+      target_link_libraries(${_target}_shared corax_shared)
+    endif() 
+    set(CORAX_LIBRARIES 
+      ${_target}_shared ${CORAX_LIBRARIES}
+      CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
+  endif()
+  if(BUILD_CORAX_STATIC)
+    add_library(${_target}_static STATIC $<TARGET_OBJECTS:${_target}_obj>)
+    set_target_properties(${_target}_static PROPERTIES OUTPUT_NAME "${_target}")
+    if(NOT ${_target} STREQUAL "corax")
+      target_link_libraries(${_target}_static corax_static) 
+    endif()
+    set(CORAX_LIBRARIES 
+      ${_target}_static ${CORAX_LIBRARIES}
+      CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
+  endif()
+endmacro()
 
 set(CORAX_LIBRARIES "")
+
+add_corax_lib(corax "${CORAX_SOURCES}")
+
+#set(CORAX_COMPONENTS "optimize;algorithm;binary;msa;tree;util" CACHE STRING "corax components to build")
+set(CORAX_COMPONENTS "msa" CACHE STRING "corax components to build")
+
+foreach(module ${CORAX_COMPONENTS})
+  message(STATUS "Will compile corax-component ${module}")
+  add_subdirectory(${module})
+endforeach()
   
-# Build shared library
-if(BUILD_CORAX_SHARED)
-  message(STATUS "Coraxlib shared build enabled")
-  set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1) 
-  add_library(corax_shared  SHARED $<TARGET_OBJECTS:corax_obj>)
-  target_include_directories(corax_shared INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-  set(CORAX_LIBRARIES
-    corax_shared
-    CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
-endif()
-
-# Build static library
-if(BUILD_CORAX_STATIC)
-  message(STATUS "Coraxlib static build enabled")
-  add_library(corax_static STATIC $<TARGET_OBJECTS:corax_obj>)
-  target_include_directories(corax_static INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-  set(CORAX_LIBRARIES 
-    corax_static ${CORAX_LIBRARIES}
-    CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
-endif()
-
-message(STATUS "${CORAX_LIBRARIES}")
-set_target_properties(${CORAX_LIBRARIES} PROPERTIES OUTPUT_NAME "corax")
-
+message(STATUS "coraxlib libraries: ${CORAX_LIBRARIES}")
 
 # Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
 set(CORAX_INCLUDE_DIRS

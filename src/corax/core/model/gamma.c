@@ -237,7 +237,7 @@ PLL_EXPORT int pll_compute_gamma_cats(double alpha,
 
   if (alpha < ALPHA_MIN || categories < 1)
   {
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     snprintf(pll_errmsg, 200, "Invalid alpha value (%f)", alpha);
     return PLL_FAILURE;
   }
@@ -283,8 +283,8 @@ PLL_EXPORT int pll_compute_gamma_cats(double alpha,
   }
   else
   {
-    pll_errno = PLL_ERROR_PARAM_INVALID;
-    snprintf(pll_errmsg, 200, "Invalid GAMMA disrcretization mode (%d)", rates_mode);
+    pll_errno = PLL_ERROR_INVALID_PARAM;
+    snprintf(pll_errmsg, 200, "Invalid GAMMA discretization mode (%d)", rates_mode);
     return PLL_FAILURE;
   }
 

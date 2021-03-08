@@ -453,7 +453,7 @@ PLL_EXPORT int pll_utree_traverse_subtree(pll_unode_t * root,
   else
   {
     snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
@@ -491,7 +491,7 @@ PLL_EXPORT int pll_utree_traverse(pll_unode_t * root,
   else
   {
     snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 

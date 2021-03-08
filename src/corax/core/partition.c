@@ -437,7 +437,7 @@ PLL_EXPORT pll_partition_t * pll_partition_create(unsigned int tips,
   /* make sure that multiple ARCH were not specified */
   if (PLL_POPCNT32(attributes & PLL_ATTRIB_ARCH_MASK) > 1)
   {
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     snprintf(pll_errmsg, 200, "Multiple architecture flags specified.");
     return PLL_FAILURE;
   }

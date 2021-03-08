@@ -725,6 +725,43 @@ pll_msa_t * pll_phylip_load(const char * fname, pll_bool_t interleaved)
   return msa;
 }
 
+PLL_EXPORT int pll_phylip_save(const char * out_fname,
+                               const pll_msa_t * msa)
+{
+  if (!msa)
+  {
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return PLL_FAILURE;
+  }
+
+  if (!out_fname)
+  {
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "File name (out_fname) is NULL");
+    return PLL_FAILURE;
+  }
+
+  FILE * f = fopen(out_fname, "w");
+
+  if (!f)
+  {
+    pll_set_error(PLL_ERROR_FILE_OPEN, "Cannot open file: %s", out_fname);
+    return PLL_FAILURE;
+  }
+
+  fprintf(f, "%lu %lu\n", (unsigned long) msa->count,
+                          (unsigned long) msa->length);
+
+  unsigned long i;
+  for (i = 0; i < (unsigned long) msa->count; ++i)
+  {
+    fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]);
+  }
+
+  fclose(f);
+
+  return PLL_SUCCESS;
+}
+
 PLL_EXPORT void pll_msa_destroy(pll_msa_t * msa)
 {
   if (!msa) return;
