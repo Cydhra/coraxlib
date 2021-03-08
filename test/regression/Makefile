@@ -17,11 +17,11 @@
 #    Exelixis Lab, Heidelberg Instutute for Theoretical Studies
 #    Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 
-CC = gcc
+CC = g++
 CURDIR=$(readlink -f $0)
 CORAX_INCLUDE_DIR=$(CURDIR)../../src/corax
 CORAX_LIB_DIR=$(CURDIR)../../bin
-CFLAGS = -I$(CORAX_INCLUDE_DIR) -L$(CORAX_LIB_DIR) -g -O3 -Wall -std=c99
+CFLAGS = -I$(CORAX_INCLUDE_DIR) -L$(CORAX_LIB_DIR) -g -O3 -Wall 
 CLIBS = -lcorax -lm
 
 CFILES = $(shell find src -name '*.c' ! -name 'common.c')

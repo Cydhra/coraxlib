@@ -218,7 +218,7 @@ void init(unsigned int attrs)
   operations = (pll_operation_t *)malloc(tree->inner_count *
                                                 sizeof(pll_operation_t));
   persite_lnl = (double *)malloc(part_sitescale_aa->sites * sizeof(double));
-  sumtable = pll_aligned_alloc(part_sitescale_aa->sites *
+  sumtable = (double *)pll_aligned_alloc(part_sitescale_aa->sites *
                                part_sitescale_aa->rate_cats *
                                part_sitescale_aa->states_padded * sizeof(double),
                                part_sitescale_aa->alignment);

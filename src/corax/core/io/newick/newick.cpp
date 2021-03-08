@@ -7,9 +7,30 @@
 #include <stdexcept>
 #include <string>
 
+inline void synchronize_attrs(pll_unode_t *start) {
+  pll_unode_t *cur = start;
+  if (start->label) {
+    while (cur->next != start) {
+      cur        = cur->next;
+      cur->label = start->label;
+    }
+  }
+}
+
+inline void free_label_from_nodes(pll_unode_t *start) {
+  if (start->label) {
+    free(start->label);
+    start->label = nullptr;
+  }
+  pll_unode_t *cur = start;
+  while (cur->next && cur->next != start) {
+    cur        = cur->next;
+    cur->label = nullptr;
+  }
+}
+
 void delete_unode(pll_unode_t *node) {
-  if (node->label) { free(node->label); }
-  node->label = nullptr;
+  if (node->label) { free_label_from_nodes(node); }
   free(node);
 }
 
@@ -398,7 +419,11 @@ pll_utree_t *newick_parser_t::parse_utree(bool auto_unroot, bool allow_rooted) {
   current_tree->tip_count   = _tip_count;
   current_tree->inner_count = _inner_count;
   current_tree->edge_count  = _edge_count;
-  size_t node_array_size    = _tip_count + _inner_count;
+  current_tree->binary =
+      (_inner_count == (_tip_count - (unode_is_rooted(root_node) ? 1 : 2)))
+          ? true
+          : false;
+  size_t node_array_size = _tip_count + _inner_count;
   current_tree->nodes =
       (pll_unode_t **)malloc(sizeof(pll_unode_t *) * node_array_size);
 
@@ -410,6 +435,18 @@ pll_utree_t *newick_parser_t::parse_utree(bool auto_unroot, bool allow_rooted) {
                        &tip_index,
                        &inner_index,
                        /*level=*/0);
+
+  if (tip_index != _tip_count) {
+    throw std::runtime_error{
+        "There was a problem with filling the nodes array"};
+  }
+
+  if (inner_index != _tip_count + _inner_count) {
+    throw std::runtime_error{
+        "There was a problem with filling the nodes array"};
+  }
+
+  pll_utree_reset_template_indices(root_node, _tip_count);
 
   current_tree->vroot = root_node;
   return current_tree;
@@ -448,6 +485,7 @@ pll_unode_t *newick_parser_t::parse_internal() {
     _lexer.expect(CLOSING_PAREN);
 
     parse_node_attrs(extra_node);
+    synchronize_attrs(extra_node);
 
     _inner_count++;
     return extra_node;
@@ -545,6 +583,22 @@ PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename) {
                             (std::istreambuf_iterator<char>()));
   newick_parser_t np(newick_string);
   return np.parse();
+}
+
+PLL_EXPORT pll_utree_t *pll_utree_parse_newick_rooted(const char *filename) {
+  std::ifstream   newick_file(filename);
+  std::string     newick_string((std::istreambuf_iterator<char>(newick_file)),
+                            (std::istreambuf_iterator<char>()));
+  newick_parser_t np(newick_string);
+  return np.parse(/*auto_unroot=*/false, /*allow_rooted=*/true);
+}
+
+PLL_EXPORT pll_utree_t *pll_utree_parse_newick_unroot(const char *filename) {
+  std::ifstream   newick_file(filename);
+  std::string     newick_string((std::istreambuf_iterator<char>(newick_file)),
+                            (std::istreambuf_iterator<char>()));
+  newick_parser_t np(newick_string);
+  return np.parse(/*auto_unroot=*/true, /*allow_rooted=*/false);
 }
 
 pll_utree_t *utree_parse_newick_string(const char *newick_cstring,
