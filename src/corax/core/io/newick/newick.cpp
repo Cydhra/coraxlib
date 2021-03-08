@@ -48,6 +48,10 @@ inline void free_node_exception(pll_unode_t *n) {
   delete_unode(n);
 }
 
+inline bool unode_is_rooted(const pll_unode_t *root) {
+  return (root->next && root->next->next == root) ? 1 : 0;
+}
+
 static void fill_nodes_recursive(pll_unode_t * node,
                                  pll_unode_t **array,
                                  unsigned int  array_size,
@@ -83,7 +87,9 @@ pll_unode_t *trim_node(pll_unode_t *node) {
 
   while (prev->next != node) { prev = prev->next; }
 
-  prev->next = next;
+  prev->next  = next;
+  prev->label = node->label;
+  node->label = nullptr;
   delete_unode(node);
 
   return prev;
@@ -326,10 +332,14 @@ public:
       _tip_count{0},
       _inner_count{0},
       _edge_count{0} {};
-  pll_utree_t *parse() { return parse_utree(); }
+
+  pll_utree_t *parse() { return parse_utree(false, false); }
+  pll_utree_t *parse(bool auto_unroot, bool allow_rooted) {
+    return parse_utree(auto_unroot, allow_rooted);
+  }
 
 private:
-  pll_utree_t *parse_utree();
+  pll_utree_t *parse_utree(bool auto_unroot, bool allow_rooted);
   pll_unode_t *parse_subtree();
   pll_unode_t *parse_internal(); // creates node
   pll_unode_t *parse_node_set();
@@ -349,7 +359,7 @@ private:
   size_t         _edge_count;
 };
 
-pll_utree_t *newick_parser_t::parse_utree() {
+pll_utree_t *newick_parser_t::parse_utree(bool auto_unroot, bool allow_rooted) {
   pll_unode_t *root_node = nullptr;
 
   try {
@@ -357,11 +367,18 @@ pll_utree_t *newick_parser_t::parse_utree() {
     root_node = trim_node(root_node);
     /* We overcounted, because we assume there is an "upper" branch still */
     _edge_count--;
-    auto new_root_node = unode_unroot(root_node);
-    if (new_root_node != root_node) {
-      _inner_count--;
-      _edge_count--;
-      root_node = new_root_node;
+    if (unode_is_rooted(root_node)) {
+      if (!allow_rooted && !auto_unroot) {
+        throw std::invalid_argument{"Encountered a rooted tree when parsing"};
+      }
+      if (auto_unroot) {
+        auto new_root_node = unode_unroot(root_node);
+        if (new_root_node != root_node) {
+          _inner_count--;
+          _edge_count--;
+          root_node = new_root_node;
+        }
+      }
     }
 
     _lexer.expect(SEMICOLON);
@@ -530,8 +547,23 @@ PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename) {
   return np.parse();
 }
 
-pll_utree_t *pll_utree_parse_newick_string(const char *newick_cstring) {
+pll_utree_t *utree_parse_newick_string(const char *newick_cstring,
+                                       int         auto_unroot,
+                                       int         allow_rooted) {
   std::string     newick_string(newick_cstring);
   newick_parser_t np(newick_string);
-  return np.parse();
+  return np.parse(auto_unroot, allow_rooted);
+}
+
+PLL_EXPORT pll_utree_t *
+           pll_utree_parse_newick_string(const char *newick_cstring) {
+  return utree_parse_newick_string(newick_cstring, 0, 0);
+}
+
+PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_rooted(const char *s) {
+  return utree_parse_newick_string(s, 0, 1);
+}
+
+PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_unroot(const char *s) {
+  return utree_parse_newick_string(s, 1, 0);
 }
