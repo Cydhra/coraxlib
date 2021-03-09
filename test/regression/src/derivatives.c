@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
       return(-1);
     }
 
-    sumtable = pll_aligned_alloc(
+    sumtable = (double *)pll_aligned_alloc(
       partition->sites * partition->rate_cats * partition->states_padded *
       sizeof(double), partition->alignment);
 

@@ -37,7 +37,7 @@ static int cb_clv_traversal(pll_unode_t * node)
     node->next->next->data = (node_info_t *)calloc(1,sizeof(node_info_t));
 
     /* set orientation on selected direction and traverse the subtree */
-    node_info = node->data;
+    node_info = (node_info_t *)node->data;
     node_info->clv_valid = 1;
     return 1;
   }
@@ -52,9 +52,9 @@ static int cb_clv_traversal(pll_unode_t * node)
 
   /* reset orientation on the other two directions and return 1 (i.e. traverse
      the subtree */
-  node_info = node->next->data;
+  node_info = (node_info_t *)node->next->data;
   node_info->clv_valid = 0;
-  node_info = node->next->next->data;
+  node_info = (node_info_t *)node->next->next->data;
   node_info->clv_valid = 0;
 
   return 1;
