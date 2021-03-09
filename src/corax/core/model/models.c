@@ -23,177 +23,164 @@
 
 static int mytqli(double *d, double *e, const unsigned int n, double **z)
 {
-  unsigned int     m, l, iter, i, k;
-  double  s, r, p, g, f, dd, c, b;
+  unsigned int m, l, iter, i, k;
+  double       s, r, p, g, f, dd, c, b;
 
-  for (i = 2; i <= n; i++)
-    e[i - 2] = e[i - 1];
+  for (i = 2; i <= n; i++) e[i - 2] = e[i - 1];
 
   e[n - 1] = 0.0;
 
   for (l = 1; l <= n; l++)
-    {
-      iter = 0;
-      do
+  {
+    iter = 0;
+    do {
+      for (m = l; m <= n - 1; m++)
+      {
+        dd = fabs(d[m - 1]) + fabs(d[m]);
+        if (fabs(e[m - 1]) + dd == dd) break;
+      }
+      if (m != l)
+      {
+        assert(iter < 30);
+
+        g = (d[l] - d[l - 1]) / (2.0 * e[l - 1]);
+        r = sqrt((g * g) + 1.0);
+        g = d[m - 1] - d[l - 1]
+            + e[l - 1]
+                  / (g + ((g < 0) ? -fabs(r) : fabs(r))); /*MYSIGN(r, g));*/
+        s = c = 1.0;
+        p     = 0.0;
+
+        for (i = m - 1; i >= l; i--)
         {
-          for (m = l; m <= n - 1; m++)
-            {
-              dd = fabs(d[m - 1]) + fabs(d[m]);
-              if (fabs(e[m - 1]) + dd == dd)
-                break;
-            }
-          if (m != l)
-           {
-             assert(iter < 30);
-
-             g = (d[l] - d[l - 1]) / (2.0 * e[l - 1]);
-             r = sqrt((g * g) + 1.0);
-             g = d[m - 1] - d[l - 1] + e[l - 1] / (g + ((g < 0)?-fabs(r):fabs(r)));/*MYSIGN(r, g));*/
-             s = c = 1.0;
-             p = 0.0;
-
-             for (i = m - 1; i >= l; i--)
-               {
-                 f = s * e[i - 1];
-                 b = c * e[i - 1];
-                 if (fabs(f) >= fabs(g))
-                   {
-                     c = g / f;
-                     r = sqrt((c * c) + 1.0);
-                     e[i] = f * r;
-                     c *= (s = 1.0 / r);
-                   }
-                 else
-                   {
-                     s = f / g;
-                     r = sqrt((s * s) + 1.0);
-                     e[i] = g * r;
-                     s *= (c = 1.0 / r);
-                   }
-                 g = d[i] - p;
-                 r = (d[i - 1] - g) * s + 2.0 * c * b;
-                 p = s * r;
-                 d[i] = g + p;
-                 g = c * r - b;
-                 for (k = 1; k <= n; k++)
-                   {
-                     f = z[i][k-1];
-                     z[i][k-1] = s * z[i - 1][k - 1] + c * f;
-                     z[i - 1][k - 1] = c * z[i - 1][k - 1] - s * f;
-                   }
-               }
-
-             d[l - 1] = d[l - 1] - p;
-             e[l - 1] = g;
-             e[m - 1] = 0.0;
-           }
+          f = s * e[i - 1];
+          b = c * e[i - 1];
+          if (fabs(f) >= fabs(g))
+          {
+            c    = g / f;
+            r    = sqrt((c * c) + 1.0);
+            e[i] = f * r;
+            c *= (s = 1.0 / r);
+          }
+          else
+          {
+            s    = f / g;
+            r    = sqrt((s * s) + 1.0);
+            e[i] = g * r;
+            s *= (c = 1.0 / r);
+          }
+          g    = d[i] - p;
+          r    = (d[i - 1] - g) * s + 2.0 * c * b;
+          p    = s * r;
+          d[i] = g + p;
+          g    = c * r - b;
+          for (k = 1; k <= n; k++)
+          {
+            f               = z[i][k - 1];
+            z[i][k - 1]     = s * z[i - 1][k - 1] + c * f;
+            z[i - 1][k - 1] = c * z[i - 1][k - 1] - s * f;
+          }
         }
-      while (m != l);
-    }
 
+        d[l - 1] = d[l - 1] - p;
+        e[l - 1] = g;
+        e[m - 1] = 0.0;
+      }
+    } while (m != l);
+  }
 
-
-    return (1);
- }
-
+  return (1);
+}
 
 static void mytred2(double **a, const unsigned int n, double *d, double *e)
 {
-  unsigned int     l, k, j, i;
-  double  scale, hh, h, g, f;
+  unsigned int l, k, j, i;
+  double       scale, hh, h, g, f;
 
   for (i = n; i > 1; i--)
-    {
-      l = i - 1;
-      h = 0.0;
-      scale = 0.0;
+  {
+    l     = i - 1;
+    h     = 0.0;
+    scale = 0.0;
 
-      if (l > 1)
-        {
-          for (k = 1; k <= l; k++)
-            scale += fabs(a[k - 1][i - 1]);
-          if (scale == 0.0)
-            e[i - 1] = a[l - 1][i - 1];
-          else
-            {
-              for (k = 1; k <= l; k++)
-                {
-                  a[k - 1][i - 1] /= scale;
-                  h += a[k - 1][i - 1] * a[k - 1][i - 1];
-                }
-              f = a[l - 1][i - 1];
-              g = ((f > 0) ? -sqrt(h) : sqrt(h)); /* diff */
-              e[i - 1] = scale * g;
-              h -= f * g;
-              a[l - 1][i - 1] = f - g;
-              f = 0.0;
-              for (j = 1; j <= l; j++)
-                {
-                  a[i - 1][j - 1] = a[j - 1][i - 1] / h;
-                  g = 0.0;
-                  for (k = 1; k <= j; k++)
-                    g += a[k - 1][j - 1] * a[k - 1][i - 1];
-                  for (k = j + 1; k <= l; k++)
-                    g += a[j - 1][k - 1] * a[k - 1][i - 1];
-                  e[j - 1] = g / h;
-                  f += e[j - 1] * a[j - 1][i - 1];
-                }
-              hh = f / (h + h);
-              for (j = 1; j <= l; j++)
-                {
-                  f = a[j - 1][i - 1];
-                  g = e[j - 1] - hh * f;
-                  e[j - 1] = g;
-                  for (k = 1; k <= j; k++)
-                    a[k - 1][j - 1] -= (f * e[k - 1] + g * a[k - 1][i - 1]);
-                }
-            }
-        }
-      else
+    if (l > 1)
+    {
+      for (k = 1; k <= l; k++) scale += fabs(a[k - 1][i - 1]);
+      if (scale == 0.0)
         e[i - 1] = a[l - 1][i - 1];
-      d[i - 1] = h;
+      else
+      {
+        for (k = 1; k <= l; k++)
+        {
+          a[k - 1][i - 1] /= scale;
+          h += a[k - 1][i - 1] * a[k - 1][i - 1];
+        }
+        f        = a[l - 1][i - 1];
+        g        = ((f > 0) ? -sqrt(h) : sqrt(h)); /* diff */
+        e[i - 1] = scale * g;
+        h -= f * g;
+        a[l - 1][i - 1] = f - g;
+        f               = 0.0;
+        for (j = 1; j <= l; j++)
+        {
+          a[i - 1][j - 1] = a[j - 1][i - 1] / h;
+          g               = 0.0;
+          for (k = 1; k <= j; k++) g += a[k - 1][j - 1] * a[k - 1][i - 1];
+          for (k = j + 1; k <= l; k++) g += a[j - 1][k - 1] * a[k - 1][i - 1];
+          e[j - 1] = g / h;
+          f += e[j - 1] * a[j - 1][i - 1];
+        }
+        hh = f / (h + h);
+        for (j = 1; j <= l; j++)
+        {
+          f        = a[j - 1][i - 1];
+          g        = e[j - 1] - hh * f;
+          e[j - 1] = g;
+          for (k = 1; k <= j; k++)
+            a[k - 1][j - 1] -= (f * e[k - 1] + g * a[k - 1][i - 1]);
+        }
+      }
     }
+    else
+      e[i - 1] = a[l - 1][i - 1];
+    d[i - 1] = h;
+  }
   d[0] = 0.0;
   e[0] = 0.0;
 
   for (i = 1; i <= n; i++)
+  {
+    l = i - 1;
+    if (d[i - 1] != 0.0)
     {
-      l = i - 1;
-      if (d[i - 1] != 0.0)
-        {
-          for (j = 1; j <= l; j++)
-            {
-                g = 0.0;
-                for (k = 1; k <= l; k++)
-                  g += a[k - 1][i - 1] * a[j - 1][k - 1];
-                for(k = 1; k <= l; k++)
-                  a[j - 1][k - 1] -= g * a[i - 1][k - 1];
-            }
-        }
-      d[i - 1] = a[i - 1][i - 1];
-      a[i - 1][i - 1] = 1.0;
       for (j = 1; j <= l; j++)
-        a[i - 1][j - 1] = a[j - 1][i - 1] = 0.0;
+      {
+        g = 0.0;
+        for (k = 1; k <= l; k++) g += a[k - 1][i - 1] * a[j - 1][k - 1];
+        for (k = 1; k <= l; k++) a[j - 1][k - 1] -= g * a[i - 1][k - 1];
+      }
     }
+    d[i - 1]        = a[i - 1][i - 1];
+    a[i - 1][i - 1] = 1.0;
+    for (j = 1; j <= l; j++) a[i - 1][j - 1] = a[j - 1][i - 1] = 0.0;
+  }
 }
 
-/* TODO: Add code for SSE/AVX. Perhaps allocate qmatrix in one chunk to avoid the
-complex checking when to dealloc */
-static double ** create_ratematrix(double * params,
-                                   double * freqs,
-                                   unsigned int states)
+/* TODO: Add code for SSE/AVX. Perhaps allocate qmatrix in one chunk to avoid
+the complex checking when to dealloc */
+static double **
+create_ratematrix(double *params, double *freqs, unsigned int states)
 {
-  unsigned int i,j,k,success;
+  unsigned int i, j, k, success;
 
-  double ** qmatrix;
+  double **qmatrix;
 
   /* normalize substitution parameters */
   unsigned int params_count = pll_subst_rate_count(states);
-  double * params_normalized = (double *)malloc(sizeof(double) * params_count);
-  if (!params_normalized)
-    return NULL;
+  double *params_normalized = (double *)malloc(sizeof(double) * params_count);
+  if (!params_normalized) return NULL;
 
-  memcpy(params_normalized,params,params_count*sizeof(double));
+  memcpy(params_normalized, params, params_count * sizeof(double));
 
   if (params_normalized[params_count - 1] > 0.0)
   {
@@ -202,7 +189,7 @@ static double ** create_ratematrix(double * params,
   }
 
   /* allocate qmatrix */
-  qmatrix = (double **)malloc(states*sizeof(double *));
+  qmatrix = (double **)malloc(states * sizeof(double *));
   if (!qmatrix)
   {
     free(params_normalized);
@@ -211,11 +198,11 @@ static double ** create_ratematrix(double * params,
 
   success = 1;
   for (i = 0; i < states; ++i)
-    if (!(qmatrix[i] = (double *)malloc(states*sizeof(double)))) success=0;
+    if (!(qmatrix[i] = (double *)malloc(states * sizeof(double)))) success = 0;
 
   if (!success)
   {
-    for(i = 0; i < states; ++i) free(qmatrix[i]);
+    for (i = 0; i < states; ++i) free(qmatrix[i]);
     free(qmatrix);
     free(params_normalized);
     return NULL;
@@ -229,10 +216,12 @@ static double ** create_ratematrix(double * params,
   k = 0;
   for (i = 0; i < states; ++i)
   {
-    for (j = i+1; j < states; ++j)
+    for (j = i + 1; j < states; ++j)
     {
-      double factor = (freqs[i] <= PLL_EIGEN_MINFREQ ||
-                       freqs[j] <= PLL_EIGEN_MINFREQ) ? 0 : params_normalized[k];
+      double factor =
+          (freqs[i] <= PLL_EIGEN_MINFREQ || freqs[j] <= PLL_EIGEN_MINFREQ)
+              ? 0
+              : params_normalized[k];
       k++;
       qmatrix[i][j] = qmatrix[j][i] = factor * sqrt(freqs[i] * freqs[j]);
       qmatrix[i][i] -= factor * freqs[j];
@@ -240,14 +229,11 @@ static double ** create_ratematrix(double * params,
     }
   }
 
-
   double mean = 0;
-  for (i = 0; i < states; ++i)
-    mean += freqs[i] * (-qmatrix[i][i]);
+  for (i = 0; i < states; ++i) mean += freqs[i] * (-qmatrix[i][i]);
   for (i = 0; i < states; ++i)
   {
-    for (j = 0; j < states; ++j)
-      qmatrix[i][j] /= mean;
+    for (j = 0; j < states; ++j) qmatrix[i][j] /= mean;
   }
 
   free(params_normalized);
@@ -255,15 +241,16 @@ static double ** create_ratematrix(double * params,
   return qmatrix;
 }
 
-static unsigned int eliminate_zero_states(double **mat, double *forg,
-                                          unsigned int states, double *new_forg)
+static unsigned int eliminate_zero_states(double **    mat,
+                                          double *     forg,
+                                          unsigned int states,
+                                          double *     new_forg)
 {
   unsigned int i, j, inew, jnew;
   unsigned int new_states = 0;
   for (i = 0; i < states; i++)
   {
-    if (forg[i] > PLL_EIGEN_MINFREQ)
-      new_forg[new_states++] = forg[i];
+    if (forg[i] > PLL_EIGEN_MINFREQ) new_forg[new_states++] = forg[i];
   }
 
   assert(new_states <= states);
@@ -295,44 +282,42 @@ PLL_EXPORT unsigned int pll_subst_rate_count(unsigned int states)
   return states * (states - 1) / 2;
 }
 
-PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
-                                unsigned int params_index)
+PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
+                                unsigned int     params_index)
 {
-  unsigned int i,j;
-  double *e, *d;
-  double ** a;
+  unsigned int i, j;
+  double *     e, *d;
+  double **    a;
 
-  double * eigenvecs = partition->eigenvecs[params_index];
-  double * inv_eigenvecs = partition->inv_eigenvecs[params_index];
-  double * eigenvals = partition->eigenvals[params_index];
-  double * freqs = partition->frequencies[params_index];
-  double * subst_params = partition->subst_params[params_index];
+  double *eigenvecs     = partition->eigenvecs[params_index];
+  double *inv_eigenvecs = partition->inv_eigenvecs[params_index];
+  double *eigenvals     = partition->eigenvals[params_index];
+  double *freqs         = partition->frequencies[params_index];
+  double *subst_params  = partition->subst_params[params_index];
 
-  unsigned int states = partition->states;
+  unsigned int states        = partition->states;
   unsigned int states_padded = partition->states_padded;
 
   unsigned int inew, jnew;
   unsigned int new_states;
-  double * new_freqs = NULL;
+  double *     new_freqs = NULL;
 
-  a = create_ratematrix(subst_params,
-                        freqs,
-                        states);
+  a = create_ratematrix(subst_params, freqs, states);
   if (!a)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
-  d = (double *)malloc(states*sizeof(double));
-  e = (double *)malloc(states*sizeof(double));
-  new_freqs = (double *)malloc(states*sizeof(double));
+  d         = (double *)malloc(states * sizeof(double));
+  e         = (double *)malloc(states * sizeof(double));
+  new_freqs = (double *)malloc(states * sizeof(double));
   if (!d || !e || !new_freqs)
   {
     if (d) free(d);
     if (e) free(e);
     if (new_freqs) free(new_freqs);
-    for(i = 0; i < states; ++i) free(a[i]);
+    for (i = 0; i < states; ++i) free(a[i]);
     free(a);
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
@@ -340,7 +325,8 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
 
   /* Here we use a technical trick to reduce rate matrix if some states
    * have (near) zero frequencies. Code adapted from IQTree, see:
-   * https://github.com/Cibiv/IQ-TREE/commit/f222d317af46cf6abf8bcdb70d4db22475e9a7d2 */
+   * https://github.com/Cibiv/IQ-TREE/commit/f222d317af46cf6abf8bcdb70d4db22475e9a7d2
+   */
   new_states = eliminate_zero_states(a, freqs, states, new_freqs);
 
   mytred2(a, new_states, d, e);
@@ -352,19 +338,18 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
   assert(inew == new_states);
 
   /* pre-compute square roots of frequencies */
-  for (i = 0; i < new_states; i++)
-    new_freqs[i] = sqrt(new_freqs[i]);
+  for (i = 0; i < new_states; i++) new_freqs[i] = sqrt(new_freqs[i]);
 
   if (new_states < states)
   {
     /* initialize eigenvecs and inv_eigenvecs with diagonal matrix */
-    memset(eigenvecs, 0, states_padded*states*sizeof(double));
-    memset(inv_eigenvecs, 0, states_padded*states*sizeof(double));
+    memset(eigenvecs, 0, states_padded * states * sizeof(double));
+    memset(inv_eigenvecs, 0, states_padded * states * sizeof(double));
 
     for (i = 0; i < states; i++)
     {
-      eigenvecs[i*states_padded+i] = 1.;
-      inv_eigenvecs[i*states_padded+i] = 1.;
+      eigenvecs[i * states_padded + i]     = 1.;
+      inv_eigenvecs[i * states_padded + i] = 1.;
     }
 
     for (i = 0, inew = 0; i < states; i++)
@@ -376,9 +361,11 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
           if (freqs[j] > PLL_EIGEN_MINFREQ)
           {
             /* multiply the eigen vectors from the right with sqrt(pi) */
-            eigenvecs[i*states_padded+j] = a[inew][jnew] * new_freqs[jnew];
-            /* multiply the inverse eigen vectors from the left with sqrt(pi)^-1 */
-            inv_eigenvecs[i*states_padded+j] = a[jnew][inew] / new_freqs[inew];
+            eigenvecs[i * states_padded + j] = a[inew][jnew] * new_freqs[jnew];
+            /* multiply the inverse eigen vectors from the left with sqrt(pi)^-1
+             */
+            inv_eigenvecs[i * states_padded + j] =
+                a[jnew][inew] / new_freqs[inew];
             jnew++;
           }
         }
@@ -393,9 +380,9 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
       for (j = 0; j < states; j++)
       {
         /* multiply the eigen vectors from the right with sqrt(pi) */
-        eigenvecs[i*states_padded+j] = a[i][j] * new_freqs[j];
+        eigenvecs[i * states_padded + j] = a[i][j] * new_freqs[j];
         /* multiply the inverse eigen vectors from the left with sqrt(pi)^-1 */
-        inv_eigenvecs[i*states_padded+j] = a[j][i] / new_freqs[i];
+        inv_eigenvecs[i * states_padded + j] = a[j][i] / new_freqs[i];
       }
     }
   }
@@ -405,18 +392,17 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
   free(d);
   free(e);
   free(new_freqs);
-  for (i = 0; i < states; ++i)
-    free(a[i]);
+  for (i = 0; i < states; ++i) free(a[i]);
   free(a);
 
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT int pll_update_prob_matrices(pll_partition_t * partition,
-                                        const unsigned int * params_indices,
-                                        const unsigned int * matrix_indices,
-                                        const double * branch_lengths,
-                                        unsigned int count)
+PLL_EXPORT int pll_update_prob_matrices(pll_partition_t *   partition,
+                                        const unsigned int *params_indices,
+                                        const unsigned int *matrix_indices,
+                                        const double *      branch_lengths,
+                                        unsigned int        count)
 {
   unsigned int n;
 
@@ -425,8 +411,7 @@ PLL_EXPORT int pll_update_prob_matrices(pll_partition_t * partition,
   {
     if (!partition->eigen_decomp_valid[params_indices[n]])
     {
-      if (!pll_update_eigen(partition, params_indices[n]))
-        return PLL_FAILURE;
+      if (!pll_update_eigen(partition, params_indices[n])) return PLL_FAILURE;
     }
   }
 
@@ -445,16 +430,16 @@ PLL_EXPORT int pll_update_prob_matrices(pll_partition_t * partition,
                                  partition->attributes);
 }
 
-PLL_EXPORT void pll_set_frequencies(pll_partition_t * partition,
-                                    unsigned int freqs_index,
-                                    const double * frequencies)
+PLL_EXPORT void pll_set_frequencies(pll_partition_t *partition,
+                                    unsigned int     freqs_index,
+                                    const double *   frequencies)
 {
   unsigned int i;
-  double sum = 0.;
+  double       sum = 0.;
 
   memcpy(partition->frequencies[freqs_index],
          frequencies,
-         partition->states*sizeof(double));
+         partition->states * sizeof(double));
 
   /* make sure frequencies sum up to 1.0 */
   for (i = 0; i < partition->states; ++i)
@@ -469,42 +454,43 @@ PLL_EXPORT void pll_set_frequencies(pll_partition_t * partition,
   partition->eigen_decomp_valid[freqs_index] = 0;
 }
 
-PLL_EXPORT void pll_set_category_rates(pll_partition_t * partition,
-                                       const double * rates)
+PLL_EXPORT void pll_set_category_rates(pll_partition_t *partition,
+                                       const double *   rates)
 {
-  memcpy(partition->rates, rates, partition->rate_cats*sizeof(double));
+  memcpy(partition->rates, rates, partition->rate_cats * sizeof(double));
 }
 
-PLL_EXPORT void pll_set_category_weights(pll_partition_t * partition,
-                                         const double * rate_weights)
+PLL_EXPORT void pll_set_category_weights(pll_partition_t *partition,
+                                         const double *   rate_weights)
 {
-  memcpy(partition->rate_weights, rate_weights,
-         partition->rate_cats*sizeof(double));
+  memcpy(partition->rate_weights,
+         rate_weights,
+         partition->rate_cats * sizeof(double));
 }
 
-PLL_EXPORT void pll_set_subst_params(pll_partition_t * partition,
-                                     unsigned int params_index,
-                                     const double * params)
+PLL_EXPORT void pll_set_subst_params(pll_partition_t *partition,
+                                     unsigned int     params_index,
+                                     const double *   params)
 {
   unsigned int count = pll_subst_rate_count(partition->states);
 
-  memcpy(partition->subst_params[params_index],
-         params, count * sizeof(double));
+  memcpy(partition->subst_params[params_index], params, count * sizeof(double));
   partition->eigen_decomp_valid[params_index] = 0;
 
   /* NOTE: For protein models PLL/RAxML do a rate scaling by 10.0/max_rate */
 }
 
-PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition,
+PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t *partition,
                                                      unsigned int params_index,
-                                                     double prop_invar)
+                                                     double       prop_invar)
 {
 
   /* check that there is no ascertainment bias correction */
   if (prop_invar != 0.0 && (partition->attributes & PLL_ATTRIB_AB_MASK))
   {
-    pll_set_error(PLL_ERROR_INVAR_INCOMPAT,
-                  "Invariant sites are not compatible with asc bias correction");
+    pll_set_error(
+        PLL_ERROR_INVAR_INCOMPAT,
+        "Invariant sites are not compatible with asc bias correction");
     return PLL_FAILURE;
   }
 
@@ -512,14 +498,15 @@ PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition
   if (prop_invar < 0 || prop_invar >= 1)
   {
     pll_set_error(PLL_ERROR_INVAR_PROPORTION,
-                  "Invalid proportion of invariant sites (%f)", prop_invar);
+                  "Invalid proportion of invariant sites (%f)",
+                  prop_invar);
     return PLL_FAILURE;
   }
 
   if (params_index > partition->rate_matrices)
   {
-    pll_set_error(PLL_ERROR_INVAR_PARAMINDEX,
-                  "Invalid params index (%u)", params_index);
+    pll_set_error(
+        PLL_ERROR_INVAR_PARAMINDEX, "Invalid params index (%u)", params_index);
     return PLL_FAILURE;
   }
 
@@ -527,8 +514,7 @@ PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition
   {
     if (!pll_update_invariant_sites(partition))
     {
-      pll_set_error(PLL_ERROR_INVAR_NONEFOUND,
-                    "No invariant sites found");
+      pll_set_error(PLL_ERROR_INVAR_NONEFOUND, "No invariant sites found");
       return PLL_FAILURE;
     }
   }
@@ -538,18 +524,18 @@ PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t * partition,
-                                                  unsigned int * state_inv_count)
+PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
+                                                  unsigned int *state_inv_count)
 {
-  unsigned int i,j,k;
+  unsigned int i, j, k;
   unsigned int invariant_count = 0;
-  unsigned int tips = partition->tips;
-  unsigned int sites = partition->sites;
-  unsigned int states = partition->states;
-  pll_state_t gap_state = 0;
-  pll_state_t cur_state;
-  int * invariant = partition->invariant;
-  double * tipclv;
+  unsigned int tips            = partition->tips;
+  unsigned int sites           = partition->sites;
+  unsigned int states          = partition->states;
+  pll_state_t  gap_state       = 0;
+  pll_state_t  cur_state;
+  int *        invariant = partition->invariant;
+  double *     tipclv;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -559,24 +545,23 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t * partition,
   }
 
   if (state_inv_count)
-    memset(state_inv_count, 0, states*sizeof(unsigned int));
+    memset(state_inv_count, 0, states * sizeof(unsigned int));
 
   if (invariant)
   {
     /* count the invariant sites for each state */
-    for (i=0; i<sites; ++i)
+    for (i = 0; i < sites; ++i)
     {
       if (invariant[i] > -1)
       {
-        cur_state = (pll_state_t) invariant[i];
+        cur_state = (pll_state_t)invariant[i];
         /* since the invariant sites array is generated in the library,
            it should not contain invalid values */
-        assert (cur_state < states);
+        assert(cur_state < states);
 
         /* increase the counter and per-state count */
         invariant_count += partition->pattern_weights[i];
-        if (state_inv_count)
-          state_inv_count[cur_state]++;
+        if (state_inv_count) state_inv_count[cur_state]++;
       }
     }
   }
@@ -590,16 +575,12 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t * partition,
         for (i = 0; i < tips; ++i)
         {
           cur_state &= ((unsigned int)(partition->tipchars[i][j]));
-          if  (!cur_state)
-          {
-            break;
-          }
+          if (!cur_state) { break; }
         }
         if (PLL_STATE_POPCNT(cur_state) == 1)
         {
           invariant_count += partition->pattern_weights[j];
-          if (state_inv_count)
-            state_inv_count[PLL_STATE_CTZ(cur_state)]++;
+          if (state_inv_count) state_inv_count[PLL_STATE_CTZ(cur_state)]++;
         }
       }
     }
@@ -610,32 +591,29 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t * partition,
          to call pll_update_invariant_sites() before calling this function in
          order to populate partition->invariant beforehand. It can be freed
          afterwards. */
-      unsigned int span_padded = partition->rate_cats * partition->states_padded;
+      unsigned int span_padded =
+          partition->rate_cats * partition->states_padded;
 
       for (j = 0; j < sites; ++j)
       {
-        unsigned int clv_shift = j*span_padded;
-        tipclv = partition->clv[0] + clv_shift;
-        pll_state_t state = gap_state;
+        unsigned int clv_shift = j * span_padded;
+        tipclv                 = partition->clv[0] + clv_shift;
+        pll_state_t state      = gap_state;
         for (i = 0; i < tips; ++i)
         {
-          tipclv = partition->clv[i] + clv_shift;
+          tipclv    = partition->clv[i] + clv_shift;
           cur_state = 0;
           for (k = 0; k < states; ++k)
           {
             cur_state |= ((pll_state_t)tipclv[k] << k);
           }
           state &= cur_state;
-          if (!state)
-          {
-            break;
-          }
+          if (!state) { break; }
         }
         if (PLL_STATE_POPCNT(state) == 1)
         {
           invariant_count += partition->pattern_weights[j];
-          if (state_inv_count)
-            state_inv_count[PLL_STATE_CTZ(state)]++;
+          if (state_inv_count) state_inv_count[PLL_STATE_CTZ(state)]++;
         }
       }
     }
@@ -643,18 +621,18 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t * partition,
   return invariant_count;
 }
 
-PLL_EXPORT int pll_update_invariant_sites(pll_partition_t * partition)
+PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
 {
-  unsigned int i,j,k;
-  pll_state_t state;
-  unsigned int states = partition->states;
+  unsigned int i, j, k;
+  pll_state_t  state;
+  unsigned int states        = partition->states;
   unsigned int states_padded = partition->states_padded;
-  unsigned int sites = partition->sites;
-  unsigned int tips = partition->tips;
-  unsigned int rate_cats = partition->rate_cats;
-  pll_state_t gap_state = 0;
-  pll_state_t * invariant;
-  double * tipclv;
+  unsigned int sites         = partition->sites;
+  unsigned int tips          = partition->tips;
+  unsigned int rate_cats     = partition->rate_cats;
+  pll_state_t  gap_state     = 0;
+  pll_state_t *invariant;
+  double *     tipclv;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -680,8 +658,7 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t * partition)
   }
 
   /* initialize all elements to the gap state */
-  for (i = 0; i < partition->sites; ++i)
-    invariant[i] = gap_state;
+  for (i = 0; i < partition->sites; ++i) invariant[i] = gap_state;
 
   /* depending on the attribute flag, fill each element of the invariant array
      with the bitwise AND of gap and all states in the corresponding site */
@@ -711,20 +688,17 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t * partition)
     unsigned int span_padded = rate_cats * states_padded;
     for (i = 0; i < tips; ++i)
     {
-      const unsigned int * site_id = NULL;
-      if (partition->repeats && partition->repeats->pernode_ids[i]) 
+      const unsigned int *site_id = NULL;
+      if (partition->repeats && partition->repeats->pernode_ids[i])
       {
         site_id = partition->repeats->pernode_site_id[i];
       }
       for (j = 0; j < sites; ++j)
       {
         unsigned int site = site_id ? site_id[j] : j;
-        tipclv = partition->clv[i] + span_padded * site;
-        state = 0;
-        for (k = 0; k < states; ++k)
-        {
-          state |= ((pll_state_t)tipclv[k] << k);
-        }
+        tipclv            = partition->clv[i] + span_padded * site;
+        state             = 0;
+        for (k = 0; k < states; ++k) { state |= ((pll_state_t)tipclv[k] << k); }
         invariant[j] &= state;
       }
     }

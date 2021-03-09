@@ -21,24 +21,27 @@
 
 #include "corax.h"
 
-static void tracked_swap(int i, int j, char ** x, unsigned int * sort_backmap)
+static void tracked_swap(int i, int j, char **x, unsigned int *sort_backmap)
 {
-  PLL_SWAP(x[i],x[j]);
-  if (sort_backmap)
-    PLL_SWAP(sort_backmap[i],sort_backmap[j]);
+  PLL_SWAP(x[i], x[j]);
+  if (sort_backmap) PLL_SWAP(sort_backmap[i], sort_backmap[j]);
 }
 
-static void vecswap(int i, int j, int n, char ** x, unsigned int * sort_backmap)
+static void vecswap(int i, int j, int n, char **x, unsigned int *sort_backmap)
 {
   while (n--)
   {
     tracked_swap(i, j, x, sort_backmap);
-    ++i; ++j;
+    ++i;
+    ++j;
   }
 }
 
-static void ssort1(char ** x, int n, int depth, unsigned int * sort_backmap,
-                   pll_random_state * rstate)
+static void ssort1(char **           x,
+                   int               n,
+                   int               depth,
+                   unsigned int *    sort_backmap,
+                   pll_random_state *rstate)
 {
   int a, b, c, d, r, v;
 
@@ -51,11 +54,11 @@ static void ssort1(char ** x, int n, int depth, unsigned int * sort_backmap,
   v = x[0][depth];
 
   a = b = 1;
-  c = d = n-1;
+  c = d = n - 1;
 
   while (1)
   {
-    while (b <= c && (r = x[b][depth]-v) <= 0)
+    while (b <= c && (r = x[b][depth] - v) <= 0)
     {
       if (r == 0)
       {
@@ -64,7 +67,7 @@ static void ssort1(char ** x, int n, int depth, unsigned int * sort_backmap,
       }
       ++b;
     }
-    while (b <= c && (r = x[c][depth]-v) >= 0)
+    while (b <= c && (r = x[c][depth] - v) >= 0)
     {
       if (r == 0)
       {
@@ -75,32 +78,35 @@ static void ssort1(char ** x, int n, int depth, unsigned int * sort_backmap,
     }
     if (b > c) break;
     tracked_swap(b, c, x, sort_backmap);
-    ++b; --c;
+    ++b;
+    --c;
   }
 
-  r = PLL_MIN(a, b-a);
-  vecswap(0, b-r, r, x, sort_backmap);
-  r = PLL_MIN(d-c, n-d-1);
-  vecswap(b, n-r, r, x, sort_backmap);
-  r = b-a;
+  r = PLL_MIN(a, b - a);
+  vecswap(0, b - r, r, x, sort_backmap);
+  r = PLL_MIN(d - c, n - d - 1);
+  vecswap(b, n - r, r, x, sort_backmap);
+  r = b - a;
   ssort1(x, r, depth, sort_backmap, rstate);
 
   if (x[r][depth] != 0)
   {
-    ssort1 (x + r, a + n - d - 1, depth + 1,
-            sort_backmap ? sort_backmap + r : NULL, rstate);
+    ssort1(x + r,
+           a + n - d - 1,
+           depth + 1,
+           sort_backmap ? sort_backmap + r : NULL,
+           rstate);
   }
 
   r = d - c;
-  ssort1(x + n - r, r, depth,
-         sort_backmap ? sort_backmap + n - r : NULL, rstate);
+  ssort1(
+      x + n - r, r, depth, sort_backmap ? sort_backmap + n - r : NULL, rstate);
 }
 
-static void remap_range(const pll_state_t * map,
-                        unsigned char * charmap)
+static void remap_range(const pll_state_t *map, unsigned char *charmap)
 {
-  pll_state_t oldmap[PLL_ASCII_SIZE];
-  unsigned int i,j;
+  pll_state_t   oldmap[PLL_ASCII_SIZE];
+  unsigned int  i, j;
   unsigned char k = 1;
 
   memcpy(oldmap, map, PLL_ASCII_SIZE * sizeof(pll_state_t));
@@ -111,52 +117,51 @@ static void remap_range(const pll_state_t * map,
     {
       charmap[i] = k;
 
-      for (j = i+1; j < PLL_ASCII_SIZE; ++j)
+      for (j = i + 1; j < PLL_ASCII_SIZE; ++j)
         if (oldmap[i] == oldmap[j])
         {
           charmap[j] = k;
-          oldmap[j] = 0;
+          oldmap[j]  = 0;
         }
 
       ++k;
     }
 }
 
-static pll_state_t findmax(const pll_state_t * map)
+static pll_state_t findmax(const pll_state_t *map)
 {
-  int i;
+  int         i;
   pll_state_t max = 0;
 
   for (i = 0; i < PLL_ASCII_SIZE; ++i)
-    if (map[i] > max)
-      max = map[i];
+    if (map[i] > max) max = map[i];
 
   return max;
 }
 
-static int encode(char ** sequence, const unsigned char * map, int count, int len)
+static int encode(char **sequence, const unsigned char *map, int count, int len)
 {
-  int i,j;
-  unsigned char * p;
-  unsigned char c;
+  int            i, j;
+  unsigned char *p;
+  unsigned char  c;
 
   /* reset error */
   pll_errno = 0;
 
   for (i = 0; i < count; ++i)
   {
-    p = (unsigned char*)sequence[i];
+    p = (unsigned char *)sequence[i];
     j = len;
     while (j--)
     {
       c = map[(int)(*p)];
       if (!c)
       {
-        pll_set_error (PLL_ERROR_TIPDATA_ILLEGALSTATE,
-                       "Cannot encode character %c at sequence %d position %d.",
-                       *p,
-                       i+1,
-                       len-j);
+        pll_set_error(PLL_ERROR_TIPDATA_ILLEGALSTATE,
+                      "Cannot encode character %c at sequence %d position %d.",
+                      *p,
+                      i + 1,
+                      len - j);
         return PLL_FAILURE;
       }
       *p = c;
@@ -167,18 +172,18 @@ static int encode(char ** sequence, const unsigned char * map, int count, int le
   return PLL_SUCCESS;
 }
 
-static unsigned int * compress_site_patterns(char ** sequence,
-                                             const pll_state_t * map,
-                                             int count,
-                                             int * length,
-                                             unsigned int * site_pattern_map)
+static unsigned int *compress_site_patterns(char **            sequence,
+                                            const pll_state_t *map,
+                                            int                count,
+                                            int *              length,
+                                            unsigned int *     site_pattern_map)
 {
-  int i,j;
-  char * memptr;
-  char ** column;
-  unsigned int * weight;
-  unsigned int * sort_backmap;
-  pll_random_state * rnd_state;
+  int               i, j;
+  char *            memptr;
+  char **           column;
+  unsigned int *    weight;
+  unsigned int *    sort_backmap;
+  pll_random_state *rnd_state;
 
   unsigned char charmap[PLL_ASCII_SIZE];
   unsigned char inv_charmap[PLL_ASCII_SIZE];
@@ -201,20 +206,15 @@ static unsigned int * compress_site_patterns(char ** sequence,
   /* a zero can never be used as a state */
   if (map[0])
   {
-    pll_set_error(PLL_ERROR_MSA_MAP_INVALID,
-                  "'0' cannot be used as a state.");
+    pll_set_error(PLL_ERROR_MSA_MAP_INVALID, "'0' cannot be used as a state.");
     return NULL;
   }
 
   /* if map states are out of the BYTE range, remap */
-  if (findmax(map) >= PLL_ASCII_SIZE)
-  {
-    remap_range(map,charmap);
-  }
+  if (findmax(map) >= PLL_ASCII_SIZE) { remap_range(map, charmap); }
   else
   {
-    for (i = 0; i < PLL_ASCII_SIZE; ++i)
-      charmap[i] = (unsigned char)(map[i]);
+    for (i = 0; i < PLL_ASCII_SIZE; ++i) charmap[i] = (unsigned char)(map[i]);
   }
 
   /* create inverse charmap to decode states back to characters when
@@ -229,7 +229,7 @@ static unsigned int * compress_site_patterns(char ** sequence,
   }
 
   /* encode sequences using charmap */
-  if (!encode(sequence,charmap,count,*length))
+  if (!encode(sequence, charmap, count, *length))
   {
     /* spread errno and message */
     assert(pll_errno);
@@ -238,21 +238,21 @@ static unsigned int * compress_site_patterns(char ** sequence,
 
   if (site_pattern_map)
   {
-    sort_backmap = (unsigned int *) malloc((size_t)(*length)*sizeof(unsigned int));
+    sort_backmap =
+        (unsigned int *)malloc((size_t)(*length) * sizeof(unsigned int));
     if (!sort_backmap)
     {
       pll_set_error(PLL_ERROR_MEM_ALLOC,
                     "Cannot allocate space for sort backmap.");
       return NULL;
     }
-    for (i = 0; i < *length; ++i)
-      sort_backmap[i] = i;
+    for (i = 0; i < *length; ++i) sort_backmap[i] = i;
   }
   else
     sort_backmap = NULL;
 
   /* allocate memory for columns */
-  column = (char **)malloc((size_t)(*length)*sizeof(char *));
+  column = (char **)malloc((size_t)(*length) * sizeof(char *));
   if (!column)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC,
@@ -262,9 +262,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
   }
 
   /* allocate memory for the alignment */
-  memptr = column[0] = (char *)malloc((size_t)(*length) *
-                                      (size_t)(count+1) *
-                                      sizeof(char));
+  memptr = column[0] =
+      (char *)malloc((size_t)(*length) * (size_t)(count + 1) * sizeof(char));
   if (!memptr)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC,
@@ -275,13 +274,10 @@ static unsigned int * compress_site_patterns(char ** sequence,
   }
 
   /* map memory to each column */
-  for (i = 1; i < *length; ++i)
-  {
-    column[i] = column[i-1] + (count+1);
-  }
+  for (i = 1; i < *length; ++i) { column[i] = column[i - 1] + (count + 1); }
 
   /* allocate space for weight vector */
-  weight = (unsigned int *)malloc((size_t)(*length)*sizeof(unsigned int));
+  weight = (unsigned int *)malloc((size_t)(*length) * sizeof(unsigned int));
   if (!weight)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC,
@@ -295,8 +291,7 @@ static unsigned int * compress_site_patterns(char ** sequence,
   /* split alignment into columns instead of rows */
   for (i = 0; i < (*length); ++i)
   {
-    for (j = 0; j < count; ++j)
-      column[i][j] = sequence[j][i];
+    for (j = 0; j < count; ++j) column[i][j] = sequence[j][i];
     column[i][j] = 0;
   }
 
@@ -317,36 +312,32 @@ static unsigned int * compress_site_patterns(char ** sequence,
   ssort1(column, *length, 0, sort_backmap, rnd_state);
 
   /* we have at least one unique site with weight 1 (the first site) */
-  int compressed_length = 1;
-  size_t ref = 0;
-  weight[ref] = 1;
-  if (site_pattern_map)
-    site_pattern_map[sort_backmap[0]] = ref;
+  int    compressed_length = 1;
+  size_t ref               = 0;
+  weight[ref]              = 1;
+  if (site_pattern_map) site_pattern_map[sort_backmap[0]] = ref;
 
   /* find all unique columns and set their weights */
   for (i = 1; i < *length; ++i)
   {
-    if (strcmp(column[i],column[i-1]))
+    if (strcmp(column[i], column[i - 1]))
     {
-      column[ref+1] = column[i];
+      column[ref + 1] = column[i];
       ++ref;
       ++compressed_length;
       weight[ref] = 1;
     }
     else
       weight[ref]++;
-    if (site_pattern_map)
-      site_pattern_map[sort_backmap[i]] = ref;
+    if (site_pattern_map) site_pattern_map[sort_backmap[i]] = ref;
   }
 
   /* copy the unique columns over the original sequences */
   for (i = 0; i < compressed_length; ++i)
-    for (j = 0; j < count; ++j)
-      sequence[j][i] = column[i][j];
+    for (j = 0; j < count; ++j) sequence[j][i] = column[i][j];
 
   /* add terminating zero */
-  for (j = 0; j < count; ++j)
-    sequence[j][compressed_length] = 0;
+  for (j = 0; j < count; ++j) sequence[j][compressed_length] = 0;
 
   /* deallocate memory */
   free(memptr);
@@ -355,25 +346,23 @@ static unsigned int * compress_site_patterns(char ** sequence,
   pll_random_destroy(rnd_state);
 
   /* adjust weight vector size to compressed length */
-  unsigned int * mem = (unsigned int *)malloc((size_t)compressed_length *
-                                              sizeof(unsigned int));
+  unsigned int *mem =
+      (unsigned int *)malloc((size_t)compressed_length * sizeof(unsigned int));
   if (mem)
   {
     /* copy weights */
-    for (i = 0; i < compressed_length; ++i)
-      mem[i] = weight[i];
+    for (i = 0; i < compressed_length; ++i) mem[i] = weight[i];
 
     /* free and re-point */
     free(weight);
     weight = mem;
   }
 
-
   /* update length */
   *length = compressed_length;
 
   /* decode sequences using inv_charmap */
-  if (!encode(sequence,inv_charmap,count,compressed_length))
+  if (!encode(sequence, inv_charmap, count, compressed_length))
   {
     /* if previous enconding was successful, decoding should not fail */
     assert(0);
@@ -382,19 +371,19 @@ static unsigned int * compress_site_patterns(char ** sequence,
   return weight;
 }
 
-PLL_EXPORT unsigned int * pll_compress_site_patterns(char ** sequence,
-                                                     const pll_state_t * map,
-                                                     int count,
-                                                     int * length)
+PLL_EXPORT unsigned int *pll_compress_site_patterns(char **            sequence,
+                                                    const pll_state_t *map,
+                                                    int                count,
+                                                    int *              length)
 {
   return compress_site_patterns(sequence, map, count, length, NULL);
 }
 
 PLL_EXPORT
-unsigned int * pll_compress_site_patterns_msa(pll_msa_t * msa,
-                                              const pll_state_t * map,
-                                              unsigned int * site_pattern_map)
+unsigned int *pll_compress_site_patterns_msa(pll_msa_t *        msa,
+                                             const pll_state_t *map,
+                                             unsigned int *site_pattern_map)
 {
-  return compress_site_patterns(msa->sequence, map, msa->count, &msa->length,
-                                site_pattern_map);
+  return compress_site_patterns(
+      msa->sequence, map, msa->count, &msa->length, site_pattern_map);
 }

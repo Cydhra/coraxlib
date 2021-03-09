@@ -96,40 +96,39 @@
    separation between the two lower order coefficients of the trinomial.  */
 
 /* Linear congruential.  */
-#define	TYPE_0		0
-#define	BREAK_0		8
-#define	DEG_0		0
-#define	SEP_0		0
+#define TYPE_0 0
+#define BREAK_0 8
+#define DEG_0 0
+#define SEP_0 0
 
 /* x**7 + x**3 + 1.  */
-#define	TYPE_1		1
-#define	BREAK_1		32
-#define	DEG_1		7
-#define	SEP_1		3
+#define TYPE_1 1
+#define BREAK_1 32
+#define DEG_1 7
+#define SEP_1 3
 
 /* x**15 + x + 1.  */
-#define	TYPE_2		2
-#define	BREAK_2		64
-#define	DEG_2		15
-#define	SEP_2		1
+#define TYPE_2 2
+#define BREAK_2 64
+#define DEG_2 15
+#define SEP_2 1
 
 /* x**31 + x**3 + 1.  */
-#define	TYPE_3		3
-#define	BREAK_3		128
-#define	DEG_3		31
-#define	SEP_3		3
+#define TYPE_3 3
+#define BREAK_3 128
+#define DEG_3 31
+#define SEP_3 3
 
 /* x**63 + x + 1.  */
-#define	TYPE_4		4
-#define	BREAK_4		256
-#define	DEG_4		63
-#define	SEP_4		1
-
+#define TYPE_4 4
+#define BREAK_4 256
+#define DEG_4 63
+#define SEP_4 1
 
 /* Array versions of the above information to make code run faster.
    Relies on fact that TYPE_i == i.  */
 
-#define	MAX_TYPES	5	/* Max number of types above.  */
+#define MAX_TYPES 5 /* Max number of types above.  */
 
 struct random_poly_info
 {
@@ -137,11 +136,8 @@ struct random_poly_info
   int degrees[MAX_TYPES];
 };
 
-static const struct random_poly_info random_poly_info =
-{
-  { SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 },
-  { DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 }
-};
+static const struct random_poly_info random_poly_info = {
+    {SEP_0, SEP_1, SEP_2, SEP_3, SEP_4}, {DEG_0, DEG_1, DEG_2, DEG_3, DEG_4}};
 
 /* Initialize the random number generator based on the given seed.  If the
    type is the trivial no-state-information type, just remember the seed.
@@ -151,59 +147,53 @@ static const struct random_poly_info random_poly_info =
    information a given number of times to get rid of any initial dependencies
    introduced by the L.C.R.N.G.  Note that the initialization of randtbl[]
    for default usage relies on values produced by this routine.  */
-int
-pll_srandom_r (unsigned int seed, struct pll_random_data *buf)
+int pll_srandom_r(unsigned int seed, struct pll_random_data *buf)
 {
-  int type;
+  int      type;
   int32_t *state;
   long int i;
-  int32_t word;
+  int32_t  word;
   int32_t *dst;
-  int kc;
+  int      kc;
 
-  if (buf == NULL)
-    goto fail;
+  if (buf == NULL) goto fail;
   type = buf->rand_type;
-  if ((unsigned int) type >= MAX_TYPES)
-    goto fail;
+  if ((unsigned int)type >= MAX_TYPES) goto fail;
 
   state = buf->state;
   /* We must make sure the seed is not 0.  Take arbitrarily 1 in this case.  */
-  if (seed == 0)
-    seed = 1;
-  state[0] = (int32_t) seed;
-  if (type == TYPE_0)
-    goto done;
+  if (seed == 0) seed = 1;
+  state[0] = (int32_t)seed;
+  if (type == TYPE_0) goto done;
 
-  dst = state;
-  word = (int32_t) seed;
-  kc = buf->rand_deg;
+  dst  = state;
+  word = (int32_t)seed;
+  kc   = buf->rand_deg;
   for (i = 1; i < kc; ++i)
-    {
-      /* This does:
-	   state[i] = (16807 * state[i - 1]) % 2147483647;
-	 but avoids overflowing 31 bits.  */
-      long int hi = word / 127773;
-      long int lo = word % 127773;
-      word = (int32_t) 16807 * lo - 2836 * hi;
-      if (word < 0)
-	word += 2147483647;
-      *++dst = word;
-    }
+  {
+    /* This does:
+         state[i] = (16807 * state[i - 1]) % 2147483647;
+       but avoids overflowing 31 bits.  */
+    long int hi = word / 127773;
+    long int lo = word % 127773;
+    word        = (int32_t)16807 * lo - 2836 * hi;
+    if (word < 0) word += 2147483647;
+    *++dst = word;
+  }
 
   buf->fptr = &state[buf->rand_sep];
   buf->rptr = &state[0];
   kc *= 10;
   while (--kc >= 0)
-    {
-      int32_t discard;
-      (void) pll_random_r (buf, &discard);
-    }
+  {
+    int32_t discard;
+    (void)pll_random_r(buf, &discard);
+  }
 
- done:
+done:
   return 0;
 
- fail:
+fail:
   return -1;
 }
 
@@ -218,59 +208,59 @@ pll_srandom_r (unsigned int seed, struct pll_random_data *buf)
    Note: The first thing we do is save the current state, if any, just like
    setstate so that it doesn't matter when initstate is called.
    Returns 0 on success, non-zero on failure.  */
-int
-pll_initstate_r (unsigned int seed, char *arg_state, size_t n,
-	       struct pll_random_data *buf)
+int pll_initstate_r(unsigned int            seed,
+                    char *                  arg_state,
+                    size_t                  n,
+                    struct pll_random_data *buf)
 {
-  if (buf == NULL)
-    goto fail;
+  if (buf == NULL) goto fail;
 
   int32_t *old_state = buf->state;
   if (old_state != NULL)
-    {
-      int old_type = buf->rand_type;
-      if (old_type == TYPE_0)
-	old_state[-1] = TYPE_0;
-      else
-	old_state[-1] = (int32_t) (MAX_TYPES * (buf->rptr - old_state)) + old_type;
-    }
+  {
+    int old_type = buf->rand_type;
+    if (old_type == TYPE_0)
+      old_state[-1] = TYPE_0;
+    else
+      old_state[-1] = (int32_t)(MAX_TYPES * (buf->rptr - old_state)) + old_type;
+  }
 
   int type;
   if (n >= BREAK_3)
     type = n < BREAK_4 ? TYPE_3 : TYPE_4;
   else if (n < BREAK_1)
-    {
-      if (n < BREAK_0)
-	goto fail;
+  {
+    if (n < BREAK_0) goto fail;
 
-      type = TYPE_0;
-    }
+    type = TYPE_0;
+  }
   else
     type = n < BREAK_2 ? TYPE_1 : TYPE_2;
 
-  int degree = random_poly_info.degrees[type];
+  int degree     = random_poly_info.degrees[type];
   int separation = random_poly_info.seps[type];
 
   buf->rand_type = type;
-  buf->rand_sep = separation;
-  buf->rand_deg = degree;
-  int32_t *state = &((int32_t *) arg_state)[1];	/* First location.  */
+  buf->rand_sep  = separation;
+  buf->rand_deg  = degree;
+  int32_t *state = &((int32_t *)arg_state)[1]; /* First location.  */
   /* Must set END_PTR before srandom.  */
   buf->end_ptr = &state[degree];
 
   buf->state = state;
 
-  pll_srandom_r (seed, buf);
+  pll_srandom_r(seed, buf);
 
   state[-1] = TYPE_0;
   if (type != TYPE_0)
-    state[-1] = (int32_t) (buf->rptr - state) * MAX_TYPES + type;
+    state[-1] = (int32_t)(buf->rptr - state) * MAX_TYPES + type;
 
   return 0;
 
- fail:
-  pll_set_error(PLL_ERROR_EINVAL,
-           "A state array of less than 8 bytes was specified to initstate_r.");
+fail:
+  pll_set_error(
+      PLL_ERROR_EINVAL,
+      "A state array of less than 8 bytes was specified to initstate_r.");
   return -1;
 }
 
@@ -282,49 +272,46 @@ pll_initstate_r (unsigned int seed, char *arg_state, size_t n,
    to the order in which things are done, it is OK to call setstate with the
    same state as the current state
    Returns 0 on success, non-zero on failure.  */
-int
-pll_setstate_r (char *arg_state, struct pll_random_data *buf)
+int pll_setstate_r(char *arg_state, struct pll_random_data *buf)
 {
-  int32_t *new_state = 1 + (int32_t *) arg_state;
-  int type;
-  int old_type;
+  int32_t *new_state = 1 + (int32_t *)arg_state;
+  int      type;
+  int      old_type;
   int32_t *old_state;
-  int degree;
-  int separation;
+  int      degree;
+  int      separation;
 
-  if (arg_state == NULL || buf == NULL)
-    goto fail;
+  if (arg_state == NULL || buf == NULL) goto fail;
 
-  old_type = buf->rand_type;
+  old_type  = buf->rand_type;
   old_state = buf->state;
   if (old_type == TYPE_0)
     old_state[-1] = TYPE_0;
   else
-    old_state[-1] = (int32_t) (MAX_TYPES * (buf->rptr - old_state)) + old_type;
+    old_state[-1] = (int32_t)(MAX_TYPES * (buf->rptr - old_state)) + old_type;
 
   type = new_state[-1] % MAX_TYPES;
-  if (type < TYPE_0 || type > TYPE_4)
-    goto fail;
+  if (type < TYPE_0 || type > TYPE_4) goto fail;
 
   buf->rand_deg = degree = random_poly_info.degrees[type];
   buf->rand_sep = separation = random_poly_info.seps[type];
-  buf->rand_type = type;
+  buf->rand_type             = type;
 
   if (type != TYPE_0)
-    {
-      int rear = new_state[-1] / MAX_TYPES;
-      buf->rptr = &new_state[rear];
-      buf->fptr = &new_state[(rear + separation) % degree];
-    }
+  {
+    int rear  = new_state[-1] / MAX_TYPES;
+    buf->rptr = &new_state[rear];
+    buf->fptr = &new_state[(rear + separation) % degree];
+  }
   buf->state = new_state;
   /* Set end_ptr too.  */
   buf->end_ptr = &new_state[degree];
 
   return 0;
 
- fail:
-   pll_set_error(PLL_ERROR_EINVAL,
-           "The statebuf or buf argument to setstate_r() was NULL.");
+fail:
+  pll_set_error(PLL_ERROR_EINVAL,
+                "The statebuf or buf argument to setstate_r() was NULL.");
   return -1;
 }
 
@@ -339,60 +326,57 @@ pll_setstate_r (char *arg_state, struct pll_random_data *buf)
    rear pointers can't wrap on the same call by not testing the rear
    pointer if the front one has wrapped.  Returns a 31-bit random number.  */
 
-int
-pll_random_r (struct pll_random_data *buf, int32_t *result)
+int pll_random_r(struct pll_random_data *buf, int32_t *result)
 {
   int32_t *state;
 
-  if (buf == NULL || result == NULL)
-    goto fail;
+  if (buf == NULL || result == NULL) goto fail;
 
   state = buf->state;
 
   if (buf->rand_type == TYPE_0)
-    {
-      int32_t val = state[0];
-      val = ((state[0] * 1103515245) + 12345) & 0x7fffffff;
-      state[0] = val;
-      *result = val;
-    }
+  {
+    int32_t val = state[0];
+    val         = ((state[0] * 1103515245) + 12345) & 0x7fffffff;
+    state[0]    = val;
+    *result     = val;
+  }
   else
-    {
-      int32_t *fptr = buf->fptr;
-      int32_t *rptr = buf->rptr;
-      int32_t *end_ptr = buf->end_ptr;
-      int32_t val;
+  {
+    int32_t *fptr    = buf->fptr;
+    int32_t *rptr    = buf->rptr;
+    int32_t *end_ptr = buf->end_ptr;
+    int32_t  val;
 
-      val = *fptr += *rptr;
-      /* Chucking least random bit.  */
-      *result = (val >> 1) & 0x7fffffff;
-      ++fptr;
-      if (fptr >= end_ptr)
-	{
-	  fptr = state;
-	  ++rptr;
-	}
-      else
-	{
-	  ++rptr;
-	  if (rptr >= end_ptr)
-	    rptr = state;
-	}
-      buf->fptr = fptr;
-      buf->rptr = rptr;
+    val = *fptr += *rptr;
+    /* Chucking least random bit.  */
+    *result = (val >> 1) & 0x7fffffff;
+    ++fptr;
+    if (fptr >= end_ptr)
+    {
+      fptr = state;
+      ++rptr;
     }
+    else
+    {
+      ++rptr;
+      if (rptr >= end_ptr) rptr = state;
+    }
+    buf->fptr = fptr;
+    buf->rptr = rptr;
+  }
   return 0;
 
- fail:
+fail:
   pll_set_error(PLL_ERROR_EINVAL,
-           "The buf or result argument to random_r() was NULL.");
+                "The buf or result argument to random_r() was NULL.");
   return -1;
 }
 
-PLL_EXPORT pll_random_state * pll_random_create(unsigned int seed)
+PLL_EXPORT pll_random_state *pll_random_create(unsigned int seed)
 {
-  pll_random_state *rstate = (pll_random_state *)
-      calloc(1, sizeof(pll_random_state));
+  pll_random_state *rstate =
+      (pll_random_state *)calloc(1, sizeof(pll_random_state));
   rstate->state_buf = (char *)calloc(RAND_STATE_SIZE, sizeof(char));
 
   pll_initstate_r(seed, rstate->state_buf, RAND_STATE_SIZE, &rstate->rdata);
@@ -402,21 +386,18 @@ PLL_EXPORT pll_random_state * pll_random_create(unsigned int seed)
 }
 
 /* return a random integer r, 0 <= r < maxval */
-PLL_EXPORT int pll_random_getint(pll_random_state * rstate, int maxval)
+PLL_EXPORT int pll_random_getint(pll_random_state *rstate, int maxval)
 {
   int32_t r;
   pll_random_r(&rstate->rdata, &r);
   return r % maxval;
 }
 
-PLL_EXPORT void pll_random_destroy(pll_random_state * rstate)
+PLL_EXPORT void pll_random_destroy(pll_random_state *rstate)
 {
   if (rstate)
   {
-    if (rstate->state_buf)
-      free(rstate->state_buf);
+    if (rstate->state_buf) free(rstate->state_buf);
     free(rstate);
   }
 }
-
-

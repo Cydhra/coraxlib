@@ -20,66 +20,59 @@
 */
 
 #include "corax.h"
-#include <stdarg.h>
 #include <search.h>
+#include <stdarg.h>
 #include <time.h>
 
-#define STATES    4
+#define STATES 4
 #define RATE_CATS 4
 
 #define COMPRESS
 
-static void fatal(const char * format, ...) __attribute__ ((noreturn));
+static void fatal(const char *format, ...) __attribute__((noreturn));
 
 typedef struct
 {
   int clv_valid;
 } node_info_t;
 
-static void * xmalloc(size_t size)
-{ 
-  void * t;
-  t = malloc(size);
-  if (!t)
-    fatal("Unable to allocate enough memory.");
-  
-  return t;
-} 
-  
-static char * xstrdup(const char * s)
-{ 
-  size_t len = strlen(s);
-  char * p = (char *)xmalloc(len+1);
-  return strcpy(p,s);
-} 
-
-/* a callback function for performing a full traversal */
-static int cb_full_traversal(pll_unode_t * node)
+static void *xmalloc(size_t size)
 {
-  return 1;
+  void *t;
+  t = malloc(size);
+  if (!t) fatal("Unable to allocate enough memory.");
+
+  return t;
 }
 
+static char *xstrdup(const char *s)
+{
+  size_t len = strlen(s);
+  char * p   = (char *)xmalloc(len + 1);
+  return strcpy(p, s);
+}
+
+/* a callback function for performing a full traversal */
+static int cb_full_traversal(pll_unode_t *node) { return 1; }
+
 /* branch lengths not present in the newick file get a value of 0.000001 */
-static void set_missing_branch_length(pll_utree_t * tree, double length)
+static void set_missing_branch_length(pll_utree_t *tree, double length)
 {
   unsigned int i;
 
   for (i = 0; i < tree->tip_count; ++i)
-    if (!tree->nodes[i]->length)
-      tree->nodes[i]->length = length;
+    if (!tree->nodes[i]->length) tree->nodes[i]->length = length;
 
   for (i = tree->tip_count; i < tree->tip_count + tree->inner_count; ++i)
   {
-    if (!tree->nodes[i]->length)
-      tree->nodes[i]->length = length;
-    if (!tree->nodes[i]->next->length)
-      tree->nodes[i]->next->length = length;
+    if (!tree->nodes[i]->length) tree->nodes[i]->length = length;
+    if (!tree->nodes[i]->next->length) tree->nodes[i]->next->length = length;
     if (!tree->nodes[i]->next->next->length)
       tree->nodes[i]->next->next->length = length;
-  } 
+  }
 }
 
-static void fatal(const char * format, ...)
+static void fatal(const char *format, ...)
 {
   va_list argptr;
   va_start(argptr, format);
@@ -89,27 +82,25 @@ static void fatal(const char * format, ...)
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-  unsigned int i;
-  unsigned int tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
-  unsigned int matrix_count, ops_count;
-  unsigned int * matrix_indices;
-  double * branch_lengths;
-  pll_partition_t * partition;
-  pll_operation_t * operations;
-  pll_unode_t ** travbuffer;
+  unsigned int  i;
+  unsigned int  tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
+  unsigned int  matrix_count, ops_count;
+  unsigned int *matrix_indices;
+  double *      branch_lengths;
+  pll_partition_t *partition;
+  pll_operation_t *operations;
+  pll_unode_t **   travbuffer;
 
   /* we accept only two arguments - the newick tree (unrooted binary) and the
      alignment in the form of FASTA reads */
-  if (argc != 3)
-    fatal(" syntax: %s [newick] [phylip]", argv[0]);
+  if (argc != 3) fatal(" syntax: %s [newick] [phylip]", argv[0]);
 
   /* parse the unrooted binary tree in newick format, and store the number
      of tip nodes in tip_nodes_count */
-  pll_utree_t * tree = pll_utree_parse_newick(argv[1]);
-  if (!tree)
-    fatal("Tree must be an unrooted binary tree");
+  pll_utree_t *tree = pll_utree_parse_newick(argv[1]);
+  if (!tree) fatal("Tree must be an unrooted binary tree");
 
   tip_nodes_count = tree->tip_count;
 
@@ -119,8 +110,8 @@ int main(int argc, char * argv[])
 
   /* compute and show node count information */
   inner_nodes_count = tip_nodes_count - 2;
-  nodes_count = inner_nodes_count + tip_nodes_count;
-  branch_count = nodes_count - 1;
+  nodes_count       = inner_nodes_count + tip_nodes_count;
+  branch_count      = nodes_count - 1;
 
   printf("Number of tip/leaf nodes in tree: %d\n", tip_nodes_count);
   printf("Number of inner nodes in tree: %d\n", inner_nodes_count);
@@ -146,8 +137,8 @@ int main(int argc, char * argv[])
   hcreate(tip_nodes_count);
 
   /* populate a libc hash table with tree tip labels */
-  unsigned int * data = (unsigned int *)malloc(tip_nodes_count *
-                                               sizeof(unsigned int));
+  unsigned int *data =
+      (unsigned int *)malloc(tip_nodes_count * sizeof(unsigned int));
   for (i = 0; i < tip_nodes_count; ++i)
   {
     data[i] = tree->nodes[i]->clv_index;
@@ -157,18 +148,16 @@ int main(int argc, char * argv[])
 #else
     entry.key = tree->nodes[i]->label;
 #endif
-    entry.data = (void *)(data+i);
+    entry.data = (void *)(data + i);
     hsearch(entry, ENTER);
   }
 
   /* read PHYLIP alignment */
-  pll_phylip_t * fd = pll_phylip_open(argv[2], pll_map_phylip);
-  if (!fd)
-    fatal(pll_errmsg);
+  pll_phylip_t *fd = pll_phylip_open(argv[2], pll_map_phylip);
+  if (!fd) fatal(pll_errmsg);
 
-  pll_msa_t * msa = pll_phylip_parse_interleaved(fd);
-  if (!msa)
-    fatal(pll_errmsg);
+  pll_msa_t *msa = pll_phylip_parse_interleaved(fd);
+  if (!msa) fatal(pll_errmsg);
 
   pll_phylip_close(fd);
 
@@ -178,10 +167,8 @@ int main(int argc, char * argv[])
 
 #ifdef COMPRESS
   printf("Original sequence (alignment) length : %d\n", msa->length);
-  unsigned int * weight = pll_compress_site_patterns(msa->sequence,
-                                                     pll_map_nt,
-                                                     tip_nodes_count,
-                                                     &(msa->length));
+  unsigned int *weight = pll_compress_site_patterns(
+      msa->sequence, pll_map_nt, tip_nodes_count, &(msa->length));
   printf("Number of unique site patterns: %d\n", msa->length);
 #endif
 
@@ -195,7 +182,8 @@ int main(int argc, char * argv[])
   branch_count: number of probability matrices to be allocated
   RATE_CATS : number of rate categories we will use
   inner_nodes_count : how many scale buffers to use
-  PLL_ATTRIB_ARCH_SSE : list of flags for hardware acceleration (not yet implemented)
+  PLL_ATTRIB_ARCH_SSE : list of flags for hardware acceleration (not yet
+  implemented)
 
   */
 
@@ -210,11 +198,11 @@ int main(int argc, char * argv[])
                                    PLL_ATTRIB_ARCH_AVX);
 
   /* initialize the array of base frequencies */
-  double frequencies[4] = { 0.17, 0.19, 0.25, 0.39 };
+  double frequencies[4] = {0.17, 0.19, 0.25, 0.39};
 
   /* substitution rates for the 4x4 GTR model. This means we need exactly
      (4*4-4)/2 = 6 values, i.e. the number of elements above the diagonal */
-  double subst_params[6] = {1,1,1,1,1,1};
+  double subst_params[6] = {1, 1, 1, 1, 1, 1};
 
   /* we'll use 4 rate categories, and currently initialize them to 0 */
   double rate_cats[4] = {0};
@@ -242,13 +230,14 @@ int main(int argc, char * argv[])
   for (i = 0; i < tip_nodes_count; ++i)
   {
     ENTRY query;
-    query.key = msa->label[i];
-    ENTRY * found = NULL;
+    query.key    = msa->label[i];
+    ENTRY *found = NULL;
 
-    found = hsearch(query,FIND);
+    found = hsearch(query, FIND);
 
     if (!found)
-      fatal("Sequence with header %s does not appear in the tree", msa->label[i]);
+      fatal("Sequence with header %s does not appear in the tree",
+            msa->label[i]);
 
     unsigned int tip_clv_index = *((unsigned int *)(found->data));
 
@@ -256,7 +245,6 @@ int main(int argc, char * argv[])
   }
 
   pll_msa_destroy(msa);
-
 
   /* destroy hash table */
   hdestroy();
@@ -268,14 +256,13 @@ int main(int argc, char * argv[])
      traversal */
   travbuffer = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
 
-
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(unsigned int));
-  operations = (pll_operation_t *)malloc(inner_nodes_count *
-                                                sizeof(pll_operation_t));
+  operations =
+      (pll_operation_t *)malloc(inner_nodes_count * sizeof(pll_operation_t));
 
   /* perform a postorder traversal of the unrooted tree */
-  pll_unode_t * root = tree->nodes[tip_nodes_count+inner_nodes_count-1];
+  pll_unode_t *root = tree->nodes[tip_nodes_count + inner_nodes_count - 1];
   unsigned int traversal_size;
 
   if (!pll_utree_traverse(root,
@@ -296,23 +283,19 @@ int main(int argc, char * argv[])
                               &matrix_count,
                               &ops_count);
 
-
-  printf ("Traversal size: %d\n", traversal_size);
-  printf ("Operations: %d\n", ops_count);
-  printf ("Probability Matrices: %d\n", matrix_count);
+  printf("Traversal size: %d\n", traversal_size);
+  printf("Operations: %d\n", ops_count);
+  printf("Probability Matrices: %d\n", matrix_count);
 
   /* update matrix_count probability matrices using the rate matrix with
      index 0. The i-th matrix (i ranges from 0 to matrix_count - 1) is
      generated using branch length branch_lengths[i] and rate matrix
      (substitution rates + frequencies) params_indices[i], and can be refered
      to with index matrix_indices[i] */
-  unsigned int params_indices[4] = {0,0,0,0};
+  unsigned int params_indices[4] = {0, 0, 0, 0};
 
-  pll_update_prob_matrices(partition,
-                           params_indices,
-                           matrix_indices,
-                           branch_lengths,
-                           matrix_count);
+  pll_update_prob_matrices(
+      partition, params_indices, matrix_indices, branch_lengths, matrix_count);
 
   /* Uncomment to output the probability matrices (for each branch and each rate
      category) on screen
@@ -322,11 +305,12 @@ int main(int argc, char * argv[])
     pll_show_pmatrix(partition, i,17);
     printf ("\n");
   }
-  
+
   */
 
   /* use the operations array to compute all ops_count inner CLVs. Operations
-     will be carried out sequentially starting from operation 0 towrds ops_count-1 */
+     will be carried out sequentially starting from operation 0 towrds
+     ops_count-1 */
   pll_update_clvs(partition, operations, ops_count);
 
   /* Uncomment to print on screen the CLVs at tip and inner nodes. From 0 to
@@ -345,8 +329,8 @@ int main(int argc, char * argv[])
 
   /* compute the likelihood on an edge of the unrooted tree by specifying
      the CLV indices at the two end-point of the branch, the probability matrix
-     index for the concrete branch length, and the array of indices of rate matrix
-     whose frequency vector is to be used for each rate category */
+     index for the concrete branch length, and the array of indices of rate
+     matrix whose frequency vector is to be used for each rate category */
 
   double logl = pll_compute_edge_loglikelihood(partition,
                                                root->clv_index,
@@ -370,7 +354,7 @@ int main(int argc, char * argv[])
   free(operations);
 
   /* we will no longer need the tree structure */
-  pll_utree_destroy(tree,NULL);
+  pll_utree_destroy(tree, NULL);
 
   return (EXIT_SUCCESS);
 }

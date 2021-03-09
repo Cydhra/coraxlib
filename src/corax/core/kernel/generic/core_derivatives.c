@@ -19,48 +19,49 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#include <limits.h>
 #include "corax.h"
+#include <limits.h>
 
-PLL_EXPORT int pll_core_update_sumtable_repeats(unsigned int states,
-                                                unsigned int sites,
-                                                unsigned int parent_sites,
-                                                unsigned int rate_cats,
-                                                const double * clvp,
-                                                const double * clvc,
-                                                const unsigned int * parent_scaler,
-                                                const unsigned int * child_scaler,
-                                                double * const * eigenvecs,
-                                                double * const * inv_eigenvecs,
-                                                double * const * freqs,
-                                                double *sumtable,
-                                                const unsigned int * parent_site_id,
-                                                const unsigned int * child_site_id,
-                                                double * bclv_buffer,
-                                                unsigned int inv,
-                                                unsigned int attrib)
+PLL_EXPORT int
+pll_core_update_sumtable_repeats(unsigned int        states,
+                                 unsigned int        sites,
+                                 unsigned int        parent_sites,
+                                 unsigned int        rate_cats,
+                                 const double *      clvp,
+                                 const double *      clvc,
+                                 const unsigned int *parent_scaler,
+                                 const unsigned int *child_scaler,
+                                 double *const *     eigenvecs,
+                                 double *const *     inv_eigenvecs,
+                                 double *const *     freqs,
+                                 double *            sumtable,
+                                 const unsigned int *parent_site_id,
+                                 const unsigned int *child_site_id,
+                                 double *            bclv_buffer,
+                                 unsigned int        inv,
+                                 unsigned int        attrib)
 {
-  int (*core_update_sumtable) (unsigned int states, 
-                               unsigned int sites,
-                               unsigned int parent_sites,
-                               unsigned int rate_cats,
-                               const double * clvp,
-                               const double * clvc,
-                               const unsigned int * parent_scaler,
-                               const unsigned int * child_scaler,
-                               double * const * eigenvecs,
-                               double * const * inv_eigenvecs,
-                               double * const * freqs,
-                               double *sumtable,
-                               const unsigned int * parent_site_id,
-                               const unsigned int * child_site_id,
-                               double * bclv_buffer,
-                               unsigned int inv,
-                               unsigned int attrib) = 0x0;
-  unsigned int use_bclv = ( bclv_buffer && (parent_sites < (sites * 2) / 3)); 
-  core_update_sumtable = pll_core_update_sumtable_repeats_generic;
+  int (*core_update_sumtable)(unsigned int        states,
+                              unsigned int        sites,
+                              unsigned int        parent_sites,
+                              unsigned int        rate_cats,
+                              const double *      clvp,
+                              const double *      clvc,
+                              const unsigned int *parent_scaler,
+                              const unsigned int *child_scaler,
+                              double *const *     eigenvecs,
+                              double *const *     inv_eigenvecs,
+                              double *const *     freqs,
+                              double *            sumtable,
+                              const unsigned int *parent_site_id,
+                              const unsigned int *child_site_id,
+                              double *            bclv_buffer,
+                              unsigned int        inv,
+                              unsigned int        attrib) = 0x0;
+  unsigned int use_bclv = (bclv_buffer && (parent_sites < (sites * 2) / 3));
+  core_update_sumtable  = pll_core_update_sumtable_repeats_generic;
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX &&  PLL_STAT(avx_present))
+  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
     core_update_sumtable = pll_core_update_sumtable_repeats_generic_avx;
     if (states == 4)
@@ -73,13 +74,13 @@ PLL_EXPORT int pll_core_update_sumtable_repeats(unsigned int states,
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE &&  PLL_STAT(sse3_present))
+  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
     core_update_sumtable = pll_core_update_sumtable_repeats_generic_sse;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 &&  PLL_STAT(avx2_present))
+  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
     core_update_sumtable = pll_core_update_sumtable_repeats_generic_avx2;
     if (states == 4)
@@ -112,40 +113,41 @@ PLL_EXPORT int pll_core_update_sumtable_repeats(unsigned int states,
                               attrib);
   return PLL_FAILURE;
 }
-  
-PLL_EXPORT int pll_core_update_sumtable_ti_4x4(unsigned int sites,
-                                               unsigned int rate_cats,
-                                               const double * parent_clv,
-                                               const unsigned char * left_tipchars,
-                                               const unsigned int * parent_scaler,
-                                               double * const * eigenvecs,
-                                               double * const * inv_eigenvecs,
-                                               double * const * freqs,
-                                               double * sumtable,
-                                               unsigned int attrib)
+
+PLL_EXPORT int
+pll_core_update_sumtable_ti_4x4(unsigned int         sites,
+                                unsigned int         rate_cats,
+                                const double *       parent_clv,
+                                const unsigned char *left_tipchars,
+                                const unsigned int * parent_scaler,
+                                double *const *      eigenvecs,
+                                double *const *      inv_eigenvecs,
+                                double *const *      freqs,
+                                double *             sumtable,
+                                unsigned int         attrib)
 {
   unsigned int i, j, k, n;
   unsigned int tipstate;
-  double lefterm = 0;
-  double righterm = 0;
+  double       lefterm  = 0;
+  double       righterm = 0;
 
-  double * sum = sumtable;
-  const double * t_clvc = parent_clv;
-  const double * t_eigenvecs;
-  const double * t_inv_eigenvecs;
-  const double * t_freqs;
+  double *      sum    = sumtable;
+  const double *t_clvc = parent_clv;
+  const double *t_eigenvecs;
+  const double *t_inv_eigenvecs;
+  const double *t_freqs;
 
   unsigned int states = 4;
 
-  unsigned int min_scaler;
-  unsigned int * rate_scalings = NULL;
-  int per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  unsigned int  min_scaler;
+  unsigned int *rate_scalings    = NULL;
+  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
   double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
-    rate_scalings = (unsigned int*) calloc(rate_cats, sizeof(unsigned int));
+    rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
     for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
@@ -164,125 +166,16 @@ PLL_EXPORT int pll_core_update_sumtable_ti_4x4(unsigned int sites,
       min_scaler = UINT_MAX;
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = (parent_scaler) ? parent_scaler[n*rate_cats+i] : 0;
-        if (rate_scalings[i] < min_scaler)
-          min_scaler = rate_scalings[i];
+        rate_scalings[i] =
+            (parent_scaler) ? parent_scaler[n * rate_cats + i] : 0;
+        if (rate_scalings[i] < min_scaler) min_scaler = rate_scalings[i];
       }
 
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = PLL_MIN(rate_scalings[i] - min_scaler,
-                                   PLL_SCALE_RATE_MAXDIFF);
-      }
-    }
-
-    for (i = 0; i < rate_cats; ++i)
-    {
-      t_eigenvecs = eigenvecs[i];
-      t_inv_eigenvecs = inv_eigenvecs[i];
-      t_freqs = freqs[i];
-
-      for (j = 0; j < states; ++j)
-      {
-        tipstate = (unsigned int) left_tipchars[n];
-        lefterm = 0;
-        righterm = 0;
-        for (k = 0; k < states; ++k)
-        {
-          lefterm += (tipstate & 1) * t_freqs[k]
-              * t_inv_eigenvecs[k * states + j];
-          righterm += t_eigenvecs[j * states + k] * t_clvc[k];
-          tipstate >>= 1;
-        }
-        sum[j] = lefterm * righterm;
-
-        if (rate_scalings && rate_scalings[i] > 0)
-          sum[j] *= scale_minlh[rate_scalings[i]-1];
-      }
-
-      t_clvc += states;
-      sum += states;
-    }
-  }
-
-  if (rate_scalings)
-    free(rate_scalings);
-
-  return PLL_SUCCESS;
-}
-
-PLL_EXPORT int pll_core_update_sumtable_repeats_generic(unsigned int states,
-                                                        unsigned int sites,
-                                                        unsigned int parent_sites,
-                                                        unsigned int rate_cats,
-                                                        const double * clvp,
-                                                        const double * clvc,
-                                                        const unsigned int * parent_scaler,
-                                                        const unsigned int * child_scaler,
-                                                        double * const * eigenvecs,
-                                                        double * const * inv_eigenvecs,
-                                                        double * const * freqs,
-                                                        double *sumtable,
-                                                        const unsigned int * parent_site_id,
-                                                        const unsigned int * child_site_id,
-                                                        double * bclv_buffer,
-                                                        unsigned int inv,
-                                                        unsigned int attrib)
-{
-  unsigned int i, j, k, n;
-  double lefterm  = 0;
-  double righterm = 0;
-
-  double * sum                   = sumtable;
-  const double * t_eigenvecs;
-  const double * t_inv_eigenvecs;
-  const double * t_freqs;
-
-  unsigned int states_padded = states;
-  unsigned int span_padded = states_padded * rate_cats;
-  unsigned int min_scaler;
-  unsigned int * rate_scalings = NULL;
-  int per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
-
-  /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
-  if (per_rate_scaling)
-  {
-    rate_scalings = (unsigned int*) calloc(rate_cats, sizeof(unsigned int));
-
-    double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
-    {
-      scale_factor *= PLL_SCALE_THRESHOLD;
-      scale_minlh[i] = scale_factor;
-    }
-  }
-
-  /* build sumtable */
-  for (n = 0; n < sites; n++)
-  {
-    unsigned int pid = PLL_GET_ID(parent_site_id, n);
-    unsigned int cid = PLL_GET_ID(child_site_id, n);
-    const double * t_clvp = &clvp[pid * span_padded];
-    const double * t_clvc = &clvc[cid * span_padded];
-    if (per_rate_scaling)
-    {
-      /* compute minimum per-rate scaler -> common per-site scaler */
-      min_scaler = UINT_MAX;
-      for (i = 0; i < rate_cats; ++i)
-      {
-        rate_scalings[i] = (parent_scaler) ? parent_scaler[pid*rate_cats+i] : 0;
-        rate_scalings[i] += (child_scaler) ? child_scaler[cid*rate_cats+i] : 0;
-        if (rate_scalings[i] < min_scaler)
-          min_scaler = rate_scalings[i];
-      }
-
-      /* compute relative capped per-rate scalers */
-      for (i = 0; i < rate_cats; ++i)
-      {
-        rate_scalings[i] = PLL_MIN(rate_scalings[i] - min_scaler,
-                                   PLL_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] =
+            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -294,18 +187,128 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic(unsigned int states,
 
       for (j = 0; j < states; ++j)
       {
-        lefterm = 0;
+        tipstate = (unsigned int)left_tipchars[n];
+        lefterm  = 0;
         righterm = 0;
         for (k = 0; k < states; ++k)
         {
-          lefterm  += t_clvp[k] * t_freqs[k] *
-                                      t_inv_eigenvecs[k * states_padded + j];
+          lefterm +=
+              (tipstate & 1) * t_freqs[k] * t_inv_eigenvecs[k * states + j];
+          righterm += t_eigenvecs[j * states + k] * t_clvc[k];
+          tipstate >>= 1;
+        }
+        sum[j] = lefterm * righterm;
+
+        if (rate_scalings && rate_scalings[i] > 0)
+          sum[j] *= scale_minlh[rate_scalings[i] - 1];
+      }
+
+      t_clvc += states;
+      sum += states;
+    }
+  }
+
+  if (rate_scalings) free(rate_scalings);
+
+  return PLL_SUCCESS;
+}
+
+PLL_EXPORT int
+pll_core_update_sumtable_repeats_generic(unsigned int        states,
+                                         unsigned int        sites,
+                                         unsigned int        parent_sites,
+                                         unsigned int        rate_cats,
+                                         const double *      clvp,
+                                         const double *      clvc,
+                                         const unsigned int *parent_scaler,
+                                         const unsigned int *child_scaler,
+                                         double *const *     eigenvecs,
+                                         double *const *     inv_eigenvecs,
+                                         double *const *     freqs,
+                                         double *            sumtable,
+                                         const unsigned int *parent_site_id,
+                                         const unsigned int *child_site_id,
+                                         double *            bclv_buffer,
+                                         unsigned int        inv,
+                                         unsigned int        attrib)
+{
+  unsigned int i, j, k, n;
+  double       lefterm  = 0;
+  double       righterm = 0;
+
+  double *      sum = sumtable;
+  const double *t_eigenvecs;
+  const double *t_inv_eigenvecs;
+  const double *t_freqs;
+
+  unsigned int  states_padded = states;
+  unsigned int  span_padded   = states_padded * rate_cats;
+  unsigned int  min_scaler;
+  unsigned int *rate_scalings    = NULL;
+  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+
+  /* powers of scale threshold for undoing the scaling */
+  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  if (per_rate_scaling)
+  {
+    rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
+
+    double scale_factor = 1.0;
+    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    {
+      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_minlh[i] = scale_factor;
+    }
+  }
+
+  /* build sumtable */
+  for (n = 0; n < sites; n++)
+  {
+    unsigned int  pid    = PLL_GET_ID(parent_site_id, n);
+    unsigned int  cid    = PLL_GET_ID(child_site_id, n);
+    const double *t_clvp = &clvp[pid * span_padded];
+    const double *t_clvc = &clvc[cid * span_padded];
+    if (per_rate_scaling)
+    {
+      /* compute minimum per-rate scaler -> common per-site scaler */
+      min_scaler = UINT_MAX;
+      for (i = 0; i < rate_cats; ++i)
+      {
+        rate_scalings[i] =
+            (parent_scaler) ? parent_scaler[pid * rate_cats + i] : 0;
+        rate_scalings[i] +=
+            (child_scaler) ? child_scaler[cid * rate_cats + i] : 0;
+        if (rate_scalings[i] < min_scaler) min_scaler = rate_scalings[i];
+      }
+
+      /* compute relative capped per-rate scalers */
+      for (i = 0; i < rate_cats; ++i)
+      {
+        rate_scalings[i] =
+            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+      }
+    }
+
+    for (i = 0; i < rate_cats; ++i)
+    {
+      t_eigenvecs     = eigenvecs[i];
+      t_inv_eigenvecs = inv_eigenvecs[i];
+      t_freqs         = freqs[i];
+
+      for (j = 0; j < states; ++j)
+      {
+        lefterm  = 0;
+        righterm = 0;
+        for (k = 0; k < states; ++k)
+        {
+          lefterm +=
+              t_clvp[k] * t_freqs[k] * t_inv_eigenvecs[k * states_padded + j];
           righterm += t_eigenvecs[j * states_padded + k] * t_clvc[k];
         }
         sum[j] = lefterm * righterm;
 
         if (rate_scalings && rate_scalings[i] > 0)
-          sum[j] *= scale_minlh[rate_scalings[i]-1];
+          sum[j] *= scale_minlh[rate_scalings[i] - 1];
       }
       t_clvc += states;
       t_clvp += states;
@@ -313,34 +316,33 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic(unsigned int states,
     }
   }
 
-  if (rate_scalings)
-    free(rate_scalings);
+  if (rate_scalings) free(rate_scalings);
 
   return PLL_SUCCESS;
 }
-PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int states,
-                                           unsigned int sites,
-                                           unsigned int rate_cats,
-                                           const double * parent_clv,
-                                           const double * child_clv,
-                                           const unsigned int * parent_scaler,
-                                           const unsigned int * child_scaler,
-                                           double * const * eigenvecs,
-                                           double * const * inv_eigenvecs,
-                                           double * const * freqs,
-                                           double * sumtable,
-                                           unsigned int attrib)
+PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
+                                           unsigned int        sites,
+                                           unsigned int        rate_cats,
+                                           const double *      parent_clv,
+                                           const double *      child_clv,
+                                           const unsigned int *parent_scaler,
+                                           const unsigned int *child_scaler,
+                                           double *const *     eigenvecs,
+                                           double *const *     inv_eigenvecs,
+                                           double *const *     freqs,
+                                           double *            sumtable,
+                                           unsigned int        attrib)
 {
   unsigned int i, j, k, n;
-  double lefterm  = 0;
-  double righterm = 0;
+  double       lefterm  = 0;
+  double       righterm = 0;
 
-  double * sum                   = sumtable;
-  const double * t_clvp          = parent_clv;
-  const double * t_clvc          = child_clv;
-  const double * t_eigenvecs;
-  const double * t_inv_eigenvecs;
-  const double * t_freqs;
+  double *      sum    = sumtable;
+  const double *t_clvp = parent_clv;
+  const double *t_clvc = child_clv;
+  const double *t_eigenvecs;
+  const double *t_inv_eigenvecs;
+  const double *t_freqs;
 
   unsigned int states_padded = states;
 
@@ -382,29 +384,29 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
     return pll_core_update_sumtable_ii_avx2(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           child_clv,
-                                           parent_scaler,
-                                           child_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           sumtable,
-                                           attrib);
+                                            sites,
+                                            rate_cats,
+                                            parent_clv,
+                                            child_clv,
+                                            parent_scaler,
+                                            child_scaler,
+                                            eigenvecs,
+                                            inv_eigenvecs,
+                                            freqs,
+                                            sumtable,
+                                            attrib);
   }
 #endif
 
-  unsigned int min_scaler;
-  unsigned int * rate_scalings = NULL;
-  int per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  unsigned int  min_scaler;
+  unsigned int *rate_scalings    = NULL;
+  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
   double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
-    rate_scalings = (unsigned int*) calloc(rate_cats, sizeof(unsigned int));
+    rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
     for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
@@ -423,17 +425,18 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int states,
       min_scaler = UINT_MAX;
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = (parent_scaler) ? parent_scaler[n*rate_cats+i] : 0;
-        rate_scalings[i] += (child_scaler) ? child_scaler[n*rate_cats+i] : 0;
-        if (rate_scalings[i] < min_scaler)
-          min_scaler = rate_scalings[i];
+        rate_scalings[i] =
+            (parent_scaler) ? parent_scaler[n * rate_cats + i] : 0;
+        rate_scalings[i] +=
+            (child_scaler) ? child_scaler[n * rate_cats + i] : 0;
+        if (rate_scalings[i] < min_scaler) min_scaler = rate_scalings[i];
       }
 
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = PLL_MIN(rate_scalings[i] - min_scaler,
-                                   PLL_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] =
+            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -445,18 +448,18 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int states,
 
       for (j = 0; j < states; ++j)
       {
-        lefterm = 0;
+        lefterm  = 0;
         righterm = 0;
         for (k = 0; k < states; ++k)
         {
-          lefterm  += t_clvp[k] * t_freqs[k] *
-                                      t_inv_eigenvecs[k * states_padded + j];
+          lefterm +=
+              t_clvp[k] * t_freqs[k] * t_inv_eigenvecs[k * states_padded + j];
           righterm += t_eigenvecs[j * states_padded + k] * t_clvc[k];
         }
         sum[j] = lefterm * righterm;
 
         if (rate_scalings && rate_scalings[i] > 0)
-          sum[j] *= scale_minlh[rate_scalings[i]-1];
+          sum[j] *= scale_minlh[rate_scalings[i] - 1];
       }
       t_clvc += states;
       t_clvp += states;
@@ -464,36 +467,35 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int states,
     }
   }
 
-  if (rate_scalings)
-    free(rate_scalings);
+  if (rate_scalings) free(rate_scalings);
 
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int states,
-                                           unsigned int sites,
-                                           unsigned int rate_cats,
-                                           const double * parent_clv,
-                                           const unsigned char * left_tipchars,
+PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
+                                           unsigned int         sites,
+                                           unsigned int         rate_cats,
+                                           const double *       parent_clv,
+                                           const unsigned char *left_tipchars,
                                            const unsigned int * parent_scaler,
-                                           double * const * eigenvecs,
-                                           double * const * inv_eigenvecs,
-                                           double * const * freqs,
-                                           const pll_state_t * tipmap,
-                                           unsigned int tipmap_size,
-                                           double * sumtable,
-                                           unsigned int attrib)
+                                           double *const *      eigenvecs,
+                                           double *const *      inv_eigenvecs,
+                                           double *const *      freqs,
+                                           const pll_state_t *  tipmap,
+                                           unsigned int         tipmap_size,
+                                           double *             sumtable,
+                                           unsigned int         attrib)
 {
   unsigned int i, j, k, n;
-  pll_state_t tipstate;
-  double lefterm = 0;
-  double righterm = 0;
+  pll_state_t  tipstate;
+  double       lefterm  = 0;
+  double       righterm = 0;
 
-  double * sum = sumtable;
-  const double * t_clvc = parent_clv;
-  const double * t_eigenvecs;
-  const double * t_inv_eigenvecs;
-  const double * t_freqs;
+  double *      sum    = sumtable;
+  const double *t_clvc = parent_clv;
+  const double *t_eigenvecs;
+  const double *t_inv_eigenvecs;
+  const double *t_freqs;
 
   unsigned int states_padded = states;
 
@@ -536,18 +538,18 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int states,
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
     return pll_core_update_sumtable_ti_avx2(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           left_tipchars,
-                                           parent_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           tipmap,
-                                           tipmap_size,
-                                           sumtable,
-                                           attrib);
+                                            sites,
+                                            rate_cats,
+                                            parent_clv,
+                                            left_tipchars,
+                                            parent_scaler,
+                                            eigenvecs,
+                                            inv_eigenvecs,
+                                            freqs,
+                                            tipmap,
+                                            tipmap_size,
+                                            sumtable,
+                                            attrib);
   }
 #endif
 
@@ -566,15 +568,15 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int states,
                                            attrib);
   }
 
-  unsigned int min_scaler;
-  unsigned int * rate_scalings = NULL;
-  int per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  unsigned int  min_scaler;
+  unsigned int *rate_scalings    = NULL;
+  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
   double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
-    rate_scalings = (unsigned int*) calloc(rate_cats, sizeof(unsigned int));
+    rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
     for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
@@ -593,71 +595,70 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int states,
       min_scaler = UINT_MAX;
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = (parent_scaler) ? parent_scaler[n*rate_cats+i] : 0;
-        if (rate_scalings[i] < min_scaler)
-          min_scaler = rate_scalings[i];
+        rate_scalings[i] =
+            (parent_scaler) ? parent_scaler[n * rate_cats + i] : 0;
+        if (rate_scalings[i] < min_scaler) min_scaler = rate_scalings[i];
       }
 
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] = PLL_MIN(rate_scalings[i] - min_scaler,
-                                   PLL_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] =
+            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
       }
     }
 
     for (i = 0; i < rate_cats; ++i)
     {
-      t_eigenvecs = eigenvecs[i];
+      t_eigenvecs     = eigenvecs[i];
       t_inv_eigenvecs = inv_eigenvecs[i];
-      t_freqs = freqs[i];
+      t_freqs         = freqs[i];
 
       for (j = 0; j < states; ++j)
       {
         tipstate = tipmap[(unsigned int)left_tipchars[n]];
-        lefterm = 0;
+        lefterm  = 0;
         righterm = 0;
         for (k = 0; k < states; ++k)
         {
           lefterm += (tipstate & 1) * t_freqs[k]
-              * t_inv_eigenvecs[k * states_padded + j];
+                     * t_inv_eigenvecs[k * states_padded + j];
           righterm += t_eigenvecs[j * states_padded + k] * t_clvc[k];
           tipstate >>= 1;
         }
         sum[j] = lefterm * righterm;
 
         if (rate_scalings && rate_scalings[i] > 0)
-          sum[j] *= scale_minlh[rate_scalings[i]-1];
+          sum[j] *= scale_minlh[rate_scalings[i] - 1];
       }
       t_clvc += states_padded;
       sum += states_padded;
     }
   }
 
-  if (rate_scalings)
-    free(rate_scalings);
+  if (rate_scalings) free(rate_scalings);
 
   return PLL_SUCCESS;
 }
 
-static void core_site_likelihood_derivatives(unsigned int states,
-                                             unsigned int states_padded,
-                                             unsigned int rate_cats,
+static void core_site_likelihood_derivatives(unsigned int   states,
+                                             unsigned int   states_padded,
+                                             unsigned int   rate_cats,
                                              const double * rate_weights,
-                                             const int * invariant,
+                                             const int *    invariant,
                                              const double * prop_invar,
-                                             double * const * freqs,
+                                             double *const *freqs,
                                              const double * sumtable,
                                              const double * diagptable,
-                                             double * site_lk)
+                                             double *       site_lk)
 {
-  unsigned int i,j;
-  double inv_site_lk = 0.0;
-  double cat_sitelk[3];
-  const double *sum = sumtable;
-  const double * diagp = diagptable;
-  const double * t_freqs;
-  double t_prop_invar;
+  unsigned int  i, j;
+  double        inv_site_lk = 0.0;
+  double        cat_sitelk[3];
+  const double *sum   = sumtable;
+  const double *diagp = diagptable;
+  const double *t_freqs;
+  double        t_prop_invar;
 
   site_lk[0] = site_lk[1] = site_lk[2] = 0;
   for (i = 0; i < rate_cats; ++i)
@@ -693,40 +694,41 @@ static void core_site_likelihood_derivatives(unsigned int states,
   }
 }
 
-PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
-                                               unsigned int sites,
-                                               unsigned int rate_cats,
-                                               const double * rate_weights,
-                                               const unsigned int * parent_scaler,
-                                               const unsigned int * child_scaler,
-                                               unsigned int parent_sites,
-                                               unsigned int child_ids,
-                                               const int * invariant,
-                                               const unsigned int * pattern_weights,
-                                               double branch_length,
-                                               const double * prop_invar,
-                                               double * const * freqs,
-                                               const double * rates,
-                                               double * const * eigenvals,
-                                               const double * sumtable,
-                                               double * d_f,
-                                               double * dd_f,
-                                               unsigned int attrib)
+PLL_EXPORT int
+pll_core_likelihood_derivatives(unsigned int        states,
+                                unsigned int        sites,
+                                unsigned int        rate_cats,
+                                const double *      rate_weights,
+                                const unsigned int *parent_scaler,
+                                const unsigned int *child_scaler,
+                                unsigned int        parent_sites,
+                                unsigned int        child_ids,
+                                const int *         invariant,
+                                const unsigned int *pattern_weights,
+                                double              branch_length,
+                                const double *      prop_invar,
+                                double *const *     freqs,
+                                const double *      rates,
+                                double *const *     eigenvals,
+                                const double *      sumtable,
+                                double *            d_f,
+                                double *            dd_f,
+                                unsigned int        attrib)
 {
   unsigned int n, i, j;
   unsigned int ef_sites;
 
-  const double * sum;
-  double deriv1, deriv2;
-  double site_lk[3];
+  const double *sum;
+  double        deriv1, deriv2;
+  double        site_lk[3];
 
-  const double * t_eigenvals;
-  double t_branch_length;
-  unsigned int scale_factors;
+  const double *t_eigenvals;
+  double        t_branch_length;
+  unsigned int  scale_factors;
 
-  double *diagptable, *diagp;
-  const int * invariant_ptr;
-  double ki;
+  double *   diagptable, *diagp;
+  const int *invariant_ptr;
+  double     ki;
 
   unsigned int states_padded = states;
 
@@ -741,26 +743,25 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
     ef_sites = sites;
   }
 
-  *d_f = 0.0;
+  *d_f  = 0.0;
   *dd_f = 0.0;
 
-  diagptable = (double *) pll_aligned_alloc(
-                                      rate_cats * states * 4 * sizeof(double),
-                                      PLL_ALIGNMENT_AVX);
+  diagptable = (double *)pll_aligned_alloc(
+      rate_cats * states * 4 * sizeof(double), PLL_ALIGNMENT_AVX);
   if (!diagptable)
   {
-    pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
     return PLL_FAILURE;
   }
 
   /* pre-compute the derivatives of the P matrix for all discrete GAMMA rates */
   diagp = diagptable;
-  for(i = 0; i < rate_cats; ++i)
+  for (i = 0; i < rate_cats; ++i)
   {
-    t_eigenvals = eigenvals[i];
-    ki = rates[i]/(1.0 - prop_invar[i]);
+    t_eigenvals     = eigenvals[i];
+    ki              = rates[i] / (1.0 - prop_invar[i]);
     t_branch_length = branch_length;
-    for(j = 0; j < states; ++j)
+    for (j = 0; j < states; ++j)
     {
       diagp[0] = exp(t_eigenvals[j] * ki * t_branch_length);
       diagp[1] = t_eigenvals[j] * ki * diagp[0];
@@ -774,35 +775,35 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
 #ifdef HAVE_SSE3
   if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
   {
-    states_padded = (states+1) & 0xFFFFFFFE;
+    states_padded = (states + 1) & 0xFFFFFFFE;
   }
 #endif
 
 #ifdef HAVE_AVX2
   if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
   {
-    states_padded = (states+3) & 0xFFFFFFFC;
+    states_padded = (states + 3) & 0xFFFFFFFC;
 
     pll_core_likelihood_derivatives_avx2(states,
-                                        states_padded,
-                                        rate_cats,
-                                        ef_sites,
-                                        pattern_weights,
-                                        rate_weights,
-                                        invariant,
-                                        prop_invar,
-                                        freqs,
-                                        sumtable,
-                                        diagptable,
-                                        d_f,
-                                        dd_f);
+                                         states_padded,
+                                         rate_cats,
+                                         ef_sites,
+                                         pattern_weights,
+                                         rate_weights,
+                                         invariant,
+                                         prop_invar,
+                                         freqs,
+                                         sumtable,
+                                         diagptable,
+                                         d_f,
+                                         dd_f);
   }
   else
 #endif
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+      if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
   {
-    states_padded = (states+3) & 0xFFFFFFFC;
+    states_padded = (states + 3) & 0xFFFFFFFC;
 
     pll_core_likelihood_derivatives_avx(states,
                                         states_padded,
@@ -821,20 +822,20 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
   else
 #endif
   {
-    sum = sumtable;
+    sum           = sumtable;
     invariant_ptr = invariant;
     for (n = 0; n < ef_sites; ++n)
     {
       core_site_likelihood_derivatives(states,
-                                     states_padded,
-                                     rate_cats,
-                                     rate_weights,
-                                     invariant_ptr,
-                                     prop_invar,
-                                     freqs,
-                                     sum,
-                                     diagptable,
-                                     site_lk);
+                                       states_padded,
+                                       rate_cats,
+                                       rate_weights,
+                                       invariant_ptr,
+                                       prop_invar,
+                                       freqs,
+                                       sum,
+                                       diagptable,
+                                       site_lk);
 
       invariant_ptr++;
       sum += rate_cats * states_padded;
@@ -850,10 +851,10 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
   /* account for ascertainment bias correction */
   if (attrib & PLL_ATTRIB_AB_MASK)
   {
-    double asc_Lk[3] = {0.0, 0.0, 0.0};
+    double       asc_Lk[3] = {0.0, 0.0, 0.0};
     unsigned int sum_w_inv = 0;
-    double asc_scaling;
-    int asc_bias_type = attrib & PLL_ATTRIB_AB_MASK;
+    double       asc_scaling;
+    int          asc_bias_type = attrib & PLL_ATTRIB_AB_MASK;
 
     if (asc_bias_type != PLL_ATTRIB_AB_STAMATAKIS)
     {
@@ -861,7 +862,7 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
       assert(ef_sites == sites);
 
       sum = sumtable + sites * rate_cats * states_padded;
-      for (n=0; n<states; ++n)
+      for (n = 0; n < states; ++n)
       {
         /* compute the site LK derivatives for the additional per-state sites */
         core_site_likelihood_derivatives(states,
@@ -889,39 +890,39 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
         sum_w_inv += pattern_weights[sites + n];
       }
 
-      switch(asc_bias_type)
+      switch (asc_bias_type)
       {
-        /* NOTE: since we compute derivatives of -logL, the signs below are flipped
-         * compared to RAxML ("+" for LEWIS and "-" for FELSENSTEIN) */
-        case PLL_ATTRIB_AB_LEWIS:
-        {
-          // TODO: pattern_weight_sum should be stored somewhere!
-          unsigned int pattern_weight_sum = 0;
-          for (n = 0; n < ef_sites; ++n)
-            pattern_weight_sum += pattern_weights[n];
+      /* NOTE: since we compute derivatives of -logL, the signs below are
+       * flipped compared to RAxML ("+" for LEWIS and "-" for FELSENSTEIN) */
+      case PLL_ATTRIB_AB_LEWIS:
+      {
+        // TODO: pattern_weight_sum should be stored somewhere!
+        unsigned int pattern_weight_sum = 0;
+        for (n = 0; n < ef_sites; ++n) pattern_weight_sum += pattern_weights[n];
 
-          /* derivatives of log(1.0 - (sum Li(s) over states 's')) */
-          *d_f  += pattern_weight_sum * (asc_Lk[1] / (asc_Lk[0] - 1.0));
-          *dd_f += pattern_weight_sum *
-               (((asc_Lk[0] - 1.0) * asc_Lk[2] - asc_Lk[1] * asc_Lk[1]) /
-               ((asc_Lk[0] - 1.0) * (asc_Lk[0] - 1.0)));
-        }
+        /* derivatives of log(1.0 - (sum Li(s) over states 's')) */
+        *d_f += pattern_weight_sum * (asc_Lk[1] / (asc_Lk[0] - 1.0));
+        *dd_f += pattern_weight_sum
+                 * (((asc_Lk[0] - 1.0) * asc_Lk[2] - asc_Lk[1] * asc_Lk[1])
+                    / ((asc_Lk[0] - 1.0) * (asc_Lk[0] - 1.0)));
+      }
+      break;
+      case PLL_ATTRIB_AB_FELSENSTEIN:
+        /* derivatives of log(sum Li(s) over states 's') */
+        *d_f -= sum_w_inv * (asc_Lk[1] / asc_Lk[0]);
+        *dd_f -= sum_w_inv
+                 * (((asc_Lk[2] * asc_Lk[0]) - asc_Lk[1] * asc_Lk[1])
+                    / (asc_Lk[0] * asc_Lk[0]));
         break;
-        case PLL_ATTRIB_AB_FELSENSTEIN:
-          /* derivatives of log(sum Li(s) over states 's') */
-          *d_f  -= sum_w_inv * (asc_Lk[1] / asc_Lk[0]);
-          *dd_f -= sum_w_inv *
-               (((asc_Lk[2] * asc_Lk[0]) - asc_Lk[1] * asc_Lk[1]) /
-               (asc_Lk[0] * asc_Lk[0]));
-        break;
-        default:
-          pll_set_error(PLL_ERROR_AB_INVALIDMETHOD, "Illegal ascertainment bias algorithm");
-          return PLL_FAILURE;
+      default:
+        pll_set_error(PLL_ERROR_AB_INVALIDMETHOD,
+                      "Illegal ascertainment bias algorithm");
+        return PLL_FAILURE;
       }
     }
   }
 
-  pll_aligned_free (diagptable);
+  pll_aligned_free(diagptable);
 
   return PLL_SUCCESS;
 }

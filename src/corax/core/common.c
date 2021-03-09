@@ -8,8 +8,8 @@
  * @param[in] errno the error code
  * @param[in] errmsg_fmt formatted error message
  */
-__attribute__((format(printf, 2, 3)))
-void pll_set_error(int errno, const char* errmsg_fmt, ...)
+__attribute__((format(printf, 2, 3))) void
+pll_set_error(int errno, const char *errmsg_fmt, ...)
 {
   pll_errno = errno;
 
@@ -22,8 +22,8 @@ void pll_set_error(int errno, const char* errmsg_fmt, ...)
 /**
  * Reset pll error and messages.
  *
- * Call this function within operations whose error status depends on `pll_errno`
- * such that no error leaks in from previous operations.
+ * Call this function within operations whose error status depends on
+ * `pll_errno` such that no error leaks in from previous operations.
  */
 void pll_reset_error()
 {

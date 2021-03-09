@@ -28,19 +28,19 @@
    be overwritten on the next call of query_getnext. */
 
 /* define strchrnul in case this is not a GNU system */
-static char * xstrchrnul(char * s, int c)
+static char *xstrchrnul(char *s, int c)
 {
-  char * r = strchr(s,c);
-  if (r)
-    return r;
+  char *r = strchr(s, c);
+  if (r) return r;
 
   return (char *)s + strlen(s);
 }
 
-PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned int * map)
+PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
+                                       const unsigned int *map)
 {
-  int i;
-  pll_fasta_t * fd = (pll_fasta_t *)malloc(sizeof(pll_fasta_t));
+  int          i;
+  pll_fasta_t *fd = (pll_fasta_t *)malloc(sizeof(pll_fasta_t));
   if (!fd)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -78,8 +78,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
 
   /* reset stripped char frequencies */
   fd->stripped_count = 0;
-  for(i=0; i<256; i++)
-    fd->stripped[i] = 0;
+  for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   fd->line[0] = 0;
   if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
@@ -94,7 +93,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
   return fd;
 }
 
-PLL_EXPORT int pll_fasta_rewind(pll_fasta_t * fd)
+PLL_EXPORT int pll_fasta_rewind(pll_fasta_t *fd)
 {
   int i;
 
@@ -102,8 +101,7 @@ PLL_EXPORT int pll_fasta_rewind(pll_fasta_t * fd)
 
   /* reset stripped char frequencies */
   fd->stripped_count = 0;
-  for(i=0; i<256; i++)
-    fd->stripped[i] = 0;
+  for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   fd->line[0] = 0;
   if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
@@ -116,22 +114,25 @@ PLL_EXPORT int pll_fasta_rewind(pll_fasta_t * fd)
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT void pll_fasta_close(pll_fasta_t * fd)
+PLL_EXPORT void pll_fasta_close(pll_fasta_t *fd)
 {
   fclose(fd->fp);
   free(fd);
 }
 
-PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
-                                 long * head_len, char ** seq,
-                                 long * seq_len, long * seqno)
+PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
+                                 char **      head,
+                                 long *       head_len,
+                                 char **      seq,
+                                 long *       seq_len,
+                                 long *       seqno)
 {
-  void * mem;
-  long head_alloc = MEMCHUNK;
-  long seq_alloc = MEMCHUNK;
+  void *mem;
+  long  head_alloc = MEMCHUNK;
+  long  seq_alloc  = MEMCHUNK;
 
   *head_len = 0;
-  *seq_len = 0;
+  *seq_len  = 0;
 
   /* allocate sequence buffers */
   *head = (char *)malloc((size_t)(head_alloc));
@@ -152,151 +153,145 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
   /* read line and increase line number */
 
   while (fd->line[0])
-    {
-      /* read header */
+  {
+    /* read header */
 
-      if (fd->line[0] != '>')
+    if (fd->line[0] != '>')
+    {
+      pll_set_error(PLL_ERROR_FASTA_INVALIDHEADER,
+                    "Illegal header line in query fasta file");
+      free(*head);
+      free(*seq);
+      return PLL_FAILURE;
+    }
+
+    long headerlen;
+    if (strchr(fd->line + 1, '\r'))
+      headerlen = xstrchrnul(fd->line + 1, '\r') - (fd->line + 1);
+    else
+      headerlen = xstrchrnul(fd->line + 1, '\n') - (fd->line + 1);
+
+    *head_len = headerlen;
+
+    if (headerlen + 1 > head_alloc)
+    {
+      head_alloc = headerlen + 1;
+      mem        = realloc(*head, (size_t)(head_alloc));
+      if (!mem)
       {
-        pll_set_error(PLL_ERROR_FASTA_INVALIDHEADER,
-                      "Illegal header line in query fasta file");
+        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         free(*head);
         free(*seq);
         return PLL_FAILURE;
       }
-
-      long headerlen;
-      if (strchr(fd->line+1,'\r'))
-        headerlen = xstrchrnul(fd->line+1, '\r') - (fd->line+1);
-      else
-        headerlen = xstrchrnul(fd->line+1, '\n') - (fd->line+1);
-
-      *head_len = headerlen;
-
-      if (headerlen + 1 > head_alloc)
-      {
-        head_alloc = headerlen + 1;
-        mem = realloc(*head, (size_t)(head_alloc));
-        if (!mem)
-        {
-          pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-          free(*head);
-          free(*seq);
-          return PLL_FAILURE;
-        }
-        *head = (char *)mem;
-      }
-
-      memcpy(*head, fd->line + 1, (size_t)headerlen);
-      *(*head + headerlen) = 0;
-
-      /* get next line */
-
-      fd->line[0] = 0;
-      if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
-      {
-        /* do nothing */
-      }
-      fd->lineno++;
-
-      /* read sequence */
-
-      *seq_len = 0;
-
-      while (fd->line[0] && (fd->line[0] != '>'))
-        {
-          char c;
-          char m;
-          char * p = fd->line;
-
-          while((c = *p++))
-            {
-              m = (char) fd->chrstatus[(int)c];
-              switch(m)
-                {
-                case 0:
-                  /* character to be stripped */
-                  fd->stripped_count++;
-                  fd->stripped[(int)c]++;
-                  break;
-
-                case 1:
-                  /* legal character */
-                  if (*seq_len + 1 > seq_alloc)
-                    {
-                      seq_alloc += MEMCHUNK;
-                      mem = realloc(*seq, (size_t)(seq_alloc));
-                      if (!mem)
-                      {
-                        pll_set_error(PLL_ERROR_MEM_ALLOC,
-                                 "Unable to allocate enough memory.");
-                        free(*head);
-                        free(*seq);
-                        return PLL_FAILURE;
-                      }
-                      *seq = (char *)mem;
-                    }
-                  *(*seq + *seq_len) = c;
-                  (*seq_len)++;
-
-                  break;
-
-                case 2:
-                  /* fatal character */
-                  if (c>=32)
-                  {
-                    pll_set_error(PLL_ERROR_FASTA_ILLEGALCHAR,
-                                  "illegal character '%c' "
-                                  "on line %ld in the fasta file",
-                                  c, fd->lineno);
-                  }
-                  else
-                  {
-                    pll_set_error(PLL_ERROR_FASTA_UNPRINTABLECHAR,
-                                  "illegal unprintable character "
-                                  "%#.2x (hexadecimal) on line %ld "
-                                  "in the fasta file",
-                                  c, fd->lineno);
-                  }
-                  return PLL_FAILURE;
-
-                case 3:
-                  /* silently stripped chars */
-                  break;
-
-                }
-            }
-
-          fd->line[0] = 0;
-          if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
-          {
-            /* do nothing */
-          }
-          fd->lineno++;
-        }
-
-      /* add zero after sequence */
-
-      if (*seq_len + 1 > seq_alloc)
-        {
-          seq_alloc += MEMCHUNK;
-          mem = realloc(*seq, (size_t)seq_alloc);
-          if (!mem)
-          {
-            pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-            free(*head);
-            free(*seq);
-            return PLL_FAILURE;
-          }
-          *seq = (char *)mem;
-        }
-      *(*seq + *seq_len) = 0;
-
-      fd->no++;
-      *seqno = fd->no;
-
-      return PLL_SUCCESS;
+      *head = (char *)mem;
     }
 
+    memcpy(*head, fd->line + 1, (size_t)headerlen);
+    *(*head + headerlen) = 0;
+
+    /* get next line */
+
+    fd->line[0] = 0;
+    if (!fgets(fd->line, PLL_LINEALLOC, fd->fp)) { /* do nothing */ }
+    fd->lineno++;
+
+    /* read sequence */
+
+    *seq_len = 0;
+
+    while (fd->line[0] && (fd->line[0] != '>'))
+    {
+      char  c;
+      char  m;
+      char *p = fd->line;
+
+      while ((c = *p++))
+      {
+        m = (char)fd->chrstatus[(int)c];
+        switch (m)
+        {
+        case 0:
+          /* character to be stripped */
+          fd->stripped_count++;
+          fd->stripped[(int)c]++;
+          break;
+
+        case 1:
+          /* legal character */
+          if (*seq_len + 1 > seq_alloc)
+          {
+            seq_alloc += MEMCHUNK;
+            mem = realloc(*seq, (size_t)(seq_alloc));
+            if (!mem)
+            {
+              pll_set_error(PLL_ERROR_MEM_ALLOC,
+                            "Unable to allocate enough memory.");
+              free(*head);
+              free(*seq);
+              return PLL_FAILURE;
+            }
+            *seq = (char *)mem;
+          }
+          *(*seq + *seq_len) = c;
+          (*seq_len)++;
+
+          break;
+
+        case 2:
+          /* fatal character */
+          if (c >= 32)
+          {
+            pll_set_error(PLL_ERROR_FASTA_ILLEGALCHAR,
+                          "illegal character '%c' "
+                          "on line %ld in the fasta file",
+                          c,
+                          fd->lineno);
+          }
+          else
+          {
+            pll_set_error(PLL_ERROR_FASTA_UNPRINTABLECHAR,
+                          "illegal unprintable character "
+                          "%#.2x (hexadecimal) on line %ld "
+                          "in the fasta file",
+                          c,
+                          fd->lineno);
+          }
+          return PLL_FAILURE;
+
+        case 3:
+          /* silently stripped chars */
+          break;
+        }
+      }
+
+      fd->line[0] = 0;
+      if (!fgets(fd->line, PLL_LINEALLOC, fd->fp)) { /* do nothing */ }
+      fd->lineno++;
+    }
+
+    /* add zero after sequence */
+
+    if (*seq_len + 1 > seq_alloc)
+    {
+      seq_alloc += MEMCHUNK;
+      mem = realloc(*seq, (size_t)seq_alloc);
+      if (!mem)
+      {
+        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        free(*head);
+        free(*seq);
+        return PLL_FAILURE;
+      }
+      *seq = (char *)mem;
+    }
+    *(*seq + *seq_len) = 0;
+
+    fd->no++;
+    *seqno = fd->no;
+
+    return PLL_SUCCESS;
+  }
 
   pll_set_error(PLL_ERROR_FILE_EOF, "End of file\n");
   free(*head);
@@ -304,38 +299,35 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
   return PLL_FAILURE;
 }
 
-PLL_EXPORT long pll_fasta_getfilesize(const pll_fasta_t * fd)
+PLL_EXPORT long pll_fasta_getfilesize(const pll_fasta_t *fd)
 {
   return fd->filesize;
 }
 
-PLL_EXPORT long pll_fasta_getfilepos(pll_fasta_t * fd)
-{
-  return ftell(fd->fp);
-}
+PLL_EXPORT long pll_fasta_getfilepos(pll_fasta_t *fd) { return ftell(fd->fp); }
 
-PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
+PLL_EXPORT pll_msa_t *pll_fasta_load(const char *fname)
 {
   int i;
 
-  char * seq = NULL;
-  char * hdr = NULL;
-  long seqlen;
-  long hdrlen;
-  long seqno;
+  char *seq = NULL;
+  char *hdr = NULL;
+  long  seqlen;
+  long  hdrlen;
+  long  seqno;
 
-  long alloc_count = 0;
-  long alloc_chunk = 0;
-  size_t alloc_size = 0;
+  long   alloc_count = 0;
+  long   alloc_chunk = 0;
+  size_t alloc_size  = 0;
 
-  pll_fasta_t * fp = pll_fasta_open(fname, pll_map_generic);
+  pll_fasta_t *fp = pll_fasta_open(fname, pll_map_generic);
   if (!fp)
   {
     assert(pll_errno);
     return NULL;
   }
 
-  pll_msa_t * msa = (pll_msa_t *) calloc(1, sizeof(pll_msa_t));
+  pll_msa_t *msa = (pll_msa_t *)calloc(1, sizeof(pll_msa_t));
   if (!msa)
   {
     pll_fasta_close(fp);
@@ -345,16 +337,16 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
 
   /* read FASTA sequences and make sure they are all of the same length */
   msa->length = -1;
-  msa->count = 0;
-  for (i = 0; pll_fasta_getnext(fp,&hdr,&hdrlen,&seq,&seqlen,&seqno); ++i)
+  msa->count  = 0;
+  for (i = 0; pll_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
   {
     if (msa->length == -1)
     {
-      msa->length = (int) seqlen;
+      msa->length = (int)seqlen;
 
       /* estimate number of sequences from file size and sequence length
        * (it's better to overestimate slightly to avoid reallocations) */
-      alloc_chunk =  (long) ceil(1.1 * fp->filesize / (seqlen + hdrlen));
+      alloc_chunk = (long)ceil(1.1 * fp->filesize / (seqlen + hdrlen));
     }
     else if (msa->length != seqlen)
     {
@@ -364,7 +356,9 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
       pll_set_error(PLL_ERROR_FASTA_NONALIGNED,
                     "FASTA file does not contain equal size sequences: "
                     "sequence %d has length of %ld (expected: %d)",
-                    i, seqlen, msa->length);
+                    i,
+                    seqlen,
+                    msa->length);
       return NULL;
     }
 
@@ -372,20 +366,20 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
     {
       /* allocate arrays to store FASTA headers and sequences */
       alloc_count += alloc_chunk;
-      alloc_size = (size_t) alloc_count * sizeof(char *);
-      msa->label = (char **)realloc(msa->label, alloc_size);
+      alloc_size    = (size_t)alloc_count * sizeof(char *);
+      msa->label    = (char **)realloc(msa->label, alloc_size);
       msa->sequence = (char **)realloc(msa->sequence, alloc_size);
     }
 
-    msa->label[i] = hdr;
+    msa->label[i]    = hdr;
     msa->sequence[i] = seq;
   }
 
   msa->count = i;
 
   /* trim label and sequence arrays to their actual size */
-  alloc_size = (size_t) msa->count * sizeof(char *);
-  msa->label = (char **)realloc(msa->label, alloc_size);
+  alloc_size    = (size_t)msa->count * sizeof(char *);
+  msa->label    = (char **)realloc(msa->label, alloc_size);
   msa->sequence = (char **)realloc(msa->sequence, alloc_size);
 
   /* close FASTA file */
@@ -402,5 +396,3 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
 
   return msa;
 }
-
-

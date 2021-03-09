@@ -37,61 +37,59 @@
 #define MAX_RATE_CATS 16
 #define NUM_BRANCH_LENGTHS 7
 
-static double frequencies[4]  = { 0.1, 0.2, 0.3, 0.4 };
-static double subst_params[6] = { 1, 5, 1, 1, 5, 1 };
-static double categories[MAX_RATE_CATS] = {0};
+static double       frequencies[4]                = {0.1, 0.2, 0.3, 0.4};
+static double       subst_params[6]               = {1, 5, 1, 1, 5, 1};
+static double       categories[MAX_RATE_CATS]     = {0};
 static unsigned int params_indices[MAX_RATE_CATS] = {0};
-static unsigned int invar_weights[STATES] = { 50, 40, 60, 20 };
-static double test_branch_lengths[NUM_BRANCH_LENGTHS] =
-                {0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0};
+static unsigned int invar_weights[STATES]         = {50, 40, 60, 20};
+static double       test_branch_lengths[NUM_BRANCH_LENGTHS] = {
+    0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0};
 
-static unsigned int traversal_size, matrix_count, ops_count;
-static pll_unode_t ** travbuffer;
-static unsigned int * matrix_indices;
-static double * branch_lengths;
-static pll_operation_t * operations;
+static unsigned int     traversal_size, matrix_count, ops_count;
+static pll_unode_t **   travbuffer;
+static unsigned int *   matrix_indices;
+static double *         branch_lengths;
+static pll_operation_t *operations;
 
-void print_travbuffer(pll_unode_t ** travbuffer, unsigned int len)
+void print_travbuffer(pll_unode_t **travbuffer, unsigned int len)
 {
   unsigned int i;
-  for (i=0; i<len; ++i)
+  for (i = 0; i < len; ++i)
     printf("%d(%d) ", travbuffer[i]->clv_index, travbuffer[i]->scaler_index);
   printf("\n");
 }
 
-void print_operations(pll_operation_t * operations, unsigned int len)
+void print_operations(pll_operation_t *operations, unsigned int len)
 {
   unsigned int i;
-  for (i=0; i<len; ++i)
+  for (i = 0; i < len; ++i)
     printf("%d[%d]+%d[%d]->%d ",
-                      operations[i].child1_clv_index,
-                      operations[i].child1_matrix_index,
-                      operations[i].child2_clv_index,
-                      operations[i].child2_matrix_index,
-                      operations[i].parent_clv_index);
+           operations[i].child1_clv_index,
+           operations[i].child1_matrix_index,
+           operations[i].child2_clv_index,
+           operations[i].child2_matrix_index,
+           operations[i].parent_clv_index);
   printf("\n");
 }
 
-static double eval(pll_partition_t * partition,
-                   pll_unode_t * node,
-                   double alpha,
-                   double old_lnl)
+static double eval(pll_partition_t *partition,
+                   pll_unode_t *    node,
+                   double           alpha,
+                   double           old_lnl)
 {
   unsigned int i;
-  double logl, upbl_logl;
-  double d_f, dd_f;
-  double * sumtable;
+  double       logl, upbl_logl;
+  double       d_f, dd_f;
+  double *     sumtable;
 
   pll_set_subst_params(partition, 0, subst_params);
   pll_set_frequencies(partition, 0, frequencies);
-  pll_compute_gamma_cats(alpha, partition->rate_cats, categories, PLL_GAMMA_RATES_MEAN);
+  pll_compute_gamma_cats(
+      alpha, partition->rate_cats, categories, PLL_GAMMA_RATES_MEAN);
   pll_set_category_rates(partition, categories);
 
-  pll_update_prob_matrices(partition,
-                           params_indices,
-                           matrix_indices,
-                           branch_lengths,
-                           matrix_count);
+  pll_update_prob_matrices(
+      partition, params_indices, matrix_indices, branch_lengths, matrix_count);
   pll_update_clvs(partition, operations, ops_count);
   logl = pll_compute_edge_loglikelihood(partition,
                                         node->clv_index,
@@ -110,8 +108,9 @@ static double eval(pll_partition_t * partition,
   printf("Log-L: %f\n", logl);
 
   sumtable = (double *)pll_aligned_alloc(
-    (partition->sites + partition->states) * partition->rate_cats * partition->states_padded *
-    sizeof(double), partition->alignment);
+      (partition->sites + partition->states) * partition->rate_cats
+          * partition->states_padded * sizeof(double),
+      partition->alignment);
 
   pll_update_sumtable(partition,
                       node->clv_index,
@@ -121,9 +120,13 @@ static double eval(pll_partition_t * partition,
                       params_indices,
                       sumtable);
 
-  double max_logl = -(1<<30);
-  printf("%8s %18s %15s %15s\n", "Br.Len", "logLikelihood", "1st Deriv", "2nd Deriv");
-  for (i=0; i<NUM_BRANCH_LENGTHS; ++i)
+  double max_logl = -(1 << 30);
+  printf("%8s %18s %15s %15s\n",
+         "Br.Len",
+         "logLikelihood",
+         "1st Deriv",
+         "2nd Deriv");
+  for (i = 0; i < NUM_BRANCH_LENGTHS; ++i)
   {
     double branch_length = test_branch_lengths[i];
     if (!pll_compute_likelihood_derivatives(partition,
@@ -134,25 +137,22 @@ static double eval(pll_partition_t * partition,
                                             sumtable,
                                             &d_f,
                                             &dd_f))
-   {
-     printf("Error computing likelihood derivatives\n");
-     exit(1);
-   }
+    {
+      printf("Error computing likelihood derivatives\n");
+      exit(1);
+    }
 
-   /* update logLikelihood */
-   pll_update_prob_matrices(partition,
-                            params_indices,
-                            &(node->pmatrix_index),
-                            &branch_length,
-                            1);
-   upbl_logl = pll_compute_edge_loglikelihood(partition,
-                                         node->clv_index,
-                                         node->scaler_index,
-                                         node->back->clv_index,
-                                         node->back->scaler_index,
-                                         node->pmatrix_index,
-                                         params_indices,
-                                         NULL);
+    /* update logLikelihood */
+    pll_update_prob_matrices(
+        partition, params_indices, &(node->pmatrix_index), &branch_length, 1);
+    upbl_logl = pll_compute_edge_loglikelihood(partition,
+                                               node->clv_index,
+                                               node->scaler_index,
+                                               node->back->clv_index,
+                                               node->back->scaler_index,
+                                               node->pmatrix_index,
+                                               params_indices,
+                                               NULL);
 
     printf("%8.4f %18.6f %15.8e %15.8e  ", branch_length, upbl_logl, d_f, dd_f);
     if (upbl_logl > max_logl)
@@ -167,18 +167,18 @@ static double eval(pll_partition_t * partition,
   return logl;
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-  unsigned int attributes;
-  pll_partition_t * partition;
-  pll_utree_t * tree;
-  pll_unode_t * root;
-  unsigned int taxa_count, nodes_count, inner_nodes_count, branch_count;
-  double alpha = 0.5;
-  unsigned int rate_cats = 4;
-  int i;
-  double lnl_test[4] = {0};
-  int retval;
+  unsigned int     attributes;
+  pll_partition_t *partition;
+  pll_utree_t *    tree;
+  pll_unode_t *    root;
+  unsigned int     taxa_count, nodes_count, inner_nodes_count, branch_count;
+  double           alpha     = 0.5;
+  unsigned int     rate_cats = 4;
+  int              i;
+  double           lnl_test[4] = {0};
+  int              retval;
 
   /* check attributes */
   attributes = get_attributes(argc, argv);
@@ -186,16 +186,16 @@ int main(int argc, char * argv[])
 
   tree = pll_utree_parse_newick(TRE_FILENAME);
 
-  taxa_count = tree->tip_count;
-  root = tree->vroot;
+  taxa_count        = tree->tip_count;
+  root              = tree->vroot;
   inner_nodes_count = tree->inner_count;
-  nodes_count = taxa_count + inner_nodes_count;
-  branch_count = tree->edge_count;  
+  nodes_count       = taxa_count + inner_nodes_count;
+  branch_count      = tree->edge_count;
 
   printf("Read %s: %u taxa\n", TRE_FILENAME, taxa_count);
 
   assert(inner_nodes_count == taxa_count - 2);
-  assert(branch_count == 2*taxa_count - 3);
+  assert(branch_count == 2 * taxa_count - 3);
   assert(tree->binary);
 
   retval = pll_utree_check_integrity(tree);
@@ -206,17 +206,16 @@ int main(int argc, char * argv[])
   }
 
   /* build fixed structures */
-  travbuffer = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer     = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(unsigned int));
-  operations = (pll_operation_t *)malloc(inner_nodes_count *
-                                                sizeof(pll_operation_t));
+  operations =
+      (pll_operation_t *)malloc(inner_nodes_count * sizeof(pll_operation_t));
 
-  partition = parse_msa(MSA_FILENAME, STATES, rate_cats, 1,
-                        tree, attributes);
+  partition = parse_msa(MSA_FILENAME, STATES, rate_cats, 1, tree, attributes);
   printf("Read %s: %u sites\n", MSA_FILENAME, partition->sites);
 
-  for (i=0;i<3;++i)
+  for (i = 0; i < 3; ++i)
   {
     root = root->next;
 
@@ -233,7 +232,7 @@ int main(int argc, char * argv[])
       printf("ERROR: pll_utree traversal failed: %s\n", pll_errmsg);
       exit(-1);
     }
-    
+
     pll_utree_create_operations(travbuffer,
                                 traversal_size,
                                 branch_lengths,
@@ -274,16 +273,15 @@ int main(int argc, char * argv[])
     pll_set_asc_state_weights(partition, invar_weights);
 
     lnl_test[3] = eval(partition, root, alpha, lnl_test[3]);
-
   }
-    /* clean */
-    free(travbuffer);
-    free(branch_lengths);
-    free(operations);
-    free(matrix_indices);
-    pll_partition_destroy(partition);
+  /* clean */
+  free(travbuffer);
+  free(branch_lengths);
+  free(operations);
+  free(matrix_indices);
+  pll_partition_destroy(partition);
 
-  pll_utree_destroy(tree,NULL);
+  pll_utree_destroy(tree, NULL);
 
   return 0;
 }

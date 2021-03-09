@@ -23,9 +23,9 @@
 #include <stdarg.h>
 #include <time.h>
 
-static void fatal(const char * format, ...) __attribute__ ((noreturn));
+static void fatal(const char *format, ...) __attribute__((noreturn));
 
-static void fatal(const char * format, ...)
+static void fatal(const char *format, ...)
 {
   va_list argptr;
   va_start(argptr, format);
@@ -47,9 +47,9 @@ typedef struct nodedata_s
 
    for tip nodes:
      label, branch length and support value
-   
+
    for inner nodes:
-     label, branch length, support value, and a random value 
+     label, branch length, support value, and a random value
 
    Note that this is not a standard format that can be read by all tree viewers
 
@@ -57,11 +57,10 @@ typedef struct nodedata_s
    http://dmi.uib.es/~gcardona/BioInfo/enewick.html
 
 */
-static char * cb_serialize(const pll_unode_t * node)
+static char *cb_serialize(const pll_unode_t *node)
 {
-  char * s = NULL;
-  nodedata_t * nd;
-
+  char *      s = NULL;
+  nodedata_t *nd;
 
   /* inner node */
   if (node->next)
@@ -94,10 +93,10 @@ static char * cb_serialize(const pll_unode_t * node)
   return s;
 }
 
-pll_utree_t * load_tree_unrooted(const char * filename)
+pll_utree_t *load_tree_unrooted(const char *filename)
 {
-  pll_utree_t * utree;
-  pll_rtree_t * rtree;
+  pll_utree_t *utree;
+  pll_rtree_t *rtree;
 
   if (!(rtree = pll_rtree_parse_newick(filename)))
   {
@@ -111,36 +110,34 @@ pll_utree_t * load_tree_unrooted(const char * filename)
   {
     utree = pll_rtree_unroot(rtree);
 
-    pll_unode_t * root = utree->nodes[utree->tip_count+utree->inner_count-1];
+    pll_unode_t *root = utree->nodes[utree->tip_count + utree->inner_count - 1];
 
     /* optional step if using default PLL clv/pmatrix index assignments */
     pll_utree_reset_template_indices(root, utree->tip_count);
 
-    pll_rtree_destroy(rtree,NULL);
+    pll_rtree_destroy(rtree, NULL);
   }
 
   return utree;
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
   unsigned int i;
 
-  if (argc != 2)
-    fatal("syntax: %s [newick]", argv[0]);
+  if (argc != 2) fatal("syntax: %s [newick]", argv[0]);
 
   /* initialize pseudo-random number generator */
   srandom(time(NULL));
 
   /* load tree as unrooted */
-  pll_utree_t * utree = load_tree_unrooted(argv[1]);
-  if (!utree)
-    fatal("Tree must be a rooted or unrooted binary.");
+  pll_utree_t *utree = load_tree_unrooted(argv[1]);
+  if (!utree) fatal("Tree must be a rooted or unrooted binary.");
 
   /* set random support values for tip nodes */
   for (i = 0; i < utree->tip_count; ++i)
   {
-    pll_unode_t * node = utree->nodes[i];
+    pll_unode_t *node = utree->nodes[i];
     nodedata_t * data;
 
     node->data = malloc(sizeof(nodedata_t));
@@ -155,7 +152,7 @@ int main(int argc, char * argv[])
      up an inner node */
   for (i = utree->tip_count; i < utree->tip_count + utree->inner_count; ++i)
   {
-    pll_unode_t * node = utree->nodes[i];
+    pll_unode_t *node = utree->nodes[i];
     nodedata_t * data;
 
     node->data = malloc(sizeof(nodedata_t));
@@ -163,29 +160,29 @@ int main(int argc, char * argv[])
     data = (nodedata_t *)(node->data);
 
     data->support = random() / (double)RAND_MAX;
-    data->rvalue = data->support * random();
+    data->rvalue  = data->support * random();
   }
 
   /* select a random inner node */
-  long int r = random() % utree->inner_count;
-  pll_unode_t * root = utree->nodes[utree->tip_count + r];
+  long int     r    = random() % utree->inner_count;
+  pll_unode_t *root = utree->nodes[utree->tip_count + r];
 
   /* export the tree to newick format with the selected inner node as the root
      of the unrooted binary tree.
-     
-     If we pass NULL as the callback function, then the tree is printed in newick
-     format with branch lengths only, i.e.
-  
+
+     If we pass NULL as the callback function, then the tree is printed in
+     newick format with branch lengths only, i.e.
+
      char * newick = pll_utree_export_newick(root,NULL);
   */
 
-  char * newick = pll_utree_export_newick(root,cb_serialize);
+  char *newick = pll_utree_export_newick(root, cb_serialize);
 
   printf("%s\n", newick);
 
   free(newick);
 
-  pll_utree_destroy(utree,free);
+  pll_utree_destroy(utree, free);
 
   return 0;
 }

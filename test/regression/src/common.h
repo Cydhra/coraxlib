@@ -26,27 +26,27 @@
 extern const pll_state_t odd5_map[256];
 
 unsigned int get_attributes(int argc, char **argv);
-void skip_test();
+void         skip_test();
 
-pll_partition_t * parse_msa(const char * filename,
-                            unsigned int states,
-                            unsigned int rate_cats,
-                            unsigned int rate_matrices,
-                            pll_utree_t * tree,
-                            unsigned int attributes);
+pll_partition_t *parse_msa(const char * filename,
+                           unsigned int states,
+                           unsigned int rate_cats,
+                           unsigned int rate_matrices,
+                           pll_utree_t *tree,
+                           unsigned int attributes);
 
-pll_partition_t * parse_msa_reduced(const char * filename,
-                            unsigned int states,
-                            unsigned int rate_cats,
-                            unsigned int rate_matrices,
-                            pll_utree_t * tree,
-                            unsigned int attributes,
-                            unsigned int max_sites);
-int cb_full_traversal(pll_unode_t * node);
+pll_partition_t *parse_msa_reduced(const char * filename,
+                                   unsigned int states,
+                                   unsigned int rate_cats,
+                                   unsigned int rate_matrices,
+                                   pll_utree_t *tree,
+                                   unsigned int attributes,
+                                   unsigned int max_sites);
+int              cb_full_traversal(pll_unode_t *node);
 
 /* print error and exit */
-void fatal(const char * format, ...) __attribute__ ((noreturn));
-char * xstrdup(const char * s);
-void * xmalloc(size_t size);
+void  fatal(const char *format, ...) __attribute__((noreturn));
+char *xstrdup(const char *s);
+void *xmalloc(size_t size);
 
 #endif /* COMMON_H_ */

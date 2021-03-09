@@ -21,7 +21,7 @@
 
 #include "corax.h"
 
-static int utree_find(pll_unode_t * start, pll_unode_t * target)
+static int utree_find(pll_unode_t *start, pll_unode_t *target)
 {
   /* checks whether the subtree rooted at 'start' (in the direction of
      start->next and start->next->next) contains the node 'target' */
@@ -44,37 +44,35 @@ static int utree_find(pll_unode_t * start, pll_unode_t * target)
   return 0;
 }
 
-static void utree_link(pll_unode_t * a,
-                       pll_unode_t * b,
-                       double length,
+static void utree_link(pll_unode_t *a,
+                       pll_unode_t *b,
+                       double       length,
                        unsigned int pmatrix_index)
 {
-  a->back = b;
-  b->back = a;
+  a->back   = b;
+  b->back   = a;
   a->length = length;
   b->length = length;
 
   a->pmatrix_index = b->pmatrix_index = pmatrix_index;
 }
 
-static void utree_swap(pll_unode_t * t1, pll_unode_t * t2)
+static void utree_swap(pll_unode_t *t1, pll_unode_t *t2)
 {
   /* swaps the positions of trees t1 and t2. The two trees retain the branch
   lengths from their root to their respective parent nodes, and retain their
   pmatrix indices (i.e. no updating of pmatrices is required) */
 
-  pll_unode_t * temp = t1->back;
+  pll_unode_t *temp = t1->back;
 
   utree_link(t1, t2->back, t2->back->length, t2->back->pmatrix_index);
   utree_link(t2, temp, temp->length, temp->pmatrix_index);
 }
 
-PLL_EXPORT int pll_utree_nni(pll_unode_t * p,
-                             int type,
-                             pll_utree_rb_t * rb)
+PLL_EXPORT int pll_utree_nni(pll_unode_t *p, int type, pll_utree_rb_t *rb)
 {
-  pll_unode_t * subtree1;
-  pll_unode_t * subtree2;
+  pll_unode_t *subtree1;
+  pll_unode_t *subtree2;
 
   if ((type != PLL_UTREE_MOVE_NNI_LEFT) && (type != PLL_UTREE_MOVE_NNI_RIGHT))
   {
@@ -92,33 +90,31 @@ PLL_EXPORT int pll_utree_nni(pll_unode_t * p,
   /* check if rollback buffer is provided, and fill it up */
   if (rb)
   {
-    rb->move_type = PLL_UTREE_MOVE_NNI;
-    rb->nni.p = p;
+    rb->move_type    = PLL_UTREE_MOVE_NNI;
+    rb->nni.p        = p;
     rb->nni.nni_type = type;
   }
 
   subtree1 = p->next;
-  subtree2 = (type == PLL_UTREE_MOVE_NNI_LEFT) ?
-               p->back->next : p->back->next->next;
+  subtree2 =
+      (type == PLL_UTREE_MOVE_NNI_LEFT) ? p->back->next : p->back->next->next;
 
-  utree_swap(subtree1,subtree2);
+  utree_swap(subtree1, subtree2);
 
   return PLL_SUCCESS;
 }
 
-static int utree_nni_rollback(pll_utree_rb_t * rb)
+static int utree_nni_rollback(pll_utree_rb_t *rb)
 {
   /* restore the tree topology from a previous SPR */
-  return pll_utree_nni(rb->nni.p,
-                       rb->nni.nni_type,
-                       NULL);
+  return pll_utree_nni(rb->nni.p, rb->nni.nni_type, NULL);
 }
 
-PLL_EXPORT int pll_utree_spr(pll_unode_t * p,
-                             pll_unode_t * r,
-                             pll_utree_rb_t * rb,
-                             double * branch_lengths,
-                             unsigned int * matrix_indices)
+PLL_EXPORT int pll_utree_spr(pll_unode_t *   p,
+                             pll_unode_t *   r,
+                             pll_utree_rb_t *rb,
+                             double *        branch_lengths,
+                             unsigned int *  matrix_indices)
 {
   /* given nodes p and r, perform an SPR move in the following way,
      i.e. prune subtree C and make it adjacent to subtree D:
@@ -159,24 +155,25 @@ PLL_EXPORT int pll_utree_spr(pll_unode_t * p,
 
   int k = 0;
 
-  if ((!branch_lengths && matrix_indices) ||
-      (branch_lengths && !matrix_indices))
+  if ((!branch_lengths && matrix_indices)
+      || (branch_lengths && !matrix_indices))
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameters 4,5 must be both NULL or both set");
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Parameters 4,5 must be both NULL or both set");
     return PLL_FAILURE;
   }
 
   /* if p is a tip node then prompt an error */
   if (!p->next)
   {
-    pll_set_error(PLL_ERROR_SPR_TERMINALBRANCH, "Prune edge must be defined by an inner node");
+    pll_set_error(PLL_ERROR_SPR_TERMINALBRANCH,
+                  "Prune edge must be defined by an inner node");
     return PLL_FAILURE;
   }
 
   /* check whether the move will result in the same tree */
-  if (r == p || r == p->back ||
-      r == p->next || r == p->next->back ||
-      r == p->next->next || r == p->next->next->back)
+  if (r == p || r == p->back || r == p->next || r == p->next->back
+      || r == p->next->next || r == p->next->next->back)
   {
     pll_set_error(PLL_ERROR_SPR_NOCHANGE, "Proposed move yields the same tree");
     return PLL_FAILURE;
@@ -185,25 +182,22 @@ PLL_EXPORT int pll_utree_spr(pll_unode_t * p,
   /* check if rollback buffer is provided, and fill it up */
   if (rb)
   {
-    rb->move_type = PLL_UTREE_MOVE_SPR;
-    rb->spr.p = p;
-    rb->spr.r = r;
-    rb->spr.rb = r->back;
-    rb->spr.r_len = r->length;
-    rb->spr.pnb = p->next->back;
-    rb->spr.pnb_len = p->next->length;
-    rb->spr.pnnb = p->next->next->back;
+    rb->move_type    = PLL_UTREE_MOVE_SPR;
+    rb->spr.p        = p;
+    rb->spr.r        = r;
+    rb->spr.rb       = r->back;
+    rb->spr.r_len    = r->length;
+    rb->spr.pnb      = p->next->back;
+    rb->spr.pnb_len  = p->next->length;
+    rb->spr.pnnb     = p->next->next->back;
     rb->spr.pnnb_len = p->next->next->length;
   }
 
   /* (b) connect u and v */
-  pll_unode_t * u = p->next->back;
-  pll_unode_t * v = p->next->next->back;
-  utree_link(u,
-             v,
-             u->length + v->length,
-             u->pmatrix_index);
-  /* if requested, store the new branch length for the corresponding 
+  pll_unode_t *u = p->next->back;
+  pll_unode_t *v = p->next->next->back;
+  utree_link(u, v, u->length + v->length, u->pmatrix_index);
+  /* if requested, store the new branch length for the corresponding
      pmatrix index */
   if (branch_lengths)
   {
@@ -218,44 +212,39 @@ PLL_EXPORT int pll_utree_spr(pll_unode_t * p,
   double length = r->length / 2;
 
   /* r' <-> q' */
-  utree_link(r->back,
-             p->next->next,
-             length,
-             p->next->next->pmatrix_index);
-  /* if requested, store the new branch length for the corresponding 
+  utree_link(r->back, p->next->next, length, p->next->next->pmatrix_index);
+  /* if requested, store the new branch length for the corresponding
      pmatrix index */
   if (branch_lengths)
   {
     ++k;
     branch_lengths[k] = length;
-    matrix_indices[k]   = p->next->next->pmatrix_index;
+    matrix_indices[k] = p->next->next->pmatrix_index;
   }
 
   /* r<->q */
-  utree_link(r,
-             p->next,
-             length,
-             r->pmatrix_index);
-  /* if requested, store the new branch length for the corresponding 
+  utree_link(r, p->next, length, r->pmatrix_index);
+  /* if requested, store the new branch length for the corresponding
      pmatrix index */
   if (branch_lengths)
   {
     ++k;
     branch_lengths[k] = length;
-    matrix_indices[k]   = r->pmatrix_index;
+    matrix_indices[k] = r->pmatrix_index;
   }
 
   return PLL_SUCCESS;
 }
 
-static int utree_spr_rollback(pll_utree_rb_t * rb,
-                              double * branch_lengths,
-                              unsigned int * matrix_indices)
+static int utree_spr_rollback(pll_utree_rb_t *rb,
+                              double *        branch_lengths,
+                              unsigned int *  matrix_indices)
 {
-  if ((!branch_lengths && matrix_indices) ||
-      (branch_lengths && !matrix_indices))
+  if ((!branch_lengths && matrix_indices)
+      || (branch_lengths && !matrix_indices))
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameters 4,5 must be both NULL or both set");
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Parameters 4,5 must be both NULL or both set");
     return PLL_FAILURE;
   }
 
@@ -282,10 +271,7 @@ static int utree_spr_rollback(pll_utree_rb_t * rb,
     matrix_indices[k]   = rb->spr.p->next->next->pmatrix_index;
   }
 
-  utree_link(rb->spr.r,
-             rb->spr.rb,
-             rb->spr.r_len,
-             rb->spr.r->pmatrix_index);
+  utree_link(rb->spr.r, rb->spr.rb, rb->spr.r_len, rb->spr.r->pmatrix_index);
   if (branch_lengths)
   {
     branch_lengths[++k] = rb->spr.r_len;
@@ -298,11 +284,11 @@ static int utree_spr_rollback(pll_utree_rb_t * rb,
 /* this is a safer (but slower) function for performing an spr move, than
    pll_utree_spr(). See the last paragraph in the comments section of the
    pll_utree_spr() function for more details */
-PLL_EXPORT int pll_utree_spr_safe(pll_unode_t * p,
-                                  pll_unode_t * r,
-                                  pll_utree_rb_t * rb,
-                                  double * branch_lengths,
-                                  unsigned int * matrix_indices)
+PLL_EXPORT int pll_utree_spr_safe(pll_unode_t *   p,
+                                  pll_unode_t *   r,
+                                  pll_utree_rb_t *rb,
+                                  double *        branch_lengths,
+                                  unsigned int *  matrix_indices)
 {
   /* check all possible scenarios of failure */
   if (!p)
@@ -319,32 +305,34 @@ PLL_EXPORT int pll_utree_spr_safe(pll_unode_t * p,
 
   if (!p->next)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Prune edge must be defined by an inner node");
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Prune edge must be defined by an inner node");
     return PLL_FAILURE;
   }
 
   /* check whether the move results in the same tree */
-  if (r == p || r == p->back ||
-      r == p->next || r == p->next->back ||
-      r == p->next->next || r == p->next->next->back)
+  if (r == p || r == p->back || r == p->next || r == p->next->back
+      || r == p->next->next || r == p->next->next->back)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Proposed move yields the same tree");
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Proposed move yields the same tree");
     return PLL_FAILURE;
   }
 
   /* node r must not be in the same subtree as the one that is to be pruned */
   if (utree_find(p->back, r))
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Node r is part of the subtree to be pruned");
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Node r is part of the subtree to be pruned");
     return PLL_FAILURE;
   }
 
-  return pll_utree_spr(p,r,rb,branch_lengths,matrix_indices);
+  return pll_utree_spr(p, r, rb, branch_lengths, matrix_indices);
 }
 
-PLL_EXPORT int pll_utree_rollback(pll_utree_rb_t * rollback,
-                                  double * branch_lengths,
-                                  unsigned int * matrix_indices)
+PLL_EXPORT int pll_utree_rollback(pll_utree_rb_t *rollback,
+                                  double *        branch_lengths,
+                                  unsigned int *  matrix_indices)
 {
   if (!rollback)
   {

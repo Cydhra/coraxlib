@@ -21,104 +21,104 @@
 
 #include "corax.h"
 
-#define PLL_PHYLIP_SEQUENTIAL  1
+#define PLL_PHYLIP_SEQUENTIAL 1
 #define PLL_PHYLIP_INTERLEAVED 2
 
-static int dfa_parse(pll_phylip_t * fd,
-                     pll_msa_t * msa,
-                     char * p,
-                     int seqno,
-                     int offset)
+static int
+dfa_parse(pll_phylip_t *fd, pll_msa_t *msa, char *p, int seqno, int offset)
 {
-  int j = 0;
-  char c,m;
+  int  j = 0;
+  char c, m;
 
-  char * seqdata = msa->sequence[seqno] + offset;
+  char *seqdata = msa->sequence[seqno] + offset;
 
   /* read sequence data */
-  while((c = *p++))
+  while ((c = *p++))
   {
-    m = (char) fd->chrstatus[(int)c];
-    switch(m)
+    m = (char)fd->chrstatus[(int)c];
+    switch (m)
     {
-      case 0:
-        /* characters to be stripped */
-        fd->stripped_count++;
-        fd->stripped[(int)c]++;
-        break;
+    case 0:
+      /* characters to be stripped */
+      fd->stripped_count++;
+      fd->stripped[(int)c]++;
+      break;
 
-      case 1:
-        /* legal character */
-        if (offset + j >= msa->length)
-        {
-          pll_set_error(PLL_ERROR_PHYLIP_LONGSEQ,
-                        "Sequence %d (%.100s) longer than expected",
-                        seqno+1, msa->label[seqno]);
-          return -1;
-        }
-        seqdata[j++] = c;
-        break;
-
-      case 2:
-        /* fatal character */
-        if (c>=32)
-        {
-          pll_set_error(PLL_ERROR_PHYLIP_ILLEGALCHAR, "illegal character '%c' "
-                        "on line %ld in the fasta file",
-                        c, fd->lineno);
-        }
-        else
-        {
-          pll_set_error(PLL_ERROR_PHYLIP_UNPRINTABLECHAR,
-                        "illegal unprintable character "
-                        "%#.2x (hexadecimal) on line %ld "
-                        "in the fasta file",
-                        c, fd->lineno);
-        }
+    case 1:
+      /* legal character */
+      if (offset + j >= msa->length)
+      {
+        pll_set_error(PLL_ERROR_PHYLIP_LONGSEQ,
+                      "Sequence %d (%.100s) longer than expected",
+                      seqno + 1,
+                      msa->label[seqno]);
         return -1;
+      }
+      seqdata[j++] = c;
+      break;
 
-      case 3:
-        /* silently stripped chars */
-        break;
+    case 2:
+      /* fatal character */
+      if (c >= 32)
+      {
+        pll_set_error(PLL_ERROR_PHYLIP_ILLEGALCHAR,
+                      "illegal character '%c' "
+                      "on line %ld in the fasta file",
+                      c,
+                      fd->lineno);
+      }
+      else
+      {
+        pll_set_error(PLL_ERROR_PHYLIP_UNPRINTABLECHAR,
+                      "illegal unprintable character "
+                      "%#.2x (hexadecimal) on line %ld "
+                      "in the fasta file",
+                      c,
+                      fd->lineno);
+      }
+      return -1;
+
+    case 3:
+      /* silently stripped chars */
+      break;
     }
   }
   return j;
 }
 
 static const int delimiters[4] = {' ', '\t', '\r', '\n'};
-static int get_headerlen(char * s)
+static int       get_headerlen(char *s)
 {
   long min_len = strlen(s);
-  int i;
+  int  i;
 
-  for (i=0; i<4; ++i)
+  for (i = 0; i < 4; ++i)
   {
-    char * r = strchr(s, delimiters[i]);
-    if (r && (r - s) < min_len)
-        min_len = r - s;
+    char *r = strchr(s, delimiters[i]);
+    if (r && (r - s) < min_len) min_len = r - s;
   }
 
-  return (int) min_len;
+  return (int)min_len;
 }
 
-static char * reallocline(pll_phylip_t * fd, size_t newmaxsize)
+static char *reallocline(pll_phylip_t *fd, size_t newmaxsize)
 {
-  char * temp = (char *)malloc((size_t)newmaxsize*sizeof(char));
+  char *temp = (char *)malloc((size_t)newmaxsize * sizeof(char));
   if (!temp)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
-  memcpy(temp,fd->line,fd->line_size*sizeof(char));
+  memcpy(temp, fd->line, fd->line_size * sizeof(char));
   free(fd->line);
-  fd->line = temp;
+  fd->line         = temp;
   fd->line_maxsize = newmaxsize;
 
   return temp;
 }
 
-static char * getnextline(pll_phylip_t * fd)
+static char *getnextline(pll_phylip_t *fd)
 {
   size_t len = 0;
 
@@ -130,22 +130,21 @@ static char * getnextline(pll_phylip_t * fd)
     len = strlen(fd->buffer);
 
     if (fd->line_size + len > fd->line_maxsize)
-      if (!reallocline(fd, fd->line_maxsize + PLL_LINEALLOC))
-        return NULL;
+      if (!reallocline(fd, fd->line_maxsize + PLL_LINEALLOC)) return NULL;
 
-    memcpy(fd->line+fd->line_size,fd->buffer,len*sizeof(char));
+    memcpy(fd->line + fd->line_size, fd->buffer, len * sizeof(char));
     fd->line_size += len;
 
-    if (fd->buffer[len-1] == '\n')
+    if (fd->buffer[len - 1] == '\n')
     {
-      #if 0
+#if 0
       if (line_size+1 > line_maxsize)
         reallocline(line_maxsize+1);
 
       line[line_size] = 0;
-      #else
-        fd->line[fd->line_size-1] = 0;
-      #endif
+#else
+      fd->line[fd->line_size - 1] = 0;
+#endif
 
       return fd->line;
     }
@@ -159,52 +158,46 @@ static char * getnextline(pll_phylip_t * fd)
   }
 
   if (fd->line_size == fd->line_maxsize)
-    if (!reallocline(fd,fd->line_maxsize+1))
-      return NULL;
+    if (!reallocline(fd, fd->line_maxsize + 1)) return NULL;
 
   fd->line[fd->line_size] = 0;
   return fd->line;
-
 }
 
-static int args_getint(const char * arg, int * len)
+static int args_getint(const char *arg, int *len)
 {
   int temp;
   *len = 0;
 
   int ret = sscanf(arg, "%d%n", &temp, len);
-  if ((ret == 0) || (!*len))
-    return 0;
+  if ((ret == 0) || (!*len)) return 0;
 
   return temp;
 }
 
 static int whitespace(char c)
 {
-  if (c == ' ' || c == '\t' || c == '\n' || c == '\r')
-    return 1;
+  if (c == ' ' || c == '\t' || c == '\n' || c == '\r') return 1;
   return 0;
 }
 
-
-static int parse_header(const char * line,
-                        int * seq_count,
-                        int * seq_len,
-                        int format)
+static int
+parse_header(const char *line, int *seq_count, int *seq_len, int format)
 {
   int len;
 
   /* read number of sequences */
-  if (!(*seq_count = args_getint(line,&len)))
+  if (!(*seq_count = args_getint(line, &len)))
   {
-    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Invalid number of sequences in header");
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                  "Invalid number of sequences in header");
     return PLL_FAILURE;
   }
 
   line += len;
 
   /* read sequence length */
-  if (!(*seq_len = args_getint(line,&len)))
+  if (!(*seq_len = args_getint(line, &len)))
   {
     pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Invalid sequence length in header");
     return PLL_FAILURE;
@@ -216,40 +209,36 @@ static int parse_header(const char * line,
   while (*line && whitespace(*line)) ++line;
 
   /* if end of line then return successfully */
-  if (!*line)
-    return 1;
+  if (!*line) return 1;
 
   /* otherwise, continue only if interleaved format specified, otherwise die */
-  if (format == PLL_PHYLIP_SEQUENTIAL)
-    return 0;
+  if (format == PLL_PHYLIP_SEQUENTIAL) return 0;
 
-  if (*line != 's' && *line != 'S' && *line != 'i' && *line != 'I')
-    return 0;
+  if (*line != 's' && *line != 'S' && *line != 'i' && *line != 'I') return 0;
 
   /* go through all white spaces */
   while (*line && whitespace(*line)) ++line;
 
   /* if end of line then return successfully */
-  if (!*line)
-    return 1;
+  if (!*line) return 1;
 
   return 0;
 }
 
-static char * parse_oneline_sequence(pll_phylip_t * fd,
-                                     pll_msa_t * msa,
-                                     char * p,
-                                     int seqno,
-                                     int offset,
-                                     int * aln_len,
-                                     int * error)
+static char *parse_oneline_sequence(pll_phylip_t *fd,
+                                    pll_msa_t *   msa,
+                                    char *        p,
+                                    int           seqno,
+                                    int           offset,
+                                    int *         aln_len,
+                                    int *         error)
 {
   int j = 0;
 
   while (p && !j)
   {
     /* read data */
-    if ((j = dfa_parse(fd,msa,p,seqno,offset)) == -1)
+    if ((j = dfa_parse(fd, msa, p, seqno, offset)) == -1)
     {
       *error = 1;
       return NULL;
@@ -257,16 +246,14 @@ static char * parse_oneline_sequence(pll_phylip_t * fd,
 
     if (j)
     {
-      if (!(*aln_len))
-      {
-        *aln_len = j;
-      }
+      if (!(*aln_len)) { *aln_len = j; }
       else if (*aln_len != j)
       {
         *error = 1;
         pll_set_error(PLL_ERROR_PHYLIP_NONALIGNED,
                       "Sequence %d (%.100s) data out of alignment",
-                      seqno+1, msa->label[seqno]);
+                      seqno + 1,
+                      msa->label[seqno]);
         return NULL;
       }
     }
@@ -277,12 +264,12 @@ static char * parse_oneline_sequence(pll_phylip_t * fd,
   return p;
 }
 
-PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
-                                          const unsigned int * map)
+PLL_EXPORT pll_phylip_t *pll_phylip_open(const char *        filename,
+                                         const unsigned int *map)
 {
   int i;
 
-  pll_phylip_t * fd = (pll_phylip_t *)malloc(sizeof(pll_phylip_t));
+  pll_phylip_t *fd = (pll_phylip_t *)malloc(sizeof(pll_phylip_t));
   if (!fd)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -290,8 +277,8 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
   }
 
   /* allocate space */
-  fd->line = NULL;
-  fd->line_size = 0;
+  fd->line         = NULL;
+  fd->line_size    = 0;
   fd->line_maxsize = 0;
 
   fd->lineno = 0;
@@ -323,14 +310,12 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
 
   /* reset stripped char frequencies */
   fd->stripped_count = 0;
-  for(i=0; i<256; i++)
-    fd->stripped[i] = 0;
+  for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   /* cache line */
   if (!getnextline(fd))
   {
-    if (fd->line)
-      free(fd->line);
+    if (fd->line) free(fd->line);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -341,7 +326,7 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
   return fd;
 }
 
-PLL_EXPORT int pll_phylip_rewind(pll_phylip_t * fd)
+PLL_EXPORT int pll_phylip_rewind(pll_phylip_t *fd)
 {
   int i;
 
@@ -349,8 +334,7 @@ PLL_EXPORT int pll_phylip_rewind(pll_phylip_t * fd)
 
   /* reset stripped char frequencies */
   fd->stripped_count = 0;
-  for(i=0; i<256; i++)
-    fd->stripped[i] = 0;
+  for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   if (!getnextline(fd))
   {
@@ -358,28 +342,27 @@ PLL_EXPORT int pll_phylip_rewind(pll_phylip_t * fd)
     return PLL_FAILURE;
   }
   fd->lineno = 1;
-  fd->no = -1;
+  fd->no     = -1;
 
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT void pll_phylip_close(pll_phylip_t * fd)
+PLL_EXPORT void pll_phylip_close(pll_phylip_t *fd)
 {
   fclose(fd->fp);
-  if (fd->line)
-    free(fd->line);
+  if (fd->line) free(fd->line);
   free(fd);
 }
 
-PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
+PLL_EXPORT pll_msa_t *pll_phylip_parse_interleaved(pll_phylip_t *fd)
 {
-  int i;
-  int aln_len;
-  int sumlen;
-  int seqno;
+  int  i;
+  int  aln_len;
+  int  sumlen;
+  int  seqno;
   long headerlen;
 
-  pll_msa_t * msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
+  pll_msa_t *msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
   if (!msa)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -387,18 +370,16 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   }
 
   /* read header */
-  if (!parse_header(fd->line,
-                    &(msa->count),
-                    &(msa->length),
-                    PLL_PHYLIP_INTERLEAVED))
+  if (!parse_header(
+          fd->line, &(msa->count), &(msa->length), PLL_PHYLIP_INTERLEAVED))
   {
     free(msa);
     return NULL;
   }
 
   /* allocate msa placeholders */
-  msa->sequence = (char **)calloc((size_t)(msa->count),sizeof(char *));
-  msa->label = (char **)calloc((size_t)(msa->count),sizeof(char *));
+  msa->sequence = (char **)calloc((size_t)(msa->count), sizeof(char *));
+  msa->label    = (char **)calloc((size_t)(msa->count), sizeof(char *));
   if (!msa->label || !msa->sequence)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -409,7 +390,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   /* allocate sequence data placeholders */
   for (i = 0; i < msa->count; ++i)
   {
-    msa->sequence[i] = (char *)malloc((size_t)(msa->length+1) * sizeof(char));
+    msa->sequence[i] = (char *)malloc((size_t)(msa->length + 1) * sizeof(char));
     if (!msa->sequence[i])
     {
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -423,16 +404,16 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   /* assume the worst: whole sequence in one line + long label. *
    * Doing reallocate+copy really hurts on long alignments,     *
    * so we better waste some memory here to avoid reallocation. */
-  reallocline(fd, (size_t) msa->length+300);
+  reallocline(fd, (size_t)msa->length + 300);
 
   /* read sequences with headers */
-  seqno = 0;
-  aln_len = 0;
+  seqno     = 0;
+  aln_len   = 0;
   int error = 0;
   while (1)
   {
     /* get next line */
-    char * p = getnextline(fd);
+    char *p = getnextline(fd);
 
     /* if no more lines break */
     if (!p) break;
@@ -447,8 +428,9 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
     if (seqno == msa->count)
     {
       pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
-               "Found at least %d sequences but expected %d",
-               seqno+1, msa->count);
+                    "Found at least %d sequences but expected %d",
+                    seqno + 1,
+                    msa->count);
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -460,7 +442,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
     assert(headerlen > 0);
 
     /* store sequence header */
-    msa->label[seqno] = (char *)malloc((size_t)(headerlen+1)*sizeof(char));
+    msa->label[seqno] = (char *)malloc((size_t)(headerlen + 1) * sizeof(char));
     if (!msa->label[seqno])
     {
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -474,13 +456,11 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
 
     /* read (and parse) the first line (starting from p) that contains at
        least one character */
-    if (!parse_oneline_sequence(fd,msa,p,seqno,0,&aln_len,&error))
-      break;
+    if (!parse_oneline_sequence(fd, msa, p, seqno, 0, &aln_len, &error)) break;
 
     ++seqno;
 
-    if (seqno == msa->count)
-      break;
+    if (seqno == msa->count) break;
   }
 
   /* was the last block of sequences non-aligned? */
@@ -492,8 +472,10 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
 
   if (seqno != msa->count)
   {
-    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequence(s) but expected %d",
-             seqno, msa->count);
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                  "Found %d sequence(s) but expected %d",
+                  seqno,
+                  msa->count);
     pll_msa_destroy(msa);
     return NULL;
   }
@@ -503,19 +485,19 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   sumlen = aln_len;
 
   /* now read the remaining blocks */
-  seqno = 0;
-  aln_len = 0;
+  seqno           = 0;
+  aln_len         = 0;
   int block_count = 2;
   while (1)
   {
-    char * p = getnextline(fd);
+    char *p = getnextline(fd);
 
     /* read (and parse) the first line (starting from p) that contains at
        least one character */
-    if (!parse_oneline_sequence(fd,msa,p,seqno,sumlen,&aln_len,&error))
+    if (!parse_oneline_sequence(fd, msa, p, seqno, sumlen, &aln_len, &error))
       break;
 
-    seqno = (seqno+1) % msa->count;
+    seqno = (seqno + 1) % msa->count;
 
     /* if data for all sequences were read, then append the alignment length
        to the sum, and go for the next block */
@@ -537,15 +519,20 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   /* if seqno != 0 then there were more (or less) sequences than expected */
   if (seqno)
   {
-    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequences in block %d but expected %d",
-             seqno, block_count, msa->count);
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                  "Found %d sequences in block %d but expected %d",
+                  seqno,
+                  block_count,
+                  msa->count);
     pll_msa_destroy(msa);
     return NULL;
   }
   if (sumlen != msa->length)
   {
-    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Sequence length is %d but expected %d",
-             sumlen, msa->length);
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                  "Sequence length is %d but expected %d",
+                  sumlen,
+                  msa->length);
     pll_msa_destroy(msa);
     return NULL;
   }
@@ -553,12 +540,12 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   return msa;
 }
 
-PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
+PLL_EXPORT pll_msa_t *pll_phylip_parse_sequential(pll_phylip_t *fd)
 {
-  int i,j;
+  int  i, j;
   long headerlen;
 
-  pll_msa_t * msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
+  pll_msa_t *msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
   if (!msa)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -566,17 +553,15 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   }
 
   /* read header */
-  if (!parse_header(fd->line,
-                    &(msa->count),
-                    &(msa->length),
-                    PLL_PHYLIP_SEQUENTIAL))
+  if (!parse_header(
+          fd->line, &(msa->count), &(msa->length), PLL_PHYLIP_SEQUENTIAL))
   {
     free(msa);
     return NULL;
   }
 
-  msa->sequence = (char **)calloc((size_t)(msa->count),sizeof(char *));
-  msa->label = (char **)calloc((size_t)(msa->count),sizeof(char *));
+  msa->sequence = (char **)calloc((size_t)(msa->count), sizeof(char *));
+  msa->label    = (char **)calloc((size_t)(msa->count), sizeof(char *));
   if (!msa->label || !msa->sequence)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -586,7 +571,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
 
   for (i = 0; i < msa->count; ++i)
   {
-    msa->sequence[i] = (char *)malloc((size_t)(msa->length+1) * sizeof(char));
+    msa->sequence[i] = (char *)malloc((size_t)(msa->length + 1) * sizeof(char));
     if (!msa->sequence[i])
     {
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -599,7 +584,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   /* assume the worst: whole sequence in one line + long label. *
    * Doing reallocate+copy really hurts on long alignments,     *
    * so we better waste some memory here to avoid reallocation. */
-  reallocline(fd, (size_t) msa->length+300);
+  reallocline(fd, (size_t)msa->length + 300);
 
   /* read sequences */
   int seqno = 0;
@@ -607,7 +592,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   {
     /* get next line */
     fd->line = getnextline(fd);
-    char * p = fd->line;
+    char *p  = fd->line;
 
     /* if no more lines break */
     if (!p) break;
@@ -621,8 +606,10 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     /* error if there are more sequences than specified */
     if (seqno == msa->count)
     {
-      pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found at least %d sequences but expected %d",
-               seqno+1, msa->count);
+      pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                    "Found at least %d sequences but expected %d",
+                    seqno + 1,
+                    msa->count);
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -634,7 +621,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     assert(headerlen > 0);
 
     /* store sequence header */
-    msa->label[seqno] = (char *)malloc((size_t)(headerlen+1)*sizeof(char));
+    msa->label[seqno] = (char *)malloc((size_t)(headerlen + 1) * sizeof(char));
     if (!msa->label[seqno])
     {
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -647,11 +634,11 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     p += headerlen;
 
     /* go through possibly multiple sequence data lines */
-    j=0;
+    j = 0;
     while (1)
     {
       /* read sequence data */
-      int chars_count = dfa_parse(fd,msa,p,seqno,j);
+      int chars_count = dfa_parse(fd, msa, p, seqno, j);
       if (chars_count == -1)
       {
         pll_msa_destroy(msa);
@@ -661,16 +648,18 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
       j += chars_count;
 
       /* break if we read all sequence data */
-      if (j == msa->length)
-        break;
+      if (j == msa->length) break;
 
       p = getnextline(fd);
 
       if (!p)
       {
         pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
-                 "Sequence %d (%.100s) has %d characters but expected %d",
-                seqno+1,msa->label[seqno],j,msa->length);
+                      "Sequence %d (%.100s) has %d characters but expected %d",
+                      seqno + 1,
+                      msa->label[seqno],
+                      j,
+                      msa->length);
         pll_msa_destroy(msa);
         return NULL;
       }
@@ -681,8 +670,10 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
 
   if (seqno != msa->count)
   {
-    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequence(s) but expected %d",
-             seqno, msa->count);
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+                  "Found %d sequence(s) but expected %d",
+                  seqno,
+                  msa->count);
     pll_msa_destroy(msa);
     return NULL;
   }
@@ -690,22 +681,20 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   return msa;
 }
 
-pll_msa_t * pll_phylip_load(const char * fname, pll_bool_t interleaved)
+pll_msa_t *pll_phylip_load(const char *fname, pll_bool_t interleaved)
 {
-  pll_phylip_t * fd = pll_phylip_open(fname, pll_map_generic);
-  if (!fd)
-    return NULL;
+  pll_phylip_t *fd = pll_phylip_open(fname, pll_map_generic);
+  if (!fd) return NULL;
 
-  pll_msa_t * msa = interleaved ? pll_phylip_parse_interleaved(fd) :
-                                  pll_phylip_parse_sequential(fd);
+  pll_msa_t *msa = interleaved ? pll_phylip_parse_interleaved(fd)
+                               : pll_phylip_parse_sequential(fd);
 
   pll_phylip_close(fd);
 
   return msa;
 }
 
-PLL_EXPORT int pll_phylip_save(const char * out_fname,
-                               const pll_msa_t * msa)
+PLL_EXPORT int pll_phylip_save(const char *out_fname, const pll_msa_t *msa)
 {
   if (!msa)
   {
@@ -719,7 +708,7 @@ PLL_EXPORT int pll_phylip_save(const char * out_fname,
     return PLL_FAILURE;
   }
 
-  FILE * f = fopen(out_fname, "w");
+  FILE *f = fopen(out_fname, "w");
 
   if (!f)
   {
@@ -727,11 +716,11 @@ PLL_EXPORT int pll_phylip_save(const char * out_fname,
     return PLL_FAILURE;
   }
 
-  fprintf(f, "%lu %lu\n", (unsigned long) msa->count,
-                          (unsigned long) msa->length);
+  fprintf(
+      f, "%lu %lu\n", (unsigned long)msa->count, (unsigned long)msa->length);
 
   unsigned long i;
-  for (i = 0; i < (unsigned long) msa->count; ++i)
+  for (i = 0; i < (unsigned long)msa->count; ++i)
   {
     fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]);
   }
@@ -741,7 +730,7 @@ PLL_EXPORT int pll_phylip_save(const char * out_fname,
   return PLL_SUCCESS;
 }
 
-PLL_EXPORT void pll_msa_destroy(pll_msa_t * msa)
+PLL_EXPORT void pll_msa_destroy(pll_msa_t *msa)
 {
   if (!msa) return;
 
@@ -750,16 +739,14 @@ PLL_EXPORT void pll_msa_destroy(pll_msa_t * msa)
   if (msa->label)
   {
     for (i = 0; i < msa->count; ++i)
-      if (msa->label[i])
-        free(msa->label[i]);
+      if (msa->label[i]) free(msa->label[i]);
     free(msa->label);
   }
 
   if (msa->sequence)
   {
     for (i = 0; i < msa->count; ++i)
-      if (msa->sequence[i])
-        free(msa->sequence[i]);
+      if (msa->sequence[i]) free(msa->sequence[i]);
     free(msa->sequence);
   }
 

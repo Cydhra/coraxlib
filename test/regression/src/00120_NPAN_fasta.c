@@ -19,30 +19,31 @@
  Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
  */
 #include "common.h"
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
-#define ALPHA        0.5
-#define N_STATES    20
-#define N_RATE_CATS  4
+#define ALPHA 0.5
+#define N_STATES 20
+#define N_RATE_CATS 4
 
-#define N_TAXA   21
+#define N_TAXA 21
 #define N_SITES 113
 
 #define FASTA_FILE "testdata/ribosomal_l5_pf00673.fas"
 
-
-static int load_fasta_and_set_tips(const char * fasta_fname, pll_partition_t * partition,
-                                   const pll_state_t * map)
+static int load_fasta_and_set_tips(const char *       fasta_fname,
+                                   pll_partition_t *  partition,
+                                   const pll_state_t *map)
 {
   unsigned int i;
-  int retval = PLL_FAILURE;
+  int          retval = PLL_FAILURE;
 
-  pll_msa_t * msa = pll_fasta_load(fasta_fname);
+  pll_msa_t *msa = pll_fasta_load(fasta_fname);
   if (!msa)
   {
-    printf (" ERROR loading MSA from FASTA file (%d): %s\n", pll_errno, pll_errmsg);
-    exit (PLL_FAILURE);
+    printf(
+        " ERROR loading MSA from FASTA file (%d): %s\n", pll_errno, pll_errmsg);
+    exit(PLL_FAILURE);
   }
 
   assert(msa->count == partition->tips);
@@ -50,10 +51,10 @@ static int load_fasta_and_set_tips(const char * fasta_fname, pll_partition_t * p
 
   for (i = 0; i < msa->count; ++i)
   {
-    if (!pll_set_tip_states (partition, i, map, msa->sequence[i]))
+    if (!pll_set_tip_states(partition, i, map, msa->sequence[i]))
     {
-      printf (" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
-      retval = i+1;
+      printf(" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
+      retval = i + 1;
       break;
     }
   }
@@ -65,20 +66,19 @@ static int load_fasta_and_set_tips(const char * fasta_fname, pll_partition_t * p
 
 static int failtest(unsigned int attributes, pll_bool_t oneliner)
 {
-  unsigned int i;
-  pll_partition_t * partition;
-  int retval = PLL_FAILURE;
+  unsigned int     i;
+  pll_partition_t *partition;
+  int              retval = PLL_FAILURE;
 
-  partition = pll_partition_create(N_TAXA, /* tips */
-                                    4, /* clv buffers */
-                                    N_STATES, /* states */
-                                    N_SITES, /* sites */
-                                    1, /* different rate parameters */
-                                    8, /* probability matrices */
-                                    N_RATE_CATS, /* rate categories */
-                                    1, 
-                                    attributes
-                                    );
+  partition = pll_partition_create(N_TAXA,      /* tips */
+                                   4,           /* clv buffers */
+                                   N_STATES,    /* states */
+                                   N_SITES,     /* sites */
+                                   1,           /* different rate parameters */
+                                   8,           /* probability matrices */
+                                   N_RATE_CATS, /* rate categories */
+                                   1,
+                                   attributes);
 
   if (oneliner)
   {
@@ -86,26 +86,26 @@ static int failtest(unsigned int attributes, pll_bool_t oneliner)
   }
   else
   {
-    char * seq, *header;
-    long seq_len, header_len, seqno;
-    pll_fasta_t * fp = pll_fasta_open (FASTA_FILE, pll_map_fasta);
+    char *       seq, *header;
+    long         seq_len, header_len, seqno;
+    pll_fasta_t *fp = pll_fasta_open(FASTA_FILE, pll_map_fasta);
 
     i = 0;
-    while (pll_fasta_getnext (fp, &header, &header_len, &seq, &seq_len, &seqno))
+    while (pll_fasta_getnext(fp, &header, &header_len, &seq, &seq_len, &seqno))
     {
-      if (!pll_set_tip_states (partition, i, pll_map_nt, seq))
+      if (!pll_set_tip_states(partition, i, pll_map_nt, seq))
       {
-        free (header);
-        free (seq);
-        retval = i+1;
-        printf (" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
+        free(header);
+        free(seq);
+        retval = i + 1;
+        printf(" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
         break;
       }
-      free (header);
-      free (seq);
+      free(header);
+      free(seq);
       ++i;
     }
-    pll_fasta_close (fp);
+    pll_fasta_close(fp);
   }
 
   pll_partition_destroy(partition);
@@ -115,20 +115,20 @@ static int failtest(unsigned int attributes, pll_bool_t oneliner)
 
 static int proteintest(unsigned int attributes, pll_bool_t oneliner)
 {
-  unsigned int i;
-  pll_partition_t * partition;
+  unsigned int     i;
+  pll_partition_t *partition;
 
-  printf ("Creating PLL partition\n");
+  printf("Creating PLL partition\n");
 
-  partition = pll_partition_create(N_TAXA, /* tips */
-                                    4, /* clv buffers */
-                                    N_STATES, /* states */
-                                    N_SITES, /* sites */
-                                    1, /* different rate parameters */
-                                    8, /* probability matrices */
-                                    N_RATE_CATS, /* rate categories */
-                                    1,
-                                    attributes);
+  partition = pll_partition_create(N_TAXA,      /* tips */
+                                   4,           /* clv buffers */
+                                   N_STATES,    /* states */
+                                   N_SITES,     /* sites */
+                                   1,           /* different rate parameters */
+                                   8,           /* probability matrices */
+                                   N_RATE_CATS, /* rate categories */
+                                   1,
+                                   attributes);
 
   if (oneliner)
   {
@@ -137,52 +137,57 @@ static int proteintest(unsigned int attributes, pll_bool_t oneliner)
   }
   else
   {
-    char * seq, *header;
-    long seq_len, header_len, seqno;
+    char *seq, *header;
+    long  seq_len, header_len, seqno;
 
-    pll_fasta_t * fp = pll_fasta_open (FASTA_FILE, pll_map_fasta);
+    pll_fasta_t *fp = pll_fasta_open(FASTA_FILE, pll_map_fasta);
     if (!fp)
     {
-      printf (" ERROR opening file (%d): %s\n", pll_errno, pll_errmsg);
+      printf(" ERROR opening file (%d): %s\n", pll_errno, pll_errmsg);
       return (PLL_FAILURE);
     }
 
     i = 0;
-    while (pll_fasta_getnext (fp, &header, &header_len, &seq, &seq_len, &seqno))
+    while (pll_fasta_getnext(fp, &header, &header_len, &seq, &seq_len, &seqno))
     {
       if (seq_len != N_SITES)
       {
-        printf (
-            " ERROR: Mismatching sequence length for sequence %d (%ld, and it should be %d)\n",
-            i, seq_len, N_SITES);
+        printf(" ERROR: Mismatching sequence length for sequence %d (%ld, and "
+               "it should be %d)\n",
+               i,
+               seq_len,
+               N_SITES);
         return (PLL_FAILURE);
       }
-      if (!pll_set_tip_states (partition, i, pll_map_aa, seq))
+      if (!pll_set_tip_states(partition, i, pll_map_aa, seq))
       {
-        printf (" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
+        printf(" ERROR setting states (%d): %s\n", pll_errno, pll_errmsg);
         return (PLL_FAILURE);
       }
-      printf ("Header of sequence %d(%ld) %s (%ld sites)\n", i, seqno, header,
-              seq_len);
-      printf ("   %s\n", seq);
-      free (header);
-      free (seq);
+      printf("Header of sequence %d(%ld) %s (%ld sites)\n",
+             i,
+             seqno,
+             header,
+             seq_len);
+      printf("   %s\n", seq);
+      free(header);
+      free(seq);
       ++i;
     }
 
     if (pll_errno != PLL_ERROR_FILE_EOF)
     {
-      printf (" ERROR at the end (%d): %s\n", pll_errno, pll_errmsg);
+      printf(" ERROR at the end (%d): %s\n", pll_errno, pll_errmsg);
       return (PLL_FAILURE);
     }
 
     if (i != N_TAXA)
     {
-      printf (" ERROR: Number of taxa mismatch (%d): %d\n", i, N_TAXA);
+      printf(" ERROR: Number of taxa mismatch (%d): %d\n", i, N_TAXA);
       return (PLL_FAILURE);
     }
 
-    pll_fasta_close (fp);
+    pll_fasta_close(fp);
   }
 
   pll_partition_destroy(partition);
@@ -190,24 +195,22 @@ static int proteintest(unsigned int attributes, pll_bool_t oneliner)
   return PLL_SUCCESS;
 }
 
-int main (int argc, char * argv[])
+int main(int argc, char *argv[])
 {
   unsigned int attributes = get_attributes(argc, argv);
-  int fail_retval;
+  int          fail_retval;
 
-  if (proteintest (attributes, PLL_FALSE))
-    printf ("Test (low-level): OK\n\n");
+  if (proteintest(attributes, PLL_FALSE)) printf("Test (low-level): OK\n\n");
 
-  if (proteintest (attributes, PLL_TRUE))
-    printf ("Test (one-liner): OK\n\n");
+  if (proteintest(attributes, PLL_TRUE)) printf("Test (one-liner): OK\n\n");
 
-  fail_retval = failtest (attributes, PLL_FALSE);
+  fail_retval = failtest(attributes, PLL_FALSE);
   if (fail_retval)
-    printf ("Fail test (low-level): OK (sequence %d)\n\n", fail_retval);
+    printf("Fail test (low-level): OK (sequence %d)\n\n", fail_retval);
 
-  fail_retval = failtest (attributes, PLL_TRUE);
+  fail_retval = failtest(attributes, PLL_TRUE);
   if (fail_retval)
-    printf ("Fail test (one-liner): OK (sequence %d)\n\n", fail_retval);
+    printf("Fail test (one-liner): OK (sequence %d)\n\n", fail_retval);
 
   return PLL_SUCCESS;
 }

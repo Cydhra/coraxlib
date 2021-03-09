@@ -20,40 +20,52 @@
 */
 #include "common.h"
 
-#define N_STATES_ODD     7
-#define N_SUBST_PARAMS  21 // N_STATES*(N_STATES-1)/2
-#define N_CAT_GAMMA      4
-#define FLOAT_PRECISION  4
+#define N_STATES_ODD 7
+#define N_SUBST_PARAMS 21 // N_STATES*(N_STATES-1)/2
+#define N_CAT_GAMMA 4
+#define FLOAT_PRECISION 4
 
-static double alpha = 0.5;
-static unsigned int n_cat_gamma = N_CAT_GAMMA;
-unsigned int params_indices[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static double       alpha              = 0.5;
+static unsigned int n_cat_gamma        = N_CAT_GAMMA;
+unsigned int        params_indices[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* odd map with 7 states: A..G */
-const pll_state_t odd_map[256] =
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x3f, 0, 0, 0x3f, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x3f, 0, 0x01, 0x02, 0x04,
-    0x08, 0x0c, 0x10, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x02, 0x04, 0x08, 0x0c, 0x10, 0x20, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const pll_state_t odd_map[256] = {
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0x3f, 0,    0,    0x3f, 0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0x3f, 0,    0x01, 0x02, 0x04, 0x08, 0x0c, 0x10, 0x20,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0x01, 0x02, 0x04, 0x08, 0x0c, 0x10, 0x20, 0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0, 0,    0,    0};
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-  unsigned int j;
-  double lk_score;
-  unsigned int n_sites = 12;
-  unsigned int n_tips = 5;
-  double rate_cats[N_CAT_GAMMA];
-  pll_operation_t * operations;
-  int return_val;
+  unsigned int     j;
+  double           lk_score;
+  unsigned int     n_sites = 12;
+  unsigned int     n_tips  = 5;
+  double           rate_cats[N_CAT_GAMMA];
+  pll_operation_t *operations;
+  int              return_val;
 
-  operations = (pll_operation_t *)malloc(4* sizeof(pll_operation_t));
+  operations = (pll_operation_t *)malloc(4 * sizeof(pll_operation_t));
 
   operations[0].parent_clv_index    = 5;
   operations[0].child1_clv_index    = 0;
@@ -85,18 +97,16 @@ int main(int argc, char * argv[])
   /* check attributes */
   unsigned int attributes = get_attributes(argc, argv);
 
-  pll_partition_t * partition;
-  partition = pll_partition_create(
-                              n_tips,      /* numer of tips */
-                              4,           /* clv buffers */
-                              N_STATES_ODD, /* number of states */
-                              n_sites,     /* sequence length */
-                              1,           /* different rate parameters */
-                              2*n_tips-3,  /* probability matrices */
-                              n_cat_gamma, /* gamma categories */
-                              0,           /* scale buffers */
-                              attributes
-                              );          /* attributes */
+  pll_partition_t *partition;
+  partition = pll_partition_create(n_tips,       /* numer of tips */
+                                   4,            /* clv buffers */
+                                   N_STATES_ODD, /* number of states */
+                                   n_sites,      /* sequence length */
+                                   1,            /* different rate parameters */
+                                   2 * n_tips - 3, /* probability matrices */
+                                   n_cat_gamma,    /* gamma categories */
+                                   0,              /* scale buffers */
+                                   attributes);    /* attributes */
 
   if (!partition)
   {
@@ -104,19 +114,18 @@ int main(int argc, char * argv[])
     fatal("Fail creating partition");
   }
 
-  double branch_lengths[4] = { 0.1, 0.2, 1, 1};
+  double branch_lengths[4]         = {0.1, 0.2, 1, 1};
   double frequencies[N_STATES_ODD] = {0.12, 0.14, 0.13, 0.11, 0.15, 0.13, 0.12};
-  unsigned int matrix_indices[4] = { 0, 1, 2, 3 };
-  double subst_params[N_SUBST_PARAMS] = { 0.5, 2.0, 3.0, 4.0, 5.0, 1.1,
-                                               1.2, 1.3, 1.4, 1.5, 2.1,
-                                                    2.2, 2.3, 2.4, 2.5,
-                                                         3.1, 3.2, 3.3,
-                                                              3.4, 3.5,
-                                                                   1.0 };
-  double * persite_lnl = (double *) malloc(n_sites * sizeof(double));
-  double checksum;
+  unsigned int matrix_indices[4]   = {0, 1, 2, 3};
+  double  subst_params[N_SUBST_PARAMS] = {0.5, 2.0, 3.0, 4.0, 5.0, 1.1, 1.2,
+                                         1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4,
+                                         2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 1.0};
+  double *persite_lnl = (double *)malloc(n_sites * sizeof(double));
+  double  checksum;
 
-  if (pll_compute_gamma_cats(alpha, n_cat_gamma, rate_cats, PLL_GAMMA_RATES_MEAN) == PLL_FAILURE)
+  if (pll_compute_gamma_cats(
+          alpha, n_cat_gamma, rate_cats, PLL_GAMMA_RATES_MEAN)
+      == PLL_FAILURE)
   {
     printf("Error %d: %s\n", pll_errno, pll_errmsg);
     fatal("Fail computing gamma cats");
@@ -132,28 +141,28 @@ int main(int argc, char * argv[])
   return_val &= pll_set_tip_states(partition, 3, odd_map, "ADCFCAA-A-CG");
   return_val &= pll_set_tip_states(partition, 4, odd_map, "ABC-BCA-A-BG");
 
-  if (!return_val)
-    fatal("Error setting tip states");
+  if (!return_val) fatal("Error setting tip states");
 
   pll_set_category_rates(partition, rate_cats);
 
-  pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 4);
+  pll_update_prob_matrices(
+      partition, params_indices, matrix_indices, branch_lengths, 4);
   pll_update_clvs(partition, operations, 3);
 
   for (j = 0; j < 4; ++j)
   {
-    printf ("[%d] P-matrix for branch length %f\n", j+1, branch_lengths[j]);
+    printf("[%d] P-matrix for branch length %f\n", j + 1, branch_lengths[j]);
     pll_show_pmatrix(partition, j, FLOAT_PRECISION);
-    printf ("\n");
+    printf("\n");
   }
 
   /* show CLVs */
-  printf ("[5] CLV 5: ");
-  pll_show_clv(partition,5,PLL_SCALE_BUFFER_NONE,FLOAT_PRECISION+1);
-  printf ("[6] CLV 6: ");
-  pll_show_clv(partition,6,PLL_SCALE_BUFFER_NONE,FLOAT_PRECISION+1);
-  printf ("[7] CLV 7: ");
-  pll_show_clv(partition,7,PLL_SCALE_BUFFER_NONE,FLOAT_PRECISION+1);
+  printf("[5] CLV 5: ");
+  pll_show_clv(partition, 5, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+  printf("[6] CLV 6: ");
+  pll_show_clv(partition, 6, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+  printf("[7] CLV 7: ");
+  pll_show_clv(partition, 7, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
 
   lk_score = pll_compute_edge_loglikelihood(partition,
                                             6,
@@ -165,18 +174,16 @@ int main(int argc, char * argv[])
                                             persite_lnl);
 
   printf("\n");
-  printf("inner-inner logL: %.6f\n",
-          lk_score);
+  printf("inner-inner logL: %.6f\n", lk_score);
   printf("persite logL:     ");
   checksum = 0.0;
-  for (int i=0; i<n_sites; i++)
+  for (int i = 0; i < n_sites; i++)
   {
     checksum += persite_lnl[i];
     printf("%.7f  ", persite_lnl[i]);
   }
   printf("\n");
-  printf("checksum logL:    %.6f\n",
-          checksum);
+  printf("checksum logL:    %.6f\n", checksum);
 
   /* move to tip inner */
 
@@ -200,18 +207,16 @@ int main(int argc, char * argv[])
                                             params_indices,
                                             persite_lnl);
 
-  printf("tip-inner logL:   %.6f\n",
-          lk_score);
+  printf("tip-inner logL:   %.6f\n", lk_score);
   printf("persite logL:     ");
   checksum = 0.0;
-  for (int i=0; i<n_sites; i++)
+  for (int i = 0; i < n_sites; i++)
   {
     checksum += persite_lnl[i];
     printf("%.7f  ", persite_lnl[i]);
   }
   printf("\n");
-  printf("checksum logL:    %.6f\n",
-          checksum);
+  printf("checksum logL:    %.6f\n", checksum);
 
   pll_partition_destroy(partition);
   free(persite_lnl);

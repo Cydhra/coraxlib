@@ -20,59 +20,52 @@
 */
 
 #include "corax.h"
-#include <stdarg.h>
 #include <search.h>
+#include <stdarg.h>
 
-#define STATES    20
+#define STATES 20
 #define RATE_CATS 4
 #define PROT_MODELS_COUNT 19
 
-static void fatal(const char * format, ...) __attribute__ ((noreturn));
+static void fatal(const char *format, ...) __attribute__((noreturn));
 
-static void * xmalloc(size_t size)
-{ 
-  void * t;
-  t = malloc(size);
-  if (!t)
-    fatal("Unable to allocate enough memory.");
-  
-  return t;
-} 
-  
-static char * xstrdup(const char * s)
-{ 
-  size_t len = strlen(s);
-  char * p = (char *)xmalloc(len+1);
-  return strcpy(p,s);
-}  
-
-/* a callback function for performing a full traversal */
-static int cb_full_traversal(pll_unode_t * node)
+static void *xmalloc(size_t size)
 {
-  return 1;
+  void *t;
+  t = malloc(size);
+  if (!t) fatal("Unable to allocate enough memory.");
+
+  return t;
 }
 
+static char *xstrdup(const char *s)
+{
+  size_t len = strlen(s);
+  char * p   = (char *)xmalloc(len + 1);
+  return strcpy(p, s);
+}
+
+/* a callback function for performing a full traversal */
+static int cb_full_traversal(pll_unode_t *node) { return 1; }
+
 /* branch lengths not present in the newick file get a value of 0.000001 */
-static void set_missing_branch_length(pll_utree_t * tree, double length)
+static void set_missing_branch_length(pll_utree_t *tree, double length)
 {
   unsigned int i;
 
   for (i = 0; i < tree->tip_count; ++i)
-    if (!tree->nodes[i]->length)
-      tree->nodes[i]->length = length;
+    if (!tree->nodes[i]->length) tree->nodes[i]->length = length;
 
   for (i = tree->tip_count; i < tree->tip_count + tree->inner_count; ++i)
   {
-    if (!tree->nodes[i]->length)
-      tree->nodes[i]->length = length;
-    if (!tree->nodes[i]->next->length)
-      tree->nodes[i]->next->length = length;
+    if (!tree->nodes[i]->length) tree->nodes[i]->length = length;
+    if (!tree->nodes[i]->next->length) tree->nodes[i]->next->length = length;
     if (!tree->nodes[i]->next->next->length)
       tree->nodes[i]->next->next->length = length;
   }
 }
 
-static void fatal(const char * format, ...)
+static void fatal(const char *format, ...)
 {
   va_list argptr;
   va_start(argptr, format);
@@ -82,27 +75,25 @@ static void fatal(const char * format, ...)
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-  unsigned int i;
-  unsigned int tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
-  unsigned int matrix_count, ops_count;
-  unsigned int * matrix_indices;
-  double * branch_lengths;
-  pll_partition_t * partition;
-  pll_operation_t * operations;
-  pll_unode_t ** travbuffer;
+  unsigned int  i;
+  unsigned int  tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
+  unsigned int  matrix_count, ops_count;
+  unsigned int *matrix_indices;
+  double *      branch_lengths;
+  pll_partition_t *partition;
+  pll_operation_t *operations;
+  pll_unode_t **   travbuffer;
 
   /* we accept only two arguments - the newick tree (unrooted binary) and the
      alignment in the form of FASTA reads */
-  if (argc != 3)
-    fatal(" syntax: %s [newick] [fasta]", argv[0]);
+  if (argc != 3) fatal(" syntax: %s [newick] [fasta]", argv[0]);
 
   /* parse the unrooted binary tree in newick format, and store the number
      of tip nodes in tip_nodes_count */
-  pll_utree_t * tree = pll_utree_parse_newick(argv[1]);
-  if (!tree)
-    fatal("%s", pll_errmsg);
+  pll_utree_t *tree = pll_utree_parse_newick(argv[1]);
+  if (!tree) fatal("%s", pll_errmsg);
 
   tip_nodes_count = tree->tip_count;
 
@@ -112,8 +103,8 @@ int main(int argc, char * argv[])
 
   /* compute and show node count information */
   inner_nodes_count = tip_nodes_count - 2;
-  nodes_count = inner_nodes_count + tip_nodes_count;
-  branch_count = nodes_count - 1;
+  nodes_count       = inner_nodes_count + tip_nodes_count;
+  branch_count      = nodes_count - 1;
 
   printf("Number of tip/leaf nodes in tree: %d\n", tip_nodes_count);
   printf("Number of inner nodes in tree: %d\n", inner_nodes_count);
@@ -133,8 +124,8 @@ int main(int argc, char * argv[])
   hcreate(tip_nodes_count);
 
   /* populate a libc hash table with tree tip labels */
-  unsigned int * data = (unsigned int *)xmalloc(tip_nodes_count *
-                                                sizeof(unsigned int));
+  unsigned int *data =
+      (unsigned int *)xmalloc(tip_nodes_count * sizeof(unsigned int));
   for (i = 0; i < tip_nodes_count; ++i)
   {
     data[i] = tree->nodes[i]->clv_index;
@@ -144,28 +135,27 @@ int main(int argc, char * argv[])
 #else
     entry.key = tree->nodes[i]->label;
 #endif
-    entry.data = (void *)(data+i);
+    entry.data = (void *)(data + i);
     hsearch(entry, ENTER);
   }
 
   /* open FASTA file */
-  pll_fasta_t * fp = pll_fasta_open(argv[2], pll_map_fasta);
-  if (!fp)
-    fatal("Error opening file %s", argv[2]);
+  pll_fasta_t *fp = pll_fasta_open(argv[2], pll_map_fasta);
+  if (!fp) fatal("Error opening file %s", argv[2]);
 
-  char * seq = NULL;
-  char * hdr = NULL;
-  long seqlen;
-  long hdrlen;
-  long seqno;
+  char *seq = NULL;
+  char *hdr = NULL;
+  long  seqlen;
+  long  hdrlen;
+  long  seqno;
 
   /* allocate arrays to store FASTA headers and sequences */
-  char ** headers = (char **)calloc(tip_nodes_count, sizeof(char *));
-  char ** seqdata = (char **)calloc(tip_nodes_count, sizeof(char *));
+  char **headers = (char **)calloc(tip_nodes_count, sizeof(char *));
+  char **seqdata = (char **)calloc(tip_nodes_count, sizeof(char *));
 
   /* read FASTA sequences and make sure they are all of the same length */
   int sites = -1;
-  for (i = 0; pll_fasta_getnext(fp,&hdr,&hdrlen,&seq,&seqlen,&seqno); ++i)
+  for (i = 0; pll_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
   {
     if (i >= tip_nodes_count)
       fatal("FASTA file contains more sequences than expected");
@@ -186,11 +176,9 @@ int main(int argc, char * argv[])
   /* close FASTA file */
   pll_fasta_close(fp);
 
-  if (sites == -1)
-    fatal("Unable to read alignment");
+  if (sites == -1) fatal("Unable to read alignment");
 
-  if (i != tip_nodes_count)
-    fatal("Some taxa are missing from FASTA file");
+  if (i != tip_nodes_count) fatal("Some taxa are missing from FASTA file");
 
   /* create the PLL partition instance
 
@@ -220,10 +208,10 @@ int main(int argc, char * argv[])
   for (i = 0; i < tip_nodes_count; ++i)
   {
     ENTRY query;
-    query.key = headers[i];
-    ENTRY * found = NULL;
+    query.key    = headers[i];
+    ENTRY *found = NULL;
 
-    found = hsearch(query,FIND);
+    found = hsearch(query, FIND);
 
     if (!found)
       fatal("Sequence with header %s does not appear in the tree", headers[i]);
@@ -241,7 +229,7 @@ int main(int argc, char * argv[])
 
   /* ...neither the sequences and the headers as they are already
      present in the form of probabilities in the tip CLVs */
-  for(i = 0; i < tip_nodes_count; ++i)
+  for (i = 0; i < tip_nodes_count; ++i)
   {
     free(seqdata[i]);
     free(headers[i]);
@@ -255,13 +243,13 @@ int main(int argc, char * argv[])
 
   branch_lengths = (double *)xmalloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)xmalloc(branch_count * sizeof(unsigned int));
-  operations = (pll_operation_t *)xmalloc(inner_nodes_count *
-                                          sizeof(pll_operation_t));
+  operations =
+      (pll_operation_t *)xmalloc(inner_nodes_count * sizeof(pll_operation_t));
 
   /* compute a partial postorder traversal starting from the inner node that
      was the the root of the parsed 'unrooted' binary tree */
-  
-  pll_unode_t * root = tree->nodes[tip_nodes_count+inner_nodes_count-1];
+
+  pll_unode_t *root = tree->nodes[tip_nodes_count + inner_nodes_count - 1];
   unsigned int traversal_size;
 
   if (!pll_utree_traverse(root,
@@ -292,7 +280,7 @@ int main(int argc, char * argv[])
   /* set rate categories */
   pll_set_category_rates(partition, rate_cats);
 
-  for (i=0; i<partition->rate_matrices; i++)
+  for (i = 0; i < partition->rate_matrices; i++)
   {
     /* set frequencies for rate matrix i */
     pll_set_frequencies(partition, i, pll_aa_freqs_lg4m[i]);
@@ -307,22 +295,19 @@ int main(int argc, char * argv[])
      (substitution rates + frequencies) params_indices[i], and can be refered
      to with index matrix_indices[i] */
 
-  unsigned int params_indices[4] = {0,1,2,3};
+  unsigned int params_indices[4] = {0, 1, 2, 3};
 
-  pll_update_prob_matrices(partition,
-                           params_indices,
-                           matrix_indices,
-                           branch_lengths,
-                           matrix_count);
+  pll_update_prob_matrices(
+      partition, params_indices, matrix_indices, branch_lengths, matrix_count);
 
-    /*
-    for (i = 0; i < branch_count; ++i)
-    {
-      printf ("P-matrices (%d) for branch length %f\n", i, branch_lengths[i]);
-      pll_show_pmatrix(partition, i,4);
-      printf ("\n");
-    }
-    */
+  /*
+  for (i = 0; i < branch_count; ++i)
+  {
+    printf ("P-matrices (%d) for branch length %f\n", i, branch_lengths[i]);
+    pll_show_pmatrix(partition, i,4);
+    printf ("\n");
+  }
+  */
 
   /* use the operations array to compute all tip_count-2 inner CLVs. Operations
      will be carried out sequentially starting from operation 0 and upwards */
@@ -344,8 +329,8 @@ int main(int argc, char * argv[])
                                                NULL);
 
   printf("\nRates:   ");
-      for (i = 0; i < partition->rate_cats; i++)
-        printf("%.6f ", partition->rates[i]);
+  for (i = 0; i < partition->rate_cats; i++)
+    printf("%.6f ", partition->rates[i]);
   printf("\nLog-L (LG4M): %f\n", logl);
 
   /* now let's switch into LG4X model with fixed rates and weights */
@@ -353,25 +338,22 @@ int main(int argc, char * argv[])
   for (i = 0; i < partition->rate_matrices; i++)
   {
     /* set frequencies for rate matrix i */
-    pll_set_frequencies (partition,i,pll_aa_freqs_lg4x[i]);
+    pll_set_frequencies(partition, i, pll_aa_freqs_lg4x[i]);
 
     /* set substitution rates for rate matrix i */
-    pll_set_subst_params (partition,i,pll_aa_rates_lg4x[i]);
+    pll_set_subst_params(partition, i, pll_aa_rates_lg4x[i]);
   }
 
   /* set rates and weights */
-  double weights[4] = { 0.209224645, 0.224707726, 0.277599198, 0.288468431 };
-  double rates[4] = { 0.498991136, 0.563680734, 0.808264032, 1.887769458 };
+  double weights[4] = {0.209224645, 0.224707726, 0.277599198, 0.288468431};
+  double rates[4]   = {0.498991136, 0.563680734, 0.808264032, 1.887769458};
 
   pll_set_category_rates(partition, rates);
   pll_set_category_weights(partition, weights);
 
   /* update transition probability matrices */
-  pll_update_prob_matrices(partition,
-                           params_indices,
-                           matrix_indices,
-                           branch_lengths,
-                           matrix_count);
+  pll_update_prob_matrices(
+      partition, params_indices, matrix_indices, branch_lengths, matrix_count);
 
   /* Uncomment to display the P matrices
 
@@ -398,8 +380,8 @@ int main(int argc, char * argv[])
   for (i = 0; i < partition->rate_cats; i++)
     printf("%.6f ", partition->rate_weights[i]);
   printf("\nRates:   ");
-    for (i = 0; i < partition->rate_cats; i++)
-      printf("%.6f ", partition->rates[i]);
+  for (i = 0; i < partition->rate_cats; i++)
+    printf("%.6f ", partition->rates[i]);
   printf("\nLog-L (LG4X): %f\n", logl);
 
   logl = pll_compute_edge_loglikelihood(partition,
@@ -415,8 +397,8 @@ int main(int argc, char * argv[])
   for (i = 0; i < partition->rate_cats; i++)
     printf("%.6f ", partition->rate_weights[i]);
   printf("\nRates:   ");
-    for (i = 0; i < partition->rate_cats; i++)
-      printf("%.6f ", partition->rates[i]);
+  for (i = 0; i < partition->rate_cats; i++)
+    printf("%.6f ", partition->rates[i]);
   printf("\nLog-L (LG4X): %f\n", logl);
 
   /* destroy all structures allocated for the concrete PLL partition instance */
@@ -428,7 +410,7 @@ int main(int argc, char * argv[])
   free(operations);
 
   /* we will no longer need the tree structure */
-  pll_utree_destroy(tree,NULL);
+  pll_utree_destroy(tree, NULL);
 
   return (EXIT_SUCCESS);
 }

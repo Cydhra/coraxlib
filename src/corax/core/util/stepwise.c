@@ -29,48 +29,46 @@ typedef struct
   int clv_valid;
 } node_info_t;
 
-static pll_unode_t ** travbuffer;
-static pll_pars_buildop_t * parsops;
+static pll_unode_t **      travbuffer;
+static pll_pars_buildop_t *parsops;
 
-static char * xstrdup(const char * s)
+static char *xstrdup(const char *s)
 {
   size_t len = strlen(s);
-  char * p = (char *)malloc(len+1);
+  char * p   = (char *)malloc(len + 1);
   if (!p)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Memory allocation failed");
     return NULL;
   }
-  return strcpy(p,s);
+  return strcpy(p, s);
 }
 
 /* Fisher-Yates shuffle */
-static unsigned int * create_shuffled(unsigned int n, unsigned int seed)
+static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
 {
-  unsigned int i,j;
-  char * statebuf;
-  struct pll_random_data * buf;
-  
-  unsigned int * x = (unsigned int *)malloc(n*sizeof(unsigned int));
+  unsigned int            i, j;
+  char *                  statebuf;
+  struct pll_random_data *buf;
+
+  unsigned int *x = (unsigned int *)malloc(n * sizeof(unsigned int));
   if (!x)
   {
     pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
-  for (i=0; i<n; ++i)
-    x[i] = i;
+  for (i = 0; i < n; ++i) x[i] = i;
 
   /* if seed == 0 then do not shuffle! */
-  if (!seed)
-    return x;
+  if (!seed) return x;
 
   /* init re-entrant randomizer */
   buf = (struct pll_random_data *)calloc(1, sizeof(struct pll_random_data));
-  statebuf = (char *)calloc(RAND_STATE_SIZE,sizeof(char));
+  statebuf = (char *)calloc(RAND_STATE_SIZE, sizeof(char));
 
-  pll_initstate_r(seed,statebuf,RAND_STATE_SIZE,buf);
-  pll_srandom_r(seed,buf);
+  pll_initstate_r(seed, statebuf, RAND_STATE_SIZE, buf);
+  pll_srandom_r(seed, buf);
 
   /* perform Fisher-Yates shuffle */
   if (n > 1)
@@ -79,11 +77,11 @@ static unsigned int * create_shuffled(unsigned int n, unsigned int seed)
     while (1)
     {
       int rint;
-      pll_random_r(buf,&rint);
+      pll_random_r(buf, &rint);
       double r = ((double)rint / RAND_MAX);
-      j = (unsigned int)(r * (i+1));
+      j        = (unsigned int)(r * (i + 1));
 
-      PLL_SWAP(x[i],x[j]);
+      PLL_SWAP(x[i], x[j]);
 
       if (i == 0) break;
       --i;
@@ -96,7 +94,7 @@ static unsigned int * create_shuffled(unsigned int n, unsigned int seed)
   return x;
 }
 
-static void dealloc_data_onenode(pll_unode_t * node)
+static void dealloc_data_onenode(pll_unode_t *node)
 {
   if (node->data)
   {
@@ -105,7 +103,7 @@ static void dealloc_data_onenode(pll_unode_t * node)
   }
 }
 
-static void dealloc_data(pll_unode_t * node)
+static void dealloc_data(pll_unode_t *node)
 {
   dealloc_data_onenode(node);
   dealloc_data_onenode(node->next);
@@ -113,9 +111,9 @@ static void dealloc_data(pll_unode_t * node)
 }
 
 /* a callback function for performing a partial traversal */
-static int cb_partial_traversal(pll_unode_t * node)
+static int cb_partial_traversal(pll_unode_t *node)
 {
-  node_info_t * node_info;
+  node_info_t *node_info;
 
   /* if we don't want tips in the traversal we must return 0 here. For now,
      allow tips */
@@ -137,30 +135,29 @@ static int cb_partial_traversal(pll_unode_t * node)
   return 1;
 }
 
-static int cb_validate(pll_unode_t * node)
+static int cb_validate(pll_unode_t *node)
 {
   if (node->data)
   {
-    node_info_t * node_info = (node_info_t *)(node->data);
-    node_info->clv_valid = 1;
+    node_info_t *node_info = (node_info_t *)(node->data);
+    node_info->clv_valid   = 1;
   }
 
   return 1;
 }
 
-static pll_unode_t * utree_inner_create(unsigned int i, unsigned int tip_count)
+static pll_unode_t *utree_inner_create(unsigned int i, unsigned int tip_count)
 {
-  pll_unode_t * node = (pll_unode_t *)calloc(1,sizeof(pll_unode_t));
-  if (!node)
-    return NULL;
-  
-  node->next = (pll_unode_t *)calloc(1,sizeof(pll_unode_t));
+  pll_unode_t *node = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  if (!node) return NULL;
+
+  node->next = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
   if (!node->next)
   {
     free(node);
     return NULL;
   }
-  node->next->next = (pll_unode_t *)calloc(1,sizeof(pll_unode_t));
+  node->next->next = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
   if (!node->next->next)
   {
     free(node->next);
@@ -169,9 +166,9 @@ static pll_unode_t * utree_inner_create(unsigned int i, unsigned int tip_count)
   }
 
   /* allocate data element */
-  node->data             = (node_info_t *)calloc(1,sizeof(node_info_t));
-  node->next->data       = (node_info_t *)calloc(1,sizeof(node_info_t));
-  node->next->next->data = (node_info_t *)calloc(1,sizeof(node_info_t));
+  node->data             = (node_info_t *)calloc(1, sizeof(node_info_t));
+  node->next->data       = (node_info_t *)calloc(1, sizeof(node_info_t));
+  node->next->next->data = (node_info_t *)calloc(1, sizeof(node_info_t));
 
   if (!node->data || !node->next->data || !node->next->next->data)
   {
@@ -186,34 +183,34 @@ static pll_unode_t * utree_inner_create(unsigned int i, unsigned int tip_count)
 
   node->next->next->next = node;
 
-  unsigned int clv_id = tip_count + i;
-  node->clv_index = clv_id;
-  node->next->clv_index = clv_id;
+  unsigned int clv_id         = tip_count + i;
+  node->clv_index             = clv_id;
+  node->next->clv_index       = clv_id;
   node->next->next->clv_index = clv_id;
 
-  unsigned int node_id = tip_count + i*3;
-  node->node_index = node_id;
-  node->next->node_index = node_id + 1;
+  unsigned int node_id         = tip_count + i * 3;
+  node->node_index             = node_id;
+  node->next->node_index       = node_id + 1;
   node->next->next->node_index = node_id + 2;
 
   return node;
 }
 
-static pll_unode_t * utree_tip_create(unsigned int i)
+static pll_unode_t *utree_tip_create(unsigned int i)
 {
-  pll_unode_t * node = (pll_unode_t *)calloc(1,sizeof(pll_unode_t));
-  node->next = NULL;
-  node->clv_index = i;
-  node->node_index = i;
+  pll_unode_t *node = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  node->next        = NULL;
+  node->clv_index   = i;
+  node->node_index  = i;
 
   return node;
 }
 
-static void utree_link(pll_unode_t * a, pll_unode_t * b)
+static void utree_link(pll_unode_t *a, pll_unode_t *b)
 {
   /*
 
-    *               *               *                * 
+    *               *               *                *
      \             /                 \              /
       *---*   *---*        -->        *---*-----*--*
      /    a   b    \                 /    a     b   \
@@ -225,7 +222,7 @@ static void utree_link(pll_unode_t * a, pll_unode_t * b)
   b->back = a;
 }
 
-static void utree_edgesplit(pll_unode_t * a, pll_unode_t * b, pll_unode_t * c)
+static void utree_edgesplit(pll_unode_t *a, pll_unode_t *b, pll_unode_t *c)
 {
   /*
                 *                                      *
@@ -234,7 +231,7 @@ static void utree_edgesplit(pll_unode_t * a, pll_unode_t * b, pll_unode_t * c)
                / \                                    / \
             b *   * c                              b *   * c
                                                     /     \
-    *                      *      -->      *       /       \      * 
+    *                      *      -->      *       /       \      *
      \                    /                 \     /         \    /
       *---*----------*---*                   *---*           *--*
      /    a          d    \                 /    a           d   \
@@ -243,54 +240,53 @@ static void utree_edgesplit(pll_unode_t * a, pll_unode_t * b, pll_unode_t * c)
   */
 
   /* link d<->c */
-  utree_link(a->back,c);
+  utree_link(a->back, c);
 
   /* link a<->b */
-  utree_link(a,b);
+  utree_link(a, b);
 }
 
-static void invalidate_node(pll_unode_t * node)
+static void invalidate_node(pll_unode_t *node)
 {
-  node_info_t * info;
+  node_info_t *info;
 
-  info = (node_info_t *)(node->data);
+  info            = (node_info_t *)(node->data);
   info->clv_valid = 0;
-  info = (node_info_t *)(node->next->data);
+  info            = (node_info_t *)(node->next->data);
   info->clv_valid = 0;
-  info = (node_info_t *)(node->next->next->data);
+  info            = (node_info_t *)(node->next->next->data);
   info->clv_valid = 0;
 }
 
-static unsigned int utree_iterate(pll_parsimony_t ** list,
-                                  pll_unode_t ** edge_list,
-                                  pll_unode_t * inner_node,
-                                  pll_unode_t * tip_node,
-                                  unsigned int edge_count,
-                                  unsigned int partition_count)
+static unsigned int utree_iterate(pll_parsimony_t **list,
+                                  pll_unode_t **    edge_list,
+                                  pll_unode_t *     inner_node,
+                                  pll_unode_t *     tip_node,
+                                  unsigned int      edge_count,
+                                  unsigned int      partition_count)
 {
-  unsigned int i,j;
-  unsigned int min_cost = 0;
+  unsigned int i, j;
+  unsigned int min_cost   = 0;
   unsigned int best_index = 0;
   unsigned int cost;
   unsigned int ops_count;
   unsigned int traversal_size;
-  size_t total_ops = 0;
+  size_t       total_ops = 0;
 
   /* set min cost to maximum possible value */
   min_cost = ~0u;
 
   /* find first empty slot in edge_list */
-  pll_unode_t ** empty_slot = edge_list + edge_count;
+  pll_unode_t **empty_slot = edge_list + edge_count;
 
   /* fill *all* CLV vectors in all directions, ie 3 CLVs per inner nodes ->
    * this way, we can do avoid unnecessary CLV recomputation when
    * evaluating insertion branches in the loop below */
   for (i = 0; i < edge_count; ++i)
   {
-    pll_unode_t * root = edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
+    pll_unode_t *root = edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
 
-    if (root->back->next)
-      continue;
+    if (root->back->next) continue;
 
     /* make a partial traversal */
     if (!pll_utree_traverse(root,
@@ -301,10 +297,8 @@ static unsigned int utree_iterate(pll_parsimony_t ** list,
       assert(0);
 
     /* create parsimony operations */
-    pll_utree_create_pars_buildops(travbuffer,
-                                   traversal_size,
-                                   parsops,
-                                   &ops_count);
+    pll_utree_create_pars_buildops(
+        travbuffer, traversal_size, parsops, &ops_count);
 
     for (j = 0; j < partition_count; ++j)
     {
@@ -318,14 +312,15 @@ static unsigned int utree_iterate(pll_parsimony_t ** list,
   for (i = 0; i < edge_count; ++i)
   {
     /* make the split */
-    pll_unode_t * d = edge_list[i]->back;
-    utree_edgesplit(edge_list[i], inner_node, inner_node->next); 
+    pll_unode_t *d = edge_list[i]->back;
+    utree_edgesplit(edge_list[i], inner_node, inner_node->next);
     utree_link(inner_node->next->next, tip_node);
 
     /* we only need to recompute one CLV vector at the inner node */
     parsops[0].parent_score_index = tip_node->back->node_index;
     parsops[0].child1_score_index = tip_node->back->next->back->node_index;
-    parsops[0].child2_score_index = tip_node->back->next->next->back->node_index;
+    parsops[0].child2_score_index =
+        tip_node->back->next->next->back->node_index;
     ops_count = 1;
 
     total_ops += ops_count;
@@ -338,30 +333,29 @@ static unsigned int utree_iterate(pll_parsimony_t ** list,
       pll_fastparsimony_update_vectors(list[j], parsops, ops_count);
 
       /* get parsimony score */
-      cost += pll_fastparsimony_edge_score(list[j],
-                                           tip_node->node_index,
-                                           tip_node->back->node_index);
+      cost += pll_fastparsimony_edge_score(
+          list[j], tip_node->node_index, tip_node->back->node_index);
     }
 
     /* if current cost is smaller than minimum cost save topology index */
     if (cost < min_cost)
     {
-      min_cost = cost;
+      min_cost   = cost;
       best_index = i;
     }
 
     /* restore tree to its state before placing the tip (and inner) node */
     utree_link(edge_list[i], d);
-    inner_node->back = NULL;
-    inner_node->next->back = NULL;
+    inner_node->back             = NULL;
+    inner_node->next->back       = NULL;
     inner_node->next->next->back = NULL;
-    tip_node->back = NULL;
+    tip_node->back               = NULL;
   }
 
-//  printf("STEPWISE edges: %u, ops: %lu\n", edge_count, total_ops);
+  //  printf("STEPWISE edges: %u, ops: %lu\n", edge_count, total_ops);
 
   /* perform the placement yielding the lowest cost */
-  utree_edgesplit(edge_list[best_index], inner_node, inner_node->next); 
+  utree_edgesplit(edge_list[best_index], inner_node, inner_node->next);
   utree_link(inner_node->next->next, tip_node);
 
   /* add the two new edges to the end of the list */
@@ -369,8 +363,7 @@ static unsigned int utree_iterate(pll_parsimony_t ** list,
   empty_slot[1] = inner_node->next->next;
 
   /* invalidate all CLVs */
-  for (j = 0; j < edge_count; ++j)
-    invalidate_node(edge_list[j]);
+  for (j = 0; j < edge_count; ++j) invalidate_node(edge_list[j]);
 
   /* re-validate CLVs that remain correct after new tip insertion */
   if (!pll_utree_traverse(tip_node->back,
@@ -386,74 +379,73 @@ static unsigned int utree_iterate(pll_parsimony_t ** list,
   return min_cost;
 }
 
-PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
-                                                    char * const * labels,
-                                                    unsigned int * cost,
-                                                    unsigned int count,
-                                                    unsigned int seed)
+PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
+                                                   char *const *     labels,
+                                                   unsigned int *    cost,
+                                                   unsigned int      count,
+                                                   unsigned int      seed)
 {
-  unsigned int i,j;
+  unsigned int i, j;
 
-  unsigned int tips_count = list[0]->tips;
+  unsigned int tips_count  = list[0]->tips;
   unsigned int inner_nodes = list[0]->inner_nodes;
 
   if (tips_count < 3)
   {
     pll_set_error(PLL_ERROR_STEPWISE_TIPS,
-             "Stepwise parsimony requires at least three tips.");
+                  "Stepwise parsimony requires at least three tips.");
     return NULL;
   }
 
-  //if (tips_count != inner_nodes + 2)
-  if (inner_nodes < tips_count-2)
+  // if (tips_count != inner_nodes + 2)
+  if (inner_nodes < tips_count - 2)
   {
     pll_set_error(PLL_ERROR_STEPWISE_UNSUPPORTED,
-             "Stepwise parsimony currently supports only unrooted trees.");
+                  "Stepwise parsimony currently supports only unrooted trees.");
     return NULL;
   }
 
   *cost = ~0u;
 
-  pll_unode_t * root;
+  pll_unode_t *root;
 
   /* check that all parsimony structures have the same number of tips and
      inner nodes */
 
   for (i = 1; i < count; ++i)
   {
-    if ((list[i]->tips != tips_count) ||
-        (list[i]->inner_nodes != inner_nodes))
+    if ((list[i]->tips != tips_count) || (list[i]->inner_nodes != inner_nodes))
     {
       pll_set_error(PLL_ERROR_STEPWISE_STRUCT,
-               "Parsimony structures tips/inner nodes not equal.");
+                    "Parsimony structures tips/inner nodes not equal.");
       return NULL;
     }
   }
-    
 
   /* 1. Make all allocations at the beginning and check everything was
         allocated, otherwise return an error */
 
-  travbuffer = (pll_unode_t **)malloc((2*tips_count-2) * sizeof(pll_unode_t *));
+  travbuffer =
+      (pll_unode_t **)malloc((2 * tips_count - 2) * sizeof(pll_unode_t *));
 
-  root = utree_inner_create(tips_count-3, tips_count);
+  root = utree_inner_create(tips_count - 3, tips_count);
 
   /* allocate parsimony operations container */
-  parsops = (pll_pars_buildop_t *)malloc((tips_count-2)*
-                                         sizeof(pll_pars_buildop_t));
+  parsops = (pll_pars_buildop_t *)malloc((tips_count - 2)
+                                         * sizeof(pll_pars_buildop_t));
 
   /* create tip node list with a terminating NULL element */
-  pll_unode_t ** tip_node_list = (pll_unode_t **)calloc(tips_count+1,
-                                                        sizeof(pll_unode_t *));
+  pll_unode_t **tip_node_list =
+      (pll_unode_t **)calloc(tips_count + 1, sizeof(pll_unode_t *));
 
   /* create inner node list for (tips_count - 3) inner nodes (root was already
      created, and leave the last slot NULL for termination */
-  pll_unode_t ** inner_node_list = (pll_unode_t **)calloc(tips_count - 2,
-                                                          sizeof(pll_unode_t *));
+  pll_unode_t **inner_node_list =
+      (pll_unode_t **)calloc(tips_count - 2, sizeof(pll_unode_t *));
 
   if (!inner_node_list || !parsops || !tip_node_list || !root || !travbuffer)
   {
-    pll_utree_graph_destroy(root,NULL);
+    pll_utree_graph_destroy(root, NULL);
     free(parsops);
     free(inner_node_list);
     free(tip_node_list);
@@ -464,17 +456,16 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   }
 
   /* allocate all inner nodes */
-  for (i=0; i<tips_count-3; ++i)
+  for (i = 0; i < tips_count - 3; ++i)
   {
     inner_node_list[i] = utree_inner_create(i, tips_count);
     if (!inner_node_list[i])
     {
-      pll_utree_graph_destroy(root,NULL);
+      pll_utree_graph_destroy(root, NULL);
       free(parsops);
       free(tip_node_list);
       free(travbuffer);
-      for (j = 0; j < i; ++j)
-        pll_utree_graph_destroy(inner_node_list[j],NULL);
+      for (j = 0; j < i; ++j) pll_utree_graph_destroy(inner_node_list[j], NULL);
       free(inner_node_list);
 
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -483,44 +474,41 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   }
 
   /* shuffle the order of iterating tip sequences */
-  unsigned int * order = create_shuffled(tips_count,seed);
+  unsigned int *order = create_shuffled(tips_count, seed);
   if (!order) return NULL;
 
   /* allocate all tips */
-  for (i=0; i<tips_count; ++i)
+  for (i = 0; i < tips_count; ++i)
   {
     unsigned int index = order[i];
-    tip_node_list[i] = utree_tip_create(index);
-    if (tip_node_list[i])
-      tip_node_list[i]->label = xstrdup(labels[index]);
+    tip_node_list[i]   = utree_tip_create(index);
+    if (tip_node_list[i]) tip_node_list[i]->label = xstrdup(labels[index]);
 
     if (!tip_node_list[i] || !tip_node_list[i]->label)
     {
-      free(tip_node_list[i]); 
+      free(tip_node_list[i]);
 
-      pll_utree_graph_destroy(root,NULL);
+      pll_utree_graph_destroy(root, NULL);
       free(parsops);
       free(inner_node_list);
       free(travbuffer);
-      for (j = 0; j < i; ++j)
-        pll_utree_graph_destroy(tip_node_list[j],NULL);
+      for (j = 0; j < i; ++j) pll_utree_graph_destroy(tip_node_list[j], NULL);
       free(tip_node_list);
 
       pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
-
     }
   }
   free(order);
 
   /* 2. Create the following topology with three leaves
-          
+
             *
            /
       *---*
            \
             *
-  
+
   */
 
   /* place first three tips */
@@ -529,8 +517,8 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   utree_link(root->next->next, tip_node_list[2]);
 
   /* available placements */
-  pll_unode_t ** edge_list = (pll_unode_t **)calloc(2*tips_count-3,
-                                                    sizeof(pll_unode_t *));
+  pll_unode_t **edge_list =
+      (pll_unode_t **)calloc(2 * tips_count - 3, sizeof(pll_unode_t *));
   edge_list[0] = root;
   edge_list[1] = root->next;
   edge_list[2] = root->next->next;
@@ -545,13 +533,13 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   if (tips_count > 3)
   {
     unsigned int edge_count = 3;
-    
+
     for (i = 3; i < tips_count; ++i)
     {
       /* printf("%d -- adding %s\n", i, tip_node_list[i]->label); */
       *cost = utree_iterate(list,
                             edge_list,
-                            inner_node_list[i-3],
+                            inner_node_list[i - 3],
                             tip_node_list[i],
                             edge_count,
                             count);
@@ -563,13 +551,11 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   else
   {
     *cost = 0;
-    for (i = 0; i < count; ++i)
-      *cost += list[i]->const_cost;
+    for (i = 0; i < count; ++i) *cost += list[i]->const_cost;
   }
 
   /* delete data elements */
-  for (i = 0; i < tips_count-3; ++i)
-    dealloc_data(inner_node_list[i]);
+  for (i = 0; i < tips_count - 3; ++i) dealloc_data(inner_node_list[i]);
   dealloc_data(root);
 
   /* deallocate auxiliary arrays */
@@ -580,7 +566,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   free(parsops);
 
   /* wrap tree */
-  pll_utree_t * tree = pll_utree_wraptree(root,tips_count);
+  pll_utree_t *tree = pll_utree_wraptree(root, tips_count);
 
   return tree;
 }
