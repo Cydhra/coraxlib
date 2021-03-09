@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
 
   /* parse the unrooted binary tree in newick format, and store the number
      of tip nodes in tip_nodes_count */
-  pll_rtree_t * tree = pll_rtree_parse_newick(argv[1]);
+  pll_utree_t * tree = pll_utree_parse_newick(argv[1]);
   if (!tree)
     fatal("Tree must be a rooted binary tree");
 
@@ -206,16 +206,16 @@ int main(int argc, char * argv[])
 
   /* perform a postorder traversal of the rooted tree */
   unsigned int traversal_size;
-  if (!pll_rtree_traverse(tree->root,
+  if (!pll_utree_traverse(tree->root,
                           PLL_TREE_TRAVERSE_POSTORDER,
                           cb_full_traversal,
                           travbuffer,
                           &traversal_size))
-    fatal("Function pll_rtree_traverse() requires inner nodes as parameters");
+    fatal("Function pll_utree_traverse() requires inner nodes as parameters");
 
   /* given the computed traversal descriptor, generate the build operations
      structure */
-  pll_rtree_create_pars_buildops(travbuffer,
+  pll_utree_create_pars_buildops(travbuffer,
                                  traversal_size,
                                  operations,
                                  &ops_count);
@@ -248,17 +248,17 @@ int main(int argc, char * argv[])
   }
 
   /* perform a preorder traversal of the rooted tree */
-  if (!pll_rtree_traverse(tree->root,
+  if (!pll_utree_traverse(tree->root,
                           PLL_TREE_TRAVERSE_PREORDER,
                           cb_full_traversal,
                           travbuffer,
                           &traversal_size))
-    fatal("Function pll_rtree_traverse() requires inner nodes as parameters");
+    fatal("Function pll_utree_traverse() requires inner nodes as parameters");
 
   /* create the reconstruct operations */
   recops = (pll_pars_recop_t *)xmalloc(inner_nodes_count *
                                        sizeof(pll_pars_recop_t));
-  pll_rtree_create_pars_recops(travbuffer,
+  pll_utree_create_pars_recops(travbuffer,
                                traversal_size,
                                recops,
                                &ops_count);
@@ -289,7 +289,7 @@ int main(int argc, char * argv[])
   free(recops);
 
   /* we will no longer need the tree structure */
-  pll_rtree_destroy(tree,NULL);
+  pll_utree_destroy(tree,NULL);
   
   /* destroy the parsimony structure */
   pll_parsimony_destroy(pars);

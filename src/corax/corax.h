@@ -406,33 +406,6 @@ typedef struct pll_utree_s
   pll_unode_t * vroot;
 } pll_utree_t;
 
-typedef struct pll_rnode_s
-{
-  char * label;
-  double length;
-  unsigned int node_index;
-  unsigned int clv_index;
-  int scaler_index;
-  unsigned int pmatrix_index;
-  struct pll_rnode_s * left;
-  struct pll_rnode_s * right;
-  struct pll_rnode_s * parent;
-
-  void * data;
-} pll_rnode_t;
-
-typedef struct pll_rtree_s
-{
-  unsigned int tip_count;
-  unsigned int inner_count;
-  unsigned int edge_count;
-
-  pll_rnode_t ** nodes;
-
-  pll_rnode_t * root;
-
-} pll_rtree_t;
-
 /* structures for handling topological rearrangement move rollbacks */
 
 typedef struct pll_utree_rb_s
@@ -867,23 +840,6 @@ PLL_EXPORT int pll_fasta_rewind(pll_fasta_t * fd);
 
 pll_msa_t * pll_fasta_load(const char * fname);
 
-/* functions in parse_rtree.y */
-
-PLL_EXPORT pll_rtree_t * pll_rtree_parse_newick(const char * filename);
-
-PLL_EXPORT pll_rtree_t * pll_rtree_parse_newick_string(const char * s);
-
-PLL_EXPORT void pll_rtree_destroy(pll_rtree_t * root,
-                                  void (*cb_destroy)(void *));
-
-PLL_EXPORT void pll_rtree_reset_template_indices(pll_rnode_t * node,
-                                                 unsigned int tip_count);
-
-PLL_EXPORT void pll_rtree_graph_destroy(pll_rnode_t * root,
-                                        void (*cb_destroy)(void *));
-
-PLL_EXPORT pll_rtree_t * pll_rtree_wraptree(pll_rnode_t * root,
-                                            unsigned int tip_count);
 /* functions in parse_utree.y */
 
 PLL_EXPORT pll_utree_t * pll_utree_parse_newick(const char * filename);
@@ -954,8 +910,6 @@ PLL_EXPORT pll_unode_t * pll_utree_graph_clone(const pll_unode_t * root);
 
 PLL_EXPORT pll_utree_t * pll_utree_clone(const pll_utree_t * root);
 
-PLL_EXPORT pll_utree_t * pll_rtree_unroot(pll_rtree_t * tree);
-
 PLL_EXPORT int pll_utree_every(pll_utree_t * tree,
                                int (*cb)(const pll_utree_t *,
                                          const pll_unode_t *));
@@ -989,52 +943,6 @@ PLL_EXPORT  pll_msa_t * pll_phylip_load(const char * fname,
 
 PLL_EXPORT int pll_phylip_save(const char * out_fname,
                                const pll_msa_t * msa);
-
-/* functions in rtree.c */
-
-PLL_EXPORT void pll_rtree_show_ascii(const pll_rnode_t * root, int options);
-
-PLL_EXPORT char * pll_rtree_export_newick(const pll_rnode_t * root,
-                                   char * (*cb_serialize)(const pll_rnode_t *));
-
-PLL_EXPORT int pll_rtree_traverse(pll_rnode_t * root,
-                                  int traversal,
-                                  int (*cbtrav)(pll_rnode_t *),
-                                  pll_rnode_t ** outbuffer,
-                                  unsigned int * trav_size);
-
-#if 0
-PLL_EXPORT unsigned int pll_rtree_query_tipnodes(pll_rtree_t * root,
-                                                 pll_rtree_t ** node_list);
-
-PLL_EXPORT unsigned int pll_rtree_query_innernodes(pll_rtree_t * root,
-                                                   pll_rtree_t ** node_list);
-#endif
-
-PLL_EXPORT void pll_rtree_create_operations(pll_rnode_t * const* trav_buffer,
-                                            unsigned int trav_buffer_size,
-                                            double * branches,
-                                            unsigned int * pmatrix_indices,
-                                            pll_operation_t * ops,
-                                            unsigned int * matrix_count,
-                                            unsigned int * ops_count);
-
-#if 0
-PLL_EXPORT int pll_rtree_traverse_preorder(pll_rtree_t * root,
-                                           int (*cbtrav)(pll_rtree_t *),
-                                           pll_rtree_t ** outbuffer,
-                                           unsigned int * trav_size);
-#endif
-
-PLL_EXPORT void pll_rtree_create_pars_buildops(pll_rnode_t * const* trav_buffer,
-                                               unsigned int trav_buffer_size,
-                                               pll_pars_buildop_t * ops,
-                                               unsigned int * ops_count);
-
-PLL_EXPORT void pll_rtree_create_pars_recops(pll_rnode_t * const* trav_buffer,
-                                             unsigned int trav_buffer_size,
-                                             pll_pars_recop_t * ops,
-                                             unsigned int * ops_count);
 
 /* functions in core_clvs.c */
 
