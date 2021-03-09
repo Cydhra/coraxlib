@@ -279,7 +279,7 @@ PLL_EXPORT int pll_update_sumtable(pll_partition_t * partition,
         (child_clv_index < partition->tips))
     {
       /* tip-tip case */
-      pll_errno = PLL_ERROR_PARAM_INVALID;
+      pll_errno = PLL_ERROR_INVALID_PARAM;
       snprintf(pll_errmsg, 200,
                "pll_update_sumtable() was called for the tip-tip case!");
       retval = PLL_FAILURE;

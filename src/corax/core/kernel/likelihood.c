@@ -650,7 +650,7 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
 {
   if (!partition || !ancestral)
   {
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     snprintf(pll_errmsg, 200,
              "Parameter value is NULL!");
     return PLL_FAILURE;
@@ -658,7 +658,7 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
   {
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     snprintf(pll_errmsg, 200,
              "NULL buffer pointer");
     return PLL_FAILURE;

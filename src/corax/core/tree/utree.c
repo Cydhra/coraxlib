@@ -413,7 +413,7 @@ PLL_EXPORT int pll_utree_traverse_subtree(pll_unode_t *root,
     utree_traverse_recursive(root, traversal, cbtrav, trav_size, outbuffer);
   } else {
     snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
@@ -447,7 +447,7 @@ PLL_EXPORT int pll_utree_traverse(pll_unode_t *root,
     utree_traverse_recursive(root, traversal, cbtrav, trav_size, outbuffer);
   } else {
     snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
@@ -950,7 +950,7 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
 
   if (tip_count < 3 && tip_count != 0) {
     snprintf(pll_errmsg, 200, "Invalid tip_count value (%u).", tip_count);
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
@@ -961,7 +961,7 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
       node_count = utree_count_nodes(root, &tip_count, &inner_count);
       if (inner_count != tip_count - 2) {
         snprintf(pll_errmsg, 200, "Input tree is not strictly bifurcating.");
-        pll_errno = PLL_ERROR_PARAM_INVALID;
+        pll_errno = PLL_ERROR_INVALID_PARAM;
         return PLL_FAILURE;
       }
     } else {
@@ -977,7 +977,7 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
 
   if (!tip_count) {
     snprintf(pll_errmsg, 200, "Input tree contains no inner nodes.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 

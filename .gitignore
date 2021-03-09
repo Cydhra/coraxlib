@@ -1,4 +1,5 @@
 *.o$
 *.so
+.project
 build/*
 bin/*

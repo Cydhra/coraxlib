@@ -19,8 +19,8 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#ifndef CORAX_H
-#define CORAX_H
+#ifndef CORAX_H_
+#define CORAX_H_
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -69,6 +69,7 @@
 #define PLL_SWAP(x,y) do { __typeof__ (x) _t = x; x = y; y = _t; } while(0)
 #define PLL_STAT(x) ((pll_hardware.init || pll_hardware_probe()) \
                      && pll_hardware.x)
+#define PLL_UNUSED(expr) do { (void)(expr); } while (0)
 
 /* constants */
 
@@ -85,6 +86,8 @@
 #define PLL_LINEALLOC 2048
 
 #define PLL_ASCII_SIZE 256
+
+#define PLL_ERRMSG_LEN 200
 
 #define PLL_SCALE_FACTOR 115792089237316195423570985008687907853269984665640564039457584007913129639936.0  /*  2**256 (exactly)  */
 #define PLL_SCALE_THRESHOLD (1.0/PLL_SCALE_FACTOR)
@@ -141,6 +144,12 @@
 #define PLL_TREE_TRAVERSE_PREORDER          2
 
 /* error codes */
+#define PLL_ERROR_NOT_IMPLEMENTED          13
+#define PLL_ERROR_INVALID_RANGE            21
+#define PLL_ERROR_INVALID_NODE_TYPE        22
+#define PLL_ERROR_INVALID_INDEX            23
+#define PLL_ERROR_INVALID_PARAM            24
+#define PLL_ERROR_INVALID_TREE             25
 
 #define PLL_ERROR_FILE_OPEN                100
 #define PLL_ERROR_FILE_SEEK                101
@@ -156,7 +165,6 @@
 #define PLL_ERROR_PHYLIP_UNPRINTABLECHAR   235
 #define PLL_ERROR_NEWICK_SYNTAX            111
 #define PLL_ERROR_MEM_ALLOC                112
-#define PLL_ERROR_PARAM_INVALID            113
 #define PLL_ERROR_TIPDATA_ILLEGALSTATE     114
 #define PLL_ERROR_TIPDATA_ILLEGALFUNCTION  115
 #define PLL_ERROR_TREE_CONVERSION          116
@@ -176,7 +184,6 @@
 #define PLL_ERROR_EINVAL                   130
 #define PLL_ERROR_MSA_EMPTY                131
 #define PLL_ERROR_MSA_MAP_INVALID          132
-#define PLL_ERROR_TREE_INVALID             133
 
 /* utree specific */
 
@@ -601,7 +608,12 @@ PLL_EXPORT extern const double pll_aa_freqs_lg4x[4][20];
 extern "C" {
 #endif
 
-/* functions in pll.c */
+/* functions in common.c */
+
+void pll_set_error(int errno, const char* errmsg_fmt, ...);
+void pll_reset_error();
+
+/* functions in partition.c */
 
 PLL_EXPORT pll_partition_t * pll_partition_create(unsigned int tips,
                                                   unsigned int clv_buffers,
@@ -710,6 +722,8 @@ PLL_EXPORT void pll_fill_parent_scaler_repeats_per_rate(unsigned int sites,
                                        const unsigned int * rids);
 
 /* functions in models.c */
+
+PLL_EXPORT unsigned int pll_subst_rate_count(unsigned int states);
 
 PLL_EXPORT void pll_set_subst_params(pll_partition_t * partition,
                                      unsigned int params_index,
@@ -970,7 +984,11 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd);
 
 PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd);
 
-pll_msa_t * pll_phylip_load(const char * fname, pll_bool_t interleaved);
+PLL_EXPORT  pll_msa_t * pll_phylip_load(const char * fname,
+                                        pll_bool_t interleaved);
+
+PLL_EXPORT int pll_phylip_save(const char * out_fname,
+                               const pll_msa_t * msa);
 
 /* functions in rtree.c */
 

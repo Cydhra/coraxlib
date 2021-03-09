@@ -7,8 +7,9 @@ set(CORAX_TEST_SOURCES
   src/main.cpp)
 
 add_executable(corax-test ${CORAX_TEST_SOURCES})
-target_include_directories(corax-test PRIVATE ${GTEST_INCLUDE_DIRS})
-target_link_libraries(corax-test PRIVATE ${GTEST_BOTH_LIBRARIES} pthread corax_static)
+target_include_directories(corax-test PRIVATE ${GTEST_INCLUDE_DIRS} ${CORAX_INCLUDE_DIRS})
+target_link_libraries(corax-test PRIVATE ${GTEST_BOTH_LIBRARIES} pthread)
+target_link_libraries(corax-test PRIVATE ${CORAX_LIBRARIES})
 
 if(${CMAKE_VERSION} VERSION_LESS "3.13") 
   set_target_properties(corax-test PROPERTIES COMPILE_FLAGS -fsanitize=address)

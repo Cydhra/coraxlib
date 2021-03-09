@@ -378,7 +378,7 @@ PLL_EXPORT int pll_rtree_traverse(pll_rnode_t * root,
   else
   {
     snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_PARAM_INVALID;
+    pll_errno = PLL_ERROR_INVALID_PARAM;
     return PLL_FAILURE;
   }
 
