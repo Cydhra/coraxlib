@@ -336,8 +336,7 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -556,8 +555,7 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -772,8 +770,7 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -986,8 +983,7 @@ double pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -1228,8 +1224,7 @@ double pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -1246,8 +1241,7 @@ double pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int sites,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return -INFINITY;
   }
 

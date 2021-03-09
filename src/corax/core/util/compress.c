@@ -152,12 +152,11 @@ static int encode(char ** sequence, const unsigned char * map, int count, int le
       c = map[(int)(*p)];
       if (!c)
       {
-        pll_errno = PLL_ERROR_TIPDATA_ILLEGALSTATE;
-        snprintf (pll_errmsg, 200,
-                  "Cannot encode character %c at sequence %d position %d.",
-                  *p,
-                  i+1,
-                  len-j);
+        pll_set_error (PLL_ERROR_TIPDATA_ILLEGALSTATE,
+                       "Cannot encode character %c at sequence %d position %d.",
+                       *p,
+                       i+1,
+                       len-j);
         return PLL_FAILURE;
       }
       *p = c;
@@ -187,27 +186,23 @@ static unsigned int * compress_site_patterns(char ** sequence,
   /* check that at least one sequence is given */
   if (!count)
   {
-    pll_errno = PLL_ERROR_MSA_EMPTY;
-    snprintf (pll_errmsg, 200,
-              "Number of sequences must be greater than 0.");
+    pll_set_error(PLL_ERROR_MSA_EMPTY,
+                  "Number of sequences must be greater than 0.");
     return NULL;
   }
 
   /* a map must be given */
   if (!map)
   {
-    pll_errno = PLL_ERROR_MSA_MAP_INVALID;
-    snprintf (pll_errmsg, 200,
-              "Map is undefined.");
+    pll_set_error(PLL_ERROR_MSA_MAP_INVALID, "Map is undefined.");
     return NULL;
   }
 
   /* a zero can never be used as a state */
   if (map[0])
   {
-    pll_errno = PLL_ERROR_MSA_MAP_INVALID;
-    snprintf (pll_errmsg, 200,
-              "'0' cannot be used as a state.");
+    pll_set_error(PLL_ERROR_MSA_MAP_INVALID,
+                  "'0' cannot be used as a state.");
     return NULL;
   }
 
@@ -246,9 +241,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
     sort_backmap = (unsigned int *) malloc((size_t)(*length)*sizeof(unsigned int));
     if (!sort_backmap)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200,
-                "Cannot allocate space for sort backmap.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC,
+                    "Cannot allocate space for sort backmap.");
       return NULL;
     }
     for (i = 0; i < *length; ++i)
@@ -261,9 +255,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
   column = (char **)malloc((size_t)(*length)*sizeof(char *));
   if (!column)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200,
-              "Cannot allocate space for matrix columns.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
+                  "Cannot allocate space for matrix columns.");
     free(sort_backmap);
     return NULL;
   }
@@ -274,9 +267,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
                                       sizeof(char));
   if (!memptr)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200,
-              "Cannot allocate space for matrix data.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
+                  "Cannot allocate space for matrix data.");
     free(sort_backmap);
     free(column);
     return NULL;
@@ -292,9 +284,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
   weight = (unsigned int *)malloc((size_t)(*length)*sizeof(unsigned int));
   if (!weight)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200,
-             "Cannot allocate space for storing site weights.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
+                  "Cannot allocate space for storing site weights.");
     free(sort_backmap);
     free(column);
     free(memptr);
@@ -313,9 +304,8 @@ static unsigned int * compress_site_patterns(char ** sequence,
 
   if (!rnd_state)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200,
-             "Cannot allocate space for storing RNG state.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
+                  "Cannot allocate space for storing RNG state.");
     free(weight);
     free(sort_backmap);
     free(column);

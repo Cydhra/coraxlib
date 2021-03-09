@@ -58,8 +58,7 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -81,8 +80,7 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int sites,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -249,8 +247,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_4x4_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -271,8 +268,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_4x4_avx(unsigned int states,
   {
     if (rate_scalings)
       free(rate_scalings);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -448,8 +444,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -475,8 +470,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int states,
     if (tt_inv_eigenvecs_ptr)
       free(tt_inv_eigenvecs_ptr);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -694,8 +688,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -717,8 +710,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic_avx(unsigned int states,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_eigenvecs");
+    pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -729,8 +721,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic_avx(unsigned int states,
 
   if (!tt_inv_eigenvecs)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -953,8 +944,7 @@ PLL_EXPORT int pll_core_update_sumtable_ii_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -976,8 +966,7 @@ PLL_EXPORT int pll_core_update_sumtable_ii_avx(unsigned int states,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -988,8 +977,7 @@ PLL_EXPORT int pll_core_update_sumtable_ii_avx(unsigned int states,
 
   if (!tt_inv_eigenvecs)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -1191,8 +1179,7 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -1221,8 +1208,7 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int sites,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -1406,8 +1392,7 @@ PLL_EXPORT int pll_core_update_sumtable_ti_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200, "Cannot allocate memory for rate scalers");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for rate scalers");
       return PLL_FAILURE;
     }
 
@@ -1436,8 +1421,7 @@ PLL_EXPORT int pll_core_update_sumtable_ti_avx(unsigned int states,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -1652,8 +1636,7 @@ PLL_EXPORT int pll_core_likelihood_derivatives_avx(unsigned int states,
 
     if (!invar_lk)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return PLL_FAILURE;
     }
 
@@ -1679,8 +1662,7 @@ PLL_EXPORT int pll_core_likelihood_derivatives_avx(unsigned int states,
 
     if (!t_diagp)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return PLL_FAILURE;
     }
 

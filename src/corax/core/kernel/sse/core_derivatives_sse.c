@@ -191,8 +191,7 @@ PLL_EXPORT int pll_core_update_sumtable_repeats_generic_sse(unsigned int states,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 
@@ -377,8 +376,7 @@ PLL_EXPORT int pll_core_update_sumtable_ii_sse(unsigned int states,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for tt_inv_eigenvecs");
+    pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tt_inv_eigenvecs");
     return PLL_FAILURE;
   }
 

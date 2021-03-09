@@ -43,8 +43,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
   pll_fasta_t * fd = (pll_fasta_t *)malloc(sizeof(pll_fasta_t));
   if (!fd)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -60,8 +59,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
   fd->fp = fopen(filename, "r");
   if (!(fd->fp))
   {
-    pll_errno = PLL_ERROR_FILE_OPEN;
-    snprintf(pll_errmsg, 200, "Unable to open file (%s)", filename);
+    pll_set_error(PLL_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
     free(fd);
     return NULL;
   }
@@ -69,8 +67,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
   /* get filesize */
   if (fseek(fd->fp, 0, SEEK_END))
   {
-    pll_errno = PLL_ERROR_FILE_SEEK;
-    snprintf(pll_errmsg, 200, "Unable to seek in file (%s)", filename);
+    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -87,8 +84,7 @@ PLL_EXPORT pll_fasta_t * pll_fasta_open(const char * filename, const unsigned in
   fd->line[0] = 0;
   if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
   {
-    pll_errno = PLL_ERROR_FILE_SEEK;
-    snprintf(pll_errmsg, 200, "Unable to read file (%s)", filename);
+    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to read file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -112,8 +108,7 @@ PLL_EXPORT int pll_fasta_rewind(pll_fasta_t * fd)
   fd->line[0] = 0;
   if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
   {
-    pll_errno = PLL_ERROR_FILE_SEEK;
-    snprintf(pll_errmsg, 200, "Unable to rewind and cache data");
+    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to rewind and cache data");
     return PLL_FAILURE;
   }
   fd->lineno = 1;
@@ -142,8 +137,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
   *head = (char *)malloc((size_t)(head_alloc));
   if (!(*head))
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -151,8 +145,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
   if (!(*seq))
   {
     free(*head);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -164,8 +157,8 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
 
       if (fd->line[0] != '>')
       {
-        pll_errno = PLL_ERROR_FASTA_INVALIDHEADER;
-        snprintf(pll_errmsg, 200, "Illegal header line in query fasta file");
+        pll_set_error(PLL_ERROR_FASTA_INVALIDHEADER,
+                      "Illegal header line in query fasta file");
         free(*head);
         free(*seq);
         return PLL_FAILURE;
@@ -185,8 +178,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
         mem = realloc(*head, (size_t)(head_alloc));
         if (!mem)
         {
-          pll_errno = PLL_ERROR_MEM_ALLOC;
-          snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+          pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
           free(*head);
           free(*seq);
           return PLL_FAILURE;
@@ -235,8 +227,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
                       mem = realloc(*seq, (size_t)(seq_alloc));
                       if (!mem)
                       {
-                        pll_errno = PLL_ERROR_MEM_ALLOC;
-                        snprintf(pll_errmsg, 200,
+                        pll_set_error(PLL_ERROR_MEM_ALLOC,
                                  "Unable to allocate enough memory.");
                         free(*head);
                         free(*seq);
@@ -253,18 +244,18 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
                   /* fatal character */
                   if (c>=32)
                   {
-                    pll_errno = PLL_ERROR_FASTA_ILLEGALCHAR;
-                    snprintf(pll_errmsg, 200, "illegal character '%c' "
-                                              "on line %ld in the fasta file",
-                                              c, fd->lineno);
+                    pll_set_error(PLL_ERROR_FASTA_ILLEGALCHAR,
+                                  "illegal character '%c' "
+                                  "on line %ld in the fasta file",
+                                  c, fd->lineno);
                   }
                   else
                   {
-                    pll_errno = PLL_ERROR_FASTA_UNPRINTABLECHAR;
-                    snprintf(pll_errmsg, 200, "illegal unprintable character "
-                                              "%#.2x (hexadecimal) on line %ld "
-                                              "in the fasta file",
-                                              c, fd->lineno);
+                    pll_set_error(PLL_ERROR_FASTA_UNPRINTABLECHAR,
+                                  "illegal unprintable character "
+                                  "%#.2x (hexadecimal) on line %ld "
+                                  "in the fasta file",
+                                  c, fd->lineno);
                   }
                   return PLL_FAILURE;
 
@@ -291,8 +282,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
           mem = realloc(*seq, (size_t)seq_alloc);
           if (!mem)
           {
-            pll_errno = PLL_ERROR_MEM_ALLOC;
-            snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+            pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
             free(*head);
             free(*seq);
             return PLL_FAILURE;
@@ -308,8 +298,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t * fd, char ** head,
     }
 
 
-  snprintf(pll_errmsg, 200, "End of file\n");
-  pll_errno = PLL_ERROR_FILE_EOF;
+  pll_set_error(PLL_ERROR_FILE_EOF, "End of file\n");
   free(*head);
   free(*seq);
   return PLL_FAILURE;
@@ -350,8 +339,7 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
   if (!msa)
   {
     pll_fasta_close(fp);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -373,9 +361,10 @@ PLL_EXPORT pll_msa_t * pll_fasta_load(const char * fname)
       msa->count = i;
       pll_msa_destroy(msa);
       pll_fasta_close(fp);
-      pll_errno = PLL_ERROR_FASTA_NONALIGNED;
-      snprintf(pll_errmsg, 200, "FASTA file does not contain equal size sequences: "
-          "sequence %d has length of %ld (expected: %d)", i, seqlen, msa->length);
+      pll_set_error(PLL_ERROR_FASTA_NONALIGNED,
+                    "FASTA file does not contain equal size sequences: "
+                    "sequence %d has length of %ld (expected: %d)",
+                    i, seqlen, msa->length);
       return NULL;
     }
 

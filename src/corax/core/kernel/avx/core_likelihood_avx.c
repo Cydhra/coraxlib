@@ -337,8 +337,7 @@ double pll_core_edge_loglikelihood_ti_4x4_avx(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -355,8 +354,7 @@ double pll_core_edge_loglikelihood_ti_4x4_avx(unsigned int sites,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return -INFINITY;
   }
 
@@ -586,8 +584,7 @@ double pll_core_edge_loglikelihood_ti_20x20_avx(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -604,8 +601,7 @@ double pll_core_edge_loglikelihood_ti_20x20_avx(unsigned int sites,
     if (rate_scalings)
       free(rate_scalings);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return -INFINITY;
   }
 
@@ -830,8 +826,7 @@ double pll_core_edge_loglikelihood_ti_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for rate scalers.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -1080,8 +1075,7 @@ double pll_core_edge_loglikelihood_repeats_generic_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
       return -INFINITY;
     }
   }
@@ -1325,8 +1319,7 @@ double pll_core_edge_loglikelihood_ii_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
       return -INFINITY;
     }
   }
@@ -1565,8 +1558,7 @@ double pll_core_edge_loglikelihood_ii_4x4_avx(unsigned int sites,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
       return -INFINITY;
     }
   }
@@ -1783,8 +1775,7 @@ double pll_core_edge_loglikelihood_repeats_4x4_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
       return -INFINITY;
     }
   }
@@ -2003,8 +1994,7 @@ double pll_core_edge_loglikelihood_repeatsbclv_4x4_avx(unsigned int states,
 
     if (!rate_scalings)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
       return -INFINITY;
     }
   }

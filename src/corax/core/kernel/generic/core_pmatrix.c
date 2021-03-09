@@ -165,8 +165,7 @@ PLL_EXPORT int pll_core_update_pmatrix(double ** pmatrix,
     if (expd) free(expd);
     if (temp) free(temp);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 

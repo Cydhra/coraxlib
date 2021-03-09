@@ -428,8 +428,7 @@ PLL_EXPORT int pll_utree_export_svg(pll_utree_t * tree,
   if (!data_old)
   {
     fclose(fp);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 

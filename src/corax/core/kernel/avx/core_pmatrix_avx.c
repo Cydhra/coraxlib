@@ -64,8 +64,7 @@ PLL_EXPORT int pll_core_update_pmatrix_4x4_avx(double ** pmatrix,
 
   if (!expd)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -320,8 +319,7 @@ PLL_EXPORT int pll_core_update_pmatrix_20x20_avx(double ** pmatrix,
     if (transposed) free(transposed);
     if (tran_evecs) free(tran_evecs);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -346,8 +344,7 @@ PLL_EXPORT int pll_core_update_pmatrix_20x20_avx(double ** pmatrix,
           if (tran_evecs[i]) pll_aligned_free(tran_evecs[i]);
         free(tran_evecs);
 
-        pll_errno = PLL_ERROR_MEM_ALLOC;
-        snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         return PLL_FAILURE;
       }
 

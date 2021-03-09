@@ -140,8 +140,7 @@ PLL_EXPORT void pll_utree_show_ascii(const pll_unode_t *root, int options) {
 
   int *active_node_order = (int *)malloc((max_indent_level + 1) * sizeof(int));
   if (!active_node_order) {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return;
   }
   active_node_order[0] = 1;
@@ -177,8 +176,7 @@ static char *newick_utree_recurse(const pll_unode_t *root,
       char *subtree =
           newick_utree_recurse(snode->back, cb_serialize, level + 1);
       if (subtree == NULL) {
-        pll_errno = PLL_ERROR_MEM_ALLOC;
-        snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         return NULL;
       }
 
@@ -212,8 +210,7 @@ static char *newick_utree_recurse(const pll_unode_t *root,
   }
 
   if (size_alloced < 0) {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "memory allocation during newick export failed");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "memory allocation during newick export failed");
     return NULL;
   }
 
@@ -260,8 +257,7 @@ char *utree_export_newick(const pll_unode_t *root,
   free(subtree2);
 
   if (size_alloced < 0) {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "memory allocation during newick export failed");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "memory allocation during newick export failed");
     return NULL;
   }
 
@@ -401,8 +397,7 @@ PLL_EXPORT int pll_utree_traverse_subtree(pll_unode_t *root,
 
     utree_traverse_recursive(root, traversal, cbtrav, trav_size, outbuffer);
   } else {
-    snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_INVALID_PARAM;
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid traversal value.");
     return PLL_FAILURE;
   }
 
@@ -435,8 +430,7 @@ PLL_EXPORT int pll_utree_traverse(pll_unode_t *root,
         root->back, traversal, cbtrav, trav_size, outbuffer);
     utree_traverse_recursive(root, traversal, cbtrav, trav_size, outbuffer);
   } else {
-    snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_INVALID_PARAM;
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid traversal value.");
     return PLL_FAILURE;
   }
 
@@ -455,8 +449,7 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
 
   /* edge attributes */
   if (node->back->length != length) {
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(0,
              "Inconsistent branch lengths: %lf != %lf",
              length,
              node->back->length);
@@ -464,8 +457,7 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
   }
 
   if (node->back->pmatrix_index != pmatrix_index) {
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(0,
              "Inconsistent pmatrix indices: %u != %u",
              pmatrix_index,
              node->back->pmatrix_index);
@@ -479,8 +471,7 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
       subnodes++;
 
       if (tree->binary && subnodes > 3) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Multifurcation found in a binary tree "
                  "at node with clv_index = %u",
                  snode->clv_index);
@@ -488,8 +479,7 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
       }
 
       if (subnodes > tree->tip_count) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Multifurcation exceeding the tree size found "
                  "at node with clv_index = %u",
                  snode->clv_index);
@@ -497,32 +487,28 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
       }
 
       if (snode->clv_index != clv_index) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Inconsistent CLV indices: %u != %u",
                  clv_index,
                  snode->clv_index);
         return PLL_FAILURE;
       }
       if (snode->scaler_index != scaler_index) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Inconsistent scaler indices: %d != %d",
                  scaler_index,
                  snode->scaler_index);
         return PLL_FAILURE;
       }
       if (snode->label != label) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Inconsistent node labels: '%s' != '%s'",
                  label,
                  snode->label);
         return PLL_FAILURE;
       }
       if (!snode->next) {
-        snprintf(pll_errmsg,
-                 200,
+        pll_set_error(0,
                  "Open roundabout (node->next is NULL) "
                  "at node with clv_index = %u",
                  snode->clv_index);
@@ -609,7 +595,6 @@ PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *tree) {
   else
     return pll_utree_wraptree_multi(root, tree->tip_count, tree->inner_count);
 }
-
 
 PLL_EXPORT void pll_utree_create_pars_buildops(pll_unode_t *const *trav_buffer,
                                                unsigned int trav_buffer_size,
@@ -819,14 +804,12 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
 
   pll_utree_t *tree = (pll_utree_t *)malloc(sizeof(pll_utree_t));
   if (!tree) {
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
-    pll_errno = PLL_ERROR_MEM_ALLOC;
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
   if (tip_count < 3 && tip_count != 0) {
-    snprintf(pll_errmsg, 200, "Invalid tip_count value (%u).", tip_count);
-    pll_errno = PLL_ERROR_INVALID_PARAM;
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid tip_count value (%u).", tip_count);
     return PLL_FAILURE;
   }
 
@@ -836,8 +819,7 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
     if (tip_count == 0) {
       node_count = utree_count_nodes(root, &tip_count, &inner_count);
       if (inner_count != tip_count - 2) {
-        snprintf(pll_errmsg, 200, "Input tree is not strictly bifurcating.");
-        pll_errno = PLL_ERROR_INVALID_PARAM;
+        pll_set_error(PLL_ERROR_INVALID_PARAM, "Input tree is not strictly bifurcating.");
         return PLL_FAILURE;
       }
     } else {
@@ -852,15 +834,13 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
   }
 
   if (!tip_count) {
-    snprintf(pll_errmsg, 200, "Input tree contains no inner nodes.");
-    pll_errno = PLL_ERROR_INVALID_PARAM;
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Input tree contains no inner nodes.");
     return PLL_FAILURE;
   }
 
   tree->nodes = (pll_unode_t **)malloc(node_count * sizeof(pll_unode_t *));
   if (!tree->nodes) {
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
-    pll_errno = PLL_ERROR_MEM_ALLOC;
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -901,8 +881,7 @@ PLL_EXPORT pll_unode_t *pll_utree_unroot_inplace(pll_unode_t *root) {
   /* check for a bifurcation at the root */
   if (unode_is_rooted(root)) {
     if (root->next == root) {
-      pll_errno = PLL_ERROR_NEWICK_SYNTAX;
-      snprintf(pll_errmsg, 200, "Unifurcation detected at root");
+      pll_set_error(PLL_ERROR_NEWICK_SYNTAX, "Unifurcation detected at root");
       return PLL_FAILURE;
     }
     pll_unode_t *left  = root->back;

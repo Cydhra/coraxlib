@@ -125,9 +125,7 @@ PLL_EXPORT int pll_repeats_initialize(pll_partition_t *partition)
   partition->repeats = malloc(sizeof(pll_repeats_t));
   if (!partition->repeats) 
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
              "Unable to allocate enough memory for repeats structure.");
     return PLL_FAILURE;
   }
@@ -139,9 +137,7 @@ PLL_EXPORT int pll_repeats_initialize(pll_partition_t *partition)
   repeats->pernode_id_site = calloc(partition->nodes, sizeof(unsigned int*));
   if (!repeats->pernode_site_id || !repeats->pernode_id_site) 
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
              "Unable to allocate enough memory for repeats identifiers.");
     return PLL_FAILURE;
   }
@@ -153,9 +149,7 @@ PLL_EXPORT int pll_repeats_initialize(pll_partition_t *partition)
                                          sizeof(unsigned int));
     if (!repeats->pernode_site_id[i]) 
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg,
-               200,
+      pll_set_error(PLL_ERROR_MEM_ALLOC,
                "Unable to allocate enough memory for repeats identifiers.");
       return PLL_FAILURE;
     }
@@ -177,9 +171,7 @@ PLL_EXPORT int pll_repeats_initialize(pll_partition_t *partition)
        && repeats->toclean_buffer && repeats->id_site_buffer 
        && repeats->charmap))
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg,
-          200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
           "Unable to allocate enough memory for one of the repeats buffer.");
     return PLL_FAILURE;
   }
@@ -238,9 +230,7 @@ PLL_EXPORT int pll_update_repeats_tips(pll_partition_t * partition,
                                         partition->alignment);
   if (!partition->clv[tip_index]) 
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
              "Unable to allocate enough memory for repeats structure.");
     return PLL_FAILURE;
   }
@@ -273,8 +263,7 @@ PLL_EXPORT void pll_default_reallocate_repeats(pll_partition_t * partition,
   if (!partition->clv[parent]) 
   {
     pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
              "Unable to allocate enough memory for repeats structure.");
     return;
   }
