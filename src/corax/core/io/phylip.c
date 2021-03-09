@@ -51,9 +51,9 @@ static int dfa_parse(pll_phylip_t * fd,
         /* legal character */
         if (offset + j >= msa->length)
         {
-          pll_errno = PLL_ERROR_PHYLIP_LONGSEQ;
-          snprintf(pll_errmsg, 200, "Sequence %d (%.100s) longer than expected",
-                   seqno+1, msa->label[seqno]);
+          pll_set_error(PLL_ERROR_PHYLIP_LONGSEQ,
+                        "Sequence %d (%.100s) longer than expected",
+                        seqno+1, msa->label[seqno]);
           return -1;
         }
         seqdata[j++] = c;
@@ -63,18 +63,17 @@ static int dfa_parse(pll_phylip_t * fd,
         /* fatal character */
         if (c>=32)
         {
-          pll_errno = PLL_ERROR_PHYLIP_ILLEGALCHAR;
-          snprintf(pll_errmsg, 200, "illegal character '%c' "
-                                    "on line %ld in the fasta file",
-                                    c, fd->lineno);
+          pll_set_error(PLL_ERROR_PHYLIP_ILLEGALCHAR, "illegal character '%c' "
+                        "on line %ld in the fasta file",
+                        c, fd->lineno);
         }
         else
         {
-          pll_errno = PLL_ERROR_PHYLIP_UNPRINTABLECHAR;
-          snprintf(pll_errmsg, 200, "illegal unprintable character "
-                                    "%#.2x (hexadecimal) on line %ld "
-                                    "in the fasta file",
-                                    c, fd->lineno);
+          pll_set_error(PLL_ERROR_PHYLIP_UNPRINTABLECHAR,
+                        "illegal unprintable character "
+                        "%#.2x (hexadecimal) on line %ld "
+                        "in the fasta file",
+                        c, fd->lineno);
         }
         return -1;
 
@@ -107,8 +106,7 @@ static char * reallocline(pll_phylip_t * fd, size_t newmaxsize)
   char * temp = (char *)malloc((size_t)newmaxsize*sizeof(char));
   if (!temp)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -199,8 +197,7 @@ static int parse_header(const char * line,
   /* read number of sequences */
   if (!(*seq_count = args_getint(line,&len)))
   {
-    pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-    snprintf(pll_errmsg, 200, "Invalid number of sequences in header");
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Invalid number of sequences in header");
     return PLL_FAILURE;
   }
 
@@ -209,8 +206,7 @@ static int parse_header(const char * line,
   /* read sequence length */
   if (!(*seq_len = args_getint(line,&len)))
   {
-    pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-    snprintf(pll_errmsg, 200, "Invalid sequence length in header");
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Invalid sequence length in header");
     return PLL_FAILURE;
   }
 
@@ -268,9 +264,9 @@ static char * parse_oneline_sequence(pll_phylip_t * fd,
       else if (*aln_len != j)
       {
         *error = 1;
-        pll_errno = PLL_ERROR_PHYLIP_NONALIGNED;
-        snprintf(pll_errmsg, 200, "Sequence %d (%.100s) data out of alignment",
-                 seqno+1, msa->label[seqno]);
+        pll_set_error(PLL_ERROR_PHYLIP_NONALIGNED,
+                      "Sequence %d (%.100s) data out of alignment",
+                      seqno+1, msa->label[seqno]);
         return NULL;
       }
     }
@@ -289,8 +285,7 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
   pll_phylip_t * fd = (pll_phylip_t *)malloc(sizeof(pll_phylip_t));
   if (!fd)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -309,8 +304,7 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
   fd->fp = fopen(filename, "r");
   if (!(fd->fp))
   {
-    pll_errno = PLL_ERROR_FILE_OPEN;
-    snprintf(pll_errmsg, 200, "Unable to open file (%s)", filename);
+    pll_set_error(PLL_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
     free(fd);
     return NULL;
   }
@@ -318,8 +312,7 @@ PLL_EXPORT pll_phylip_t * pll_phylip_open(const char * filename,
   /* get filesize */
   if (fseek(fd->fp, 0, SEEK_END))
   {
-    pll_errno = PLL_ERROR_FILE_SEEK;
-    snprintf(pll_errmsg, 200, "Unable to seek in file (%s)", filename);
+    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -361,8 +354,7 @@ PLL_EXPORT int pll_phylip_rewind(pll_phylip_t * fd)
 
   if (!getnextline(fd))
   {
-    pll_errno = PLL_ERROR_FILE_SEEK;
-    snprintf(pll_errmsg, 200, "Unable to rewind and cache data");
+    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to rewind and cache data");
     return PLL_FAILURE;
   }
   fd->lineno = 1;
@@ -390,8 +382,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   pll_msa_t * msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
   if (!msa)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -410,8 +401,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   msa->label = (char **)calloc((size_t)(msa->count),sizeof(char *));
   if (!msa->label || !msa->sequence)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     pll_msa_destroy(msa);
     return NULL;
   }
@@ -422,8 +412,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
     msa->sequence[i] = (char *)malloc((size_t)(msa->length+1) * sizeof(char));
     if (!msa->sequence[i])
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -457,8 +446,8 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
     /* error if there are more sequences than specified */
     if (seqno == msa->count)
     {
-      pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-      snprintf(pll_errmsg, 200, "Found at least %d sequences but expected %d",
+      pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
+               "Found at least %d sequences but expected %d",
                seqno+1, msa->count);
       pll_msa_destroy(msa);
       return NULL;
@@ -474,8 +463,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
     msa->label[seqno] = (char *)malloc((size_t)(headerlen+1)*sizeof(char));
     if (!msa->label[seqno])
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -504,8 +492,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
 
   if (seqno != msa->count)
   {
-    pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-    snprintf(pll_errmsg, 200, "Found %d sequence(s) but expected %d",
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequence(s) but expected %d",
              seqno, msa->count);
     pll_msa_destroy(msa);
     return NULL;
@@ -550,15 +537,14 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_interleaved(pll_phylip_t * fd)
   /* if seqno != 0 then there were more (or less) sequences than expected */
   if (seqno)
   {
-    pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-    snprintf(pll_errmsg, 200, "Found %d sequences in block %d but expected %d",
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequences in block %d but expected %d",
              seqno, block_count, msa->count);
     pll_msa_destroy(msa);
     return NULL;
   }
   if (sumlen != msa->length)
   {
-    snprintf(pll_errmsg, 200, "Sequence length is %d but expected %d",
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Sequence length is %d but expected %d",
              sumlen, msa->length);
     pll_msa_destroy(msa);
     return NULL;
@@ -575,8 +561,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   pll_msa_t * msa = (pll_msa_t *)malloc(sizeof(pll_msa_t));
   if (!msa)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -594,8 +579,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
   msa->label = (char **)calloc((size_t)(msa->count),sizeof(char *));
   if (!msa->label || !msa->sequence)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     pll_msa_destroy(msa);
     return NULL;
   }
@@ -605,8 +589,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     msa->sequence[i] = (char *)malloc((size_t)(msa->length+1) * sizeof(char));
     if (!msa->sequence[i])
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -638,8 +621,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     /* error if there are more sequences than specified */
     if (seqno == msa->count)
     {
-      pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-      snprintf(pll_errmsg, 200, "Found at least %d sequences but expected %d",
+      pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found at least %d sequences but expected %d",
                seqno+1, msa->count);
       pll_msa_destroy(msa);
       return NULL;
@@ -655,8 +637,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
     msa->label[seqno] = (char *)malloc((size_t)(headerlen+1)*sizeof(char));
     if (!msa->label[seqno])
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       pll_msa_destroy(msa);
       return NULL;
     }
@@ -687,8 +668,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
 
       if (!p)
       {
-        pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-        snprintf(pll_errmsg, 200,
+        pll_set_error(PLL_ERROR_PHYLIP_SYNTAX,
                  "Sequence %d (%.100s) has %d characters but expected %d",
                 seqno+1,msa->label[seqno],j,msa->length);
         pll_msa_destroy(msa);
@@ -701,8 +681,7 @@ PLL_EXPORT pll_msa_t * pll_phylip_parse_sequential(pll_phylip_t * fd)
 
   if (seqno != msa->count)
   {
-    pll_errno = PLL_ERROR_PHYLIP_SYNTAX;
-    snprintf(pll_errmsg, 200, "Found %d sequence(s) but expected %d",
+    pll_set_error(PLL_ERROR_PHYLIP_SYNTAX, "Found %d sequence(s) but expected %d",
              seqno, msa->count);
     pll_msa_destroy(msa);
     return NULL;

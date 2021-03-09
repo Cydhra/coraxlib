@@ -155,8 +155,7 @@ PLL_EXPORT void pll_core_create_lookup_20x20_avx(unsigned int rate_cats,
       pll_aligned_free(lookupl);
     else if (lookupr)
       pll_aligned_free(lookupr);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return;
   }
 
@@ -284,8 +283,7 @@ PLL_EXPORT void pll_core_create_lookup_4x4_avx(unsigned int rate_cats,
       pll_aligned_free(lookupl);
     else if (lookupr)
       pll_aligned_free(lookupr);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return;
   }
 
@@ -1344,8 +1342,7 @@ PLL_EXPORT void pll_core_update_clv_ti_4x4_avx(unsigned int sites,
     /* TODO: in the highly unlikely event that allocation fails, we should
        resort to a non-lookup-precomputation version of this function,
        available at commit e.g.  a4fc873fdc65741e402cdc1c59919375143d97d1 */
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return;
   }
 
@@ -1540,8 +1537,7 @@ PLL_EXPORT void pll_core_update_clv_ti_20x20_avx(unsigned int sites,
     /* TODO: in the highly unlikely event that allocation fails, we should
        resort to a non-lookup-precomputation version of this function,
        available at commit e.g.  a4fc873fdc65741e402cdc1c59919375143d97d1 */
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate space for precomputation.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate space for precomputation.");
     return;
   }
 

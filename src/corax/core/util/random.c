@@ -269,8 +269,7 @@ pll_initstate_r (unsigned int seed, char *arg_state, size_t n,
   return 0;
 
  fail:
-  pll_errno = PLL_ERROR_EINVAL;
-  snprintf(pll_errmsg, 200,
+  pll_set_error(PLL_ERROR_EINVAL,
            "A state array of less than 8 bytes was specified to initstate_r.");
   return -1;
 }
@@ -324,8 +323,7 @@ pll_setstate_r (char *arg_state, struct pll_random_data *buf)
   return 0;
 
  fail:
-  pll_errno = PLL_ERROR_EINVAL;
-  snprintf(pll_errmsg, 200,
+   pll_set_error(PLL_ERROR_EINVAL,
            "The statebuf or buf argument to setstate_r() was NULL.");
   return -1;
 }
@@ -386,8 +384,7 @@ pll_random_r (struct pll_random_data *buf, int32_t *result)
   return 0;
 
  fail:
-  pll_errno = PLL_ERROR_EINVAL;
-  snprintf(pll_errmsg, 200,
+  pll_set_error(PLL_ERROR_EINVAL,
            "The buf or result argument to random_r() was NULL.");
   return -1;
 }

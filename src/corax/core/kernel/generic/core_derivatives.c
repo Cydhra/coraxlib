@@ -749,8 +749,7 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
                                       PLL_ALIGNMENT_AVX);
   if (!diagptable)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200, "Cannot allocate memory for diagptable");
+    pll_set_error (PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
     return PLL_FAILURE;
   }
 
@@ -916,8 +915,7 @@ PLL_EXPORT int pll_core_likelihood_derivatives(unsigned int states,
                (asc_Lk[0] * asc_Lk[0]));
         break;
         default:
-          pll_errno = PLL_ERROR_AB_INVALIDMETHOD;
-          snprintf(pll_errmsg, 200, "Illegal ascertainment bias algorithm");
+          pll_set_error(PLL_ERROR_AB_INVALIDMETHOD, "Illegal ascertainment bias algorithm");
           return PLL_FAILURE;
       }
     }

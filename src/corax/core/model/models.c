@@ -320,8 +320,7 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
                         states);
   if (!a)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -335,8 +334,7 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t * partition,
     if (new_freqs) free(new_freqs);
     for(i = 0; i < states; ++i) free(a[i]);
     free(a);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -505,29 +503,23 @@ PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition
   /* check that there is no ascertainment bias correction */
   if (prop_invar != 0.0 && (partition->attributes & PLL_ATTRIB_AB_MASK))
   {
-    pll_errno = PLL_ERROR_INVAR_INCOMPAT;
-    snprintf(pll_errmsg,
-             200,
-             "Invariant sites are not compatible with asc bias correction");
+    pll_set_error(PLL_ERROR_INVAR_INCOMPAT,
+                  "Invariant sites are not compatible with asc bias correction");
     return PLL_FAILURE;
   }
 
   /* validate new invariant sites proportion */
   if (prop_invar < 0 || prop_invar >= 1)
   {
-    pll_errno = PLL_ERROR_INVAR_PROPORTION;
-    snprintf(pll_errmsg,
-             200,
-             "Invalid proportion of invariant sites (%f)", prop_invar);
+    pll_set_error(PLL_ERROR_INVAR_PROPORTION,
+                  "Invalid proportion of invariant sites (%f)", prop_invar);
     return PLL_FAILURE;
   }
 
   if (params_index > partition->rate_matrices)
   {
-    pll_errno = PLL_ERROR_INVAR_PARAMINDEX;
-    snprintf(pll_errmsg,
-             200,
-             "Invalid params index (%u)", params_index);
+    pll_set_error(PLL_ERROR_INVAR_PARAMINDEX,
+                  "Invalid params index (%u)", params_index);
     return PLL_FAILURE;
   }
 
@@ -535,10 +527,8 @@ PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t * partition
   {
     if (!pll_update_invariant_sites(partition))
     {
-      pll_errno = PLL_ERROR_INVAR_NONEFOUND;
-      snprintf(pll_errmsg,
-               200,
-               "No invariant sites found");
+      pll_set_error(PLL_ERROR_INVAR_NONEFOUND,
+                    "No invariant sites found");
       return PLL_FAILURE;
     }
   }
@@ -684,9 +674,8 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t * partition)
 
   if (!invariant || !partition->invariant)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200,
-        "Cannot allocate charmap for invariant sites array.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
+                  "Cannot allocate charmap for invariant sites array.");
     return PLL_FAILURE;
   }
 

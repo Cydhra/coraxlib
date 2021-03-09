@@ -93,6 +93,7 @@ static double IncompleteGamma (double x, double alpha, double ln_gamma_alpha)
  l50:
    return (gin);
 }
+
 static double LnGamma (double alpha)
 {
 /* returns ln(gamma(alpha)) for alpha>0, accurate to 10 decimal places.
@@ -237,8 +238,7 @@ PLL_EXPORT int pll_compute_gamma_cats(double alpha,
 
   if (alpha < ALPHA_MIN || categories < 1)
   {
-    pll_errno = PLL_ERROR_INVALID_PARAM;
-    snprintf(pll_errmsg, 200, "Invalid alpha value (%f)", alpha);
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid alpha value (%f)", alpha);
     return PLL_FAILURE;
   }
 
@@ -283,8 +283,8 @@ PLL_EXPORT int pll_compute_gamma_cats(double alpha,
   }
   else
   {
-    pll_errno = PLL_ERROR_INVALID_PARAM;
-    snprintf(pll_errmsg, 200, "Invalid GAMMA discretization mode (%d)", rates_mode);
+    pll_set_error(PLL_ERROR_INVALID_PARAM,
+                  "Invalid GAMMA discretization mode (%d)", rates_mode);
     return PLL_FAILURE;
   }
 

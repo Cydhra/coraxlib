@@ -38,8 +38,7 @@ static char * xstrdup(const char * s)
   char * p = (char *)malloc(len+1);
   if (!p)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Memory allocation failed");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Memory allocation failed");
     return NULL;
   }
   return strcpy(p,s);
@@ -55,8 +54,7 @@ static unsigned int * create_shuffled(unsigned int n, unsigned int seed)
   unsigned int * x = (unsigned int *)malloc(n*sizeof(unsigned int));
   if (!x)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -401,8 +399,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
 
   if (tips_count < 3)
   {
-    pll_errno = PLL_ERROR_STEPWISE_TIPS;
-    snprintf(pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_STEPWISE_TIPS,
              "Stepwise parsimony requires at least three tips.");
     return NULL;
   }
@@ -410,8 +407,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
   //if (tips_count != inner_nodes + 2)
   if (inner_nodes < tips_count-2)
   {
-    pll_errno = PLL_ERROR_STEPWISE_UNSUPPORTED;
-    snprintf(pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_STEPWISE_UNSUPPORTED,
              "Stepwise parsimony currently supports only unrooted trees.");
     return NULL;
   }
@@ -428,8 +424,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
     if ((list[i]->tips != tips_count) ||
         (list[i]->inner_nodes != inner_nodes))
     {
-      pll_errno = PLL_ERROR_STEPWISE_STRUCT;
-      snprintf(pll_errmsg, 200,
+      pll_set_error(PLL_ERROR_STEPWISE_STRUCT,
                "Parsimony structures tips/inner nodes not equal.");
       return NULL;
     }
@@ -464,8 +459,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
     free(tip_node_list);
     free(travbuffer);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -483,8 +477,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
         pll_utree_graph_destroy(inner_node_list[j],NULL);
       free(inner_node_list);
 
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
     }
   }
@@ -513,8 +506,7 @@ PLL_EXPORT pll_utree_t * pll_fastparsimony_stepwise(pll_parsimony_t ** list,
         pll_utree_graph_destroy(tip_node_list[j],NULL);
       free(tip_node_list);
 
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
 
     }

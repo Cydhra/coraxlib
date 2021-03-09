@@ -111,8 +111,7 @@ PLL_EXPORT void pll_rtree_show_ascii(const pll_rnode_t * root, int options)
   int * active_node_order = (int *)malloc((indent_max+1) * sizeof(int));
   if (!active_node_order)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return;
   }
   active_node_order[0] = 1;
@@ -181,8 +180,7 @@ static char * rtree_export_newick_recursive(const pll_rnode_t * root,
   }
   if (size_alloced < 0)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "memory allocation during newick export failed.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "memory allocation during newick export failed.");
     return NULL;
   }
 
@@ -213,16 +211,14 @@ PLL_EXPORT char * pll_rtree_export_newick(const pll_rnode_t * root,
     char * subtree1 = rtree_export_newick_recursive(root->left,cb_serialize);
     if (subtree1 == NULL)
     {
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
     }
     char * subtree2 = rtree_export_newick_recursive(root->right,cb_serialize);
     if (subtree2 == NULL)
     {
       free(subtree1);
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
     }
 
@@ -250,8 +246,7 @@ PLL_EXPORT char * pll_rtree_export_newick(const pll_rnode_t * root,
   }
   if (size_alloced < 0)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "memory allocation during newick export failed");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "memory allocation during newick export failed");
     return NULL;
   }
 
@@ -377,8 +372,7 @@ PLL_EXPORT int pll_rtree_traverse(pll_rnode_t * root,
     rtree_traverse_preorder(root, cbtrav, trav_size, outbuffer);
   else
   {
-    snprintf(pll_errmsg, 200, "Invalid traversal value.");
-    pll_errno = PLL_ERROR_INVALID_PARAM;
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid traversal value.");
     return PLL_FAILURE;
   }
 

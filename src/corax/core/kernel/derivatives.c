@@ -48,8 +48,7 @@ static int sumtable_tipinner(pll_partition_t * partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -123,8 +122,7 @@ static int sumtable_innerinner(pll_partition_t * partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -183,8 +181,7 @@ static int sumtable_repeats(pll_partition_t * partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 
@@ -279,9 +276,8 @@ PLL_EXPORT int pll_update_sumtable(pll_partition_t * partition,
         (child_clv_index < partition->tips))
     {
       /* tip-tip case */
-      pll_errno = PLL_ERROR_INVALID_PARAM;
-      snprintf(pll_errmsg, 200,
-               "pll_update_sumtable() was called for the tip-tip case!");
+      pll_set_error(PLL_ERROR_INVALID_PARAM,
+                    "pll_update_sumtable() was called for the tip-tip case!");
       retval = PLL_FAILURE;
     }
     else if ((parent_clv_index < partition->tips) ||
@@ -353,8 +349,7 @@ PLL_EXPORT int pll_compute_likelihood_derivatives(pll_partition_t * partition,
     if (prop_invar) free(prop_invar);
     if (freqs) free(freqs);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Unable to allocate enough memory.");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return PLL_FAILURE;
   }
 

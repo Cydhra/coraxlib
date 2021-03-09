@@ -40,8 +40,7 @@ static double compute_asc_bias_correction(double logl_base,
       logl_correction = sum_w_inv * log(logl_base);
       break;
     default:
-      pll_errno = PLL_ERROR_AB_INVALIDMETHOD;
-      snprintf(pll_errmsg, 200, "Illegal ascertainment bias algorithm");
+      pll_set_error(PLL_ERROR_AB_INVALIDMETHOD, "Illegal ascertainment bias algorithm");
       return -INFINITY;
   }
   return logl_correction;
@@ -650,24 +649,19 @@ PLL_EXPORT int pll_compute_node_ancestral_extbuf(pll_partition_t * partition,
 {
   if (!partition || !ancestral)
   {
-    pll_errno = PLL_ERROR_INVALID_PARAM;
-    snprintf(pll_errmsg, 200,
-             "Parameter value is NULL!");
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter value is NULL!");
     return PLL_FAILURE;
   }
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
   {
-    pll_errno = PLL_ERROR_INVALID_PARAM;
-    snprintf(pll_errmsg, 200,
-             "NULL buffer pointer");
+    pll_set_error(PLL_ERROR_INVALID_PARAM, "NULL buffer pointer");
     return PLL_FAILURE;
   }
 
   if (pll_repeats_enabled(partition))
   {
-    pll_errno = PLL_ERROR_EINVAL;
-    snprintf(pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_EINVAL,
              "Site repeats are not compatible with ancestral state reconstruction!");
     return PLL_FAILURE;
   }
@@ -783,8 +777,7 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t * partition,
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200, "Cannot allocate memory");
+    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory");
     goto cleanup;
   }
 

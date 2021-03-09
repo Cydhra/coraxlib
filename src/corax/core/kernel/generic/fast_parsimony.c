@@ -35,8 +35,7 @@ static int alloc_pars_structs(pll_parsimony_t * parsimony,
                                                 sizeof(unsigned int));
   if (!parsimony->node_cost)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf(pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
              "Cannot allocate parsimony cost array.");
     return PLL_FAILURE;
   }
@@ -47,8 +46,7 @@ static int alloc_pars_structs(pll_parsimony_t * parsimony,
   if (!parsimony->packedvector)
   {
     free(parsimony->node_cost);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
               "Cannot allocate parsimony vector container.");
     return PLL_FAILURE;
   }
@@ -64,8 +62,7 @@ static int alloc_pars_structs(pll_parsimony_t * parsimony,
     if (!vector[i])
     {
       free(parsimony->node_cost);
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      snprintf (pll_errmsg, 200,
+      pll_set_error(PLL_ERROR_MEM_ALLOC,
                 "Cannot allocate parsimony vector.");
       
       /* free all allocated vectors */
@@ -275,8 +272,7 @@ static int fill_parsimony_vectors(const pll_partition_t * partition,
     if (val) free(val);
     if (statevec) free(statevec);
 
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
               "Cannot allocate bitvector data.");
     return PLL_FAILURE;
   }
@@ -377,8 +373,7 @@ static int pll_set_informative(const pll_partition_t * partition,
   parsimony->informative = (int *)malloc(parsimony->sites * sizeof(int));
   if (!parsimony->informative)
   {
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    snprintf (pll_errmsg, 200,
+    pll_set_error(PLL_ERROR_MEM_ALLOC,
               "Cannot allocate informative array.");
     return PLL_FAILURE;
   }
@@ -529,9 +524,7 @@ PLL_EXPORT pll_parsimony_t * pll_fastparsimony_init(const pll_partition_t * part
   if (partition->states > 20 && 
       ((partition->attributes & PLL_ATTRIB_PATTERN_TIP) == 0))
   {
-    pll_errno = PLL_ERROR_STEPWISE_UNSUPPORTED;
-    snprintf(pll_errmsg,
-             200,
+    pll_set_error(PLL_ERROR_STEPWISE_UNSUPPORTED,
              "Use PLL_ATTRIB_PATTERN_TIP for more than 20 states.");
     return NULL;
   }
