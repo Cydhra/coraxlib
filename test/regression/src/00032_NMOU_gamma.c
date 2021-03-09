@@ -98,9 +98,9 @@ int main (int argc, char * argv[])
   double * rate_cats = (double *) malloc (4 * sizeof(double));
   if (pll_compute_gamma_cats (invalid_alpha, 4, rate_cats, PLL_GAMMA_RATES_MEAN) == PLL_FAILURE)
   {
-    if (pll_errno != PLL_ERROR_PARAM_INVALID)
+    if (pll_errno != PLL_ERROR_INVALID_PARAM)
       printf ("Error is %d instead of %d\n", pll_errno,
-      PLL_ERROR_PARAM_INVALID);
+      PLL_ERROR_INVALID_PARAM);
   }
   else
   {

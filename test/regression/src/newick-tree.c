@@ -86,7 +86,7 @@ int test_newick_string(const char * newick)
 {
   pll_utree_t * tree = pll_utree_parse_newick_string(newick);
 
-  if (!tree && pll_errno == PLL_ERROR_TREE_INVALID)
+  if (!tree && pll_errno == PLL_ERROR_INVALID_TREE)
   {
     pll_errno = 0;
 
@@ -118,7 +118,7 @@ int test_newick_file(const char * fname)
 {
   pll_utree_t * tree = pll_utree_parse_newick(fname);
 
-  if (!tree && pll_errno == PLL_ERROR_TREE_INVALID)
+  if (!tree && pll_errno == PLL_ERROR_INVALID_TREE)
   {
     pll_errno = 0;
     

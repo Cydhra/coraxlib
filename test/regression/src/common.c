@@ -214,11 +214,6 @@ int cb_full_traversal(pll_unode_t * node)
   return 1;
 }
 
-int cb_rfull_traversal(pll_rnode_t * node)
-{
-  return 1;
-}
-
 __attribute__((format(printf, 1, 2)))
 void fatal(const char * format, ...)
 {

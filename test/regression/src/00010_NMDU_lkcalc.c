@@ -144,8 +144,8 @@ int main(int argc, char * argv[])
   double invalid_alpha = 0;
   if (pll_compute_gamma_cats(invalid_alpha, N_CAT_GAMMA, rate_cats, PLL_GAMMA_RATES_MEAN) == PLL_FAILURE)
   {
-    if (pll_errno != PLL_ERROR_PARAM_INVALID)
-     printf("Error is %d instead of %d\n", pll_errno, PLL_ERROR_PARAM_INVALID);
+    if (pll_errno != PLL_ERROR_INVALID_PARAM)
+     printf("Error is %d instead of %d\n", pll_errno, PLL_ERROR_INVALID_PARAM);
   }
   else
   {
