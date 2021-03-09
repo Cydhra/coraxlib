@@ -236,7 +236,7 @@ set(CORAX_LIBRARIES "")
 add_corax_lib(corax "${CORAX_SOURCES}")
 
 #set(CORAX_COMPONENTS "optimize;algorithm;binary;msa;tree;util" CACHE STRING "corax components to build")
-set(CORAX_COMPONENTS "msa" CACHE STRING "corax components to build")
+set(CORAX_COMPONENTS "msa;binary;modutil" CACHE STRING "corax components to build")
 
 foreach(module ${CORAX_COMPONENTS})
   message(STATUS "Will compile corax-component ${module}")
