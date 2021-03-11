@@ -1,6 +1,6 @@
 #include <stdarg.h>
 
-#include "corax.h"
+#include "corax/corax.h"
 
 /**
  * @brief Set pll error (pll_errno and pll_errmsg)

@@ -1,7 +1,0 @@
-
-file(GLOB MSA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CORAX_BASE_FLAGS}")
-
-add_corax_lib(corax_msa "${MSA_SOURCES}")
-

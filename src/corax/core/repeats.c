@@ -19,7 +19,7 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#include "corax.h"
+#include "corax/corax.h"
 
 const unsigned int EMPTY_ELEMENT = (unsigned int)-1;
 

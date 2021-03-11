@@ -19,7 +19,7 @@
 
 CC = g++
 CURDIR=$(readlink -f $0)
-CORAX_INCLUDE_DIR=$(CURDIR)../../src/corax
+CORAX_INCLUDE_DIR=$(CURDIR)../../src
 CORAX_LIB_DIR=$(CURDIR)../../bin
 CFLAGS = -I$(CORAX_INCLUDE_DIR) -L$(CORAX_LIB_DIR) -g -O3 -Wall 
 CLIBS = -lcorax -lm

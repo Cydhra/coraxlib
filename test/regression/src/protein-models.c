@@ -46,7 +46,7 @@ static const double *prot_freqs[N_PROT_MODELS] = {
     pll_aa_freqs_hivw,     pll_aa_freqs_jttdcmut, pll_aa_freqs_flu,
     pll_aa_freqs_stmtrev,  pll_aa_freqs_den};
 
-static char *prot_model_names[N_PROT_MODELS] = {
+static const char *prot_model_names[N_PROT_MODELS] = {
     "Dayhoff", "LG",   "DCMut",     "JTT",   "MtREV",   "WAG",   "RtREV",
     "CpREV",   "VT",   "Blosum62",  "MtMam", "MtArt",   "MtZoa", "PMB",
     "HIVb",    "HIVw", "JTT-DCMut", "FLU",   "StmtREV", "DEN"};

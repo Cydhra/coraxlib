@@ -19,7 +19,7 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
-#include "corax.h"
+#include "corax/corax.h"
 
 __thread int  pll_errno;
 __thread char pll_errmsg[200] = {0};

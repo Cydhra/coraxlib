@@ -12,78 +12,90 @@ set (SSE_FLAGS "-msse3")
 set (AVX_FLAGS "-mavx")
 set (AVX2_FLAGS "-mfma -mavx2")
 
-set(CORAX_SRC_DIR_CORE ${CMAKE_CURRENT_SOURCE_DIR}/core)
-set(CORAX_SRC_DIR_CORE_TREE ${CORAX_SRC_DIR_CORE}/tree)
-set(CORAX_SRC_DIR_CORE_IO ${CORAX_SRC_DIR_CORE}/io)
-set(CORAX_SRC_DIR_CORE_MODEL ${CORAX_SRC_DIR_CORE}/model)
-set(CORAX_SRC_DIR_CORE_UTIL ${CORAX_SRC_DIR_CORE}/util)
-set(CORAX_SRC_DIR_CORE_KERNEL ${CORAX_SRC_DIR_CORE}/kernel)
-set(CORAX_SRC_DIR_CORE_KERNEL_GENERIC ${CORAX_SRC_DIR_CORE_KERNEL}/generic)
-set(CORAX_SRC_DIR_CORE_KERNEL_SSE ${CORAX_SRC_DIR_CORE_KERNEL}/sse)
-set(CORAX_SRC_DIR_CORE_KERNEL_AVX ${CORAX_SRC_DIR_CORE_KERNEL}/avx)
-set(CORAX_SRC_DIR_CORE_KERNEL_AVX2 ${CORAX_SRC_DIR_CORE_KERNEL}/avx2)
+set(CORAX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CORAX_SRC_DIR_CORE ${CORAX_SRC_DIR}/core)
+set(CORAX_SRC_DIR_TREE ${CORAX_SRC_DIR}/tree)
+set(CORAX_SRC_DIR_IO ${CORAX_SRC_DIR}/io)
+set(CORAX_SRC_DIR_MODEL ${CORAX_SRC_DIR}/model)
+set(CORAX_SRC_DIR_UTIL ${CORAX_SRC_DIR}/util)
+set(CORAX_SRC_DIR_KERNEL ${CORAX_SRC_DIR}/kernel)
+set(CORAX_SRC_DIR_KERNEL_GENERIC ${CORAX_SRC_DIR_KERNEL}/generic)
+set(CORAX_SRC_DIR_KERNEL_SSE ${CORAX_SRC_DIR_KERNEL}/sse)
+set(CORAX_SRC_DIR_KERNEL_AVX ${CORAX_SRC_DIR_KERNEL}/avx)
+set(CORAX_SRC_DIR_KERNEL_AVX2 ${CORAX_SRC_DIR_KERNEL}/avx2)
+
+# Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
+set(CORAX_INCLUDE_DIRS
+  ${PROJECT_SOURCE_DIR}/src
+  CACHE INTERNAL "${PROJECT_NAME}: Include dirs")
 
 # needed for coraxmodule files
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CORAX_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-#remove annoyting bison and flex warnings
-SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_utree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
-SET_SOURCE_FILES_PROPERTIES( ${FLEX_lex_rtree_t_OUTPUTS} PROPERTIES COMPILE_FLAGS -Wno-sign-compare )
 
 set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_CORE}/partition.c
   ${CORAX_SRC_DIR_CORE}/repeats.c
 
-  ${CORAX_SRC_DIR_CORE_IO}/fasta.c
-  ${CORAX_SRC_DIR_CORE_IO}/maps.c
-  ${CORAX_SRC_DIR_CORE_IO}/output.c
-  ${CORAX_SRC_DIR_CORE_IO}/phylip.c
-  ${CORAX_SRC_DIR_CORE_IO}/utree_svg.c
-  ${CORAX_SRC_DIR_CORE_IO}/newick/newick.cpp
+  ${CORAX_SRC_DIR_IO}/fasta.c
 
-  ${CORAX_SRC_DIR_CORE_KERNEL_GENERIC}/core_derivatives.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_GENERIC}/core_likelihood.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_GENERIC}/core_clv.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_GENERIC}/core_pmatrix.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_GENERIC}/fast_parsimony.c
-  ${CORAX_SRC_DIR_CORE_KERNEL}/clv.c
-  ${CORAX_SRC_DIR_CORE_KERNEL}/derivatives.c
-  ${CORAX_SRC_DIR_CORE_KERNEL}/likelihood.c
-  ${CORAX_SRC_DIR_CORE_KERNEL}/parsimony.c
+  ${CORAX_SRC_DIR_IO}/binary.c
+  ${CORAX_SRC_DIR_IO}/binary_io_operations.c
+  ${CORAX_SRC_DIR_IO}/fasta.c
+  ${CORAX_SRC_DIR_IO}/maps.c
+  ${CORAX_SRC_DIR_IO}/output.c
+  ${CORAX_SRC_DIR_IO}/phylip.c
+  ${CORAX_SRC_DIR_IO}/utree_svg.c
+  ${CORAX_SRC_DIR_IO}/newick.cpp
 
-  ${CORAX_SRC_DIR_CORE_MODEL}/gamma.c
-  ${CORAX_SRC_DIR_CORE_MODEL}/models.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_derivatives.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_likelihood.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_clv.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_pmatrix.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/fast_parsimony.c
+  ${CORAX_SRC_DIR_KERNEL}/clv.c
+  ${CORAX_SRC_DIR_KERNEL}/derivatives.c
+  ${CORAX_SRC_DIR_KERNEL}/likelihood.c
+  ${CORAX_SRC_DIR_KERNEL}/parsimony.c
 
-  ${CORAX_SRC_DIR_CORE_TREE}/utree.c
-  ${CORAX_SRC_DIR_CORE_TREE}/utree_moves.c
+  ${CORAX_SRC_DIR_MODEL}/gamma.c
+  ${CORAX_SRC_DIR_MODEL}/models.c
+  ${CORAX_SRC_DIR_MODEL}/modutil.c
+  ${CORAX_SRC_DIR_MODEL}/modutil_aa.c
+  ${CORAX_SRC_DIR_MODEL}/modutil_dna.c
+  ${CORAX_SRC_DIR_MODEL}/modutil_gt.c
+  ${CORAX_SRC_DIR_MODEL}/modutil_mult.c
+
+  ${CORAX_SRC_DIR_TREE}/utree.c
+  ${CORAX_SRC_DIR_TREE}/utree_moves.c
   
-  ${CORAX_SRC_DIR_CORE_UTIL}/compress.c
-  ${CORAX_SRC_DIR_CORE_UTIL}/hardware.c
-  ${CORAX_SRC_DIR_CORE_UTIL}/list.c
-  ${CORAX_SRC_DIR_CORE_UTIL}/random.c
-  ${CORAX_SRC_DIR_CORE_UTIL}/stepwise.c
+  ${CORAX_SRC_DIR_UTIL}/compress.c
+  ${CORAX_SRC_DIR_UTIL}/hardware.c
+  ${CORAX_SRC_DIR_UTIL}/list.c
+  ${CORAX_SRC_DIR_UTIL}/msa.c
+  ${CORAX_SRC_DIR_UTIL}/random.c
+  ${CORAX_SRC_DIR_UTIL}/stepwise.c
   )
 
-file(GLOB CORAX_SSE_SOURCES ${CORAX_SRC_DIR_CORE_KERNEL_SSE}/core_derivatives_sse.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_SSE}/core_likelihood_sse.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_SSE}/core_clv_sse.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_SSE}/core_pmatrix_sse.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_SSE}/fast_parsimony_sse.c
+file(GLOB CORAX_SSE_SOURCES ${CORAX_SRC_DIR_KERNEL_SSE}/core_derivatives_sse.c
+  ${CORAX_SRC_DIR_KERNEL_SSE}/core_likelihood_sse.c
+  ${CORAX_SRC_DIR_KERNEL_SSE}/core_clv_sse.c
+  ${CORAX_SRC_DIR_KERNEL_SSE}/core_pmatrix_sse.c
+  ${CORAX_SRC_DIR_KERNEL_SSE}/fast_parsimony_sse.c
   )
 
-file(GLOB CORAX_AVX_SOURCES ${CORAX_SRC_DIR_CORE_KERNEL_AVX}/core_derivatives_avx.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX}/core_likelihood_avx.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX}/core_clv_avx.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX}/core_pmatrix_avx.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX}/fast_parsimony_avx.c
+file(GLOB CORAX_AVX_SOURCES ${CORAX_SRC_DIR_KERNEL_AVX}/core_derivatives_avx.c
+  ${CORAX_SRC_DIR_KERNEL_AVX}/core_likelihood_avx.c
+  ${CORAX_SRC_DIR_KERNEL_AVX}/core_clv_avx.c
+  ${CORAX_SRC_DIR_KERNEL_AVX}/core_pmatrix_avx.c
+  ${CORAX_SRC_DIR_KERNEL_AVX}/fast_parsimony_avx.c
   )
 
-file(GLOB CORAX_AVX2_SOURCES ${CORAX_SRC_DIR_CORE_KERNEL_AVX2}/core_derivatives_avx2.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX2}/core_likelihood_avx2.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX2}/core_clv_avx2.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX2}/core_pmatrix_avx2.c
-  ${CORAX_SRC_DIR_CORE_KERNEL_AVX2}/fast_parsimony_avx2.c
+file(GLOB CORAX_AVX2_SOURCES ${CORAX_SRC_DIR_KERNEL_AVX2}/core_derivatives_avx2.c
+  ${CORAX_SRC_DIR_KERNEL_AVX2}/core_likelihood_avx2.c
+  ${CORAX_SRC_DIR_KERNEL_AVX2}/core_clv_avx2.c
+  ${CORAX_SRC_DIR_KERNEL_AVX2}/core_pmatrix_avx2.c
+  ${CORAX_SRC_DIR_KERNEL_AVX2}/fast_parsimony_avx2.c
   )
 
 # check that user did not disable simd
@@ -174,49 +186,29 @@ if(NOT DEFINED BUILD_CORAX_SHARED AND NOT DEFINED BUILD_CORAX_STATIC)
   endif()
 endif()
 
-macro(add_corax_lib _target _sources)
-  add_library(${_target}_obj OBJECT ${_sources})
-  set_property(TARGET ${_target}_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
-  target_include_directories(${_target}_obj PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  if(BUILD_CORAX_SHARED)
-    add_library(${_target}_shared SHARED $<TARGET_OBJECTS:${_target}_obj>)
-    set_target_properties(${_target}_shared PROPERTIES OUTPUT_NAME "${_target}")
-    if(NOT ${_target} STREQUAL "corax")
-      target_link_libraries(${_target}_shared corax_shared)
-    endif() 
+add_library(corax_obj OBJECT ${CORAX_SOURCES})
+set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_include_directories(corax_obj PRIVATE ${CORAX_INCLUDE_DIRS})
+
+macro(add_corax_lib _target linkage)
+    add_library(${_target} ${linkage} $<TARGET_OBJECTS:corax_obj>)
+    set_target_properties(${_target} PROPERTIES OUTPUT_NAME "corax")
     set(CORAX_LIBRARIES 
-      ${_target}_shared ${CORAX_LIBRARIES}
+      ${_target} ${CORAX_LIBRARIES}
       CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
-  endif()
-  if(BUILD_CORAX_STATIC)
-    add_library(${_target}_static STATIC $<TARGET_OBJECTS:${_target}_obj>)
-    set_target_properties(${_target}_static PROPERTIES OUTPUT_NAME "${_target}")
-    if(NOT ${_target} STREQUAL "corax")
-      target_link_libraries(${_target}_static corax_static) 
-    endif()
-    set(CORAX_LIBRARIES 
-      ${_target}_static ${CORAX_LIBRARIES}
-      CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
-  endif()
 endmacro()
 
 set(CORAX_LIBRARIES "")
 
-add_corax_lib(corax "${CORAX_SOURCES}")
+#add_corax_lib(corax "${CORAX_SOURCES}")
+if(BUILD_CORAX_SHARED)
+  add_corax_lib(corax_shared SHARED)
+endif()
+if(BUILD_CORAX_STATIC)
+  add_corax_lib(corax_static STATIC)
+endif()
 
-#set(CORAX_COMPONENTS "optimize;algorithm;binary;msa;tree;util" CACHE STRING "corax components to build")
-set(CORAX_COMPONENTS "msa;binary;modutil" CACHE STRING "corax components to build")
 
-foreach(module ${CORAX_COMPONENTS})
-  message(STATUS "Will compile corax-component ${module}")
-  add_subdirectory(${module})
-endforeach()
-  
 message(STATUS "coraxlib libraries: ${CORAX_LIBRARIES}")
-
-# Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
-set(CORAX_INCLUDE_DIRS
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  CACHE INTERNAL "${PROJECT_NAME}: Include dirs")
 
 

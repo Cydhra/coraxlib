@@ -21,7 +21,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include "corax.h"
+#include "corax/corax.h"
 
 extern const pll_state_t odd5_map[256];
 
