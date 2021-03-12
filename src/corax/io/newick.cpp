@@ -114,7 +114,7 @@ pll_unode_t *trim_node(pll_unode_t *node) {
   node->label = nullptr;
   delete_unode(node);
 
-  return prev;
+  return prev->next;
 }
 
 pll_unode_t *unode_unroot(pll_unode_t *vroot) {
