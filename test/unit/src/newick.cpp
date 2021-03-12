@@ -123,6 +123,7 @@ TEST(NewickParser, simple1rooted)
   auto t = pll_utree_parse_newick_string_rooted("((a,b)ab,(c,d)cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -193,6 +194,7 @@ TEST(NewickParser, simple2rooted)
   auto t = pll_utree_parse_newick_string_rooted("((a,b)13,(c,d)4cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -265,6 +267,7 @@ TEST(NewickParser, simple3rooted)
       "((a:30.5,b:0.03):48.0,(c:0,d:3)cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -337,6 +340,7 @@ TEST(NewickParser, simple4rooted)
       "((a:1e-10,b:0.03)ab,(c:0,d:3E-5)cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -409,6 +413,7 @@ TEST(NewickParser, simple5rooted)
       "( (a : 30.5 , b : 0.03 ) ab , (c :0,d : 3 ) cd )root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -483,6 +488,7 @@ TEST(NewickParser, simple6rooted)
       "root\t;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -553,6 +559,7 @@ TEST(NewickParser, simple7rooted)
   auto t = pll_utree_parse_newick_string_rooted("((a,b)ab\n,(c,d\n)cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -625,6 +632,7 @@ TEST(NewickParser, simple8rooted)
       pll_utree_parse_newick_string_rooted("((a,b)ab\r\n,(c,d\r\n)cd)root;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
@@ -698,6 +706,7 @@ TEST(NewickParser, simple9rooted)
       "((!a+7=5,b^o&)ab,($$£*c,d/\\?!_-|)cd)ro#~ot;");
 
   check_tree_attributes(t, 3, 4);
+  check_tree_rooted(t);
 
   auto current = t->vroot;
 
