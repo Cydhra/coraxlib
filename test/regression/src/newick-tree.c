@@ -104,13 +104,13 @@ int test_newick_string(const char *newick)
     tree = pll_utree_parse_newick_string_unroot(newick);
   }
 
-  assert(!pll_utree_is_rooted(tree));
-
   if (!tree)
   {
     printf("ERROR parsing tree string: %s\n", pll_errmsg);
     exit(1);
   }
+
+  assert(!pll_utree_is_rooted(tree));
 
   return test_tree(tree);
 }

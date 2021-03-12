@@ -578,47 +578,56 @@ void newick_parser_t::parse_comment() {
   }
 };
 
-PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename) {
+/* Legacy C wrappers */
+
+pll_utree_t *utree_parse_newick_string(std::string newick_string,
+                                       bool        auto_unroot,
+                                       bool        allow_rooted) {
+  try {
+    newick_parser_t np(newick_string);
+    return np.parse(auto_unroot, allow_rooted);
+  } catch (std::invalid_argument& e) {
+    pll_set_error(PLL_ERROR_INVALID_TREE, e.what());
+    return nullptr;
+  } catch (std::runtime_error& e) {
+    pll_set_error(PLL_ERROR_NEWICK_SYNTAX, e.what());
+    return nullptr;
+  }
+}
+
+pll_utree_t *utree_parse_newick(const char *filename,
+                                bool        auto_unroot,
+                                bool        allow_rooted) {
   std::ifstream   newick_file(filename);
   std::string     newick_string((std::istreambuf_iterator<char>(newick_file)),
                             (std::istreambuf_iterator<char>()));
-  newick_parser_t np(newick_string);
-  return np.parse();
+  return utree_parse_newick_string(newick_string, auto_unroot, allow_rooted);
+}
+
+PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename) {
+  return utree_parse_newick(filename, /*auto_unroot=*/false, /*allow_rooted=*/false);
 }
 
 PLL_EXPORT pll_utree_t *pll_utree_parse_newick_rooted(const char *filename) {
-  std::ifstream   newick_file(filename);
-  std::string     newick_string((std::istreambuf_iterator<char>(newick_file)),
-                            (std::istreambuf_iterator<char>()));
-  newick_parser_t np(newick_string);
-  return np.parse(/*auto_unroot=*/false, /*allow_rooted=*/true);
+  return utree_parse_newick(filename, /*auto_unroot=*/false, /*allow_rooted=*/true);
 }
 
 PLL_EXPORT pll_utree_t *pll_utree_parse_newick_unroot(const char *filename) {
-  std::ifstream   newick_file(filename);
-  std::string     newick_string((std::istreambuf_iterator<char>(newick_file)),
-                            (std::istreambuf_iterator<char>()));
-  newick_parser_t np(newick_string);
-  return np.parse(/*auto_unroot=*/true, /*allow_rooted=*/false);
-}
-
-pll_utree_t *utree_parse_newick_string(const char *newick_cstring,
-                                       int         auto_unroot,
-                                       int         allow_rooted) {
-  std::string     newick_string(newick_cstring);
-  newick_parser_t np(newick_string);
-  return np.parse(auto_unroot, allow_rooted);
+  return utree_parse_newick(filename, /*auto_unroot=*/true, /*allow_rooted=*/false);
 }
 
 PLL_EXPORT pll_utree_t *
-           pll_utree_parse_newick_string(const char *newick_cstring) {
-  return utree_parse_newick_string(newick_cstring, 0, 0);
+           pll_utree_parse_newick_string(const char *s) {
+  return utree_parse_newick_string(std::string(s),
+                                   /*auto_unroot=*/false, /*allow_rooted=*/false);
 }
 
 PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_rooted(const char *s) {
-  return utree_parse_newick_string(s, 0, 1);
+  return utree_parse_newick_string(std::string(s),
+                                   /*auto_unroot=*/false, /*allow_rooted=*/true);
 }
 
 PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_unroot(const char *s) {
-  return utree_parse_newick_string(s, 1, 0);
+  return utree_parse_newick_string(std::string(s),
+                                   /*auto_unroot=*/true, /*allow_rooted=*/false);
 }

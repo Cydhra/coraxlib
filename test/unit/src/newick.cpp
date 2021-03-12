@@ -5,7 +5,7 @@
 
 /*
  * This needs to be a macro because we need to inline the code to get google
- * test to print the trace corectly.
+ * test to print the trace correctly.
  */
 #define check_node_attributes(node, expected_label, expected_length)           \
   {                                                                            \
@@ -19,6 +19,14 @@
   {                                                                            \
     EXPECT_EQ(test_tree->tip_count, expected_tip_count);                       \
     EXPECT_EQ(test_tree->inner_count, expected_inner_count);                   \
+  }
+
+/* This macro can be generalized to handle exceptions */
+#define check_error(                                                           \
+    test_call, expected_pll_errno)                                             \
+  {                                                                            \
+    test_call;                                                                 \
+    EXPECT_EQ(pll_errno, expected_pll_errno);                                  \
   }
 
 TEST(NewickParser, simple0) {
@@ -902,65 +910,65 @@ TEST(NewickParser, unicode3) {
 }
 
 TEST(NewickParser, badtrees1) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e)))"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e)))"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees2) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b);,(c,(d, e)))"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b);,(c,(d, e)))"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees3) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b)(c,(d, e):0.5));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b)(c,(d, e):0.5));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees4) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e)));wtf"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e)));wtf"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees5) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e:0.1));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e:0.1));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees6) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("(a,b),(c,(d, e:0.1)));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("(a,b),(c,(d, e:0.1)));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees7) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, ())));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, ())));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees8) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, (e))));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, (e))));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees9) {
-  EXPECT_THROW(
+  check_error(
       pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e):0.5 label));"),
-      std::runtime_error);
+      PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees10) {
-  EXPECT_THROW(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e):0.a5));"),
-               std::runtime_error);
+  check_error(pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e):0.a5));"),
+              PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, badtrees11) {
-  EXPECT_THROW(
+  check_error(
       pll_utree_parse_newick_string_unroot("((a,b),(c,(d, e:0.0:0.1)));"),
-      std::runtime_error);
+      PLL_ERROR_NEWICK_SYNTAX);
 }
 
 TEST(NewickParser, rooted_as_unrooted0) {
-  EXPECT_THROW(pll_utree_parse_newick_string("(a,(c,d));"),
-               std::invalid_argument);
+  check_error(pll_utree_parse_newick_string("(a,(c,d));"),
+              PLL_ERROR_INVALID_TREE);
 }
 
 /*

@@ -592,7 +592,7 @@ extern "C"
 
   /* functions in common.c */
 
-  void pll_set_error(int errno, const char *errmsg_fmt, ...);
+  void pll_set_error(int _errno, const char *errmsg_fmt, ...);
   void pll_reset_error();
 
   /* functions in partition.c */
@@ -857,7 +857,7 @@ extern "C"
 
   pll_msa_t *pll_fasta_load(const char *fname);
 
-  /* functions in parse_utree.y */
+  /* functions in newick.cpp */
 
   PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename);
 
@@ -870,6 +870,8 @@ extern "C"
   PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_rooted(const char *s);
 
   PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_unroot(const char *s);
+
+  /* functions in utree.c */
 
   PLL_EXPORT pll_unode_t *pll_utree_unroot_inplace(pll_unode_t *root);
 

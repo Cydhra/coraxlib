@@ -2,6 +2,9 @@
 
 #include "corax/corax.h"
 
+__thread int  pll_errno;
+__thread char pll_errmsg[200] = {0};
+
 /**
  * @brief Set pll error (pll_errno and pll_errmsg)
  *
@@ -9,9 +12,9 @@
  * @param[in] errmsg_fmt formatted error message
  */
 __attribute__((format(printf, 2, 3))) void
-pll_set_error(int errno, const char *errmsg_fmt, ...)
+pll_set_error(int _errno, const char *errmsg_fmt, ...)
 {
-  pll_errno = errno;
+  pll_errno = _errno;
 
   va_list args;
   va_start(args, errmsg_fmt);
