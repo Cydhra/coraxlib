@@ -23,10 +23,9 @@ contain most of the data required for likelihood computation:
 - [`pll_partition_t`](pll_partition_t.md)
 - [`pllmod_treeinfo_t`](pllmod_treeinfo_t.md)
 
-The `pll_utree_t` data structure contains the information that is relevant to
-the tree portion of the model, while `pll_partitition_t` contains the other
-model parameters, as well as buffers to store intermediate values called
-[CLVs][clvs], and information about the state of computation and the machine.
+The `pll_utree_t` data structure contains the information that is relevant to the tree portion of the model, while
+`pll_partitition_t` contains the other model parameters, as well as buffers to store intermediate values called
+conditional likelihood vectors ([CLVs][clvs]), and information about the state of computation and the machine.
 
 [clvs]: pll_partition_t.md#clv
 
@@ -38,35 +37,98 @@ in their respective pages.
 Likelihood Evaluation
 --------------------------------------------------------------------------------
 
-`libpll` evaluates the likelihood of a tree using Felsenstien's Algorithm
-[felsenstien]. In summary, the algorithm proceeds like so:
+`libpll` evaluates the likelihood of a tree using Felsenstein's Algorithm [1]. Conceptually, the algorithm is:
 
 1. Pick a virtual root arbitrarily,
 2. Perform a post order traversal from the virtual root. 
 3. For each node in the traversal compute the current nodes CLV:
     - If a tip, simply return the assigned CLV
     - Otherwise, compute the CLV using the children's CLVs.
+    - 
+[1]: J. Felsenstein, “Evolutionary trees from DNA sequences: A maximum likelihood approach,” Journal of Molecular
+Evolution, vol. 17, no. 6, pp. 368–376, Nov. 1981.
 
-The specific implemenation for this algorithm in `libpll` can be described as
-this: allocate a single buffer which will contain all the CLVs. Perform the
-steps listed above, but during the traversal, don't actually compute any CLVs.
-Instead, assign entries into the CLV buffer for each node when the tree is
-created, and record the parent and children's CLVs in records. These records
-contain the operations required to calculate all the CLVs. The final step is to
-compute the operations. This can be summarized as:
+Implementation in `libpll`
+================================================================================
 
-1. Assign Entries into the CLV buffer 
-1. Pick a virtual root arbitrarily,
-2. Perform a post order traversal from the virtual root. 
-3. For each node in the traversal:
-    - If its a tip, do nothing
-    - Otherwise, record the current CLV index, as well as the children's indices,
-      into operations.
-4. Using the operations created in the last step, compute the CLVs for the tree.
+![Figure 1](images/lh_calc_figure1.png)
 
-[felsenstien]: J. Felsenstein, “Evolutionary trees from DNA sequences: A
-maximum likelihood approach,” Journal of Molecular Evolution, vol. 17, no. 6,
-pp. 368–376, Nov. 1981.
+Suppose we want to calculate the likelihood of the tree shown in the above image.  As a visual aid, we have colored the
+outer nodes blue and the inner nodes red.  Additionally, each node has been assigned a CLV buffer, where the results of
+computation would be stored. This is approximately the method that would naively be used for the Felsenstein
+algorithm[1], and normally we could traverse the tree in a post-order fashion, using the method above, to compute a
+likelihood.  But, we can do a bit better than this.
+
+First, we plan on editing the tree, which might involve deleting old nodes and creating new nodes. Because we are
+creating and deleting nodes, we would prefer to avoid the allocation and deallocation of large buffers[2]. Fortunatly,
+since the number of CLV buffers is constant for a given number of taxa, we can allocate the entire set of buffers in a
+single allocation, and instead store in each node an index into this master buffer[3]. The image below shows what this
+might look like.
+
+![Figure 2](images/lh_calc_figure2.png)
+
+We have colored each CLV buffer according to each corresponding node's type, just for visual ease. Now, when we traverse
+the tree, instead of using a local buffer to perform calculations, we instead look up the corresponding CLV in the main
+CLV buffer using the node stored in each node, and use that for calculation. But, we can do better still. Tree
+traversals can be rather expensive, as they involve a lot of pointer dereferences. These are difficult for CPU
+prefetchers, which harms the cache efficiency, and at worst, this might really thrash the cache.
+
+Given that we might traverse the tree many times (as is the case for rate matrix optimization), it would be nice to
+memoize the traversal, and skip the dereferencing all together. To do this, we introduce the concept of an "operation".
+An operation is just a representation of the work that needs to be done in order to compute a particular node's CLV.
+
+An example operation can be seen in the figure below.
+
+![Figure 3](images/lh_calc_figure3.png)
+
+As we can see from the image, an operation just stores an index to 2 CLV indices for input, and one CLV index for
+output[4]. So, using these as building blocks, we can memoize the entire likelihood computation process, by simply
+traversing the tree once, and then making operations for each computation required. An example traversal is shown in the
+next image.
+
+![Figure 4](images/lh_calc_figure4.png)
+
+Here, we convert a post order traversal into an array of operations, which we can quickly iterate over to compute a new
+likelihood[5]. This is particularly useful for:
+
+- Rate Matrix Optimization,
+- Site Rate Optimization,
+- or Global branch length optimization.
+
+This is to say that any "global" parameter change will benefit from this representation of a tree traversal. So, when
+`libpll` computes a likelihood for a tree, it 
+
+1. Traverses the tree,
+2. Makes Operations from the traversal,
+3. Computes CLVs in the order of operations,
+4. And finally, computes the likelihood via the "edge" or "root" method.
+
+We achieve one more (theoretical) benefit from this procedure: we no longer need to (ostensibly) store CLV indices in
+the node[6]. Instead, the buffer for the node can be handed out in order of traversal, with the stipulation that CLVs
+corresponding to outer nodes are first and "pinned"[6]. The big advantage is that less memory will be required to
+compute the likelihood for a tree. Right now, this has been implemented in a version of `libpll`, but it currently does
+not reside in the main branch.
+
+[1]: We are skipping over the probability matrix portion of likelihood calculation, mostly because it is handled
+analogously and just serves to complicated the matter here. Nonetheless, try to remember that each branch has a
+probability matrix associated with it.
+
+[2]: Remember, a CLV is representative of a single site. In practice, we have many sites, and therefore many CLVs.
+
+[3]: In reality, since alignments have multiple (often many) sites, and each CLV buffer is per site, we choose to
+allocate each individual node's CLV buffers in one block, and then have a buffer of buffers to address them all, but the
+main concept here holds.
+
+[4]: There are also indices for the 2 probability matrices used to "evolve" the CLV along the 2 child branches.
+
+[5]: There is the final issue of turning CLVs _into_ likelihoods. There are 2 methods used in `libpll`, The first is
+"root" and the second is "edge". In "root" likelihood computation, we simply take the dot product of the "root" CLV and
+the base frequencies. For "edge" likelihood computation, 2 clvs associated with an edge are provided, and a matrix as
+well. Then, the "edge" likelihood function simply combines the normal operations of "Matrix vector product" to produce
+an "evolved" CLV, and the "root" computation.
+
+[6]: We still do, for purposes of saving computations for later use. Nonetheless, it can be useful to think of the clvs
+being handed out like the nodes have no index for the purpose of this memory saver mode.
 
 Core Tasks
 --------------------------------------------------------------------------------
