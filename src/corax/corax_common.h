@@ -208,6 +208,16 @@
 #define PLL_GAMMA_RATES_MEAN 0
 #define PLL_GAMMA_RATES_MEDIAN 1
 
+/* branch linkage modes */
+#define PLL_BRLEN_LINKED    0
+#define PLL_BRLEN_SCALED    1
+#define PLL_BRLEN_UNLINKED  2
+
+/* parallel reduction modes */
+#define PLL_REDUCE_SUM     0
+#define PLL_REDUCE_MAX     1
+#define PLL_REDUCE_MIN     2
+
 // TODO: this must be adapted for MSVC
 #define PLL_POPCNT32 __builtin_popcount
 #define PLL_POPCNT64 __builtin_popcountll
