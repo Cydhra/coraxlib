@@ -1,5 +1,5 @@
 Scope
---------------------------------------------------------------------------------
+================================================================================
 
 The goal of this documentation is to explain how to interact with `libpll`,
 as long as the reader already knows the broad strokes of phylogenetic inference.
@@ -12,7 +12,7 @@ this will explain how `libpll` does phylogenetic inference, not how it is done
 in general.
 
 High level design
---------------------------------------------------------------------------------
+================================================================================
 
 At a high level, `libpll` exists to implement efficient versions of core
 functions that take up the majority of the runtime during phylogenetic
@@ -35,34 +35,34 @@ Information on how to create and interact with this data structures can be found
 in their respective pages.
 
 Likelihood Evaluation
---------------------------------------------------------------------------------
+================================================================================
 
-`libpll` evaluates the likelihood of a tree using Felsenstein's Algorithm [1]. Conceptually, the algorithm is:
+`libpll` evaluates the likelihood of a tree using Felsenstein's Algorithm [^ref 1]. Conceptually, the algorithm is:
 
 1. Pick a virtual root arbitrarily,
 2. Perform a post order traversal from the virtual root. 
 3. For each node in the traversal compute the current nodes CLV:
     - If a tip, simply return the assigned CLV
     - Otherwise, compute the CLV using the children's CLVs.
-    - 
-[1]: J. Felsenstein, “Evolutionary trees from DNA sequences: A maximum likelihood approach,” Journal of Molecular
+
+[^ref 1]: J. Felsenstein, “Evolutionary trees from DNA sequences: A maximum likelihood approach,” Journal of Molecular
 Evolution, vol. 17, no. 6, pp. 368–376, Nov. 1981.
 
 Implementation in `libpll`
-================================================================================
+--------------------------------------------------------------------------------
 
 ![Figure 1](images/lh_calc_figure1.png)
 
 Suppose we want to calculate the likelihood of the tree shown in the above image.  As a visual aid, we have colored the
 outer nodes blue and the inner nodes red.  Additionally, each node has been assigned a CLV buffer, where the results of
 computation would be stored. This is approximately the method that would naively be used for the Felsenstein
-algorithm[1], and normally we could traverse the tree in a post-order fashion, using the method above, to compute a
+algorithm[^1], and normally we could traverse the tree in a post-order fashion, using the method above, to compute a
 likelihood.  But, we can do a bit better than this.
 
 First, we plan on editing the tree, which might involve deleting old nodes and creating new nodes. Because we are
-creating and deleting nodes, we would prefer to avoid the allocation and deallocation of large buffers[2]. Fortunatly,
+creating and deleting nodes, we would prefer to avoid the allocation and deallocation of large buffers[^2]. Fortunatly,
 since the number of CLV buffers is constant for a given number of taxa, we can allocate the entire set of buffers in a
-single allocation, and instead store in each node an index into this master buffer[3]. The image below shows what this
+single allocation, and instead store in each node an index into this master buffer[^3]. The image below shows what this
 might look like.
 
 ![Figure 2](images/lh_calc_figure2.png)
@@ -82,20 +82,20 @@ An example operation can be seen in the figure below.
 ![Figure 3](images/lh_calc_figure3.png)
 
 As we can see from the image, an operation just stores an index to 2 CLV indices for input, and one CLV index for
-output[4]. So, using these as building blocks, we can memoize the entire likelihood computation process, by simply
+output[^4]. So, using these as building blocks, we can memoize the entire likelihood computation process, by simply
 traversing the tree once, and then making operations for each computation required. An example traversal is shown in the
 next image.
 
 ![Figure 4](images/lh_calc_figure4.png)
 
 Here, we convert a post order traversal into an array of operations, which we can quickly iterate over to compute a new
-likelihood[5]. This is particularly useful for:
+likelihood[^5]. This is particularly useful for:
 
 - Rate Matrix Optimization,
 - Site Rate Optimization,
 - or Global branch length optimization.
 
-This is to say that any "global" parameter change will benefit from this representation of a tree traversal. So, when
+This is to say that any "global" parameter change will benefit from this representation of a tree traversal[^6]. So, when
 `libpll` computes a likelihood for a tree, it 
 
 1. Traverses the tree,
@@ -103,35 +103,35 @@ This is to say that any "global" parameter change will benefit from this represe
 3. Computes CLVs in the order of operations,
 4. And finally, computes the likelihood via the "edge" or "root" method.
 
-We achieve one more (theoretical) benefit from this procedure: we no longer need to (ostensibly) store CLV indices in
-the node[6]. Instead, the buffer for the node can be handed out in order of traversal, with the stipulation that CLVs
-corresponding to outer nodes are first and "pinned"[6]. The big advantage is that less memory will be required to
-compute the likelihood for a tree. Right now, this has been implemented in a version of `libpll`, but it currently does
-not reside in the main branch.
-
-[1]: We are skipping over the probability matrix portion of likelihood calculation, mostly because it is handled
+[^1]: We are skipping over the probability matrix portion of likelihood calculation, mostly because it is handled
 analogously and just serves to complicated the matter here. Nonetheless, try to remember that each branch has a
 probability matrix associated with it.
 
-[2]: Remember, a CLV is representative of a single site. In practice, we have many sites, and therefore many CLVs.
+[^2]: Remember, a CLV is representative of a single site. In practice, we have many sites, and therefore many CLVs.
 
-[3]: In reality, since alignments have multiple (often many) sites, and each CLV buffer is per site, we choose to
+[^3]: In reality, since alignments have multiple (often many) sites, and each CLV buffer is per site, we choose to
 allocate each individual node's CLV buffers in one block, and then have a buffer of buffers to address them all, but the
 main concept here holds.
 
-[4]: There are also indices for the 2 probability matrices used to "evolve" the CLV along the 2 child branches.
+[^4]: There are also indices for the 2 probability matrices used to "evolve" the CLV along the 2 child branches.
 
-[5]: There is the final issue of turning CLVs _into_ likelihoods. There are 2 methods used in `libpll`, The first is
+[^5]: There is the final issue of turning CLVs _into_ likelihoods. There are 2 methods used in `libpll`, The first is
 "root" and the second is "edge". In "root" likelihood computation, we simply take the dot product of the "root" CLV and
 the base frequencies. For "edge" likelihood computation, 2 clvs associated with an edge are provided, and a matrix as
 well. Then, the "edge" likelihood function simply combines the normal operations of "Matrix vector product" to produce
 an "evolved" CLV, and the "root" computation.
 
-[6]: We still do, for purposes of saving computations for later use. Nonetheless, it can be useful to think of the clvs
+[^6]: We achieve one more (theoretical) benefit from this procedure: we no longer need to (ostensibly) store CLV indices
+in the node[^7]. Instead, the buffer for the node can be handed out in order of traversal, with the stipulation that CLVs
+corresponding to outer nodes are first and "pinned". The big advantage is that less memory will be required to
+compute the likelihood for a tree. Right now, this has been implemented in a version of `libpll`, but it currently does
+not reside in the main branch.
+
+[^7]: We still do, for purposes of saving computations for later use. Nonetheless, it can be useful to think of the clvs
 being handed out like the nodes have no index for the purpose of this memory saver mode.
 
 Core Tasks
---------------------------------------------------------------------------------
+================================================================================
 
 In terms of calculations, `libpll` has optimized routines for 4 main tasks:
 
@@ -155,7 +155,7 @@ A sample tree inference cycle might be:
 6. Optimize Numeric Model Parameters/Branch Lengths,
 7. Repeat from 5 until done.
 
-### CLVs
+## CLVs
 
 ```
 PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
@@ -164,11 +164,11 @@ PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
 ```
 
 This function will compute the CLVs in the nodes specified in the `operations`
-array. This array is generated by [`pll_create_operations`][1].
+array. This array is generated by [`pll_create_operations`][create_operations].
 
-[1]: pll_utree_t.md#Notable-Functions
+[create_operations]: pll_utree_t.md#Notable-Functions
 
-### Derivatives
+## Derivatives
 
 `libpll` has the capability to calculate first and second derivatives around a
 single branch. To do this, first a sumtable needs to be computed. This can be
@@ -217,7 +217,7 @@ Notable Parameters:
 - `dd_f`: Out parameter which will contain the second derivative.
 
 
-### Likelihood
+## Likelihood
 
 There are two ways of computing a likelihood: around a root node, or around a
 virtual root node. The difference is the number of CLVs involved. In a rooted
@@ -262,11 +262,11 @@ logliklihood calculation, only one CLV is needed, so it takes one. In the case
 of edge loglikelihood, we are calculating around and edge, so we need 2 CLVs,
 and additionally a matrix index.
 
-### Probability Matrix
+## Probability Matrix
 
 To update the probability matrices of the `pll_partition_t`, a list of branch
 lengths needs to be obtained. The best way to do this is with
-[`pll_utree_create_operations`][2].
+[`pll_utree_create_operations`][notable_functions].
 
 
 ```
@@ -282,12 +282,12 @@ PLL_EXPORT int pll_update_prob_matrices(pll_partition_t * partition,
   probability matrices. Each item in this list needs correspond to the same
   thing in the `matrix_indices` list, as this function will put the probability
   matrices in the location indicated by `matrix_indices`. The upshot of this is
-  to just use [`pll_utree_create_operations`][2].
+  to just use [`pll_utree_create_operations`][notable_functions].
 - `count`: The number of matrices to update.
 
-[2]: pll_utree_t.md#Notable-Functions
+[notable_functions]: pll_utree_t.md#Notable-Functions
 
-### Misc
+## Misc
 
 ```
 PLL_EXPORT unsigned int * pll_compress_site_patterns(char ** sequence,
@@ -305,7 +305,7 @@ compressed alignment.
 - `length`: outparameter of the new length.
 
 Data Structures
--------------------------------------------------------------------------------
+===============================================================================
 
 Data structures have their own pages:
 
@@ -313,7 +313,7 @@ Data structures have their own pages:
 - [`pll_utree_t`](pll_utree_t.md)
 
 Errors
--------------------------------------------------------------------------------
+===============================================================================
 
 Many functions which don't directly return a value instead return whether or
 not the function was successful. In this case, the function was successful, then
