@@ -85,7 +85,8 @@ Fields:
 
 - `label`: The label of the node. Optional.
 - `length`: The length of the edge represented by the `back` pointer.
-- `node_index`: Index of this node in the `nodes`.
+- `node_index`: Index of this node in the `nodes` buffer in a `pll_utree_t`. Each "super"-node shares an index. I.E. the
+  index is on the "tree node" level, not on the `pll_unode_t` level.
 - `clv_index`: Index of the CLVs to use when calculating a likelihood
 - `scaler_index`: Index into the scaler array to represent the CLV scaler
 - `pmatrix_index`: index into the array of pmatrices. These pmatrices need to be
