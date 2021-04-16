@@ -1,5 +1,6 @@
-#include "lbfgsb/lbfgsb.h"
 #include "opt_generic.h"
+
+#include "lbfgsb/lbfgsb.h"
 
 static inline int is_nan(double v) { return v != v; }
 
