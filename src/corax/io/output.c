@@ -59,10 +59,10 @@ PLL_EXPORT void pll_show_clv(const pll_partition_t *partition,
 {
   unsigned int s, i, j, k;
 
-  double *      clv           = partition->clv[clv_index];
-  unsigned int *scaler        = (scaler_index == PLL_SCALE_BUFFER_NONE)
-                                    ? NULL
-                                    : partition->scale_buffer[scaler_index];
+  double *      clv    = partition->clv[clv_index];
+  unsigned int *scaler = (scaler_index == PLL_SCALE_BUFFER_NONE)
+                             ? NULL
+                             : partition->scale_buffer[scaler_index];
   unsigned int  states        = partition->states;
   unsigned int  states_padded = partition->states_padded;
   unsigned int  rates         = partition->rate_cats;
@@ -70,9 +70,7 @@ PLL_EXPORT void pll_show_clv(const pll_partition_t *partition,
   unsigned int *site_id = 0;
   if (pll_repeats_enabled(partition)
       && partition->repeats->pernode_ids[clv_index])
-  {
-    site_id = partition->repeats->pernode_site_id[clv_index];
-  }
+  { site_id = partition->repeats->pernode_site_id[clv_index]; }
 
   if ((clv_index < partition->tips)
       && (partition->attributes & PLL_ATTRIB_PATTERN_TIP))

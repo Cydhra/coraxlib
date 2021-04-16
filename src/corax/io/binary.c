@@ -30,6 +30,7 @@
 
 #include "binary.h"
 #include "binary_io_operations.h"
+#include "corax/tree/utree_traverse.h"
 #include <stdio.h>
 
 static unsigned int get_current_alignment(unsigned int attributes);
@@ -56,9 +57,9 @@ PLL_EXPORT FILE *pllmod_binary_create(const char *         filename,
   header->access_type = access_type;
   header->max_blocks  = n_blocks;
   header->map_offset  = (access_type == PLLMOD_BIN_ACCESS_RANDOM)
-                            ? n_blocks * sizeof(pll_block_map_t)
-                            : 0;
-  header->n_blocks    = 0;
+                           ? n_blocks * sizeof(pll_block_map_t)
+                           : 0;
+  header->n_blocks = 0;
 
   if (access_type == PLLMOD_BIN_ACCESS_RANDOM && n_blocks <= 0)
   {
@@ -217,15 +218,11 @@ PLL_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
 
   /* dump header */
   if (!binary_block_header_apply(bin_file, &block_header, &bin_fwrite))
-  {
-    return PLL_FAILURE;
-  }
+  { return PLL_FAILURE; }
 
   /* dump data */
   if (!binary_partition_apply(bin_file, partition, attributes, &bin_fwrite))
-  {
-    return PLL_FAILURE;
-  }
+  { return PLL_FAILURE; }
 
   end_pos = ftell(bin_file);
 
@@ -326,9 +323,7 @@ PLL_EXPORT pll_partition_t *
     pll_partition_t aux_partition;
     if (!binary_partition_desc_apply(
             bin_file, &aux_partition, *attributes, &bin_fread))
-    {
-      return NULL;
-    }
+    { return NULL; }
 
     unsigned int clv_buffers = load_skeleton ? 1 : aux_partition.clv_buffers;
     unsigned int tips        = load_skeleton ? 0 : aux_partition.tips;
@@ -509,9 +504,7 @@ PLL_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
 {
   assert(partition);
   if (!(partition->attributes & PLL_ATTRIB_SITE_REPEATS))
-  {
-    return PLL_SUCCESS;
-  }
+  { return PLL_SUCCESS; }
   assert(partition->repeats);
   int                retval;
   pll_block_header_t block_header;
@@ -559,9 +552,7 @@ PLL_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
                                           long int         offset)
 {
   if (!(partition->attributes & PLL_ATTRIB_SITE_REPEATS))
-  {
-    return PLL_SUCCESS;
-  }
+  { return PLL_SUCCESS; }
   int                retval;
   pll_block_header_t block_header;
   assert(partition);
@@ -632,9 +623,9 @@ PLL_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
   int                retval;
   pll_block_header_t block_header;
   unsigned int       sites = partition->attributes & PLL_ATTRIB_SITE_REPEATS
-                                 ? partition->repeats->pernode_ids[clv_index]
-                                 : partition->sites;
-  unsigned int       sites_alloc =
+                           ? partition->repeats->pernode_ids[clv_index]
+                           : partition->sites;
+  unsigned int sites_alloc =
       partition->asc_bias_alloc ? sites + partition->states : sites;
 
   size_t clv_size =
@@ -1119,9 +1110,7 @@ PLL_EXPORT pll_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
   fseek(bin_file, 0, SEEK_SET);
 
   if (!bin_fread(&bin_header, sizeof(pll_binary_header_t), 1, bin_file))
-  {
-    return NULL;
-  }
+  { return NULL; }
 
   /* get map */
   map =

@@ -24,54 +24,59 @@
 #include "opt_model.h"
 #include "opt_treeinfo.h"
 
-struct default_params {
-  pll_partition_t * partition;
-  pll_unode_t * tree;
-  unsigned int * params_indices;     /* indices for computing the likelihood */
-  int gamma_mode;    /* discrete GAMMA rates computation mode (mean, median) */
+struct default_params
+{
+  pll_partition_t *partition;
+  pll_unode_t *    tree;
+  unsigned int *   params_indices; /* indices for computing the likelihood */
+  int gamma_mode; /* discrete GAMMA rates computation mode (mean, median) */
 };
 
-struct freqs_params {
-  pll_partition_t * partition;
-  pll_unode_t * tree;
-  unsigned int * params_indices;    /* indices for computing the likelihood */
-  unsigned int params_index;        /* index of the frequencies to optimize */
-  unsigned int fixed_freq_state;   /* index of the fixed frequency */
+struct freqs_params
+{
+  pll_partition_t *partition;
+  pll_unode_t *    tree;
+  unsigned int *   params_indices;   /* indices for computing the likelihood */
+  unsigned int     params_index;     /* index of the frequencies to optimize */
+  unsigned int     fixed_freq_state; /* index of the fixed frequency */
 };
 
-struct algo_subst_params {
-  pll_partition_t * partition;
-  pll_unode_t * tree;
-  int * symmetries;                 /* substitution parameters symmetries */
-  unsigned int subst_free_params;   /* number of free parameters */
-  unsigned int * params_indices;    /* indices for computing the likelihood */
-  unsigned int params_index;        /* index of the parameter to optimize */
+struct algo_subst_params
+{
+  pll_partition_t *partition;
+  pll_unode_t *    tree;
+  int *            symmetries;        /* substitution parameters symmetries */
+  unsigned int     subst_free_params; /* number of free parameters */
+  unsigned int *   params_indices;    /* indices for computing the likelihood */
+  unsigned int     params_index;      /* index of the parameter to optimize */
 };
 
-struct rate_weights_params {
-  pll_partition_t * partition;
-  pll_unode_t * tree;
-  unsigned int * params_indices;     /* indices for computing the likelihood */
-  unsigned int fixed_weight_state;   /* index of the fixed weight */
+struct rate_weights_params
+{
+  pll_partition_t *partition;
+  pll_unode_t *    tree;
+  unsigned int *   params_indices; /* indices for computing the likelihood */
+  unsigned int     fixed_weight_state; /* index of the fixed weight */
 };
 
-struct brlen_scaler_params {
-  pll_partition_t * partition;
-  pll_unode_t * tree;
-  unsigned int * params_indices;     /* indices for computing the likelihood */
-  double old_scaler;                 /* previous value of branch length scaler*/
+struct brlen_scaler_params
+{
+  pll_partition_t *partition;
+  pll_unode_t *    tree;
+  unsigned int *   params_indices; /* indices for computing the likelihood */
+  double           old_scaler;     /* previous value of branch length scaler*/
 };
 
-struct treeinfo_opt_params {
-  pllmod_treeinfo_t * treeinfo;
-  int param_to_optimize;            /* which parameter is being optimized */
-  unsigned int num_opt_partitions;  /* number of partitions to optimize */
-  unsigned int params_index;        /* which matrix to optimize */
-  unsigned int * num_free_params;   /* number of free params for each partition*/
-  unsigned int * fixed_var_index;   /* which variable is not being optimized */
+struct treeinfo_opt_params
+{
+  pllmod_treeinfo_t *treeinfo;
+  int                param_to_optimize; /* which parameter is being optimized */
+  unsigned int       num_opt_partitions; /* number of partitions to optimize */
+  unsigned int       params_index;       /* which matrix to optimize */
+  unsigned int *num_free_params; /* number of free params for each partition*/
+  unsigned int *fixed_var_index; /* which variable is not being optimized */
   treeinfo_param_set_cb param_set_cb;
 };
-
 
 /* optimize frequencies */
 double target_freqs_func(void *p, double *x);
@@ -97,18 +102,15 @@ double target_weights_func(void *p, double *x);
 /* optimize branch length scaler */
 double target_brlen_scaler_func(void *p, double x);
 
+double
+target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged);
 
-double target_func_onedim_treeinfo(void *p, double *x, double *fx,
-                                   int * converged);
+double
+target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged);
 
-double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
-                                     int * converged);
+double
+target_subst_params_func_multi(void *p, double **x, double *fx, int *converged);
 
-double target_subst_params_func_multi(void * p, double ** x, double * fx,
-                                      int * converged);
-
-double target_freqs_func_multi(void * p, double ** x, double * fx,
-                               int * converged);
-
+double target_freqs_func_multi(void *p, double **x, double *fx, int *converged);
 
 #endif /* CORAX_OPTIMIZE_CALLBACK_H_ */

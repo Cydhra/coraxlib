@@ -721,9 +721,7 @@ PLL_EXPORT int pll_phylip_save(const char *out_fname, const pll_msa_t *msa)
 
   unsigned long i;
   for (i = 0; i < (unsigned long)msa->count; ++i)
-  {
-    fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]);
-  }
+  { fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]); }
 
   fclose(f);
 

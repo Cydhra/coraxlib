@@ -79,6 +79,8 @@
     (void)(expr);                                                              \
   } while (0)
 
+#define PLL_UTREE_IS_TIP(node) (node->next == NULL)
+
 /* constants */
 
 #define PLL_FAILURE 0
@@ -114,6 +116,8 @@
 #define PLL_ONE_MIN (1 - PLL_ONE_EPSILON)
 #define PLL_ONE_MAX (1 + PLL_ONE_EPSILON)
 #define PLL_EIGEN_MINFREQ 1e-6
+
+#define PLL_TREE_DEFAULT_BRANCH_LENGTH 0.1
 
 /* attribute flags */
 
@@ -160,6 +164,7 @@
 #define PLL_ERROR_INVALID_INDEX 23
 #define PLL_ERROR_INVALID_PARAM 24
 #define PLL_ERROR_INVALID_TREE 25
+#define PLL_ERROR_INVALID_TREE_SIZE 26
 
 #define PLL_ERROR_FILE_OPEN 100
 #define PLL_ERROR_FILE_SEEK 101
@@ -424,32 +429,6 @@ typedef struct pll_utree_s
   pll_unode_t **nodes;
   pll_unode_t * vroot;
 } pll_utree_t;
-
-/* structures for handling topological rearrangement move rollbacks */
-
-typedef struct pll_utree_rb_s
-{
-  int move_type;
-  union
-  {
-    struct
-    {
-      pll_unode_t *p;
-      pll_unode_t *r;
-      pll_unode_t *rb;
-      pll_unode_t *pnb;
-      pll_unode_t *pnnb;
-      double       r_len;
-      double       pnb_len;
-      double       pnnb_len;
-    } spr;
-    struct
-    {
-      pll_unode_t *p;
-      int          nni_type;
-    } nni;
-  };
-} pll_utree_rb_t;
 
 /* structures for parsimony */
 
@@ -866,93 +845,6 @@ extern "C"
   PLL_EXPORT int pll_fasta_rewind(pll_fasta_t *fd);
 
   pll_msa_t *pll_fasta_load(const char *fname);
-
-  /* functions in newick.cpp */
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick(const char *filename);
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick_rooted(const char *filename);
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick_unroot(const char *filename);
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string(const char *s);
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_rooted(const char *s);
-
-  PLL_EXPORT pll_utree_t *pll_utree_parse_newick_string_unroot(const char *s);
-
-  /* functions in utree.c */
-
-  PLL_EXPORT pll_unode_t *pll_utree_unroot_inplace(pll_unode_t *root);
-
-  PLL_EXPORT void pll_utree_destroy(pll_utree_t *tree,
-                                    void (*cb_destroy)(void *));
-
-  PLL_EXPORT void pll_utree_reset_template_indices(pll_unode_t *node,
-                                                   unsigned int tip_count);
-
-  PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
-                                          void (*cb_destroy)(void *));
-
-  PLL_EXPORT pll_utree_t *pll_utree_wraptree(pll_unode_t *root,
-                                             unsigned int tip_count);
-
-  PLL_EXPORT pll_utree_t *pll_utree_wraptree_multi(pll_unode_t *root,
-                                                   unsigned int tip_count,
-                                                   unsigned int inner_count);
-
-  PLL_EXPORT int pll_utree_is_rooted(const pll_utree_t *tree);
-
-  /* functions in utree.c */
-
-  PLL_EXPORT void pll_utree_show_ascii(const pll_unode_t *tree, int options);
-
-  PLL_EXPORT char *
-  pll_utree_export_newick(const pll_unode_t *root,
-                          char *(*cb_serialize)(const pll_unode_t *));
-
-  PLL_EXPORT char *pll_utree_export_newick_rooted(const pll_unode_t *root,
-                                                  double root_brlen);
-
-  PLL_EXPORT int pll_utree_traverse(pll_unode_t *root,
-                                    int          traversal,
-                                    int (*cbtrav)(pll_unode_t *),
-                                    pll_unode_t **outbuffer,
-                                    unsigned int *trav_size);
-
-  PLL_EXPORT int pll_utree_traverse_subtree(pll_unode_t *root,
-                                            int          traversal,
-                                            int (*cbtrav)(pll_unode_t *),
-                                            pll_unode_t **outbuffer,
-                                            unsigned int *trav_size);
-
-  PLL_EXPORT void pll_utree_create_operations(pll_unode_t *const *trav_buffer,
-                                              unsigned int     trav_buffer_size,
-                                              double *         branches,
-                                              unsigned int *   pmatrix_indices,
-                                              pll_operation_t *ops,
-                                              unsigned int *   matrix_count,
-                                              unsigned int *   ops_count);
-
-  PLL_EXPORT int pll_utree_check_integrity(const pll_utree_t *root);
-
-  PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root);
-
-  PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *root);
-
-  PLL_EXPORT int pll_utree_every(pll_utree_t *tree,
-                                 int (*cb)(const pll_utree_t *,
-                                           const pll_unode_t *));
-
-  PLL_EXPORT int pll_utree_every_const(const pll_utree_t *tree,
-                                       int (*cb)(const pll_utree_t *tree,
-                                                 const pll_unode_t *));
-
-  PLL_EXPORT void
-  pll_utree_create_pars_buildops(pll_unode_t *const *trav_buffer,
-                                 unsigned int        trav_buffer_size,
-                                 pll_pars_buildop_t *ops,
-                                 unsigned int *      ops_count);
 
   /* functions in phylip.c */
 
@@ -2490,26 +2382,6 @@ extern "C"
                                                const pll_state_t *map,
                                                unsigned int *site_pattern_map);
 
-  /* functions in utree_moves.c */
-
-  PLL_EXPORT int pll_utree_spr(pll_unode_t *   p,
-                               pll_unode_t *   r,
-                               pll_utree_rb_t *rb,
-                               double *        branch_lengths,
-                               unsigned int *  matrix_indices);
-
-  PLL_EXPORT int pll_utree_spr_safe(pll_unode_t *   p,
-                                    pll_unode_t *   r,
-                                    pll_utree_rb_t *rb,
-                                    double *        branch_lengths,
-                                    unsigned int *  matrix_indices);
-
-  PLL_EXPORT int pll_utree_nni(pll_unode_t *p, int type, pll_utree_rb_t *rb);
-
-  PLL_EXPORT int pll_utree_rollback(pll_utree_rb_t *rollback,
-                                    double *        branch_lengths,
-                                    unsigned int *  matrix_indices);
-
   /* functions in parsimony.c */
 
   PLL_EXPORT int pll_set_parsimony_sequence(pll_parsimony_t *  pars,
@@ -2538,17 +2410,6 @@ extern "C"
                                         unsigned int     score_buffer_index);
 
   PLL_EXPORT void pll_parsimony_destroy(pll_parsimony_t *pars);
-
-  /* functions in utree_svg.c */
-
-  PLL_EXPORT pll_svg_attrib_t *pll_svg_attrib_create(void);
-
-  PLL_EXPORT void pll_svg_attrib_destroy(pll_svg_attrib_t *attrib);
-
-  PLL_EXPORT int pll_utree_export_svg(pll_utree_t *           tree,
-                                      pll_unode_t *           root,
-                                      const pll_svg_attrib_t *attribs,
-                                      const char *            filename);
 
   /* functions in fast_parsimony.c */
 

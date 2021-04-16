@@ -193,7 +193,9 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
     /* get next line */
 
     fd->line[0] = 0;
-    if (!fgets(fd->line, PLL_LINEALLOC, fd->fp)) { /* do nothing */ }
+    if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+    { /* do nothing */
+    }
     fd->lineno++;
 
     /* read sequence */
@@ -266,7 +268,9 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
       }
 
       fd->line[0] = 0;
-      if (!fgets(fd->line, PLL_LINEALLOC, fd->fp)) { /* do nothing */ }
+      if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+      { /* do nothing */
+      }
       fd->lineno++;
     }
 

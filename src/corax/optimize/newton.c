@@ -6,15 +6,13 @@
 typedef struct
 {
   void (*derive_func)(void *, double, double *, double *);
-  void * params;
+  void *params;
 } newton_wrapper_params;
 
-
-static void newton_wrapper_func(void * params, double * proposal,
-                                double * df, double * ddf)
+static void
+newton_wrapper_func(void *params, double *proposal, double *df, double *ddf)
 {
-  newton_wrapper_params * wrapper_params =
-      (newton_wrapper_params *) params;
+  newton_wrapper_params *wrapper_params = (newton_wrapper_params *)params;
 
   wrapper_params->derive_func(wrapper_params->params, proposal[0], df, ddf);
 }
@@ -30,32 +28,37 @@ static void newton_wrapper_func(void * params, double * proposal,
  * @param  xguess     first guess for the free variable
  * @param  x2         upper bound
  * @param  tolerance  tolerance of the minimization method
- * @param  max_iters  maximum number of iterations (bounds the effect of slow convergence)
+ * @param  max_iters  maximum number of iterations (bounds the effect of slow
+ * convergence)
  * @param  params     custom parameters required by the target function
  * @param  deriv_func target function
  *
  * @return            the parameter value that minimizes the function in [x1,x2]
  */
-PLL_EXPORT double pllmod_opt_minimize_newton(double xmin,
-                                             double xguess,
-                                             double xmax,
-                                             double tolerance,
-                                             unsigned int max_iters,
-                                             void * params,
-                                             void (*deriv_func)(void *,
-                                                          double,
-                                                          double *, double *))
+PLL_EXPORT double pllmod_opt_minimize_newton(
+    double       xmin,
+    double       xguess,
+    double       xmax,
+    double       tolerance,
+    unsigned int max_iters,
+    void *       params,
+    void (*deriv_func)(void *, double, double *, double *))
 {
   newton_wrapper_params wrapper_params;
-  wrapper_params.params = params;
+  wrapper_params.params      = params;
   wrapper_params.derive_func = deriv_func;
 
   double xres = xguess;
 
-  int retval = pllmod_opt_minimize_newton_multi(1, xmin, &xres, xmax,
-                                             tolerance, max_iters, NULL,
-                                             (void *) &wrapper_params,
-                                             newton_wrapper_func);
+  int retval = pllmod_opt_minimize_newton_multi(1,
+                                                xmin,
+                                                &xres,
+                                                xmax,
+                                                tolerance,
+                                                max_iters,
+                                                NULL,
+                                                (void *)&wrapper_params,
+                                                newton_wrapper_func);
 
   if (retval)
     return xres;
@@ -73,49 +76,51 @@ PLL_EXPORT double pllmod_opt_minimize_newton(double xmin,
  *
  * @param  xnum       number of functions/variables to optimize
  * @param  xmin       lower bound
- * @param  xguess     in=first guess for the free variables, out=optimized values
+ * @param  xguess     in=first guess for the free variables, out=optimized
+ * values
  * @param  xmax       upper bound
  * @param  tolerance  tolerance of the minimization method
- * @param  max_iters  maximum number of iterations (bounds the effect of slow convergence)
- * @param  converged  (optional) in: 1/0=skip/optimize, out: 1/0=converged yes/no
+ * @param  max_iters  maximum number of iterations (bounds the effect of slow
+ * convergence)
+ * @param  converged  (optional) in: 1/0=skip/optimize, out: 1/0=converged
+ * yes/no
  * @param  params     custom parameters required by the derivative function
  * @param  deriv_func derivative function
  *
  * @return            PLL_FAILURE on error, PLL_SUCCESS otherwise
  */
-PLL_EXPORT int pllmod_opt_minimize_newton_multi(unsigned int xnum,
-                                                double xmin,
-                                                double * xguess,
-                                                double xmax,
-                                                double tolerance,
-                                                unsigned int max_iters,
-                                                int * converged,
-                                                void * params,
-                                                void (deriv_func)(void *,
-                                                          double *,
-                                                          double *, double *))
+PLL_EXPORT int pllmod_opt_minimize_newton_multi(
+    unsigned int xnum,
+    double       xmin,
+    double *     xguess,
+    double       xmax,
+    double       tolerance,
+    unsigned int max_iters,
+    int *        converged,
+    void *       params,
+    void(deriv_func)(void *, double *, double *, double *))
 {
   unsigned int i;
-  unsigned int iter = 0;
-  int all_converged = 0;
-  int error_flag = 0;
+  unsigned int iter          = 0;
+  int          all_converged = 0;
+  int          error_flag    = 0;
 
   double dxmax = xmax / max_iters;
 
-  double * xl = (double *) calloc(xnum, sizeof(double));
-  double * xh = (double *) calloc(xnum, sizeof(double));
-  double * f = (double *) calloc(xnum, sizeof(double));
-  double * df = (double *) calloc(xnum, sizeof(double));
-  int * int_converged = NULL;
-  double * x = xguess;
+  double *xl            = (double *)calloc(xnum, sizeof(double));
+  double *xh            = (double *)calloc(xnum, sizeof(double));
+  double *f             = (double *)calloc(xnum, sizeof(double));
+  double *df            = (double *)calloc(xnum, sizeof(double));
+  int *   int_converged = NULL;
+  double *x             = xguess;
 
   /* reset errno */
   pll_errno = 0;
 
   if (!converged)
   {
-    int_converged = (int *) calloc(xnum, sizeof(int));
-    converged = int_converged;
+    int_converged = (int *)calloc(xnum, sizeof(int));
+    converged     = int_converged;
   }
 
   for (i = 0; i < xnum; i++)
@@ -130,8 +135,8 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(unsigned int xnum,
   {
     if (iter++ > max_iters)
     {
-      pllmod_set_error(PLLMOD_OPT_ERROR_NEWTON_LIMIT,
-                       "Exceeded maximum number of iterations");
+      pll_set_error(PLLMOD_OPT_ERROR_NEWTON_LIMIT,
+                    "Exceeded maximum number of iterations");
       error_flag = 1;
       break;
     }
@@ -145,22 +150,25 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(unsigned int xnum,
     {
       double dx;
 
-      if (converged[i])
-        continue;
+      if (converged[i]) continue;
 
       if (!isfinite(f[i]) || !isfinite(df[i]))
       {
         DBG("[it=%u][NR deriv][p=%u] BL=%.9f   f=%.12f  df=%.12f\n",
-            iter, i, x[i], f[i], df[i]);
-        pllmod_set_error(PLLMOD_OPT_ERROR_NEWTON_DERIV,
-                         "Wrong likelihood derivatives");
+            iter,
+            i,
+            x[i],
+            f[i],
+            df[i]);
+        pll_set_error(PLLMOD_OPT_ERROR_NEWTON_DERIV,
+                      "Wrong likelihood derivatives");
         error_flag = 1;
         break;
       }
 
       if (df[i] > 0.0)
       {
-        if (fabs (f[i]) < tolerance)
+        if (fabs(f[i]) < tolerance)
         {
           converged[i] = 1;
           continue;
@@ -180,17 +188,22 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(unsigned int xnum,
 
       dx = PLL_MAX(PLL_MIN(dx, dxmax), -dxmax);
 
-      if (x[i]+dx < xl[i]) dx = xl[i]-x[i];
-      if (x[i]+dx > xh[i]) dx = xh[i]-x[i];
+      if (x[i] + dx < xl[i]) dx = xl[i] - x[i];
+      if (x[i] + dx > xh[i]) dx = xh[i] - x[i];
 
-      if (fabs (dx) < tolerance)
+      if (fabs(dx) < tolerance)
       {
         converged[i] = 1;
         continue;
       }
 
       DBG("[it=%u][NR deriv][p=%u] BL=%.9f   f=%.12f  df=%.12f  nextBL=%.9f\n",
-          iter, i, x[i], f[i], df[i], x[i]+dx);
+          iter,
+          i,
+          x[i],
+          f[i],
+          df[i],
+          x[i] + dx);
 
       x[i] += dx;
 
@@ -204,8 +217,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(unsigned int xnum,
   free(xh);
   free(f);
   free(df);
-  if (int_converged)
-    free(int_converged);
+  if (int_converged) free(int_converged);
 
   if (all_converged && !error_flag)
     return PLL_SUCCESS;

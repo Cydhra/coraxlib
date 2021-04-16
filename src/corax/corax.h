@@ -27,8 +27,32 @@
 #define CORAX_H_
 
 #include "corax/corax_common.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "corax/io/binary.h"
+#include "corax/io/utree_io.h"
+
 #include "corax/model/modutil.h"
+
+#include "corax/optimize/opt_branches.h"
+#include "corax/optimize/opt_model.h"
+#include "corax/optimize/opt_treeinfo.h"
+
+#include "corax/tree/treeinfo.h"
+#include "corax/tree/utree.h"
+#include "corax/tree/utree_moves.h"
+#include "corax/tree/utree_traverse.h"
+#include "corax/tree/utree_ops.h"
+#include "corax/tree/utree_random.h"
+
 #include "corax/util/msa.h"
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* CORAX_H_ */

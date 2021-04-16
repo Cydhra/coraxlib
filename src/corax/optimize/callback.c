@@ -20,22 +20,23 @@
  */
 
 #include "callback.h"
+#include "corax/corax.h"
 
 double target_freqs_func(void *p, double *x)
 {
-  struct freqs_params * params = (struct freqs_params *) p;
+  struct freqs_params *params = (struct freqs_params *)p;
 
-  pll_partition_t * partition     = params->partition;
-  pll_unode_t * root              = params->tree;
-  unsigned int * params_indices   = params->params_indices;
-  unsigned int params_index       = params->params_index;
-  unsigned int fixed_freq_state   = params->fixed_freq_state;
-  unsigned int states             = partition->states;
-  double *freqs                   = partition->frequencies[params_index];
-  double sum_ratios = 1.0;
+  pll_partition_t *partition        = params->partition;
+  pll_unode_t *    root             = params->tree;
+  unsigned int *   params_indices   = params->params_indices;
+  unsigned int     params_index     = params->params_index;
+  unsigned int     fixed_freq_state = params->fixed_freq_state;
+  unsigned int     states           = partition->states;
+  double *         freqs            = partition->frequencies[params_index];
+  double           sum_ratios       = 1.0;
 
   unsigned int i, cur_index;
-  double score;
+  double       score;
 
   /* update frequencies */
   for (i = 0; i < (states - 1); ++i)
@@ -58,29 +59,30 @@ double target_freqs_func(void *p, double *x)
   partition->eigen_decomp_valid[params_index] = 0;
 
   /* compute negative score */
-  score = -1 * pllmod_utree_compute_lk(partition,
-                                       root,
-                                       params_indices,
-                                       1,   /* update pmatrices */
-                                       1);  /* update partials */
+  score = -1
+          * pllmod_opt_compute_lk(partition,
+                                  root,
+                                  params_indices,
+                                  1,  /* update pmatrices */
+                                  1); /* update partials */
   return score;
 }
 
 double target_subst_params_func(void *p, double *x)
 {
-  struct algo_subst_params * params = (struct algo_subst_params *) p;
+  struct algo_subst_params *params = (struct algo_subst_params *)p;
 
-  unsigned int i,j,k;
-  pll_partition_t * partition     = params->partition;
-  pll_unode_t * root              = params->tree;
-  unsigned int * params_indices   = params->params_indices;
-  unsigned int params_index       = params->params_index;
-  unsigned int subst_free_params  = params->subst_free_params;
-  int * symmetries                = params->symmetries;
+  unsigned int     i, j, k;
+  pll_partition_t *partition         = params->partition;
+  pll_unode_t *    root              = params->tree;
+  unsigned int *   params_indices    = params->params_indices;
+  unsigned int     params_index      = params->params_index;
+  unsigned int     subst_free_params = params->subst_free_params;
+  int *            symmetries        = params->symmetries;
 
-  unsigned int states             = partition->states;
-  unsigned int subst_params       = (states * (states-1))/2;
-  double *subst_rates             = partition->subst_params[params_index];
+  unsigned int states       = partition->states;
+  unsigned int subst_params = (states * (states - 1)) / 2;
+  double *     subst_rates  = partition->subst_params[params_index];
 
   if (symmetries)
   {
@@ -89,217 +91,201 @@ double target_subst_params_func(void *p, double *x)
     for (i = 0; i <= subst_free_params; ++i)
     {
       double next_value =
-               (i == (unsigned int)symmetries[subst_params - 1]) ? 1.0 : x[k++];
+          (i == (unsigned int)symmetries[subst_params - 1]) ? 1.0 : x[k++];
       for (j = 0; j < subst_params; j++)
       {
-        if ((unsigned int)symmetries[j] == i)
-        {
-          subst_rates[j] = next_value;
-        }
+        if ((unsigned int)symmetries[j] == i) { subst_rates[j] = next_value; }
       }
     }
   }
   else
   {
-    memcpy (subst_rates, x, ((size_t)subst_params - 1) * sizeof(double));
+    memcpy(subst_rates, x, ((size_t)subst_params - 1) * sizeof(double));
   }
 
   /* important!! invalidate eigen-decomposition */
   partition->eigen_decomp_valid[params_index] = 0;
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
 double target_alpha_func(void *p, double x)
 {
-  struct default_params * params = (struct default_params *) p;
-  pll_partition_t * partition   = params->partition;
-  pll_unode_t * root            = params->tree;
-  unsigned int * params_indices = params->params_indices;
+  struct default_params *params         = (struct default_params *)p;
+  pll_partition_t *      partition      = params->partition;
+  pll_unode_t *          root           = params->tree;
+  unsigned int *         params_indices = params->params_indices;
 
   /* update rate categories */
-  if (!pll_compute_gamma_cats (x,
-                               partition->rate_cats,
-                               partition->rates,
-                               params->gamma_mode))
-  {
-    return PLL_FAILURE;
-  }
+  if (!pll_compute_gamma_cats(
+          x, partition->rate_cats, partition->rates, params->gamma_mode))
+  { return PLL_FAILURE; }
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
 double target_pinv_func(void *p, double x)
 {
-  struct default_params * params = (struct default_params *) p;
-  pll_partition_t * partition   = params->partition;
-  pll_unode_t * root            = params->tree;
-  unsigned int * params_indices = params->params_indices;
-  unsigned int i;
+  struct default_params *params         = (struct default_params *)p;
+  pll_partition_t *      partition      = params->partition;
+  pll_unode_t *          root           = params->tree;
+  unsigned int *         params_indices = params->params_indices;
+  unsigned int           i;
 
   /* update proportion of invariant sites */
-  for (i=0; i<partition->rate_cats; ++i)
-    pll_update_invariant_sites_proportion(partition,
-                                          params_indices[i],
-                                          x);
+  for (i = 0; i < partition->rate_cats; ++i)
+    pll_update_invariant_sites_proportion(partition, params_indices[i], x);
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
 double target_alpha_pinv_func(void *p, double *x)
 {
-  struct default_params * params = (struct default_params *) p;
-  pll_partition_t * partition   = params->partition;
-  pll_unode_t * root            = params->tree;
-  unsigned int * params_indices = params->params_indices;
-  unsigned int i;
+  struct default_params *params         = (struct default_params *)p;
+  pll_partition_t *      partition      = params->partition;
+  pll_unode_t *          root           = params->tree;
+  unsigned int *         params_indices = params->params_indices;
+  unsigned int           i;
 
   /* update rate categories */
-  if (!pll_compute_gamma_cats (x[0],
-                               partition->rate_cats,
-                               partition->rates,
-                               params->gamma_mode))
-  {
-    return PLL_FAILURE;
-  }
+  if (!pll_compute_gamma_cats(
+          x[0], partition->rate_cats, partition->rates, params->gamma_mode))
+  { return PLL_FAILURE; }
 
   /* update proportion of invariant sites */
-  for (i=0; i<partition->rate_cats; ++i)
-    pll_update_invariant_sites_proportion(partition,
-                                          params_indices[i],
-                                          x[1]);
+  for (i = 0; i < partition->rate_cats; ++i)
+    pll_update_invariant_sites_proportion(partition, params_indices[i], x[1]);
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
 double target_rates_func(void *p, double *x)
 {
-  struct rate_weights_params * params = (struct rate_weights_params *) p;
-  pll_partition_t * partition   = params->partition;
-  pll_unode_t * root            = params->tree;
-  unsigned int * params_indices = params->params_indices;
+  struct rate_weights_params *params         = (struct rate_weights_params *)p;
+  pll_partition_t *           partition      = params->partition;
+  pll_unode_t *               root           = params->tree;
+  unsigned int *              params_indices = params->params_indices;
 
   /* update rate categories */
-  memcpy(partition->rates, x, partition->rate_cats*sizeof(double));
+  memcpy(partition->rates, x, partition->rate_cats * sizeof(double));
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
 double target_weights_func(void *p, double *x)
 {
-  struct rate_weights_params * params = (struct rate_weights_params *) p;
+  struct rate_weights_params *params = (struct rate_weights_params *)p;
 
-  pll_partition_t * partition       = params->partition;
-  pll_unode_t * root                = params->tree;
-  unsigned int * params_indices     = params->params_indices;
-  unsigned int fixed_weight_state   = params->fixed_weight_state;
-  unsigned int n_weights            = partition->rate_cats;
-  double sum_ratios = 1.0;
+  pll_partition_t *partition          = params->partition;
+  pll_unode_t *    root               = params->tree;
+  unsigned int *   params_indices     = params->params_indices;
+  unsigned int     fixed_weight_state = params->fixed_weight_state;
+  unsigned int     n_weights          = partition->rate_cats;
+  double           sum_ratios         = 1.0;
 
-  double * weights = partition->rate_weights;
+  double *     weights = partition->rate_weights;
   unsigned int i, cur_weight;
-  double score;
+  double       score;
 
-  for (i = 0; i < (n_weights - 1); ++i)
-    sum_ratios += x[i];
+  for (i = 0; i < (n_weights - 1); ++i) sum_ratios += x[i];
 
   cur_weight = 0;
   for (i = 0; i < (n_weights); ++i)
-    if (i != fixed_weight_state)
-    {
-      weights[i] = x[cur_weight++] / sum_ratios;
-    }
+    if (i != fixed_weight_state) { weights[i] = x[cur_weight++] / sum_ratios; }
   weights[fixed_weight_state] = 1.0 / sum_ratios;
 
   /* update weights */
-  // memcpy(partition->rate_weights, weights, partition->rate_cats*sizeof(double));
+  // memcpy(partition->rate_weights, weights,
+  // partition->rate_cats*sizeof(double));
 
   /* compute negative score */
-  score = -1 * pllmod_utree_compute_lk(partition,
-                                       root,
-                                       params_indices,
-                                       0,   /* update pmatrices */
-                                       0);  /* update partials */
+  score = -1
+          * pllmod_opt_compute_lk(partition,
+                                  root,
+                                  params_indices,
+                                  0,  /* update pmatrices */
+                                  0); /* update partials */
 
   return score;
 }
 
 double target_brlen_scaler_func(void *p, double x)
 {
-  struct brlen_scaler_params * params = (struct brlen_scaler_params *) p;
-  pll_partition_t * partition   = params->partition;
-  pll_unode_t * root            = params->tree;
-  unsigned int * params_indices = params->params_indices;
+  struct brlen_scaler_params *params         = (struct brlen_scaler_params *)p;
+  pll_partition_t *           partition      = params->partition;
+  pll_unode_t *               root           = params->tree;
+  unsigned int *              params_indices = params->params_indices;
 
   /* scale branches according to the new factor */
-  pllmod_utree_scale_branches_all(root, x / params->old_scaler);
+  pll_utree_scale_branches_all(root, x / params->old_scaler);
 
   /* store the old scaler value */
   params->old_scaler = x;
 
   /* compute negative score */
-  double score = -1 *
-                 pllmod_utree_compute_lk(partition,
+  double score = -1
+                 * pllmod_opt_compute_lk(partition,
                                          root,
                                          params_indices,
-                                         1,   /* update pmatrices */
-                                         1);  /* update partials */
+                                         1,  /* update pmatrices */
+                                         1); /* update partials */
   return score;
 }
 
-double target_func_onedim_treeinfo(void *p, double *x, double *fx, int * converged)
+double
+target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged)
 {
-  struct treeinfo_opt_params * params = (struct treeinfo_opt_params *) p;
+  struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t * treeinfo        = params->treeinfo;
-  int param_to_optimize               = params->param_to_optimize;
-  unsigned int num_parts              = params->num_opt_partitions;
-  treeinfo_param_set_cb param_setter  = params->param_set_cb;
+  pllmod_treeinfo_t *   treeinfo          = params->treeinfo;
+  int                   param_to_optimize = params->param_to_optimize;
+  unsigned int          num_parts         = params->num_opt_partitions;
+  treeinfo_param_set_cb param_setter      = params->param_set_cb;
 
   double score = -INFINITY;
 
   /* any partitions which have not converged yet? */
   double unconverged_flag = 0.;
 
-  unsigned int i, j=0;
+  unsigned int i, j = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
-    pll_partition_t * partition = treeinfo->partitions[i];
+    pll_partition_t *partition = treeinfo->partitions[i];
 
     if (treeinfo->params_to_optimize[i] & param_to_optimize)
     {
@@ -314,8 +300,7 @@ double target_func_onedim_treeinfo(void *p, double *x, double *fx, int * converg
 
       /* if x=NULL, function was called solely to check convergence
        * -> no update of parameter values & LH computation */
-      if (x)
-        param_setter(treeinfo, i, &x[j], 1);
+      if (x) param_setter(treeinfo, i, &x[j], 1);
 
       j++;
     }
@@ -324,10 +309,9 @@ double target_func_onedim_treeinfo(void *p, double *x, double *fx, int * converg
   assert(j == num_parts);
 
   /* compute negative score */
-  if (x)
-    score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
 
-//  printf("score: %lf\n", score);
+  //  printf("score: %lf\n", score);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -343,8 +327,8 @@ double target_func_onedim_treeinfo(void *p, double *x, double *fx, int * converg
     /* check if there is at least one unconverged partition in *any* thread */
     if (treeinfo->parallel_reduce_cb)
     {
-      treeinfo->parallel_reduce_cb(treeinfo->parallel_context, &unconverged_flag, 1,
-                                   PLL_REDUCE_SUM);
+      treeinfo->parallel_reduce_cb(
+          treeinfo->parallel_context, &unconverged_flag, 1, PLL_REDUCE_SUM);
     }
     converged[num_parts] = unconverged_flag > 0. ? 0 : 1;
   }
@@ -352,15 +336,15 @@ double target_func_onedim_treeinfo(void *p, double *x, double *fx, int * converg
   return score;
 }
 
-double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
-                                     int * converged)
+double
+target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
 {
-  struct treeinfo_opt_params * params = (struct treeinfo_opt_params *) p;
+  struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t * treeinfo      = params->treeinfo;
-  unsigned int num_parts            = params->num_opt_partitions;
-  unsigned int * fixed_var_index    = params->fixed_var_index;
-  int params_to_optimize            = params->param_to_optimize;
+  pllmod_treeinfo_t *treeinfo           = params->treeinfo;
+  unsigned int       num_parts          = params->num_opt_partitions;
+  unsigned int *     fixed_var_index    = params->fixed_var_index;
+  int                params_to_optimize = params->param_to_optimize;
 
   double score = -INFINITY;
 
@@ -371,9 +355,10 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
   size_t part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
-    pll_partition_t * partition = treeinfo->partitions[i];
+    pll_partition_t *partition = treeinfo->partitions[i];
 
-    if ((treeinfo->params_to_optimize[i] & params_to_optimize) == params_to_optimize)
+    if ((treeinfo->params_to_optimize[i] & params_to_optimize)
+        == params_to_optimize)
     {
       if (!partition || (converged && converged[part]))
       {
@@ -393,57 +378,54 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
 
       switch (params_to_optimize)
       {
-        case PLLMOD_OPT_PARAM_ALPHA | PLLMOD_OPT_PARAM_PINV:
-          /* update GAMMA rate categories */
-          treeinfo->alphas[i] = x[part][0];
-          if (!pll_compute_gamma_cats (treeinfo->alphas[i],
-                                       partition->rate_cats,
-                                       partition->rates,
-                                       params->treeinfo->gamma_mode[i]))
+      case PLLMOD_OPT_PARAM_ALPHA | PLLMOD_OPT_PARAM_PINV:
+        /* update GAMMA rate categories */
+        treeinfo->alphas[i] = x[part][0];
+        if (!pll_compute_gamma_cats(treeinfo->alphas[i],
+                                    partition->rate_cats,
+                                    partition->rates,
+                                    params->treeinfo->gamma_mode[i]))
+        {
+          assert(pll_errno);
+          return PLL_FAILURE;
+        }
+
+        /* update proportion of invariant sites */
+        for (j = 0; j < partition->rate_cats; ++j)
+        {
+          if (!pll_update_invariant_sites_proportion(
+                  partition, treeinfo->param_indices[i][j], x[part][1]))
           {
             assert(pll_errno);
             return PLL_FAILURE;
           }
-
-          /* update proportion of invariant sites */
-          for (j=0; j<partition->rate_cats; ++j)
-          {
-            if (!pll_update_invariant_sites_proportion(partition,
-                                                       treeinfo->param_indices[i][j],
-                                                       x[part][1]))
-            {
-              assert(pll_errno);
-              return PLL_FAILURE;
-            }
-          }
-          break;
-        case PLLMOD_OPT_PARAM_FREE_RATES:
-          /* update rate categories */
-          memcpy(partition->rates, x[part], partition->rate_cats*sizeof(double));
-          break;
-        case PLLMOD_OPT_PARAM_RATE_WEIGHTS:
-        {
-          unsigned int fixed_weight_state = fixed_var_index[part];
-          unsigned int n_weights            = partition->rate_cats;
-          double sum_ratios = 1.0;
-
-          double * weights = partition->rate_weights;
-          unsigned int i, cur_weight;
-
-          for (i = 0; i < (n_weights - 1); ++i)
-            sum_ratios += x[part][i];
-
-          cur_weight = 0;
-          for (i = 0; i < (n_weights); ++i)
-            if (i != fixed_weight_state)
-            {
-              weights[i] = x[part][cur_weight++] / sum_ratios;
-            }
-          weights[fixed_weight_state] = 1.0 / sum_ratios;
-          break;
         }
-        default:
-          assert(0);
+        break;
+      case PLLMOD_OPT_PARAM_FREE_RATES:
+        /* update rate categories */
+        memcpy(
+            partition->rates, x[part], partition->rate_cats * sizeof(double));
+        break;
+      case PLLMOD_OPT_PARAM_RATE_WEIGHTS:
+      {
+        unsigned int fixed_weight_state = fixed_var_index[part];
+        unsigned int n_weights          = partition->rate_cats;
+        double       sum_ratios         = 1.0;
+
+        double *     weights = partition->rate_weights;
+        unsigned int i, cur_weight;
+
+        for (i = 0; i < (n_weights - 1); ++i) sum_ratios += x[part][i];
+
+        cur_weight = 0;
+        for (i = 0; i < (n_weights); ++i)
+          if (i != fixed_weight_state)
+          { weights[i] = x[part][cur_weight++] / sum_ratios; }
+        weights[fixed_weight_state] = 1.0 / sum_ratios;
+        break;
+      }
+      default:
+        assert(0);
       }
 
       part++;
@@ -451,8 +433,7 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
   }
 
   /* compute negative score */
-  if(x)
-    score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -460,7 +441,8 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
     j = 0;
     for (i = 0; i < treeinfo->partition_count; ++i)
     {
-      if ((treeinfo->params_to_optimize[i] & params_to_optimize) == params_to_optimize)
+      if ((treeinfo->params_to_optimize[i] & params_to_optimize)
+          == params_to_optimize)
         fx[j++] = -1 * treeinfo->partition_loglh[i];
     }
   }
@@ -470,8 +452,8 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
     /* check if there is at least one unconverged partition in *any* thread */
     if (treeinfo->parallel_reduce_cb)
     {
-      treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
-                                   &unconverged_flag, 1, PLL_REDUCE_SUM);
+      treeinfo->parallel_reduce_cb(
+          treeinfo->parallel_context, &unconverged_flag, 1, PLL_REDUCE_SUM);
     }
     converged[num_parts] = unconverged_flag > 0. ? 0 : 1;
   }
@@ -479,15 +461,15 @@ double target_func_multidim_treeinfo(void * p, double ** x, double * fx,
   return score;
 }
 
-double target_subst_params_func_multi(void * p, double ** x, double * fx,
-                                      int * converged)
+double
+target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
 {
-  struct treeinfo_opt_params * params = (struct treeinfo_opt_params *) p;
+  struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t * treeinfo      = params->treeinfo;
-  unsigned int num_parts            = params->num_opt_partitions;
-  unsigned int params_index         = params->params_index;
-  unsigned int * subst_free_params  = params->num_free_params;
+  pllmod_treeinfo_t *treeinfo          = params->treeinfo;
+  unsigned int       num_parts         = params->num_opt_partitions;
+  unsigned int       params_index      = params->params_index;
+  unsigned int *     subst_free_params = params->num_free_params;
 
   double score = -INFINITY;
 
@@ -498,7 +480,7 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
   size_t part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
-    pll_partition_t * partition = treeinfo->partitions[i];
+    pll_partition_t *partition = treeinfo->partitions[i];
 
     if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_SUBST_RATES)
     {
@@ -518,10 +500,10 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
         continue;
       }
 
-      int * symmetries                = treeinfo->subst_matrix_symmetries[i];
-      unsigned int states             = partition->states;
-      unsigned int subst_params       = (states * (states-1))/2;
-      double *subst_rates             = partition->subst_params[params_index];
+      int *        symmetries   = treeinfo->subst_matrix_symmetries[i];
+      unsigned int states       = partition->states;
+      unsigned int subst_params = (states * (states - 1)) / 2;
+      double *     subst_rates  = partition->subst_params[params_index];
 
       /* update subst rates */
       if (symmetries)
@@ -530,20 +512,20 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
         size_t l, k = 0;
         for (l = 0; l <= subst_free_params[part]; ++l)
         {
-          double next_value =
-                   (l == (unsigned int)symmetries[subst_params - 1]) ? 1.0 : x[part][k++];
+          double next_value = (l == (unsigned int)symmetries[subst_params - 1])
+                                  ? 1.0
+                                  : x[part][k++];
           for (j = 0; j < subst_params; j++)
           {
             if ((unsigned int)symmetries[j] == l)
-            {
-              subst_rates[j] = next_value;
-            }
+            { subst_rates[j] = next_value; }
           }
         }
       }
       else
       {
-        memcpy (subst_rates, x[part], ((size_t)subst_params - 1) * sizeof(double));
+        memcpy(
+            subst_rates, x[part], ((size_t)subst_params - 1) * sizeof(double));
       }
 
       /* important!! invalidate eigen-decomposition */
@@ -554,8 +536,7 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
   }
 
   /* compute negative score */
-  if(x)
-    score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -571,8 +552,8 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
     /* check if there is at least one unconverged partition in *any* thread */
     if (treeinfo->parallel_reduce_cb)
     {
-      treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
-                                   &unconverged_flag, 1, PLL_REDUCE_SUM);
+      treeinfo->parallel_reduce_cb(
+          treeinfo->parallel_context, &unconverged_flag, 1, PLL_REDUCE_SUM);
     }
     converged[num_parts] = unconverged_flag > 0. ? 0 : 1;
   }
@@ -580,16 +561,14 @@ double target_subst_params_func_multi(void * p, double ** x, double * fx,
   return score;
 }
 
-
-double target_freqs_func_multi(void * p, double ** x, double * fx,
-                               int * converged)
+double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
 {
-  struct treeinfo_opt_params * params = (struct treeinfo_opt_params *) p;
+  struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t * treeinfo      = params->treeinfo;
-  unsigned int num_parts            = params->num_opt_partitions;
-  unsigned int params_index         = params->params_index;
-  unsigned int * fixed_freq_state   = params->fixed_var_index;
+  pllmod_treeinfo_t *treeinfo         = params->treeinfo;
+  unsigned int       num_parts        = params->num_opt_partitions;
+  unsigned int       params_index     = params->params_index;
+  unsigned int *     fixed_freq_state = params->fixed_var_index;
 
   double score = -INFINITY;
 
@@ -600,7 +579,7 @@ double target_freqs_func_multi(void * p, double ** x, double * fx,
   size_t part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
-    pll_partition_t * partition = treeinfo->partitions[i];
+    pll_partition_t *partition = treeinfo->partitions[i];
 
     if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_FREQUENCIES)
     {
@@ -620,11 +599,11 @@ double target_freqs_func_multi(void * p, double ** x, double * fx,
         continue;
       }
 
-      unsigned int states             = partition->states;
-      double * freqs                  = partition->frequencies[params_index];
+      unsigned int states = partition->states;
+      double *     freqs  = partition->frequencies[params_index];
 
-      unsigned int fixed            = fixed_freq_state[part];
-      double sum_ratios               = 1.0;
+      unsigned int fixed      = fixed_freq_state[part];
+      double       sum_ratios = 1.0;
       unsigned int cur_index;
 
       /* update frequencies */
@@ -651,8 +630,7 @@ double target_freqs_func_multi(void * p, double ** x, double * fx,
         printf("%f ", i == fixed ? 1.0 : x[part][cur_index++]);
       printf("  ||  ");
 
-      for (size_t i = 0; i < states; ++i)
-        printf("%f ", freqs[i]);
+      for (size_t i = 0; i < states; ++i) printf("%f ", freqs[i]);
       printf("\n");
 #endif
 
@@ -664,8 +642,7 @@ double target_freqs_func_multi(void * p, double ** x, double * fx,
   }
 
   /* compute negative score */
-  if (x)
-    score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -681,8 +658,8 @@ double target_freqs_func_multi(void * p, double ** x, double * fx,
     /* check if there is at least one unconverged partition in *any* thread */
     if (treeinfo->parallel_reduce_cb)
     {
-      treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
-                                   &unconverged_flag, 1, PLL_REDUCE_SUM);
+      treeinfo->parallel_reduce_cb(
+          treeinfo->parallel_context, &unconverged_flag, 1, PLL_REDUCE_SUM);
     }
     converged[num_parts] = unconverged_flag > 0. ? 0 : 1;
   }

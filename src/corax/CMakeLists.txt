@@ -14,9 +14,10 @@ set (AVX2_FLAGS "-mfma -mavx2")
 
 set(CORAX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CORAX_SRC_DIR_CORE ${CORAX_SRC_DIR}/core)
-set(CORAX_SRC_DIR_TREE ${CORAX_SRC_DIR}/tree)
 set(CORAX_SRC_DIR_IO ${CORAX_SRC_DIR}/io)
 set(CORAX_SRC_DIR_MODEL ${CORAX_SRC_DIR}/model)
+set(CORAX_SRC_DIR_OPTIMIZE ${CORAX_SRC_DIR}/optimize)
+set(CORAX_SRC_DIR_TREE ${CORAX_SRC_DIR}/tree)
 set(CORAX_SRC_DIR_UTIL ${CORAX_SRC_DIR}/util)
 set(CORAX_SRC_DIR_KERNEL ${CORAX_SRC_DIR}/kernel)
 set(CORAX_SRC_DIR_KERNEL_GENERIC ${CORAX_SRC_DIR_KERNEL}/generic)
@@ -33,6 +34,12 @@ set(CORAX_INCLUDE_DIRS
 include_directories(${CORAX_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+file(GLOB CORAX_OPTIMIZE_SOURCES ${CORAX_SRC_DIR_OPTIMIZE}/*.c
+  ${CORAX_SRC_DIR_OPTIMIZE}/lbfgsb/*.c
+)
+
+file(GLOB CORAX_TREE_SOURCES ${CORAX_SRC_DIR_TREE}/*.c)
+
 set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_CORE}/partition.c
   ${CORAX_SRC_DIR_CORE}/repeats.c
@@ -45,6 +52,8 @@ set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_IO}/maps.c
   ${CORAX_SRC_DIR_IO}/output.c
   ${CORAX_SRC_DIR_IO}/phylip.c
+  ${CORAX_SRC_DIR_IO}/utree_ascii.c
+  ${CORAX_SRC_DIR_IO}/utree_newick.c
   ${CORAX_SRC_DIR_IO}/utree_svg.c
   ${CORAX_SRC_DIR_IO}/newick.cpp
 
@@ -66,8 +75,9 @@ set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_MODEL}/modutil_gt.c
   ${CORAX_SRC_DIR_MODEL}/modutil_mult.c
 
-  ${CORAX_SRC_DIR_TREE}/utree.c
-  ${CORAX_SRC_DIR_TREE}/utree_moves.c
+  ${CORAX_OPTIMIZE_SOURCES}
+  
+  ${CORAX_TREE_SOURCES}
   
   ${CORAX_SRC_DIR_UTIL}/compress.c
   ${CORAX_SRC_DIR_UTIL}/hardware.c
@@ -200,7 +210,6 @@ endmacro()
 
 set(CORAX_LIBRARIES "")
 
-#add_corax_lib(corax "${CORAX_SOURCES}")
 if(BUILD_CORAX_SHARED)
   add_corax_lib(corax_shared SHARED)
 endif()
@@ -208,7 +217,7 @@ if(BUILD_CORAX_STATIC)
   add_corax_lib(corax_static STATIC)
 endif()
 
-
 message(STATUS "coraxlib libraries: ${CORAX_LIBRARIES}")
 
-
+#include(GNUInstallDirs)
+#install(TARGETS corax_static ARCHIVE)

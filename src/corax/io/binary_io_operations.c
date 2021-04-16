@@ -201,8 +201,8 @@ int binary_partition_body_apply(FILE *           bin_file,
   unsigned int prob_matrices = partition->prob_matrices;
   unsigned int rate_matrices = partition->rate_matrices;
   unsigned int sites_alloc   = partition->asc_bias_alloc
-                                   ? partition->sites + partition->states
-                                   : partition->sites;
+                                 ? partition->sites + partition->states
+                                 : partition->sites;
 
   bin_func(partition->eigen_decomp_valid, sizeof(int), rate_matrices, bin_file);
   for (i = 0; i < rate_matrices; ++i)
