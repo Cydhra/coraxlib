@@ -42,9 +42,7 @@ PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root);
 
 PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *root);
 
-PLL_EXPORT void pll_utree_create_pars_buildops(pll_unode_t *const *trav_buffer,
-                                               unsigned int trav_buffer_size,
-                                               pll_pars_buildop_t *ops,
-                                               unsigned int *      ops_count);
+PLL_EXPORT int pll_utree_set_clv_minimal(pll_unode_t *root,
+                                         unsigned int tip_count);
 
 #endif /* CORAX_TREE_UTREE_H_ */

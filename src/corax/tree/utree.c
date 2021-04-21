@@ -288,31 +288,6 @@ PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *tree)
     return pll_utree_wraptree_multi(root, tree->tip_count, tree->inner_count);
 }
 
-PLL_EXPORT void pll_utree_create_pars_buildops(pll_unode_t *const *trav_buffer,
-                                               unsigned int trav_buffer_size,
-                                               pll_pars_buildop_t *ops,
-                                               unsigned int *      ops_count)
-{
-  const pll_unode_t *node;
-  unsigned int       i;
-
-  *ops_count = 0;
-
-  for (i = 0; i < trav_buffer_size; ++i)
-  {
-    node = trav_buffer[i];
-
-    if (node->next)
-    {
-      ops[*ops_count].parent_score_index = node->node_index;
-      ops[*ops_count].child1_score_index = node->next->back->node_index;
-      ops[*ops_count].child2_score_index = node->next->next->back->node_index;
-
-      *ops_count = *ops_count + 1;
-    }
-  }
-}
-
 PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
                                         void (*cb_destroy)(void *))
 {
@@ -667,4 +642,70 @@ PLL_EXPORT pll_unode_t *pll_utree_create_node(unsigned int clv_index,
       new_node->scaler_index   = scaler_index;
   new_node->back = new_node->next->back = new_node->next->next->back = NULL;
   return new_node;
+}
+
+struct clv_set_data
+{
+  int *        set_indices;
+  unsigned int max_index;
+  unsigned int tip_count;
+};
+
+static int cb_set_clv_minimal(pll_unode_t *node, void *data)
+{
+  unsigned int         i, next_index;
+  int                  index_found;
+  struct clv_set_data *clv_data = (struct clv_set_data *)data;
+  int *                v        = 0;
+
+  if (!PLL_UTREE_IS_TIP(node))
+  {
+    /* find next free position */
+    v           = clv_data->set_indices;
+    next_index  = 0;
+    index_found = 0;
+    for (i = 0; i < clv_data->max_index; ++i)
+    {
+      if (!v[i])
+      {
+        index_found = 1;
+        next_index  = i;
+        v[i]        = 1;
+        break;
+      }
+    }
+    assert(index_found);
+
+    /* set clv index */
+    node->clv_index = node->next->clv_index = node->next->next->clv_index =
+        next_index + clv_data->tip_count;
+    /* set scaler index */
+    node->scaler_index = node->next->scaler_index =
+        node->next->next->scaler_index =
+            (int)(next_index + clv_data->tip_count);
+
+    /* free indices from children */
+    if (!PLL_UTREE_IS_TIP(node->next->back))
+    { v[node->next->back->clv_index - clv_data->tip_count] = 0; }
+    if (!PLL_UTREE_IS_TIP(node->next->next->back))
+    { v[node->next->next->back->clv_index - clv_data->tip_count] = 0; }
+  }
+
+  /* continue */
+  return 1;
+}
+
+PLL_EXPORT int pll_utree_set_clv_minimal(pll_unode_t *root,
+                                         unsigned int tip_count)
+{
+  unsigned int clv_count   = (unsigned int)ceil(log2(tip_count)) + 2;
+  int *        set_indices = (int *)calloc((size_t)clv_count, sizeof(int));
+  struct clv_set_data data;
+  data.set_indices = set_indices;
+  data.max_index   = clv_count;
+  data.tip_count   = tip_count;
+  pll_utree_traverse_apply(root, 0, 0, cb_set_clv_minimal, (void *)&data);
+  free(set_indices);
+
+  return PLL_SUCCESS;
 }

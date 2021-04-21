@@ -26,11 +26,14 @@ PLL_EXPORT pll_unode_t *pll_utree_unroot_inplace(pll_unode_t *root);
 
 PLL_EXPORT int pll_utree_root_inplace(pll_utree_t *tree);
 
-#if 0
 PLL_EXPORT int pll_utree_outgroup_root(pll_utree_t * tree,
-                                       unsigned int * outgroup_tip_ids,
-                                       unsigned int outgroup_size,
-                                       int add_root_node);
-#endif
+                                       unsigned int *outgroup_tip_ids,
+                                       unsigned int  outgroup_size,
+                                       int           add_root_node);
+
+PLL_EXPORT int pllmod_utree_draw_support(pll_utree_t * ref_tree,
+                                         const double *support,
+                                         pll_unode_t **node_map,
+                                         char *(*cb_serialize)(double));
 
 #endif /* CORAX_TREE_UTREE_OPS_H_ */

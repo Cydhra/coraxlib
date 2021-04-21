@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 
 include(CheckIncludeFile) 
 
-set (CORAX_BASE_FLAGS "-Wall -Wsign-compare -D_GNU_SOURCE -O3 -fPIC ")
+set (CORAX_BASE_FLAGS "-Wall -Wsign-compare -std=c99 -D_GNU_SOURCE -O3 -fPIC ")
 
 if(CORAX_DEBUG)
   set(CORAX_BASE_FLAGS "${CORAX_BASE_FLAGS} -DDEBUG")

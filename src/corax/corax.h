@@ -48,6 +48,10 @@ extern "C"
 #include "corax/tree/utree_traverse.h"
 #include "corax/tree/utree_ops.h"
 #include "corax/tree/utree_random.h"
+#include "corax/tree/utree_split.h"
+#include "corax/tree/utree_compare.h"
+#include "corax/tree/utree_parsimony.h"
+#include "corax/tree/utree_tbe.h"
 
 #include "corax/util/msa.h"
 

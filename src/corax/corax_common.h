@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -165,6 +166,8 @@
 #define PLL_ERROR_INVALID_PARAM 24
 #define PLL_ERROR_INVALID_TREE 25
 #define PLL_ERROR_INVALID_TREE_SIZE 26
+#define PLL_ERROR_INVALID_SPLIT 27
+#define PLL_ERROR_INVALID_THRESHOLD 28
 
 #define PLL_ERROR_FILE_OPEN 100
 #define PLL_ERROR_FILE_SEEK 101
