@@ -196,7 +196,9 @@ Notable Parameters:
 Once the sumtable is computed, we can use it to repeatedly call the derivatives
 function. This evaluates the derivative of the model _at a point_. The intended
 use case is to repeatedly evaluate first and second derivatives of one branch in
-order to optimize it using Newton-Raphson optimization.
+order to optimize it using [Newton-Raphson][nr].
+
+[^nr]: https://en.wikipedia.org/wiki/Newton%27s_method
 
 ```
 pll_export int pll_compute_likelihood_derivatives(pll_partition_t * partition,
