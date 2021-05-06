@@ -5,17 +5,17 @@ Concepts
 ================================================================================
 
 Throughout this documentation, there is an intended difference between the terms
-`pll_unode_t` and *node*. The former refers to the actual datastructure that is used to
+`pll_unode_t` and *node*. The former refers to the actual data structure that is used to
 represent a vertex in a phylogenetic tree, while a *node* refers to that actual
 vertex.  Each node in a phylogenetic tree is made up of 1 or more
 `pll_unode_t`s. 
 
 Each `pll_unode_t` is a collection of two pointers and some associated data. The
 two pointers are the `next` and `back` pointers. If a `pll_unode_t` is an inner
-node, then the `next` pointer points the the next `pll_unode_t` in the node. If
+node, then the `next` pointer points to the next `pll_unode_t` in the node. If
 the `next` pointer is `null`, then that `pll_unode_t` represents a tip.
 
-The `back` pointer represents edges. It points to a `pll_unode_t` accociated
+The `back` pointer represents edges. It points to a `pll_unode_t` associated
 with another node. Suppose that we have the tree `((a,b),c,d)`, then the libpll
 representation of that would what is shown in the following figure.
 
@@ -27,7 +27,7 @@ Here, the dotted arcs indicate `next` pointers, and the solid lines represent
 Structures
 ================================================================================
 
-The datastructure is made up of two different structs. The first, `pll_utree_t`
+The data structure is made up of two different structs. The first, `pll_utree_t`
 wraps the tree. In general, when a tree is used for a function, it requires a
 `pll_utree_t`. Some important things to know about this structure: the first
 `inner_count` nodes in the `nodes` array are assumed to be "inner nodes". This
@@ -56,7 +56,7 @@ Fields:
   part of inner nodes, but the number of interior nodes of a phylogenetic tree.
 - `edge_count`: the number of edges in the tree.
 - `nodes`: an array of pointers to nodes.
-- `vroot`: A pointer to the virutal root. By convention, this is always an inner node.
+- `vroot`: A pointer to the virtual root. By convention, this is always an inner node.
   All tree manipulation functions such as `pll_utree_wraptree` obey to this convention.
 
 ----
@@ -89,11 +89,11 @@ Fields:
   index is on the "tree node" level, not on the `pll_unode_t` level.
 - `clv_index`: Index of the CLVs to use when calculating a likelihood
 - `scaler_index`: Index into the scaler array to represent the CLV scaler
-- `pmatrix_index`: index into the array of pmatrices. These pmatrices need to be
+- `pmatrix_index`: index into the array of probability matrices. These probability matrices need to be
   computed based on the length of the branch
-- `next`, `back`: See the explaination in the concepts section.
+- `next`, `back`: See the explanation in the concepts section.
 - `data`: An extra pointer to store "user data". In practice, this can be used
-  for any task, but exisiting functions might also use it, so be careful.
+  for any task, but existing functions might also use it, so be careful.
 
 
 Notable Functions
@@ -144,15 +144,20 @@ PLL_EXPORT int pll_utree_traverse(pll_unode_t * root,
                                   unsigned int * trav_size);
 ```
 
-Creates a list of nodes from a traversal, starting at `root`. The order of the
-traversal can be controlled with the `traversal` arguement, which accepts either
-`PLL_TREE_TRAVERSE_POSTORDER` or `PLL_TREE_TRAVERSE_PREORDER`. The callback
-function controls which nodes are traversed by returning `PLL_SUCESS` for a
-node node which should be added to the outbuffer. If `PLL_FAILURE` is returned
-instead, then the traversal is halted for that subtree, and the node which
-returned it is not added to the outbuffer. `trav_size` is an outparameter.
-Returns `PLL_SUCCESS` on a traversal without errors, and `PLL_FAILURE` if there
-was an error.
+Creates a list of nodes from a traversal, starting at `root`. The order of the traversal can be controlled with the
+`traversal` argument, which accepts either `PLL_TREE_TRAVERSE_POSTORDER` or `PLL_TREE_TRAVERSE_PREORDER`. The callback
+function controls which nodes are traversed by returning `true` for a node node which should be added to `outbuffer`.
+If `false` is returned instead, then the traversal is halted for that subtree, and the node which returned it is not
+added to `outbuffer`. By doing this the traversal of the tree can be halted early, which is useful for partial
+traversals. `trav_size` is an out parameter. Returns `PLL_SUCCESS` on a traversal without errors, and `PLL_FAILURE` if
+there was an error.
+
+If a full traversal is desired, the callback should return `true` for all inputs.
+
+The intended use of this function is to build a traversal buffer, which is to be used in later computations. For
+example, the `outbuffer` parameter is used to build the operations for likelihood computations (see
+`pll_utree_create_operations`). The function will fail if `nullptr` is passed in for `outbuffer`. If the behavior of
+this function is needed, but the buffer is not needed, please use `pll_utree_traverse_apply`.
 
 ------
 
@@ -167,14 +172,12 @@ PLL_EXPORT void pll_utree_create_operations(pll_unode_t * const* trav_buffer,
 ```
 
 Given the `pll_unode_t**` from a traversal, this will create a list of
-[`pll_operation_t`](pll_operation_t.md) from that list. If `branches`,
-`pmatrix_index` is not `null`, then the values of the branches and probability
+[`pll_operation_t`](pll_operation_t.md) from that list. If `branches` and 
+`pmatrix_index` are not `null`, then the values of the branches and probability
 matrix indices are stored in these buffers. Likewise if `matrix_count` is not
-null, then it is an out paramter with the number of matricies needed for a
+null, then it is an out parameter with the number of matrices needed for a
 traversal. The remaining two parameters are both out parameters, the list of
 operations, `ops` and the number of operations `ops_count`.
-
-If a full traversal is desired, the callback should return 1 for all inputs.
 
 ------
 
