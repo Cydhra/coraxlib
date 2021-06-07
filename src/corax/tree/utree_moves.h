@@ -5,52 +5,6 @@
 
 /* structures for handling topological rearrangement move rollbacks */
 
-/* TREE MOVES - LIBPLL flavor */
-
-typedef struct pll_utree_rb_s
-{
-  int move_type;
-  union
-  {
-    struct
-    {
-      pll_unode_t *p;
-      pll_unode_t *r;
-      pll_unode_t *rb;
-      pll_unode_t *pnb;
-      pll_unode_t *pnnb;
-      double       r_len;
-      double       pnb_len;
-      double       pnnb_len;
-    } spr;
-    struct
-    {
-      pll_unode_t *p;
-      int          nni_type;
-    } nni;
-  };
-} pll_utree_rb_t;
-
-PLL_EXPORT int pll_utree_spr(pll_unode_t *   p,
-                             pll_unode_t *   r,
-                             pll_utree_rb_t *rb,
-                             double *        branch_lengths,
-                             unsigned int *  matrix_indices);
-
-PLL_EXPORT int pll_utree_spr_safe(pll_unode_t *   p,
-                                  pll_unode_t *   r,
-                                  pll_utree_rb_t *rb,
-                                  double *        branch_lengths,
-                                  unsigned int *  matrix_indices);
-
-PLL_EXPORT int pll_utree_nni(pll_unode_t *p, int type, pll_utree_rb_t *rb);
-
-PLL_EXPORT int pll_utree_rollback(pll_utree_rb_t *rollback,
-                                  double *        branch_lengths,
-                                  unsigned int *  matrix_indices);
-
-/* TREE MOVES - PLLMOD flavor */
-
 #define PLLMOD_TREE_REARRANGE_SPR 0
 #define PLLMOD_TREE_REARRANGE_NNI 1
 #define PLLMOD_TREE_REARRANGE_TBR 2
@@ -143,6 +97,10 @@ PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
 PLL_EXPORT int pllmod_utree_spr(pll_unode_t *        p_edge,
                                 pll_unode_t *        r_edge,
                                 pll_tree_rollback_t *rollback_info);
+
+PLL_EXPORT int pllmod_utree_spr_safe(pll_unode_t *   p,
+                                     pll_unode_t *   r,
+                                     pll_tree_rollback_t *rollback_info);
 
 /* type = {PLL_NNI_NEXT, PLL_NNI_NEXTNEXT} */
 PLL_EXPORT int pllmod_utree_nni(pll_unode_t *        edge,
