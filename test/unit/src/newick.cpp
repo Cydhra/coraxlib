@@ -1,5 +1,5 @@
 #include "corax/corax.h"
-#include <asm-generic/errno.h>
+#include "environment.hpp"
 #include <gtest/gtest.h>
 #include <stdexcept>
 
@@ -1027,17 +1027,25 @@ TEST(NewickParser, rooted_as_unrooted0)
               PLL_ERROR_INVALID_TREE);
 }
 
-/*
-TEST(TreeReader, manytrees) {
+TEST(NewickParser, manytrees) {
   auto        treefile    = env->get_datafile();
   size_t      line_number = 1;
   std::string line;
+  if(!treefile.is_open()){
+      throw std::runtime_error{"Could not open file for this test"};
+  }
   while (std::getline(treefile, line)) {
     if (!treefile) { break; }
-    auto tr = TreeReader();
     try {
-      auto t = tr.readTree(line);
-      EXPECT_GT(t->getExternalNodeCount(), 0);
+      auto t = pll_utree_parse_newick_string_rooted(line.c_str());
+      if (t == nullptr){
+        throw std::runtime_error{"Could not parse tree"};
+      }
+      EXPECT_GT(t->tip_count, 0);
+      EXPECT_GT(t->inner_count, 0);
+      EXPECT_GT(t->edge_count, 0);
+      EXPECT_EQ(t->binary, true);
+      pll_utree_destroy(t, nullptr);
     } catch (const std::exception &e) {
       throw std::runtime_error{std::string("Got error on line ") +
                                std::to_string(line_number) +
@@ -1048,17 +1056,27 @@ TEST(TreeReader, manytrees) {
   }
 }
 
-TEST(TreeReader, DISABLED_pathologic0) {
+TEST(NewickParser, pathologic0) {
   auto treefile = env->get_pathological_data();
 
   size_t      line_number = 1;
   std::string line;
+  if(!treefile.is_open()){
+      throw std::runtime_error{"Could not open file for this test"};
+  }
   while (std::getline(treefile, line)) {
     if (!treefile) { break; }
-    auto tr = TreeReader();
     try {
-      auto t = tr.readTree(line);
-      EXPECT_GT(t->getExternalNodeCount(), 0);
+      auto t = pll_utree_parse_newick_string_rooted(line.c_str());
+      if (t == nullptr){
+        throw std::runtime_error{"Could not parse tree"};
+      }
+      /* THESE ARE REGRESSION VALUES */
+      EXPECT_EQ(t->tip_count, 23613);
+      EXPECT_EQ(t->inner_count, 23612);
+      EXPECT_EQ(t->edge_count, 47224);
+      EXPECT_EQ(t->binary, true);
+      pll_utree_destroy(t, nullptr);
     } catch (const std::exception &e) {
       throw std::runtime_error{std::string("Got error on line ") +
                                std::to_string(line_number) +
@@ -1068,4 +1086,3 @@ TEST(TreeReader, DISABLED_pathologic0) {
     line.clear();
   }
 }
-*/
