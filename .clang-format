@@ -17,5 +17,5 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 PointerAlignment: Right
 AlignOperands: true
 BreakBeforeBinaryOperators: NonAssignment
-SortIncludes: SI_Never
+SortIncludes: false
 ...
