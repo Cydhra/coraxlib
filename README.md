@@ -31,6 +31,10 @@ The library will be installed on the operating system's standard paths.  For
 some GNU/Linux distributions it might be necessary to add that standard path
 (typically `/usr/local/lib`) to `/etc/ld.so.conf` and run `ldconfig`.
 
+# Developing with coraxlib
+
+Please see the docs [here](docs/libpll.md)
+
 # coraxlib license and third party licenses
 
 The coraxlib code is currently licensed under the
