@@ -1,9 +1,8 @@
 Structures
 ================================================================================
 
-A structure which simply keeps track of the "operations" required to calculate
-the likelihood on a tree, during the partial likelihood calculation. In general,
-these should not be produced by hand, but instead by
+A structure which simply keeps track of the "operations" required to calculate the likelihood on a tree, during the
+partial likelihood calculation. In general, these should not be produced by hand, but instead by
 [`pll_utree_create_operations`](#Notable-Functions).
 
 ```
@@ -33,13 +32,12 @@ PLL_EXPORT void pll_utree_create_operations(pll_unode_t * const* trav_buffer,
                                             unsigned int * ops_count);
 ```
 
-Creates a list of operations, given a list of nodes. These nodes should be
-present in the `trav_buffer` in a post-order traversal. If `branches` or
-`pmatrix_indices` are not `null`, then the nodes are assigned the values in
-`branches` or `pmatrix_indices`. If `matrix_count` is not `null`, then it is an
-out parameter which gives the number of matricies required to compute this
-traversal. Finally, the operations are placed in `ops`, and the number of
-operations is placed in `ops_count`.
+Creates a list of operations in `ops` using the post-order traversal in `trav_buffer`. If `branches` or
+`pmatrix_indices` are not `nullptr`, then they are used to create the operations. Otherwise, they are ignored. If
+`matrix_count` is not `nullptr`, then it will contain the number of matricies that will be required to compute this
+batch of operations. The number of operations is placed in `ops_count`.
+
+In order to produce the `trav_buffer`, the function [`pll_utree_traverse`](./pll_utree_t.md) should be used.
 
 ----
 
@@ -49,14 +47,5 @@ PLL_EXPORT void pll_update_clvs(pll_partition_t * partition,
                                 unsigned int count);
 ```
 
-Computes the CLVS for all the trees in the nodes specified in the `operations`
-list, where `operations` has length `count`.
-
-----
-
-```
-PLL_EXPORT void pll_update_repeats(pll_partition_t * partition,
-                    const pll_operation_t * op) ;
-```
-
-Calculates the repeats for `partition` for a particular operation.
+Computes the CLVS for all the trees in the nodes specified in the `operations` list, where `operations` has length
+`count`. 
