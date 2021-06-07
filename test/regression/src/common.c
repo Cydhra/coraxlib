@@ -90,7 +90,7 @@ pll_partition_t *parse_msa_reduced(const char * filename,
                                    unsigned int rate_matrices,
                                    pll_utree_t *tree,
                                    unsigned int attributes,
-                                   unsigned int max_sites)
+                                   int max_sites)
 {
   unsigned int     i;
   unsigned int     taxa_count = tree->tip_count;
@@ -207,6 +207,28 @@ pll_partition_t *parse_msa_reduced(const char * filename,
 }
 
 int cb_full_traversal(pll_unode_t *node) { return 1; }
+
+void show_tree (pll_unode_t * tree, int SHOW_ASCII_TREE)
+{
+  if(SHOW_ASCII_TREE)
+  {
+    printf ("\n");
+    pll_utree_show_ascii (
+        tree,
+        PLL_UTREE_SHOW_LABEL |
+        PLL_UTREE_SHOW_BRANCH_LENGTH |
+        PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_PMATRIX_INDEX
+            | PLL_UTREE_SHOW_SCALER_INDEX);
+    char * newick = pll_utree_export_newick (tree, NULL);
+    printf ("%s\n\n", newick);
+    free (newick);
+  }
+  else
+  {
+    printf ("ASCII tree not shown (SHOW_ASCII_TREE flag)\n");
+    return;
+  }
+}
 
 __attribute__((format(printf, 1, 2))) void fatal(const char *format, ...)
 {

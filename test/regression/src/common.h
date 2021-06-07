@@ -25,7 +25,10 @@
 
 extern const pll_state_t odd5_map[256];
 
+/* parse attributes from the arguments */
 unsigned int get_attributes(int argc, char **argv);
+
+/* skip current test */
 void         skip_test();
 
 pll_partition_t *parse_msa(const char * filename,
@@ -41,8 +44,13 @@ pll_partition_t *parse_msa_reduced(const char * filename,
                                    unsigned int rate_matrices,
                                    pll_utree_t *tree,
                                    unsigned int attributes,
-                                   unsigned int max_sites);
+                                   int max_sites);
+
+/* callback function for traverse the utree */
 int              cb_full_traversal(pll_unode_t *node);
+
+/* displays a tree */
+void show_tree (pll_unode_t * tree, int SHOW_ASCII_TREE);
 
 /* print error and exit */
 void  fatal(const char *format, ...) __attribute__((noreturn));
