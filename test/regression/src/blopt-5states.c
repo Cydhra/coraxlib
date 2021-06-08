@@ -170,6 +170,9 @@ int main(int argc, char * argv[])
 
    /* clean */
   free(operations);
+  free(tree[0].label);
+  free(tree[1].label);
+  free(tree[2].label);
   free(tree);
   pll_partition_destroy(partition);
 
