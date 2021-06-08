@@ -104,7 +104,7 @@ This will create a tree under a parsimony method. The arguments are
     - `PLL_ATTRIB_ARCH_AVX`: Use the AVX extensions,
     - `PLL_ATTRIB_ARCH_AVX2`: Use the AVX2 extensions,
     - `PLL_ATTRIB_ARCH_AVX512`: Use the AVX512 extensions,
-    In addition, set the `PLL_ATTRIB_PATTERN_TIP` to enable site repeats.
+    In addition, set the `PLL_ATTRIB_SITE_REPEATS` to enable site repeats.
 - `random_seed`: Seed to pass to the random number generator
 - `score`: output parameter that contains the score of the tree.
 
