@@ -36,4 +36,10 @@ PLL_EXPORT int pllmod_utree_draw_support(pll_utree_t * ref_tree,
                                          pll_unode_t **node_map,
                                          char *(*cb_serialize)(double));
 
+PLL_EXPORT pll_unode_t * pllmod_utree_serialize(pll_unode_t * tree,
+                                                unsigned int tip_count);
+
+PLL_EXPORT pll_utree_t * pllmod_utree_expand(pll_unode_t * serialized_tree,
+                                             unsigned int tip_count);
+
 #endif /* CORAX_TREE_UTREE_OPS_H_ */
