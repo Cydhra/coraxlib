@@ -1,24 +1,9 @@
-Checklist for creating a new partition
-================================================================================
-
-- Create the partition
-- Set the substitution parameters
-- Set the tip states
-  - Compress the MSA first
-  - Set the pattern weights
-- Set the frequencies
-- Set Pinvar
-- Set category rates
-- Set category weights
-
 Concepts
 ================================================================================
 
-A partition is a section of the genome for which all sites evolved under the
-same model. Informally, one can think of a partition being a gene, but
-understand that this is not always the case. In particular partitions of a
-genome might not code for something, and there are no requirements that
-partitions are even _contiguous_.
+A partition is a section of the genome for which all sites evolved under the same model. Informally, one can think of a
+partition being a gene, but understand that this is not always the case. In particular partitions of a genome might not
+code for something, and there are no requirements that the sites which make up a partition are even _contiguous_.
 
 Structure
 ================================================================================
@@ -95,20 +80,20 @@ This is generally organized into the following sections:
   number of edges
 - `scale_buffers`: The number of scale buffers.
 
+None of these parameters are calculated in any way. Instead, they are specified in the `pll_partition_create` function.
+This means that even non-binary trees can be (ostensibly) represented by this structure.
+
 ## Memory Alignment State Variables
 
-- `alignment`: One of three constants depending on what architecture is being
-  used. At the time of writing these are:
+- `alignment`: One of three constants depending on what architecture is being used. At the time of writing these are:
     - `PLL_ALIGNMENT_CPU`
     - `PLL_ALIGNMENT_SSE`
     - `PLL_ALIGNMENT_AVX`
-- `states_padded`: How many states are used, padded up to be aligned for the
-  architecture flag that is used.
+- `states_padded`: How many states are used, after padding. This is also the size an individual CLV buffer.
 
 ## Attributes
 
-The `attributes` field is a bitset that has the is combination of the following
-flags.
+The `attributes` field is a bitset that has the is combination of the following flags.
 
 - Architecture attributes: Only one may be set
   - `PLL_ATTRIB_ARCH_CPU`
@@ -129,14 +114,13 @@ flags.
 
 ## `clv`
 
-In any given run, this will probably be the biggest allocation of memory, and
-will be involved in almost all of the computation that `libpll` performs. As
-such, it can be useful to understand what CLVs are, and how the `clv` buffer
+In any given run, this will probably be the biggest allocation of memory, and will be involved in almost all of the
+computation that `libpll` performs. As such, it can be useful to understand what CLVs are, and how the `clv` buffer
 relates to them.
 
-A conditional likelihood vector (CLV) is an intermediate calculation which
-informally represents the likelihood of a subtree. Conceptually, every node (not
-a `pll_unode_t`) has a CLV, which is oriented with respect to the virutal root.
+A conditional likelihood vector (CLV) is an intermediate calculation which informally represents the likelihood of a
+subtree. Conceptually, every node (not a `pll_unode_t`) has a CLV, which is oriented with respect to the virtual root.
+For more information please see the general documentation [here](./libpll.md).
 
 Notable Functions
 ================================================================================
@@ -151,47 +135,44 @@ Notable Functions
                                           unsigned int scale_buffers,
                                           unsigned int attributes);
 
-- `tips`: The number of tips of the tree. In phylogenetic terms, this is the
-  number of taxa.
-- `clv_buffers`: This is the number of CLVs that will be required to compute the
-  tree. Practically, this is the number of edges. The number of rate categories
-  is automatically accounted for, so no need to add it.
-- `states`: The number of states that the model has, ie the type of sequence
-  data that is being worked on. Practically, this is:
+- `tips`: The number of tips of the tree. In phylogenetic terms, this is the number of taxa.
+- `clv_buffers`: This is the number of CLVs that will be required to compute the tree. Practically, this is the number
+  of edges, or the number of inner nodes. The number of rate categories is automatically accounted for, so no need to
+  add it.
+- `states`: The number of states that the model has, I.E. the type of sequence data that is being worked on.
+  Practically, this is:
+    - 2 for binary data,
     - 4 for nucleotide data,
     - 20 for nucleotide data,
     - and 61 for codon data.
-- `sites`: how long is the alignment. Note that, this is going to be the post
-  compressed length of the sequence, i.e. the length that is from
-  `pll_compress_site_patterns`.
-- `rate_matrices`: The number of rate matrices that are allocated. In a
-  simple and standard model, this is 1. In the case of a mixture model, this
-  should be equal to the number of classes.
-- `prob_matrices`: The number of probabilty matrices need for calculation. This
-  will almost always be equal to the number of branches in the tree. In
-  particular, the number of rate categories is automatically accounted for.
+- `sites`: how long is the alignment. Note that, this is going to be the post compressed length of the sequence, i.e.
+  the length that is from `pll_compress_site_patterns`, or the number of unique site patterns.
+- `rate_matrices`: The number of rate matrices that are allocated. In a simple and standard model, this is 1. In the
+  case of a mixture model, this should be equal to the number of classes of models. Note that having rate categories
+  still only requires 1 rate matrix, as those are computed based on the single rate matrix.
+- `prob_matrices`: The number of probability matrices need for calculation. This will almost always be equal to the
+  number of branches in the tree. IMPORTANT: the number of rate categories is automatically accounted for.
 - `rate_cats`: Number of different rate categories to consider.
-- `scale_buffers`: Number of scalling buffers to allocate. Practially, this is
-  equal to the number of inner nodes in the tree.
+- `scale_buffers`: Number of scaling buffers to allocate. Practically, this is equal to the number of inner nodes in the
+  tree.
 - `attributes`: A bitflag set which controls several features of runtime.
-    - Architecture Flags: The first category of attributes are the architecture
-    flags, ie whether to use avx/2, sse3, or none.
+    - Architecture Flags: The first category of attributes are the architecture flags, I.E. whether to use avx/2, sse3,
+      or none. Setting multiple of these flags will cause libpll to assume the most "advanced" set.
       - `PLL_ATTRIB_ARCH_CPU`
       - `PLL_ATTRIB_ARCH_SSE`
       - `PLL_ATTRIB_ARCH_AVX`
       - `PLL_ATTRIB_ARCH_AVX2`
-    - Optimization Flags: If these are set, then some optimizations, which are
-    not always free, are used.
+    - Optimization Flags: If these are set, then some optimizations, which are not always free, are used. Of note, the
+      pattern tip and site repeat optimizations are mutually exclusive
       - `PLL_ATTRIB_PATTERN_TIP`
       - `PLL_ATTRIB_SITE_REPEATS`
-    - Bias correction flags: Flags that control the different methods of
-    compute the bias correction
+    - Bias correction flags: Flags that control the different methods to compute the bias correction
       - `PLL_ATTRIB_AB_LEWIS`
       - `PLL_ATTRIB_AB_FELSENSTEIN`
       - `PLL_ATTRIB_AB_STAMATAKIS`
       - `PLL_ATTRIB_AB_FLAG`
     - Misc: Everything else.
-      - `PLL_ATTRIB_RATE_SCALERS`
+      - `PLL_ATTRIB_RATE_SCALERS`: Enable per rate scalars.
 
 ----
 
@@ -214,17 +195,16 @@ Together, these two functions are used to compress the MSA
     - `pll_map_nt`: For nucleotide data.
     - `pll_map_aa`: For amino acid data.
 - `count`: The number of sequences in the alignment.
-- `length`: This is both a in parameter, as well as an out parameter.
-    Initially, this is the length of the sequences. After compression, it
-    returns the new length via this parameter.
+- `length`: This is both a in parameter, as well as an out parameter.  Initially, this is the length of the sequences.
+  After compression, it returns the new length via this parameter.
 
 
     void pll_set_pattern_weights(pll_partition_t* partition,
                                  const unsigned int* pattern_weights);
 
 - `partition`: The partition that we want to set the weights for
-- `pattern_weights`: The array of weights. While you could set this yourself,
-    in general it should be the output of `pll_compress_site_patterns`.
+- `pattern_weights`: The array of weights. While you could set this yourself, in general it should be the output of
+  `pll_compress_site_patterns`.
 
 ----
 
@@ -251,11 +231,10 @@ Where the arguements are
 
 - `partition`: The partition to set the frequencies for.
 - `params_index`: The model index to set the frequencies for.
-- `params`: The values to set the frequencies to. This needs to be as long as
-    the number of states in the model. These should add up to 1.
+- `params`: The values to set the frequencies to. This needs to be as long as the number of states in the model. These
+  should add up to 1.
 
-If you are using a model variant where we want to use emperical frequencies, we
-can use
+If you are using a model variant where we want to use empirical frequencies, we can use
 
     double* pllmod_msa_empirical_frequencies(pll_partition_t* partition);
 
@@ -281,3 +260,16 @@ then the following list will do the trick:
 
 
     double subst_params[] = {a, b, c, d, e, f}
+    
+Checklist for creating a new partition
+================================================================================
+
+- Create the partition
+- Set the substitution parameters
+- Set the tip states
+  - Compress the MSA first
+  - Set the pattern weights
+- Set the frequencies
+- Set the proportion of invariant sites.
+- Set category rates
+- Set category weights
