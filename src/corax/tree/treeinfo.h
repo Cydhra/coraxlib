@@ -92,6 +92,29 @@ typedef struct
   double **    probs;
 } pllmod_ancestral_t;
 
+/** @defgroup pllmod_treeinfo_t pllmod_treeinfo_t
+ */
+
+/**
+ * Create a pllmod_treeinfo_t from an existing tree.
+ *
+ * @param root A pointer to the virtual root of the unrooted tree.
+ *
+ * @param tips: Number of tips in the tree. Almost always this will also be the
+ * number of taxa.
+ *
+ * @param partitions: Number of partitions that will be used in the full
+ * analysis.
+ *
+ * @param brlen_linkage Which branch length linking method to use. Options are:
+ * - `PLLMOD_COMMON_BRLEN_UNLINKED`: The branch lengths for one partition have
+ *   no relation to any other partition.
+ * - `PLLMOD_COMMON_BRLEN_SCALED`: The branch lengths are scaled per partition.
+ * - `PLLMOD_COMMON_BRLEN_LINKED`: The branch lengths are all equal for all
+ *   partitions.
+ *
+ * @ingroup pllmod_treeinfo_t
+ */
 PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
                                                      unsigned int tips,
                                                      unsigned int partitions,
@@ -103,6 +126,48 @@ int pllmod_treeinfo_set_parallel_context(
     void *             parallel_context,
     void (*parallel_reduce_cb)(void *, double *, size_t, int op));
 
+/**
+ * Initialize a partition in a treeinfo.
+ *
+ * @param partition_index Index of the partition to initialize.
+ *
+ * @param partition The pointer to the partition itself. This partition needs to
+ * be initialized before this.
+ *
+ * @param params_to_optimize Which paramters to optimize. Options are:
+ * - PLLMOD_OPT_PARAM_ALL
+ * - PLLMOD_OPT_PARAM_SUBST_RATES
+ * - PLLMOD_OPT_PARAM_ALPHA
+ * - PLLMOD_OPT_PARAM_PINV
+ * - PLLMOD_OPT_PARAM_FREQUENCIES
+ * - PLLMOD_OPT_PARAM_BRANCHES_SINGLE
+ * - PLLMOD_OPT_PARAM_BRANCHES_ALL
+ * - PLLMOD_OPT_PARAM_BRANCHES_ITERATIVE
+ * - PLLMOD_OPT_PARAM_TOPOLOGY
+ * - PLLMOD_OPT_PARAM_FREE_RATES
+ * - PLLMOD_OPT_PARAM_RATE_WEIGHTS
+ * - PLLMOD_OPT_PARAM_BRANCH_LEN_SCALAR
+ * - PLLMOD_OPT_PARAM_USER: Uses user defined code.
+ * Any of these can be combined via the `|` operation.
+ *
+ * @param gamma_mode Controls the gamma rate discretization methods. Options
+ * are:
+ * - PLL_GAMMA_RATES_MEAN
+ * - PLL_GAMMA_RATES_MEDIAN
+ *
+ * @param alpha Initial alpha to use in the model.
+ *
+ * @param param_indices Specify the parameter indices to ... do stuff. Can be
+ * set to null, at which point the defaults are used.
+ *
+ * @param subst_matrix_symmetries A list of symmetries in the model. Can be set
+ * to `nullptr` as well. If set to null, indicates that there are no symmetries
+ * in the model. If there are symmetries, the order is "left to right". For
+ * example, if our symmetry array was {0,0,0,1,1,1}, then the two symmetry
+ * groups would be the top row, and the reamaining triangle
+ *
+ * @ingroup pllmod_treeinfo_t
+ */
 PLL_EXPORT int
 pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
                                unsigned int        partition_index,

@@ -82,8 +82,10 @@
 
 #define PLL_UTREE_IS_TIP(node) (node->next == NULL)
 
+/** @defgroup pll_defines Constant Definitions 
+ * @{ 
+ */
 /* constants */
-
 #define PLL_FAILURE 0
 #define PLL_SUCCESS 1
 
@@ -119,16 +121,33 @@
 #define PLL_EIGEN_MINFREQ 1e-6
 
 #define PLL_TREE_DEFAULT_BRANCH_LENGTH 0.1
+/** @} */
+
+/** @defgroup pll_attributes Attributes
+ * These are flags which are used to control the behavior of a partition.
+ * @{
+ */
 
 /* attribute flags */
 
+
+/** Flag specifying no SIMD operations */
 #define PLL_ATTRIB_ARCH_CPU 0
+/** Flag specifying only SSE3 SIMD operations */
 #define PLL_ATTRIB_ARCH_SSE (1 << 0)
+/** Flag specifying only AVX SIMD operations */
 #define PLL_ATTRIB_ARCH_AVX (1 << 1)
+/** Flag specifying only AVX2 SIMD operations */
 #define PLL_ATTRIB_ARCH_AVX2 (1 << 2)
+/** Flag specifying only AVX512 SIMD operations */
 #define PLL_ATTRIB_ARCH_AVX512 (1 << 3)
+/** Mask for the CPU architecture attributes */
 #define PLL_ATTRIB_ARCH_MASK 0xF
 
+/** 
+ * Flag which indicates the use of the pattern tip optimization. Mutually
+ * exclusive with the `PLL_ATTRIB_SITE_REPEATS` flag.
+ */
 #define PLL_ATTRIB_PATTERN_TIP (1 << 4)
 
 /* ascertainment bias correction */
@@ -142,10 +161,18 @@
 
 /* site repeats */
 
+/** 
+ * Flag indicating the use of the site repeats optimization. Mutually exclusive
+ * with the `PLL_ATTRIB_PATTERN_TIP` flag.
+ */
 #define PLL_ATTRIB_SITE_REPEATS (1 << 10)
-#define PLL_REPEATS_LOOKUP_SIZE 2000000
 
+/** Mask for all the attributes currently defined */
 #define PLL_ATTRIB_MASK ((1 << 11) - 1)
+
+/** @} */
+
+#define PLL_REPEATS_LOOKUP_SIZE 2000000
 
 /* topological rearrangements */
 
@@ -158,6 +185,10 @@
 #define PLL_TREE_TRAVERSE_POSTORDER 1
 #define PLL_TREE_TRAVERSE_PREORDER 2
 
+/** @defgroup pll_errors Error Codes
+ * Error codes for coraxlib.
+ * @{
+ */
 /* error codes */
 #define PLL_ERROR_NOT_IMPLEMENTED 13
 #define PLL_ERROR_INVALID_RANGE 21
@@ -202,6 +233,7 @@
 #define PLL_ERROR_EINVAL 130
 #define PLL_ERROR_MSA_EMPTY 131
 #define PLL_ERROR_MSA_MAP_INVALID 132
+/** @} */
 
 /* utree specific */
 
@@ -261,22 +293,119 @@ typedef struct pll_hardware_s
 
 struct pll_repeats;
 
+/** @defgroup pll_partition_t pll_partition_t
+ * Module concerning the pll_partition_t
+ */
+
+/**
+ * A partition is a section of the genome for which all sites evolved under the
+ * same model. Informally, one can think of a partition being a gene, but
+ * understand that this is not always the case. In particular partitions of a
+ * genome might not code for something, and there are no requirements that the
+ * sites which make up a partition are even contiguous.
+ * 
+ * Here is a checklist for creating and using a new partition:
+ * - Create the partition.
+ * - Set the substitution parameters,
+ * - Set the tip states:
+ *   - Compress the MSA first.
+ *   - Set the pattern weights as well.
+ * - Set the frequencies.
+ * - Set the proportion of invariant sites.
+ * - Set the category rates.
+ * - Set the category weights.
+ * 
+ * @ingroup pll_partition_t
+ */
 typedef struct pll_partition
 {
+  /**
+   * Number of tips present in this partition. Also, the column length in the
+   * MSA.
+   */
   unsigned int tips;
+
+  /**
+   * Number of CLV buffers. Typically, this is the number of edges in the tree
+   */
   unsigned int clv_buffers;
+
+  /**
+   * The number of "conceptual" nodes in the tree. This is to say, the number of
+   * nodes in the tree, and not the number of `pll_unode_t` present in the tree
+   * structure. Includes the tips.
+   */
   unsigned int nodes; // tips + clv_buffer
+
+  /**
+   * Number of states the for the current partition model. For example, a DNA
+   * model will use 4 states.
+   */
   unsigned int states;
+
+  /**
+   * Number of sites in the MSA. Typically, this is the number of _unique_
+   * sites, as there are functions to compress the MSA into only unique sites.
+   */
   unsigned int sites;
+
+  /**
+   * The sum of the pattern weights. When an MSA is compressed, it is compressed
+   * into a list of unique sites with each associated with a pattern weight.
+   * Typically, this is the length of the uncompressed MSA. The exception is
+   * when a weighted MSA is being used. In this case, it will be the sum of the
+   * MSA weights.
+   */
   unsigned int pattern_weight_sum;
+  
+  /**
+   * How many rate matrices are present in the partition. This is different than
+   * the number of rate _categories_. This is instead to be able to specify a
+   * mixture model. Typically though, this is 1
+   */
   unsigned int rate_matrices;
+
+  /**
+   * The number of probability matrices that will be used for computation of a
+   * likelihood. Practically, this is going to be the number of edges in the
+   * tree.
+   */
   unsigned int prob_matrices;
+
+  /**
+   * Number of rate categories for the partition. When specifying other sizes,
+   * the number of rate categories does not need to be accounted for, as it will
+   * be tracked by the partition.
+   */
   unsigned int rate_cats;
+
+  /**
+   * Number of scale buffers.
+   */
   unsigned int scale_buffers;
+
+  /**
+   * Bitvector of the flags used for computation in the `pll_partition_t`. 
+   *
+   * @ingroup pll_attributes
+   */
   unsigned int attributes;
 
   /* vectorization options */
+
+  /**
+   * One of three constants depending on what architecture is being used. At the
+   * time of writing these are:
+   * - `PLL_ALIGNMENT_CPU`
+   * - `PLL_ALIGNMENT_SSE`
+   * - `PLL_ALIGNMENT_AVX`
+   */
   size_t       alignment;
+
+  /**
+   * How many states are used, after padding. This is also the size of an
+   * individual CLV buffer.
+   */
   unsigned int states_padded;
 
   double **      clv;
@@ -307,12 +436,17 @@ typedef struct pll_partition
   int asc_additional_sites; // partition->asc_bias_alloc ? states : 0
 
   /* site repeats */
-  // if repeats are disabled, repeats is set to NULL
-  // else, it points to a structure holding all information
-  // required to use the site repeats technique
+  /** 
+   * If repeats are disabled, repeats is set to NULL. Otherwise, it points to a
+   * structure holding all information required to use the site repeats
+   * optimization.
+   */
   struct pll_repeats *repeats;
 } pll_partition_t;
 
+/** @defgroup pll_repeats_t pll_repeats_t
+ * Module relating to the repeats structure
+ */
 
 /**
  *  Site repeats is a technique that, for each node of a tree,
@@ -331,89 +465,119 @@ typedef struct pll_partition
  *
  *  Note that, if scaling is enabled, scalers are also (similarly to
  *  clvs) compressed by site repeats
+ *
+ *  @ingroup pll_repeats_t
  */
 typedef struct pll_repeats
 {
-  // pernode_site_id[u->clv_index][i] is equal to the
-  // class identifier of the site i at node u
-  // (all the sites that have the same class identifier under 
-  // the same node belong to the same repeat class)
+  /**
+   * `pernode_site_id[u->clv_index][i]` is equal to the class identifier of the
+   * site `i` at node `u` (all the sites that have the same class identifier
+   * under the same node belong to the same repeat class)
+   */
   unsigned int **pernode_site_id;
-  // pernode_id_site[u->clv_index][id] is the first site which
-  // belongs to the repeat class with identifier id at node u
+
+  /**
+   * `pernode_id_site[u->clv_index][id]` is the first site which belongs to the
+   * repeat class with identifier `id` at node `u`.
+   */
   unsigned int **pernode_id_site;
-  // pernode_ids[u->clv_index] is the number of different repeat
-  // classes (and thus of different class idenfiers) at node u
+
+  /**
+   * `pernode_ids[u->clv_index]` is the number of different repeat classes (and
+   * thus of different class idenfiers) at node `u`
+   */
   unsigned int *pernode_ids;
-  // perscale_ids[scaler_index] is the number of different repeat
-  // classes for the scaler associated with the id scaler_index
-  // For a given pll_operation_t *op, if scalers are enabled:
-  // pernode_ids[op->parent_clv_index] == perscale_ids[op->parent_scaler_index]
+
+  /**
+   * `perscale_ids[scaler_index]` is the number of different repeat classes for
+   * the scaler associated with the `id` scaler_index.  For a given
+   * `pll_operation_t *op`, if scalers are enabled:
+   * `pernode_ids[op->parent_clv_index] == perscale_ids[op->parent_scaler_index]`
+   */
   unsigned int *perscale_ids;
-  // pernode_allocated_clvs[u->clv_index] * size_of_a_site_clv 
-  // is the total size of the vector that was allocated for the
-  // (compressed) CLV of the node u, where size_of_a_site_clv is the size of 
-  // CLV chunk corresponding to one site and one node. Note that 
-  // this size might be larger than required (its similar to the 
-  // capacity of an STL container that can be larger than its size)
+
+  /** `pernode_allocated_clvs[u->clv_index] * size_of_a_site_clv` is the total
+   * size of the vector that was allocated for the (compressed) CLV of the node
+   * `u`, where `size_of_a_site_clv` is the size of CLV chunk corresponding to
+   * one site and one node. Note that this size might be larger than required
+   * (its similar to the capacity of an STL container that can be larger than
+   * its size)
+   */
   unsigned int *pernode_allocated_clvs;
 
-  // return true if site repeats compression should be applied on 
-  // the parent node of left_clv and right_clv. In particular, applying
-  // site repeats on nodes that are close to the (virtual) root of
-  // the tree is often counterproductive.
-  // This function can be redefined, and its default definition
-  // is is pll_default_enable_repeats 
+  /**
+   * Returns `true` if site repeats compression should be applied on the parent
+   * node of `left_clv` and `right_clv`. In particular, applying site repeats on
+   * nodes that are close to the (virtual) root of the tree is often
+   * counterproductive.  This function can be redefined, and its default
+   * definition is is `pll_default_enable_repeats` 
+   */
   unsigned int (*enable_repeats)(struct pll_partition *partition,
                                  unsigned int          left_clv,
                                  unsigned int          right_clv);
 
-  // callback called when repeats are updated. Reallocate the CLV
-  // and scaler vector for the node whose clv_index is parent. 
-  // sites_to_alloc indicates the number of "unique sites", 
-  // (or rather class identifiers) for this node.
-  // 
-  // This function can be redefined and its default definition
-  // is pll_default_reallocate_repeats
-  //
-  // By default, we always reallocate the exact required size, in
-  // order to save memory. An alternative strategy could consist
-  // in preallocating the maximum size (assuming that there is no
-  // repeat) once at the first call, and then not doing anything
-  // at the next calls (to avoid deallocation/reallocation).
+  /**
+   * callback called when repeats are updated. Reallocate the CLV
+   * and scaler vector for the node whose clv_index is parent. 
+   * sites_to_alloc indicates the number of "unique sites", 
+   * (or rather class identifiers) for this node.
+   * 
+   * This function can be redefined and its default definition
+   * is pll_default_reallocate_repeats
+   * 
+   * By default, we always reallocate the exact required size, in
+   * order to save memory. An alternative strategy could consist
+   * in preallocating the maximum size (assuming that there is no
+   * repeat) once at the first call, and then not doing anything
+   * at the next calls (to avoid deallocation/reallocation).
+   */
   void (*reallocate_repeats)(struct pll_partition *partition,
                              unsigned int          parent,
                              int                   scaler_index,
                              unsigned int          sites_to_alloc);
-  // The lookup_buffer corresponds to the "matrix M" in the original 
-  // site repeats publication. It is used to compute the repeat classes
-  // at a given node u. Let v and w be the children of u, and let 
-  // nv and nw be their respective numbers of class repeats. If 
-  // nv*nw > lookup_buffer_size, site repeats cannot be computed, and
-  // we disable site repeats for node u. Thus, lookup_buffer_size should
-  // be large enough to allow as much nodes as possible to benefit from
-  // site repeats, without costing too much memory (remember, there might
-  // be many partitions...)
-  // Default size is PLL_REPEATS_LOOKUP_SIZE
-  // and can be changed with pll_resize_repeats_lookup
+
+  /*
+   * The `lookup_buffer` corresponds to the "matrix M" in the original site
+   * repeats publication. It is used to compute the repeat classes at a given
+   * node `u`. Let `v` and `w` be the children of `u`, and let `nv` and `nw` be
+   * their respective numbers of class repeats. If `nv*nw > lookup_buffer_size`,
+   * site repeats cannot be computed, and we disable site repeats for node `u`.
+   * Thus, `lookup_buffer_size` should be large enough to allow as much nodes as
+   * possible to benefit from site repeats, without costing too much memory
+   * (remember, there might be many partitions...). Default size is
+   * `PLL_REPEATS_LOOKUP_SIZE` and can be changed with
+   * `pll_resize_repeats_lookup`
+   */
   unsigned int *lookup_buffer;
   unsigned int  lookup_buffer_size;
 
-  // map each character (representing a state) to a unique identifier 
+  /**
+   * Map each character (representing a state) to a unique identifier 
+   */
   char *        charmap;
   
-  // those vectors are pre-allocated buffers for the site repeats
-  // algorithm (or for using site repeats in some kernels functions). 
-  // They are only relevant in the scope of the function in which
-  // they are being used.
+  /**
+   * Those vectors are pre-allocated buffers for the site repeats algorithm (or
+   * for using site repeats in some kernels functions). They are only relevant
+   * in the scope of the function in which they are being used.
+   */
   unsigned int *toclean_buffer;
   unsigned int *id_site_buffer;
   double *      bclv_buffer;
 
 } pll_repeats_t;
 
-/* Structure for driving likelihood operations */
+/** @defgroup pll_operation_t pll_operation_t
+ * Module containing structures and functions related to operations.
+ */
 
+/**
+ * Structure for driving likelihood operations. In general should only be
+ * created using `pll_utree_create_operations`.
+ *
+ * @ingroup pll_operation_t
+ */
 typedef struct pll_operation
 {
   unsigned int parent_clv_index;
@@ -475,30 +639,116 @@ typedef struct pll_phylip_s
   long                stripped[256];
 } pll_phylip_t;
 
-/* Simple unrooted and rooted tree structure for parsing newick */
-
+/**
+ * A structure that is a fundamental element of `pll_utree_t`. It contains a
+ * next and back pointer. For more information, please see docs/pll_utree_t.md
+ *
+ */
 typedef struct pll_unode_s
 {
+  /**
+   * Label for the tree. Optional. If not present, then should be set to
+   * `nullptr`
+   */
   char *              label;
+
+  /**
+   * Length of the edge, which is represented by the back pointer
+   */
   double              length;
+
+  /**
+   * Index of this node in the `nodes` buffer of `pll_utree_t`. Each
+   * "super"-node shares and index. I.E. the index is on the "tree node" level,
+   * not on the pll_unode_t level.
+   */
   unsigned int        node_index;
+
+  /**
+   * Index into the CLV buffer when computing a likelihood. For more
+   * information, please see the documentation on `pll_partition_t`.
+   */
   unsigned int        clv_index;
+
+  /**
+   * Index into the scalar array to represent the CLV scaler. Please see the
+   * documentation on `pll_partition_t` for more information.
+   */
   int                 scaler_index;
+
+  /**
+   * Index into the array of probability matrices. These probability matrices
+   * will be computed based on the branch length `length`. For more information
+   * please see the documentation on `pll_partition_t`.
+   */
   unsigned int        pmatrix_index;
+
+  /**
+   * See the explaination in the concepts section of `docs/pll_utree_t.md`
+   */
   struct pll_unode_s *next;
+
+  /**
+   * See the explaination in the concepts section of `docs/pll_utree_t.md`
+   */
   struct pll_unode_s *back;
 
+  /**
+   * An extra pointer to store "user data". In praactice, this section can be
+   * used for any task, but exsiting functions might use it, so be careful.
+   */
   void *data;
 } pll_unode_t;
 
+/** @defgroup pll_utree_t pll_utree_t
+ * Module for the `pll_utree_t` struct and associated functions
+ */
+
+/**
+ * The data structure is made up of two different structs. The first,
+ * pll_utree_t wraps the tree. In general, when a tree is used for a function,
+ * it requires a pll_utree_t. Some important things to know about this
+ * structure: the first inner_count nodes in the nodes array are assumed to be
+ * "inner nodes". This means that they have a non-null next pointer. Several
+ * functions that use pll_utree_ts don't check for this, so they may fail when
+ * this assumption is violated. To avoid this, use the pll_utree_wraptree
+ * function discussed below to create a pll_utree_t.
+ *
+ * @ingroup pll_utree_t
+ */
 typedef struct pll_utree_s
 {
+  /**
+   * Number of tips in the tree
+   */
   unsigned int tip_count;
+
+  /**
+   * Number of inner nodes. Not the number of `pll_unode_t` that make up the
+   * tree, but the number of conceptual nodes on the phylogenetic tree.
+   */
   unsigned int inner_count;
+
+  /**
+   * The number of edges in the tree
+   */
   unsigned int edge_count;
+
+  /**
+   * Flag indicating if the tree is binary
+   */
   int          binary;
 
+  /**
+   * An array of `pll_unode_t` pointers
+   */
   pll_unode_t **nodes;
+
+  /**
+   * A pointer to the virtual root. By convention, this is always an inner node.
+   * All tree manipulation functions such as `pll_utree_wraptree` follow this
+   * convention.
+   */
   pll_unode_t * vroot;
 } pll_utree_t;
 
@@ -658,6 +908,50 @@ extern "C"
 
   /* functions in partition.c */
 
+  /**
+   * Creates a partition. The checklist for creating a new partition is:
+   *
+   * @param tips The number of tips of the tree. In phylogenetic terms, this is
+   * the number of taxa.
+   *
+   * @param clv_buffers This is the number of CLVs that will be required to
+   * compute the tree. Practically, this is the number of edges, or the number
+   * of inner nodes. The number of rate categories is automatically accounted
+   * for, so no need to add it.
+   *
+   * @param states The number of states that the model has, I.E. the type of
+   * sequence data that is being worked on. Practically, this is:
+   * - 2 for binary data,
+   * - 4 for nucleotide data,
+   * - 20 for amino acid data,
+   * - 61 for codon data,
+   *
+   * @param sites How long is the alignment. Note that, this is going to be the
+   * post compressed length of the sequence, i.e. the length that is from
+   * pll_compress_site_patterns, or the number of unique site patterns.
+   *
+   * @param rate_matrices The number of rate matrices that are allocated. In a
+   * simple and standard model, this is 1. In the case of a mixture model, this
+   * should be equal to the number of classes of models. Note that having rate
+   * categories still only requires 1 rate matrix, as those are computed based
+   * on the single rate matrix.
+   *
+   * @param prob_matrices  The number of probability matrices need for
+   * calculation. This will almost always be equal to the number of branches in
+   * the tree. **IMPORTANT**: the number of rate categories is automatically
+   * accounted for.
+   *
+   * @param rate_cats Number of different rate categories to consider.
+   *
+   * @param scale_buffers Number of scaling buffers to allocate. Practically,
+   * this is equal to the number of inner nodes in the tree.
+   *
+   * @param attributes Please see the Attributes module.
+   *
+   * @return The created partition.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
                                                    unsigned int clv_buffers,
                                                    unsigned int states,
@@ -668,8 +962,32 @@ extern "C"
                                                    unsigned int scale_buffers,
                                                    unsigned int attributes);
 
+  /** 
+   * Destroys the partition, deallocating the memory.
+   *
+   * @param partition The partition to be destroyed.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT void pll_partition_destroy(pll_partition_t *partition);
 
+  /**
+   * Set the tip states based on an MSA for a partition. This will initialize
+   * the tip CLVs based on the MSA that is passed.
+   *
+   * @param partition Partition to set the tips for.
+   *
+   * @param tip_index Index of the tip to be initialized.
+   *
+   * @param map A predefined map from `char` to `int` The choices are:
+   * - pll_map_bin: For binary data with an alphabet of 0 and 1.
+   * - pll_map_nt: For nucleotide data.
+   * - pll_map_aa: For amino acid data.
+   *
+   * @param sequence The sequence associated with that tip.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT int pll_set_tip_states(pll_partition_t *  partition,
                                     unsigned int       tip_index,
                                     const pll_state_t *map,
@@ -680,6 +998,16 @@ extern "C"
                                  const double *   clv,
                                  int              padding);
 
+  /**
+   * Sets the pattern weights for a partition.
+   *
+   * @param partition The partition to set the weights on.
+   *
+   * @param pattern_weights The array of weights. While you could set this
+   * yourself, it should typically be the output of `pll_compress_site_patterns`
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT void pll_set_pattern_weights(pll_partition_t *   partition,
                                           const unsigned int *pattern_weights);
 
@@ -770,10 +1098,45 @@ extern "C"
 
   PLL_EXPORT unsigned int pll_subst_rate_count(unsigned int states);
 
+  /**
+   * Sets a substitution matrix for a partition.
+   *
+   * @param partition Partition for which the substitution matrix will be set.
+   *
+   * @param params_index Index of which rate matrix to use.
+   *
+   * @param params An array of substitution parameters. If we wanted to use the
+   * following matrix
+   * ```
+   * *  a  b  c
+   * a  *  d  e
+   * b  d  *  f
+   * c  e  f  *
+   * ```
+   * Then we would use the array
+   * ```
+   * double subst_params[] = {a, b, c, d, e, f}
+   * ```
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT void pll_set_subst_params(pll_partition_t *partition,
                                        unsigned int     params_index,
                                        const double *   params);
 
+  /**
+   * Sets the based distribution frequencies for a partition. This needs to be
+   * done before a likelihood can be computed.
+   *
+   * @param partition The partition for which the frequencies will be set for.
+   *
+   * @param params_index The model index to set the frequencies for.
+   *
+   * @params frequencies The array of frequencies which will be used to compute
+   * a likelihood.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT void pll_set_frequencies(pll_partition_t *partition,
                                       unsigned int     params_index,
                                       const double *   frequencies);
@@ -787,6 +1150,23 @@ extern "C"
   PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
                                   unsigned int     params_index);
 
+  /**
+   * Update the probability matrices of partition. 
+   *
+   * @param params_index Index of the parameters to use, as in rate categories.
+   *
+   * @param matrix_indices An array of indices into the `prob_matrices` in
+   * `pll_partition_t`. These are the locations in which the matrices will be
+   * stored. The best way to get these is via `pll_utree_create_operations`.
+   *
+   * @param branch_lengths A list of branch lengths which will be used for
+   * computing the probability matrices. The best way to get these is via
+   * `pll_utree_create_operations`.
+   *
+   * @param count The number of matrices to update.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT int pll_update_prob_matrices(pll_partition_t *   partition,
                                           const unsigned int *params_index,
                                           const unsigned int *matrix_indices,
@@ -808,6 +1188,26 @@ extern "C"
 
   /* functions in likelihood.c */
 
+  /**
+   * Computes the likelihood given a single CLV. This is intended to be the CLV
+   * of the "root" of the tree.
+   *
+   * @param partition The partition to compute the likelihood for.
+   *
+   * @param clv_index Index of the root CLV.
+   *
+   * @param scaler_index Index of the scalar buffer for the root CLV.
+   *
+   * @param freqs_indices An array of indices which indicate the per site base
+   * distribution of states.
+   *
+   * @param[out] persite_lnl Buffer to store the individual site likelihoods.
+   * Optional. Set to `nullptr` to ignore.
+   *
+   * @return The total likelihood of the partition.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT double
   pll_compute_root_loglikelihood(pll_partition_t *   partition,
                                  unsigned int        clv_index,
@@ -815,6 +1215,33 @@ extern "C"
                                  const unsigned int *freqs_indices,
                                  double *            persite_lnl);
 
+  /**
+   * Computes the likelihood of an edge. It does this by "rootinng" the tree at
+   * parent, and computing the likelihood from there.
+   *
+   * @param partition The partition to compute the likelihood for.
+   *
+   * @param parent_clv_index Index of the parent CLV
+   *
+   * @param parent_scaler_index Index of the parent CLV scaler.
+   *
+   * @param child_clv_index Index of the child CLV
+   *
+   * @param child_parent_scaler_index Index of the child CLV scaler.
+   *
+   * @param matrix_index Index of the probability matrix between `parent` and
+   * `child`.
+   *
+   * @param freqs_indices An array of indices which indicate the per site base
+   * distribution of states.
+   *
+   * @param[out] persite_lnl Buffer to store the individual site likelihoods.
+   * Optional. Set to `nullptr` to ignore.
+   *
+   * @return The total likelihood of the partition.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT double
   pll_compute_edge_loglikelihood(pll_partition_t *   partition,
                                  unsigned int        parent_clv_index,
@@ -849,6 +1276,21 @@ extern "C"
 
   /* functions in clvs.c */
 
+  /**
+   * Computes the CLVS for all the trees in the nodes specified in the
+   * `operations` array.
+   *
+   * @param[in,out] partition The partition for which the operations will be
+   * computed.
+   *
+   * @param operations The list of operations. Typically this will be generated
+   * using pll_utree_create_operations
+   *
+   * @param count Number of elements in the operations buffer.
+   *
+   * @ingroup pll_partition_t
+   * @ingroup pll_operation_t
+   */ 
   PLL_EXPORT void pll_update_clvs(pll_partition_t *      partition,
                                   const pll_operation_t *operations,
                                   unsigned int           count);
@@ -860,6 +1302,24 @@ extern "C"
 
   /* functions in derivatives.c */
 
+  /**
+   * Function which computes a "sumtable". This sumtable can be used to compute
+   * the derivative of the likelihood with respect to a branch length.
+   *
+   * @param partition The partition for which the sumtable will be computed.
+   *
+   * @param parent_clv_index Parent CLV index of the edge in question.
+   *
+   * @param child_clv_index Child CLV index of the edge in question.
+   *
+   * @param params_indices A list of the indices for each rate category present
+   * in the partition.
+   *
+   * @param[out] sumtable Buffer for the resulting sumtable. Should be allocated
+   * with `rates * states_padded` elements.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT int pll_update_sumtable(pll_partition_t *   partition,
                                      unsigned int        parent_clv_index,
                                      unsigned int        child_clv_index,
@@ -868,6 +1328,29 @@ extern "C"
                                      const unsigned int *params_indices,
                                      double *            sumtable);
 
+  /**
+   * Computes the first and second derivative with respect to a specific branch
+   * length.
+   *
+   * @param partition Partition that the derivative is computed for.
+   *
+   * @param parent_scaler_index Scaler index for the parent of the edge in
+   * question.
+   *
+   * @param child_scaler_index Scaler index for the child of the edge in
+   * question.
+   *
+   * @param branch_length Value at which to evaluate the derivative at.
+   *
+   * @param sumtable Sumbtable from `pll_udate_sumtable`.
+   *
+   * @param[out] d_f Buffer to store the first derivative. Only a single double.
+   *
+   * @param[out] dd_f Buffer to store the second derivative. Only a single
+   * double.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT int
   pll_compute_likelihood_derivatives(pll_partition_t *   partition,
                                      int                 parent_scaler_index,
@@ -1113,7 +1596,6 @@ extern "C"
                                            double *            bclv_buffer,
                                            unsigned int        inv,
                                            unsigned int        attrib);
-
   PLL_EXPORT int
   pll_core_update_sumtable_ti_4x4(unsigned int         sites,
                                   unsigned int         rate_cats,
@@ -2444,6 +2926,22 @@ extern "C"
 
   /* functions in compress.c */
 
+  /**
+   * Compresses the MSA in place. This is to say, the buffer `sequence` is
+   * changed to store the compressed alignment.
+   *
+   * @param[in,out] sequence The alignment to compress, should be the one from a
+   * `pll_msa_t`.
+   *
+   * @param map The sequence encoding map. For example, `pll_map_nt`.
+   *
+   * @param count The number of sequences, also the number of tips, also the
+   * number of taxa.
+   *
+   * @param[out] length The length of the compressed alignment.
+   *
+   * @ingroup pll_partition_t
+   */
   PLL_EXPORT unsigned int *pll_compress_site_patterns(char **sequence,
                                                       const pll_state_t *map,
                                                       int                count,

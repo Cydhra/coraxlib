@@ -62,6 +62,21 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
                                        double                max_value,
                                        double                tolerance);
 
+/** @defgroup treeinfo_opt_algs Treeinfo Optimization Algorithms
+ * These functions more or less have the same arguments and optimize their
+ * particular parameter. They all use similar algorithms.
+ *
+ * @param bfgs_factor: A value that should be greater than 0. An opaque quantity,
+ * but typical values are 1e12 for inaccurate but fast searches, or 1e1 for a
+ * more complete and slow search.
+ *
+ * @param tolerance This controls the pgtol threshold. If the largest entry of
+ * the projected gradient is larger than this value, optimization will stop.
+ *
+ * @ingroup pllmod_treeinfo_t
+ *
+ * @{
+ */
 PLL_EXPORT
 double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
@@ -113,9 +128,36 @@ double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
                                       int                max_iters,
                                       int                opt_method,
                                       int                radius);
+/** @} */
 
 /* search */
 
+/**
+ * Perform an SPR round
+ *
+ * @param brlen_opt_method The optimization method to use when optimizing branch
+ * lengths. Options are:
+ * - PLLMOD_OPT_BLO_NEWTON_FAST: Standard.
+ * - PLLMOD_OPT_BLO_NEWTON_SAFE: Adds a per branch likelihood check.
+ * - PLLMOD_OPT_BLO_NEWTON_FALLBACK: Starts fast, but fallsback to safe.
+ * - PLLMOD_OPT_BLO_NEWTON_GLOBAL: Newton, but with addtional searches to find
+ *   more optima
+ * - PLLMOD_OPT_BLO_NEWTON_OLDFAST
+ * - PLLMOD_OPT_BLO_NEWTON_OLDSAFE
+ *
+ * @param smoothings: Number of iterations for branch length optimization. Will
+ * operate if negative. I don't know what happens in this case.
+ *
+ * @epsilon: Likelihood threshold to terminate the optimization. Also known as
+ * the tolerance.
+ *
+ * @param[out] cutoff_info A struct that contains some cutoff information. It
+ * seems to be a return parameter.
+ *
+ * @subtree_cutoff Used to calculate a likelihood cutoff. A larger value means
+ * that lestt trees are cutoff.
+ *
+ */
 PLL_EXPORT double pllmod_algo_spr_round(pllmod_treeinfo_t *treeinfo,
                                         unsigned int       radius_min,
                                         unsigned int       radius_max,
