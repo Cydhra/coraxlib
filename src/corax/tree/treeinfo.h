@@ -109,8 +109,8 @@ typedef struct
  * @param brlen_linkage Which branch length linking method to use. Options are:
  * - `PLLMOD_COMMON_BRLEN_UNLINKED`: The branch lengths for one partition have
  *   no relation to any other partition.
- * - `PLLMOD_COMMON_BRLEN_SCALED`: The branch lengths are scaled per partition.
- * - `PLLMOD_COMMON_BRLEN_LINKED`: The branch lengths are all equal for all
+ * - `PLL_BRLEN_SCALED`: The branch lengths are scaled per partition.
+ * - `PLL_BRLEN_LINKED`: The branch lengths are all equal for all
  *   partitions.
  *
  * @ingroup pllmod_treeinfo_t
