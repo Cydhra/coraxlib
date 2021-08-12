@@ -27,7 +27,7 @@
 
 #define FLOAT_PRECISION 4
 
-#define MODENAME(x) x == PLL_GAMMA_RATES_MEAN ? "MEAN" : "MEDIAN"
+#define MODENAME(x) x == CORAX_GAMMA_RATES_MEAN ? "MEAN" : "MEDIAN"
 
 static double titv = 2.5;
 
@@ -36,7 +36,7 @@ static unsigned int n_cat_gamma[NUM_CATS] = {1, 2, 4, 8, 16};
 unsigned int        params_indices[16]    = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-static int modes[N_MODES] = {PLL_GAMMA_RATES_MEDIAN, PLL_GAMMA_RATES_MEAN};
+static int modes[N_MODES] = {CORAX_GAMMA_RATES_MEDIAN, CORAX_GAMMA_RATES_MEAN};
 
 int main(int argc, char *argv[])
 {
@@ -44,36 +44,36 @@ int main(int argc, char *argv[])
   double           lk_scores[NUM_ALPHAS * NUM_CATS * N_MODES];
   unsigned int     n_sites = 20;
   unsigned int     n_tips  = 5;
-  pll_operation_t *operations;
+  corax_operation_t *operations;
 
-  operations = (pll_operation_t *)malloc(4 * sizeof(pll_operation_t));
+  operations = (corax_operation_t *)malloc(4 * sizeof(corax_operation_t));
 
   operations[0].parent_clv_index    = 5;
   operations[0].child1_clv_index    = 0;
   operations[0].child2_clv_index    = 1;
   operations[0].child1_matrix_index = 1;
   operations[0].child2_matrix_index = 1;
-  operations[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[0].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[1].parent_clv_index    = 6;
   operations[1].child1_clv_index    = 5;
   operations[1].child2_clv_index    = 2;
   operations[1].child1_matrix_index = 0;
   operations[1].child2_matrix_index = 1;
-  operations[1].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[1].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[2].parent_clv_index    = 7;
   operations[2].child1_clv_index    = 3;
   operations[2].child2_clv_index    = 4;
   operations[2].child1_matrix_index = 1;
   operations[2].child2_matrix_index = 1;
-  operations[2].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[2].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   /* check attributes */
   unsigned int attributes = get_attributes(argc, argv);
@@ -81,11 +81,11 @@ int main(int argc, char *argv[])
   /* test illegal alpha value */
   double  invalid_alpha = 0;
   double *rate_cats     = (double *)malloc(4 * sizeof(double));
-  if (pll_compute_gamma_cats(invalid_alpha, 4, rate_cats, PLL_GAMMA_RATES_MEAN)
-      == PLL_FAILURE)
+  if (corax_compute_gamma_cats(invalid_alpha, 4, rate_cats, CORAX_GAMMA_RATES_MEAN)
+      == CORAX_FAILURE)
   {
-    if (pll_errno != PLL_ERROR_INVALID_PARAM)
-      printf("Error is %d instead of %d\n", pll_errno, PLL_ERROR_INVALID_PARAM);
+    if (corax_errno != CORAX_ERROR_INVALID_PARAM)
+      printf("Error is %d instead of %d\n", corax_errno, CORAX_ERROR_INVALID_PARAM);
   }
   else
   {
@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
 
   for (k = 0; k < NUM_CATS; ++k)
   {
-    pll_partition_t *partition;
-    partition = pll_partition_create(n_tips,      /* numer of tips */
+    corax_partition_t *partition;
+    partition = corax_partition_create(n_tips,      /* numer of tips */
                                      4,           /* clv buffers */
                                      N_STATES_NT, /* number of states */
                                      n_sites,     /* sequence length */
@@ -118,14 +118,14 @@ int main(int argc, char *argv[])
     unsigned int matrix_indices[4] = {0, 1, 2, 3};
     double       subst_params[6]   = {1, titv, 1, 1, titv, 1};
 
-    pll_set_frequencies(partition, 0, frequencies);
-    pll_set_subst_params(partition, 0, subst_params);
+    corax_set_frequencies(partition, 0, frequencies);
+    corax_set_subst_params(partition, 0, subst_params);
 
-    pll_set_tip_states(partition, 0, pll_map_nt, "WAACTCGCTA--ATTCTAAT");
-    pll_set_tip_states(partition, 1, pll_map_nt, "CACCATGCTA--ATTGTCTT");
-    pll_set_tip_states(partition, 2, pll_map_nt, "AG-C-TGCAG--CTTCTACT");
-    pll_set_tip_states(partition, 3, pll_map_nt, "CGTCTTGCAA--AT-C-AAG");
-    pll_set_tip_states(partition, 4, pll_map_nt, "CGACTTGCCA--AT-T-AAG");
+    corax_set_tip_states(partition, 0, corax_map_nt, "WAACTCGCTA--ATTCTAAT");
+    corax_set_tip_states(partition, 1, corax_map_nt, "CACCATGCTA--ATTGTCTT");
+    corax_set_tip_states(partition, 2, corax_map_nt, "AG-C-TGCAG--CTTCTACT");
+    corax_set_tip_states(partition, 3, corax_map_nt, "CGTCTTGCAA--AT-C-AAG");
+    corax_set_tip_states(partition, 4, corax_map_nt, "CGACTTGCCA--AT-T-AAG");
 
     for (i = 0; i < NUM_ALPHAS; ++i)
     {
@@ -138,9 +138,9 @@ int main(int argc, char *argv[])
 
         double *rate_cats = (double *)malloc(n_cat_gamma[k] * sizeof(double));
 
-        if (pll_compute_gamma_cats(
+        if (corax_compute_gamma_cats(
                 alpha[i], n_cat_gamma[k], rate_cats, modes[m])
-            == PLL_FAILURE)
+            == CORAX_FAILURE)
         {
           printf("Fail computing the gamma rates\n");
           continue;
@@ -148,41 +148,41 @@ int main(int argc, char *argv[])
 
         for (j = 0; j < n_cat_gamma[k]; j++) { printf("%f ", rate_cats[j]); }
         printf("\n");
-        pll_set_category_rates(partition, rate_cats);
+        corax_set_category_rates(partition, rate_cats);
         free(rate_cats);
 
-        pll_update_prob_matrices(
+        corax_update_prob_matrices(
             partition, params_indices, matrix_indices, branch_lengths, 4);
-        pll_update_clvs(partition, operations, 3);
+        corax_update_clvs(partition, operations, 3);
 
         for (j = 0; j < 4; ++j)
         {
           printf("[%d] P-matrix for branch length %f\n", i, branch_lengths[j]);
-          pll_show_pmatrix(partition, j, FLOAT_PRECISION);
+          corax_show_pmatrix(partition, j, FLOAT_PRECISION);
           printf("\n");
         }
 
         /* show CLVs */
         printf("[%d] CLV 5: ", i);
-        pll_show_clv(partition, 5, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+        corax_show_clv(partition, 5, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
         printf("[%d] CLV 6: ", i);
-        pll_show_clv(partition, 6, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+        corax_show_clv(partition, 6, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
         printf("[%d] CLV 7: ", i);
-        pll_show_clv(partition, 7, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+        corax_show_clv(partition, 7, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
 
         lk_scores[k * NUM_ALPHAS * N_MODES + i * N_MODES + m] =
-            pll_compute_edge_loglikelihood(partition,
+            corax_compute_edge_loglikelihood(partition,
                                            6,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            7,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            0,
                                            params_indices,
                                            NULL);
       }
     }
 
-    pll_partition_destroy(partition);
+    corax_partition_destroy(partition);
   }
 
   printf("\n");

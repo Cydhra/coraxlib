@@ -1,7 +1,7 @@
 #include "utree_io.h"
 
-static char *newick_utree_recurse(const pll_unode_t *root,
-                                  char *(*cb_serialize)(const pll_unode_t *),
+static char *newick_utree_recurse(const corax_unode_t *root,
+                                  char *(*cb_serialize)(const corax_unode_t *),
                                   int level)
 {
   char *newick;
@@ -21,8 +21,8 @@ static char *newick_utree_recurse(const pll_unode_t *root,
   }
   else
   {
-    const pll_unode_t *start      = root->next;
-    const pll_unode_t *snode      = start;
+    const corax_unode_t *start      = root->next;
+    const corax_unode_t *snode      = start;
     char *             cur_newick = NULL;
     do
     {
@@ -30,7 +30,7 @@ static char *newick_utree_recurse(const pll_unode_t *root,
           newick_utree_recurse(snode->back, cb_serialize, level + 1);
       if (subtree == NULL)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         return NULL;
       }
 
@@ -70,7 +70,7 @@ static char *newick_utree_recurse(const pll_unode_t *root,
 
   if (size_alloced < 0)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "memory allocation during newick export failed");
     return NULL;
   }
@@ -78,10 +78,10 @@ static char *newick_utree_recurse(const pll_unode_t *root,
   return newick;
 }
 
-char *utree_export_newick(const pll_unode_t *root,
+char *utree_export_newick(const corax_unode_t *root,
                           int                export_rooted,
                           double             root_brlen,
-                          char *(*cb_serialize)(const pll_unode_t *))
+                          char *(*cb_serialize)(const corax_unode_t *))
 {
   char *newick;
   char *subtree1;
@@ -123,7 +123,7 @@ char *utree_export_newick(const pll_unode_t *root,
 
   if (size_alloced < 0)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "memory allocation during newick export failed");
     return NULL;
   }
@@ -133,14 +133,14 @@ char *utree_export_newick(const pll_unode_t *root,
   return (newick);
 }
 
-PLL_EXPORT char *
-pll_utree_export_newick(const pll_unode_t *root,
-                        char *(*cb_serialize)(const pll_unode_t *))
+CORAX_EXPORT char *
+corax_utree_export_newick(const corax_unode_t *root,
+                        char *(*cb_serialize)(const corax_unode_t *))
 {
   return utree_export_newick(root, 0, 0, cb_serialize);
 }
 
-PLL_EXPORT char *pll_utree_export_newick_rooted(const pll_unode_t *root,
+CORAX_EXPORT char *corax_utree_export_newick_rooted(const corax_unode_t *root,
                                                 double             root_brlen)
 {
   return utree_export_newick(root, 1, root_brlen, NULL);

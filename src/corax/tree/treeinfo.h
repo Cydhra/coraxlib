@@ -32,14 +32,14 @@ typedef struct treeinfo
   int     brlen_linkage;
   double *linked_branch_lengths;
 
-  pll_unode_t *root;
-  pll_utree_t *tree;
+  corax_unode_t *root;
+  corax_utree_t *tree;
 
   unsigned int  subnode_count;
-  pll_unode_t **subnodes;
+  corax_unode_t **subnodes;
 
   // partitions & partition-specific stuff
-  pll_partition_t **partitions;
+  corax_partition_t **partitions;
   double *          alphas;
   int *gamma_mode; /* discrete GAMMA rates computation mode (mean, median) */
   unsigned int **param_indices;
@@ -52,7 +52,7 @@ typedef struct treeinfo
   // partition that have been initialized (useful for parallelization)
   unsigned int      init_partition_count;
   unsigned int *    init_partition_idx;
-  pll_partition_t **init_partitions;
+  corax_partition_t **init_partitions;
 
   /* tree topology constraint */
   unsigned int *constraint;
@@ -65,9 +65,9 @@ typedef struct treeinfo
   char **pmatrix_valid;
 
   // buffers
-  pll_unode_t **   travbuffer;
+  corax_unode_t **   travbuffer;
   unsigned int *   matrix_indices;
-  pll_operation_t *operations;
+  corax_operation_t *operations;
 
   // partition on which all operations should be performed
   int active_partition;
@@ -83,12 +83,12 @@ typedef struct treeinfo
 typedef struct
 {
   unsigned int  node_count;
-  pll_unode_t **nodes;
+  corax_unode_t **nodes;
 
   unsigned int  partition_count;
   unsigned int *partition_indices;
 
-  pll_utree_t *tree;
+  corax_utree_t *tree;
   double **    probs;
 } pllmod_ancestral_t;
 
@@ -109,18 +109,18 @@ typedef struct
  * @param brlen_linkage Which branch length linking method to use. Options are:
  * - `PLLMOD_COMMON_BRLEN_UNLINKED`: The branch lengths for one partition have
  *   no relation to any other partition.
- * - `PLL_BRLEN_SCALED`: The branch lengths are scaled per partition.
- * - `PLL_BRLEN_LINKED`: The branch lengths are all equal for all
+ * - `CORAX_BRLEN_SCALED`: The branch lengths are scaled per partition.
+ * - `CORAX_BRLEN_LINKED`: The branch lengths are all equal for all
  *   partitions.
  *
  * @ingroup pllmod_treeinfo_t
  */
-PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
+CORAX_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(corax_unode_t *root,
                                                      unsigned int tips,
                                                      unsigned int partitions,
                                                      int brlen_linkage);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_parallel_context(
     pllmod_treeinfo_t *treeinfo,
     void *             parallel_context,
@@ -152,8 +152,8 @@ int pllmod_treeinfo_set_parallel_context(
  *
  * @param gamma_mode Controls the gamma rate discretization methods. Options
  * are:
- * - PLL_GAMMA_RATES_MEAN
- * - PLL_GAMMA_RATES_MEDIAN
+ * - CORAX_GAMMA_RATES_MEAN
+ * - CORAX_GAMMA_RATES_MEDIAN
  *
  * @param alpha Initial alpha to use in the model.
  *
@@ -168,119 +168,119 @@ int pllmod_treeinfo_set_parallel_context(
  *
  * @ingroup pllmod_treeinfo_t
  */
-PLL_EXPORT int
+CORAX_EXPORT int
 pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
                                unsigned int        partition_index,
-                               pll_partition_t *   partition,
+                               corax_partition_t *   partition,
                                int                 params_to_optimize,
                                int                 gamma_mode,
                                double              alpha,
                                const unsigned int *param_indices,
                                const int *         subst_matrix_symmetries);
 
-PLL_EXPORT int pllmod_treeinfo_set_active_partition(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_set_active_partition(pllmod_treeinfo_t *treeinfo,
                                                     int partition_index);
 
-PLL_EXPORT int pllmod_treeinfo_set_root(pllmod_treeinfo_t *treeinfo,
-                                        pll_unode_t *      root);
+CORAX_EXPORT int pllmod_treeinfo_set_root(pllmod_treeinfo_t *treeinfo,
+                                        corax_unode_t *      root);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_get_branch_length_all(const pllmod_treeinfo_t *treeinfo,
-                                          const pll_unode_t *      edge,
+                                          const corax_unode_t *      edge,
                                           double *                 lengths);
 
-PLL_EXPORT int pllmod_treeinfo_set_branch_length(pllmod_treeinfo_t *treeinfo,
-                                                 pll_unode_t *      edge,
+CORAX_EXPORT int pllmod_treeinfo_set_branch_length(pllmod_treeinfo_t *treeinfo,
+                                                 corax_unode_t *      edge,
                                                  double             length);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_branch_length_all(pllmod_treeinfo_t *treeinfo,
-                                          pll_unode_t *      edge,
+                                          corax_unode_t *      edge,
                                           const double *     lengths);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_branch_length_partition(pllmod_treeinfo_t *treeinfo,
-                                                pll_unode_t *      edge,
+                                                corax_unode_t *      edge,
                                                 int    partition_index,
                                                 double length);
 
-PLL_EXPORT
-pll_utree_t *
+CORAX_EXPORT
+corax_utree_t *
 pllmod_treeinfo_get_partition_tree(const pllmod_treeinfo_t *treeinfo,
                                    int                      partition_index);
 
-PLL_EXPORT
+CORAX_EXPORT
 pllmod_treeinfo_topology_t *
 pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
                              pllmod_treeinfo_topology_t *topol);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_topology(pllmod_treeinfo_t *               treeinfo,
                                  const pllmod_treeinfo_topology_t *topol);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_destroy_topology(pllmod_treeinfo_topology_t *topol);
 
-PLL_EXPORT int pllmod_treeinfo_destroy_partition(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_destroy_partition(pllmod_treeinfo_t *treeinfo,
                                                  unsigned int partition_index);
 
-PLL_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo);
+CORAX_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo);
 
-PLL_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
                                                     int update_all);
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_all(pllmod_treeinfo_t *treeinfo);
+CORAX_EXPORT void pllmod_treeinfo_invalidate_all(pllmod_treeinfo_t *treeinfo);
 
-PLL_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
-                                             pll_unode_t **     travbuffer,
+CORAX_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
+                                             corax_unode_t **     travbuffer,
                                              unsigned int travbuffer_size);
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_pmatrix(pllmod_treeinfo_t *treeinfo,
-                                                   const pll_unode_t *edge);
+CORAX_EXPORT void pllmod_treeinfo_invalidate_pmatrix(pllmod_treeinfo_t *treeinfo,
+                                                   const corax_unode_t *edge);
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_clv(pllmod_treeinfo_t *treeinfo,
-                                               const pll_unode_t *edge);
+CORAX_EXPORT void pllmod_treeinfo_invalidate_clv(pllmod_treeinfo_t *treeinfo,
+                                               const corax_unode_t *edge);
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
                                                 int                incremental);
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh_flex(
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh_flex(
     pllmod_treeinfo_t *treeinfo, int incremental, int update_pmatrices);
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh_persite(
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh_persite(
     pllmod_treeinfo_t *treeinfo, int incremental, double **persite_lnl);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_scale_branches_all(pllmod_treeinfo_t *treeinfo,
                                        double             scaler);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_scale_branches_partition(pllmod_treeinfo_t *treeinfo,
                                              unsigned int       partition_idx,
                                              double             scaler);
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_normalize_brlen_scalers(pllmod_treeinfo_t *treeinfo);
 
-PLL_EXPORT int pllmod_treeinfo_set_tree(pllmod_treeinfo_t *treeinfo,
-                                        pll_utree_t *      tree);
+CORAX_EXPORT int pllmod_treeinfo_set_tree(pllmod_treeinfo_t *treeinfo,
+                                        corax_utree_t *      tree);
 
-PLL_EXPORT int
+CORAX_EXPORT int
 pllmod_treeinfo_set_constraint_clvmap(pllmod_treeinfo_t *treeinfo,
                                       const int *        clv_index_map);
 
-PLL_EXPORT int
+CORAX_EXPORT int
 pllmod_treeinfo_set_constraint_tree(pllmod_treeinfo_t *treeinfo,
-                                    const pll_utree_t *cons_tree);
+                                    const corax_utree_t *cons_tree);
 
-PLL_EXPORT int pllmod_treeinfo_check_constraint(pllmod_treeinfo_t *treeinfo,
-                                                pll_unode_t *      subtree,
-                                                pll_unode_t *regraft_edge);
+CORAX_EXPORT int pllmod_treeinfo_check_constraint(pllmod_treeinfo_t *treeinfo,
+                                                corax_unode_t *      subtree,
+                                                corax_unode_t *regraft_edge);
 
-PLL_EXPORT pllmod_ancestral_t *
+CORAX_EXPORT pllmod_ancestral_t *
            pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo);
 
-PLL_EXPORT void
+CORAX_EXPORT void
 pllmod_treeinfo_destroy_ancestral(pllmod_ancestral_t *ancestral);
 
 #endif /* CORAX_TREE_TREEINFO_H_ */

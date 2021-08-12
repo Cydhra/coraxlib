@@ -39,8 +39,8 @@ static void utree_derivative_func(void *  parameters,
                                   double *df,
                                   double *ddf)
 {
-  pll_newton_tree_params_t *params = (pll_newton_tree_params_t *)parameters;
-  pll_compute_likelihood_derivatives(params->partition,
+  corax_newton_tree_params_t *params = (corax_newton_tree_params_t *)parameters;
+  corax_compute_likelihood_derivatives(params->partition,
                                      params->tree->scaler_index,
                                      params->tree->back->scaler_index,
                                      proposal,
@@ -54,13 +54,13 @@ static void utree_derivative_func(void *  parameters,
 /* GENERIC */
 /******************************************************************************/
 
-static void update_clvs_and_scalers(pll_partition_t **partitions,
+static void update_clvs_and_scalers(corax_partition_t **partitions,
                                     size_t            partition_count,
-                                    pll_unode_t *     parent,
-                                    pll_unode_t *     right_child,
-                                    pll_unode_t *     left_child)
+                                    corax_unode_t *     parent,
+                                    corax_unode_t *     right_child,
+                                    corax_unode_t *     left_child)
 {
-  pll_operation_t op;
+  corax_operation_t op;
   size_t          p;
 
   /* set CLV */
@@ -78,17 +78,17 @@ static void update_clvs_and_scalers(pll_partition_t **partitions,
     /* skip remote partitions */
     if (!partitions[p]) continue;
 
-    pll_update_clvs(partitions[p], &op, 1);
+    corax_update_clvs(partitions[p], &op, 1);
   }
 }
 
 /* if keep_update, P-matrices are updated after each branch length opt */
-static int recomp_iterative(pll_newton_tree_params_t *params,
+static int recomp_iterative(corax_newton_tree_params_t *params,
                             int                       radius,
                             double *                  loglikelihood_score,
                             int                       keep_update)
 {
-  pll_unode_t *tr_p, *tr_q, *tr_z;
+  corax_unode_t *tr_p, *tr_q, *tr_z;
   double       xmin, /* min branch length */
       xguess,        /* initial guess */
       xmax,          /* max branch length */
@@ -105,7 +105,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
   assert(d_equals(tr_p->length, tr_p->back->length));
 
   /* prepare sumtable for current branch */
-  pll_update_sumtable(params->partition,
+  corax_update_sumtable(params->partition,
                       tr_p->clv_index,
                       tr_p->back->clv_index,
                       tr_p->scaler_index,
@@ -128,7 +128,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
                                     params,
                                     utree_derivative_func);
 
-  if (pll_errno) return PLL_FAILURE;
+  if (corax_errno) return CORAX_FAILURE;
 
   /* update branch length in the tree structure */
   tr_p->length = tr_p->back->length = xres;
@@ -136,7 +136,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
   if (keep_update && fabs(tr_p->length - xorig) > 1e-10)
   {
     /* update pmatrix for the new branch length */
-    pll_update_prob_matrices(params->partition,
+    corax_update_prob_matrices(params->partition,
                              params->params_indices,
                              &(tr_p->pmatrix_index),
                              &xres,
@@ -146,7 +146,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
     {
       /* check and compare likelihood */
       double eval_loglikelihood =
-          pll_compute_edge_loglikelihood(params->partition,
+          corax_compute_edge_loglikelihood(params->partition,
                                          tr_p->clv_index,
                                          tr_p->scaler_index,
                                          tr_p->back->clv_index,
@@ -170,7 +170,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
         /* reset branch length to original value */
         tr_p->length = tr_p->back->length = xorig;
 
-        pll_update_prob_matrices(params->partition,
+        corax_update_prob_matrices(params->partition,
                                  params->params_indices,
                                  &(tr_p->pmatrix_index),
                                  &tr_p->length,
@@ -194,12 +194,12 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
     update_clvs_and_scalers(&params->partition, 1, tr_q, tr_p, tr_z);
 
     /* eval */
-    pll_newton_tree_params_t params_cpy;
-    memcpy(&params_cpy, params, sizeof(pll_newton_tree_params_t));
+    corax_newton_tree_params_t params_cpy;
+    memcpy(&params_cpy, params, sizeof(corax_newton_tree_params_t));
     params_cpy.tree = tr_q->back;
     if (!recomp_iterative(
             &params_cpy, radius - 1, loglikelihood_score, keep_update))
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
 
     /* update children 'Z'
      * CLV at P is recomputed with children P->back and Q->back
@@ -211,7 +211,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
     params_cpy.tree = tr_z->back;
     if (!recomp_iterative(
             &params_cpy, radius - 1, loglikelihood_score, keep_update))
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
 
     /* reset to initial state
      * CLV at P is recomputed with children Q->back and Z->back
@@ -220,7 +220,7 @@ static int recomp_iterative(pll_newton_tree_params_t *params,
     update_clvs_and_scalers(&params->partition, 1, tr_p, tr_z, tr_q);
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 
 } /* recomp_iterative */
 
@@ -229,10 +229,10 @@ static void utree_derivative_func_multi(void *  parameters,
                                         double *df,
                                         double *ddf)
 {
-  pll_newton_tree_params_multi_t *params =
-      (pll_newton_tree_params_multi_t *)parameters;
+  corax_newton_tree_params_multi_t *params =
+      (corax_newton_tree_params_multi_t *)parameters;
   size_t p;
-  int    unlinked = (params->brlen_linkage == PLL_BRLEN_UNLINKED) ? 1 : 0;
+  int    unlinked = (params->brlen_linkage == CORAX_BRLEN_UNLINKED) ? 1 : 0;
 
   if (unlinked)
   {
@@ -250,7 +250,7 @@ static void utree_derivative_func_multi(void *  parameters,
     double p_df, p_ddf;
     double s       = params->brlen_scalers ? params->brlen_scalers[p] : 1.;
     double p_brlen = s * (unlinked ? proposal[p] : proposal[0]);
-    pll_compute_likelihood_derivatives(params->partitions[p],
+    corax_compute_likelihood_derivatives(params->partitions[p],
                                        params->tree->scaler_index,
                                        params->tree->back->scaler_index,
                                        p_brlen,
@@ -279,29 +279,29 @@ static void utree_derivative_func_multi(void *  parameters,
       params->parallel_reduce_cb(params->parallel_context,
                                  df,
                                  params->partition_count,
-                                 PLL_REDUCE_SUM);
+                                 CORAX_REDUCE_SUM);
       params->parallel_reduce_cb(params->parallel_context,
                                  ddf,
                                  params->partition_count,
-                                 PLL_REDUCE_SUM);
+                                 CORAX_REDUCE_SUM);
     }
     else
     {
       double d[2] = {*df, *ddf};
       params->parallel_reduce_cb(
-          params->parallel_context, d, 2, PLL_REDUCE_SUM);
+          params->parallel_context, d, 2, CORAX_REDUCE_SUM);
       *df  = d[0];
       *ddf = d[1];
     }
   }
 }
 
-static void update_prob_matrices(pll_partition_t **partitions,
+static void update_prob_matrices(corax_partition_t **partitions,
                                  size_t            partition_count,
                                  unsigned int **   params_indices,
                                  double **         brlen_buffers,
                                  double *          brlen_scalers,
-                                 pll_unode_t *     node)
+                                 corax_unode_t *     node)
 {
   unsigned int p;
   unsigned int m = node->pmatrix_index;
@@ -315,35 +315,35 @@ static void update_prob_matrices(pll_partition_t **partitions,
 
     if (brlen_scalers) p_brlen *= brlen_scalers[p];
 
-    pll_update_prob_matrices(partitions[p], params_indices[p], &m, &p_brlen, 1);
+    corax_update_prob_matrices(partitions[p], params_indices[p], &m, &p_brlen, 1);
   }
 }
 
-static int allocate_buffers(pll_newton_tree_params_multi_t *params)
+static int allocate_buffers(corax_newton_tree_params_multi_t *params)
 {
   if (!params->precomp_buffers)
   {
     params->precomp_buffers =
         (double **)calloc(params->partition_count, sizeof(double *));
-    if (!params->precomp_buffers) return PLL_FAILURE;
+    if (!params->precomp_buffers) return CORAX_FAILURE;
 
     for (unsigned int p = 0; p < params->partition_count; ++p)
     {
-      const pll_partition_t *partition = params->partitions[p];
+      const corax_partition_t *partition = params->partitions[p];
 
       /* skip remote partitions */
       if (!partition) continue;
 
       unsigned int sites_alloc = partition->sites;
-      if (partition->attributes & PLL_ATTRIB_AB_FLAG)
+      if (partition->attributes & CORAX_ATTRIB_AB_FLAG)
         sites_alloc += partition->states;
 
-      params->precomp_buffers[p] = (double *)pll_aligned_alloc(
+      params->precomp_buffers[p] = (double *)corax_aligned_alloc(
           sites_alloc * partition->rate_cats * partition->states_padded
               * sizeof(double),
           partition->alignment);
 
-      if (!params->precomp_buffers[p]) return PLL_FAILURE;
+      if (!params->precomp_buffers[p]) return CORAX_FAILURE;
     }
   }
 
@@ -352,7 +352,7 @@ static int allocate_buffers(pll_newton_tree_params_multi_t *params)
   {
     params->brlen_buffers =
         (double **)calloc(params->partition_count, sizeof(double *));
-    if (!params->brlen_buffers) return PLL_FAILURE;
+    if (!params->brlen_buffers) return CORAX_FAILURE;
 
     // not very elegant...
     unsigned int branch_count = 0;
@@ -366,14 +366,14 @@ static int allocate_buffers(pll_newton_tree_params_multi_t *params)
     }
     assert(branch_count);
 
-    assert(params->brlen_linkage != PLL_BRLEN_UNLINKED);
+    assert(params->brlen_linkage != CORAX_BRLEN_UNLINKED);
 
     params->brlen_buffers[0] = (double *)calloc(branch_count, sizeof(double));
 
-    if (!params->brlen_buffers[0]) return PLL_FAILURE;
+    if (!params->brlen_buffers[0]) return CORAX_FAILURE;
   }
 
-  if (params->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (params->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     params->converged = (int *)calloc(params->partition_count, sizeof(int));
     params->brlen_orig =
@@ -381,10 +381,10 @@ static int allocate_buffers(pll_newton_tree_params_multi_t *params)
     params->brlen_guess =
         (double *)calloc(params->partition_count, sizeof(double));
     if (!params->converged || !params->brlen_orig || !params->brlen_guess)
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -405,7 +405,7 @@ static int allocate_buffers(pll_newton_tree_params_multi_t *params)
  * @return                     the likelihood score at the given edge
  */
 static double compute_edge_loglikelihood_multi(
-    pll_partition_t **   partitions,
+    corax_partition_t **   partitions,
     size_t               partition_count,
     unsigned int         parent_clv_index,
     int                  parent_scaler_index,
@@ -425,7 +425,7 @@ static double compute_edge_loglikelihood_multi(
     /* skip remote partitions */
     if (!partitions[p]) continue;
 
-    total_loglh += pll_compute_edge_loglikelihood(partitions[p],
+    total_loglh += corax_compute_edge_loglikelihood(partitions[p],
                                                   parent_clv_index,
                                                   parent_scaler_index,
                                                   child_clv_index,
@@ -436,18 +436,18 @@ static double compute_edge_loglikelihood_multi(
   }
 
   if (parallel_reduce_cb)
-    parallel_reduce_cb(parallel_context, &total_loglh, 1, PLL_REDUCE_SUM);
+    parallel_reduce_cb(parallel_context, &total_loglh, 1, CORAX_REDUCE_SUM);
 
   return total_loglh;
 }
 
 /* if keep_update, P-matrices are updated after each branch length opt */
-static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
+static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
                                   int                             radius,
                                   double *loglikelihood_score,
                                   int     keep_update)
 {
-  pll_unode_t *tr_p, *tr_q, *tr_z;
+  corax_unode_t *tr_p, *tr_q, *tr_z;
   unsigned int p;
   int          retval;
   unsigned int xnum;
@@ -462,7 +462,7 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
 
   unsigned int pmatrix_index;
 
-  int unlinked     = params->brlen_linkage == PLL_BRLEN_UNLINKED ? 1 : 0;
+  int unlinked     = params->brlen_linkage == CORAX_BRLEN_UNLINKED ? 1 : 0;
   int apply_change = 0;
 
   tr_p          = params->tree;
@@ -488,7 +488,7 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
     if (xnum > 1 && params->parallel_reduce_cb)
     {
       params->parallel_reduce_cb(
-          params->parallel_context, xguess, xnum, PLL_REDUCE_MAX);
+          params->parallel_context, xguess, xnum, CORAX_REDUCE_MAX);
     }
 
     memcpy(xorig, xguess, xnum * sizeof(double));
@@ -513,7 +513,7 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
     /* skip remote partitions */
     if (!params->partitions[p]) continue;
 
-    pll_update_sumtable(params->partitions[p],
+    corax_update_sumtable(params->partitions[p],
                         tr_p->clv_index,
                         tr_p->back->clv_index,
                         tr_p->scaler_index,
@@ -546,24 +546,24 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
   case PLLMOD_OPT_BLO_NEWTON_FALLBACK:
     // TODO: adapt for unlinked branches
     params->brlen_buffers[0][tr_p->pmatrix_index] = tr_p->length;
-    retval                                        = PLL_FAILURE;
+    retval                                        = CORAX_FAILURE;
     assert(0);
     break;
     break;
   case PLLMOD_OPT_BLO_NEWTON_GLOBAL:
   {
-    retval = PLL_FAILURE;
+    retval = CORAX_FAILURE;
     assert(0);
   }
   break;
   default:
-    retval = PLL_FAILURE;
+    retval = CORAX_FAILURE;
     assert(0);
   }
 
   if (!retval)
   {
-    if (pll_errno == PLLMOD_OPT_ERROR_NEWTON_LIMIT)
+    if (corax_errno == PLLMOD_OPT_ERROR_NEWTON_LIMIT)
     {
       /* NR optimization failed to converge:
        * - if LH improvement check is enabled, it is safe to keep
@@ -589,10 +589,10 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
         if (!check_loglh_improvement(params->opt_method)) xguess[p] = xorig[p];
       }
 
-      pll_reset_error();
+      corax_reset_error();
     }
     else
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
   }
 
   /* update branch length in the buffer and/or in the tree structure */
@@ -728,12 +728,12 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
         params->partitions, params->partition_count, tr_q, tr_p, tr_z);
 
     /* eval */
-    pll_newton_tree_params_multi_t params_cpy;
-    memcpy(&params_cpy, params, sizeof(pll_newton_tree_params_multi_t));
+    corax_newton_tree_params_multi_t params_cpy;
+    memcpy(&params_cpy, params, sizeof(corax_newton_tree_params_multi_t));
     params_cpy.tree = tr_q->back;
     if (!recomp_iterative_multi(
             &params_cpy, radius - 1, loglikelihood_score, keep_update))
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
 
     /* update children 'Z'
      * CLV at P is recomputed with children P->back and Q->back
@@ -746,7 +746,7 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
     params_cpy.tree = tr_z->back;
     if (!recomp_iterative_multi(
             &params_cpy, radius - 1, loglikelihood_score, keep_update))
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
 
     /* reset to initial state
      * CLV at P is recomputed with children Q->back and Z->back
@@ -756,7 +756,7 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
         params->partitions, params->partition_count, tr_p, tr_z, tr_q);
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 
 } /* recomp_iterative */
 
@@ -795,9 +795,9 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t *params,
  * @return                   the likelihood score after optimizing branch
  * lengths
  */
-PLL_EXPORT double
-pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
-                                         pll_unode_t *       tree,
+CORAX_EXPORT double
+pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
+                                         corax_unode_t *       tree,
                                          const unsigned int *params_indices,
                                          double              branch_length_min,
                                          double              branch_length_max,
@@ -816,17 +816,17 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
    *    (2) Pmatrix indices must be **unique** for each branch
    */
 
-  pll_reset_error();
+  corax_reset_error();
 
   if (radius < PLLMOD_OPT_BRLEN_OPTIMIZE_ALL)
   {
-    pll_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
+    corax_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
                   "Invalid radius for branch length optimization");
-    return (double)PLL_FAILURE;
+    return (double)CORAX_FAILURE;
   }
 
   /* get the initial likelihood score */
-  loglikelihood = pll_compute_edge_loglikelihood(partition,
+  loglikelihood = corax_compute_edge_loglikelihood(partition,
                                                  tree->back->clv_index,
                                                  tree->back->scaler_index,
                                                  tree->clv_index,
@@ -836,7 +836,7 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
                                                  NULL);
 
   /* set parameters for N-R optimization */
-  pll_newton_tree_params_t params;
+  corax_newton_tree_params_t params;
   params.partition      = partition;
   params.tree           = tree;
   params.params_indices = params_indices;
@@ -852,18 +852,18 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
 
   /* allocate the sumtable */
   sites_alloc = partition->sites;
-  if (partition->attributes & PLL_ATTRIB_AB_FLAG)
+  if (partition->attributes & CORAX_ATTRIB_AB_FLAG)
     sites_alloc += partition->states;
 
-  if ((params.sumtable = (double *)pll_aligned_alloc(
+  if ((params.sumtable = (double *)corax_aligned_alloc(
            sites_alloc * partition->rate_cats * partition->states_padded
                * sizeof(double),
            partition->alignment))
       == NULL)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for bl opt variables");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   iters = (unsigned int)smoothings;
@@ -875,7 +875,7 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
     params.tree = tree;
     if (!recomp_iterative(&params, radius, &new_loglikelihood, keep_update))
     {
-      loglikelihood = PLL_FAILURE;
+      loglikelihood = CORAX_FAILURE;
       break;
     }
 
@@ -886,12 +886,12 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
       if (!recomp_iterative(
               &params, radius - 1, &new_loglikelihood, keep_update))
       {
-        loglikelihood = PLL_FAILURE;
+        loglikelihood = CORAX_FAILURE;
         break;
       }
     }
     /* compute likelihood after optimization */
-    new_loglikelihood = pll_compute_edge_loglikelihood(partition,
+    new_loglikelihood = corax_compute_edge_loglikelihood(partition,
                                                        tree->back->clv_index,
                                                        tree->back->scaler_index,
                                                        tree->clv_index,
@@ -922,7 +922,7 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
         assert(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14);
       else
       {
-        pll_set_error(
+        corax_set_error(
             PLLMOD_OPT_ERROR_NEWTON_WORSE_LK,
             "Local BL opt converged to a worse likelihood score by %f units",
             new_loglikelihood - loglikelihood);
@@ -933,7 +933,7 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
   }
 
   /* deallocate sumtable */
-  pll_aligned_free(params.sumtable);
+  corax_aligned_free(params.sumtable);
 
   return -1 * loglikelihood;
 } /* pllmod_opt_optimize_branch_lengths_local */
@@ -956,9 +956,9 @@ pllmod_opt_optimize_branch_lengths_local(pll_partition_t *   partition,
  * @return                   the likelihood score after optimizing branch
  * lengths
  */
-PLL_EXPORT double
-pllmod_opt_optimize_branch_lengths_iterative(pll_partition_t *   partition,
-                                             pll_unode_t *       tree,
+CORAX_EXPORT double
+pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
+                                             corax_unode_t *       tree,
                                              const unsigned int *params_indices,
                                              double branch_length_min,
                                              double branch_length_max,
@@ -983,18 +983,18 @@ pllmod_opt_optimize_branch_lengths_iterative(pll_partition_t *   partition,
 /**
  * Compute the likelihood function derivatives for a specific branch length
  *
- * @param parameters  `pll_optimize_options_t` structure
+ * @param parameters  `corax_optimize_options_t` structure
  * @param proposal    the branch length where the derivatives are computed
  * @param df[out]         first derivative of the likelihood function
  * @param ddf[out]        second derivative of the likelihood function
  */
-PLL_EXPORT void pllmod_opt_derivative_func(void *  parameters,
+CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
                                            double  proposal,
                                            double *df,
                                            double *ddf)
 {
-  pll_optimize_options_t *params = (pll_optimize_options_t *)parameters;
-  pll_compute_likelihood_derivatives(
+  corax_optimize_options_t *params = (corax_optimize_options_t *)parameters;
+  corax_compute_likelihood_derivatives(
       params->lk_params.partition,
       params->lk_params.where.unrooted_t.parent_scaler_index,
       params->lk_params.where.unrooted_t.child_scaler_index,
@@ -1038,10 +1038,10 @@ PLL_EXPORT void pllmod_opt_derivative_func(void *  parameters,
  * @return                   the likelihood score after optimizing branch
  * lengths
  */
-PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
-    pll_partition_t **partitions,
+CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
+    corax_partition_t **partitions,
     size_t            partition_count,
-    pll_unode_t *     tree,
+    corax_unode_t *     tree,
     unsigned int **   params_indices,
     double **         precomp_buffers,
     double **         brlen_buffers,
@@ -1060,9 +1060,9 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
   unsigned int iters;
   double       loglikelihood = 0.0, new_loglikelihood;
   size_t       p;
-  double       result = (double)PLL_FAILURE;
+  double       result = (double)CORAX_FAILURE;
 
-  pll_reset_error();
+  corax_reset_error();
 
   /**
    * preconditions:
@@ -1073,17 +1073,17 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
   if (opt_method == PLLMOD_OPT_BLO_NEWTON_FALLBACK
       || opt_method == PLLMOD_OPT_BLO_NEWTON_GLOBAL)
   {
-    pll_set_error(PLL_ERROR_NOT_IMPLEMENTED,
+    corax_set_error(CORAX_ERROR_NOT_IMPLEMENTED,
                   "Optimization method not implemented: "
                   "NEWTON_FALLBACK, NEWTON_GLOBAL");
-    return (double)PLL_FAILURE;
+    return (double)CORAX_FAILURE;
   }
 
   if (radius < PLLMOD_OPT_BRLEN_OPTIMIZE_ALL)
   {
-    pll_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
+    corax_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
                   "Invalid radius for branch length optimization");
-    return (double)PLL_FAILURE;
+    return (double)CORAX_FAILURE;
   }
 
   /* make sure p-matrices are up-to-date */
@@ -1115,7 +1115,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
       loglikelihood);
 
   /* set parameters for N-R optimization */
-  pll_newton_tree_params_multi_t params;
+  corax_newton_tree_params_multi_t params;
   params.partitions      = partitions;
   params.partition_count = partition_count;
   params.tree            = tree;
@@ -1131,7 +1131,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
   params.brlen_scalers   = brlen_scalers;
   params.opt_method      = opt_method;
   params.brlen_linkage =
-      (partition_count > 1) ? brlen_linkage : PLL_BRLEN_LINKED;
+      (partition_count > 1) ? brlen_linkage : CORAX_BRLEN_LINKED;
   params.max_newton_iters = 30;
 
   params.brlen_orig  = NULL;
@@ -1144,7 +1144,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
   /* allocate the sumtable if needed */
   if (!allocate_buffers(&params))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for brlen opt variables");
     goto cleanup;
   }
@@ -1159,7 +1159,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
     if (!recomp_iterative_multi(
             &params, radius, &new_loglikelihood, keep_update))
     {
-      assert(pll_errno);
+      assert(corax_errno);
       goto cleanup;
     }
 
@@ -1170,7 +1170,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
       if (!recomp_iterative_multi(
               &params, radius - 1, &new_loglikelihood, keep_update))
       {
-        assert(pll_errno);
+        assert(corax_errno);
         goto cleanup;
       }
     }
@@ -1217,7 +1217,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
       }
       else
       {
-        pll_set_error(
+        corax_set_error(
             PLLMOD_OPT_ERROR_NEWTON_WORSE_LK,
             "BL opt converged to a worse likelihood score by %.15f units",
             new_loglikelihood - loglikelihood);
@@ -1237,7 +1237,7 @@ cleanup:
     {
       if (params.precomp_buffers[p]) free(params.precomp_buffers[p]);
     }
-    pll_aligned_free(params.precomp_buffers);
+    corax_aligned_free(params.precomp_buffers);
   }
 
   if (params.brlen_buffers && !brlen_buffers)

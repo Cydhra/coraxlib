@@ -21,7 +21,7 @@
 
 #include "corax/corax.h"
 
-static int sumtable_tipinner(pll_partition_t *   partition,
+static int sumtable_tipinner(corax_partition_t *   partition,
                              unsigned int        parent_clv_index,
                              unsigned int        child_clv_index,
                              const unsigned int *parent_scaler,
@@ -47,8 +47,8 @@ static int sumtable_tipinner(pll_partition_t *   partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* ascertaiment bias correction */
@@ -75,7 +75,7 @@ static int sumtable_tipinner(pll_partition_t *   partition,
     scaler          = parent_scaler;
   }
 
-  retval = pll_core_update_sumtable_ti(partition->states,
+  retval = corax_core_update_sumtable_ti(partition->states,
                                        sites,
                                        partition->rate_cats,
                                        partition->clv[inner_clv_index],
@@ -96,7 +96,7 @@ static int sumtable_tipinner(pll_partition_t *   partition,
   return retval;
 }
 
-static int sumtable_innerinner(pll_partition_t *   partition,
+static int sumtable_innerinner(corax_partition_t *   partition,
                                unsigned int        parent_clv_index,
                                unsigned int        child_clv_index,
                                const unsigned int *parent_scaler,
@@ -119,8 +119,8 @@ static int sumtable_innerinner(pll_partition_t *   partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* ascertaiment bias correction */
@@ -134,7 +134,7 @@ static int sumtable_innerinner(pll_partition_t *   partition,
     freqs[i]         = partition->frequencies[params_indices[i]];
   }
 
-  retval = pll_core_update_sumtable_ii(partition->states,
+  retval = corax_core_update_sumtable_ii(partition->states,
                                        sites,
                                        partition->rate_cats,
                                        partition->clv[parent_clv_index],
@@ -154,7 +154,7 @@ static int sumtable_innerinner(pll_partition_t *   partition,
   return retval;
 }
 
-static int sumtable_repeats(pll_partition_t *   partition,
+static int sumtable_repeats(corax_partition_t *   partition,
                             unsigned int        parent_clv_index,
                             unsigned int        child_clv_index,
                             const unsigned int *parent_scaler,
@@ -177,8 +177,8 @@ static int sumtable_repeats(pll_partition_t *   partition,
     if (inv_eigenvecs) free(inv_eigenvecs);
     if (freqs) free(freqs);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* ascertaiment bias correction */
@@ -193,14 +193,14 @@ static int sumtable_repeats(pll_partition_t *   partition,
   }
 
   const unsigned int *parent_site_id =
-      pll_get_site_id(partition, parent_clv_index);
+      corax_get_site_id(partition, parent_clv_index);
   const unsigned int *child_site_id =
-      pll_get_site_id(partition, child_clv_index);
+      corax_get_site_id(partition, child_clv_index);
 
-  unsigned int parent_ids = pll_get_sites_number(partition, parent_clv_index);
-  unsigned int child_ids  = pll_get_sites_number(partition, child_clv_index);
+  unsigned int parent_ids = corax_get_sites_number(partition, parent_clv_index);
+  unsigned int child_ids  = corax_get_sites_number(partition, child_clv_index);
   unsigned int inv        = parent_ids > child_ids;
-  retval                  = pll_core_update_sumtable_repeats(
+  retval                  = corax_core_update_sumtable_repeats(
       partition->states,
       sites,
       inv ? child_ids : parent_ids,
@@ -230,7 +230,7 @@ static int sumtable_repeats(pll_partition_t *   partition,
  * partial derivatives on the branch lengths.
  * sumtable: [output] must be allocated for storing (rates x states_padded)
  * values */
-PLL_EXPORT int pll_update_sumtable(pll_partition_t *   partition,
+CORAX_EXPORT int corax_update_sumtable(corax_partition_t *   partition,
                                    unsigned int        parent_clv_index,
                                    unsigned int        child_clv_index,
                                    int                 parent_scaler_index,
@@ -244,17 +244,17 @@ PLL_EXPORT int pll_update_sumtable(pll_partition_t *   partition,
   unsigned int *child_scaler;
 
   /* get parent scaler */
-  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
-  if (child_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (child_scaler_index == CORAX_SCALE_BUFFER_NONE)
     child_scaler = NULL;
   else
     child_scaler = partition->scale_buffer[child_scaler_index];
 
-  if (pll_repeats_enabled(partition)
+  if (corax_repeats_enabled(partition)
       && (partition->repeats->pernode_ids[parent_clv_index]
           || partition->repeats->pernode_ids[child_clv_index]))
   {
@@ -266,15 +266,15 @@ PLL_EXPORT int pll_update_sumtable(pll_partition_t *   partition,
                               params_indices,
                               sumtable);
   }
-  else if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  else if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
     if ((parent_clv_index < partition->tips)
         && (child_clv_index < partition->tips))
     {
       /* tip-tip case */
-      pll_set_error(PLL_ERROR_INVALID_PARAM,
-                    "pll_update_sumtable() was called for the tip-tip case!");
-      retval = PLL_FAILURE;
+      corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "corax_update_sumtable() was called for the tip-tip case!");
+      retval = CORAX_FAILURE;
     }
     else if ((parent_clv_index < partition->tips)
              || (child_clv_index < partition->tips))
@@ -322,8 +322,8 @@ PLL_EXPORT int pll_update_sumtable(pll_partition_t *   partition,
  * d_f:  [output] first derivative
  * dd_f: [output] second derivative
  */
-PLL_EXPORT int
-pll_compute_likelihood_derivatives(pll_partition_t *   partition,
+CORAX_EXPORT int
+corax_compute_likelihood_derivatives(corax_partition_t *   partition,
                                    int                 parent_scaler_index,
                                    int                 child_scaler_index,
                                    double              branch_length,
@@ -346,8 +346,8 @@ pll_compute_likelihood_derivatives(pll_partition_t *   partition,
     if (prop_invar) free(prop_invar);
     if (freqs) free(freqs);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < rate_cats; ++i)
@@ -358,30 +358,30 @@ pll_compute_likelihood_derivatives(pll_partition_t *   partition,
   }
 
   /* get parent scaler */
-  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
-  if (child_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (child_scaler_index == CORAX_SCALE_BUFFER_NONE)
     child_scaler = NULL;
   else
     child_scaler = partition->scale_buffer[child_scaler_index];
 
   unsigned int parent_ids = partition->sites;
   unsigned int child_ids  = partition->sites;
-  if (pll_repeats_enabled(partition))
+  if (corax_repeats_enabled(partition))
   {
-    parent_ids = parent_scaler_index != PLL_SCALE_BUFFER_NONE
+    parent_ids = parent_scaler_index != CORAX_SCALE_BUFFER_NONE
                      ? partition->repeats->perscale_ids[parent_scaler_index]
                      : 0;
     parent_ids = parent_ids ? parent_ids : partition->sites;
-    child_ids  = child_scaler_index != PLL_SCALE_BUFFER_NONE
+    child_ids  = child_scaler_index != CORAX_SCALE_BUFFER_NONE
                      ? partition->repeats->perscale_ids[child_scaler_index]
                      : 0;
     child_ids  = child_ids ? child_ids : partition->sites;
   }
-  int retval = pll_core_likelihood_derivatives(partition->states,
+  int retval = corax_core_likelihood_derivatives(partition->states,
                                                partition->sites,
                                                partition->rate_cats,
                                                partition->rate_weights,

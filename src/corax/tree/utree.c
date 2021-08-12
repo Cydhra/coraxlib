@@ -22,7 +22,7 @@
 #include "utree.h"
 #include "utree_traverse.h"
 
-static void dealloc_data(pll_unode_t *node, void (*cb_destroy)(void *))
+static void dealloc_data(corax_unode_t *node, void (*cb_destroy)(void *))
 {
   if (node->data)
   {
@@ -30,7 +30,7 @@ static void dealloc_data(pll_unode_t *node, void (*cb_destroy)(void *))
   }
 }
 
-static void dealloc_graph_recursive(pll_unode_t *node,
+static void dealloc_graph_recursive(corax_unode_t *node,
                                     void (*cb_destroy)(void *),
                                     int level)
 {
@@ -46,12 +46,12 @@ static void dealloc_graph_recursive(pll_unode_t *node,
     /* inner node */
     if (node->label) free(node->label);
 
-    pll_unode_t *snode = node;
+    corax_unode_t *snode = node;
     do
     {
       if (node != snode || level == 0)
         dealloc_graph_recursive(snode->back, cb_destroy, level + 1);
-      pll_unode_t *next = snode->next;
+      corax_unode_t *next = snode->next;
       dealloc_data(snode, cb_destroy);
       free(snode);
       snode = next;
@@ -59,15 +59,15 @@ static void dealloc_graph_recursive(pll_unode_t *node,
   }
 }
 
-PLL_EXPORT void pll_utree_create_operations(pll_unode_t *const *trav_buffer,
+CORAX_EXPORT void corax_utree_create_operations(corax_unode_t *const *trav_buffer,
                                             unsigned int     trav_buffer_size,
                                             double *         branches,
                                             unsigned int *   pmatrix_indices,
-                                            pll_operation_t *ops,
+                                            corax_operation_t *ops,
                                             unsigned int *   matrix_count,
                                             unsigned int *   ops_count)
 {
-  const pll_unode_t *node;
+  const corax_unode_t *node;
   unsigned int       i;
 
   *ops_count = 0;
@@ -109,8 +109,8 @@ PLL_EXPORT void pll_utree_create_operations(pll_unode_t *const *trav_buffer,
 }
 
 /* a callback function for checking tree integrity */
-static int cb_check_integrity_mult(const pll_utree_t *tree,
-                                   const pll_unode_t *node)
+static int cb_check_integrity_mult(const corax_utree_t *tree,
+                                   const corax_unode_t *node)
 {
   unsigned int clv_index     = node->clv_index;
   int          scaler_index  = node->scaler_index;
@@ -122,77 +122,77 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
   /* edge attributes */
   if (node->back->length != length)
   {
-    pll_set_error(0,
+    corax_set_error(0,
                   "Inconsistent branch lengths: %lf != %lf",
                   length,
                   node->back->length);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (node->back->pmatrix_index != pmatrix_index)
   {
-    pll_set_error(0,
+    corax_set_error(0,
                   "Inconsistent pmatrix indices: %u != %u",
                   pmatrix_index,
                   node->back->pmatrix_index);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (node->next)
   {
     /* node attributes */
-    pll_unode_t *snode = node->next;
+    corax_unode_t *snode = node->next;
     do
     {
       subnodes++;
 
       if (tree->binary && subnodes > 3)
       {
-        pll_set_error(0,
+        corax_set_error(0,
                       "Multifurcation found in a binary tree "
                       "at node with clv_index = %u",
                       snode->clv_index);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
 
       if (subnodes > tree->tip_count)
       {
-        pll_set_error(0,
+        corax_set_error(0,
                       "Multifurcation exceeding the tree size found "
                       "at node with clv_index = %u",
                       snode->clv_index);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
 
       if (snode->clv_index != clv_index)
       {
-        pll_set_error(0,
+        corax_set_error(0,
                       "Inconsistent CLV indices: %u != %u",
                       clv_index,
                       snode->clv_index);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       if (snode->scaler_index != scaler_index)
       {
-        pll_set_error(0,
+        corax_set_error(0,
                       "Inconsistent scaler indices: %d != %d",
                       scaler_index,
                       snode->scaler_index);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       if (snode->label != label)
       {
-        pll_set_error(
+        corax_set_error(
             0, "Inconsistent node labels: '%s' != '%s'", label, snode->label);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       if (!snode->next)
       {
-        pll_set_error(0,
+        corax_set_error(0,
                       "Open roundabout (node->next is NULL) "
                       "at node with clv_index = %u",
                       snode->clv_index);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       snode = snode->next;
     } while (snode != node);
@@ -201,16 +201,16 @@ static int cb_check_integrity_mult(const pll_utree_t *tree,
   return 1;
 }
 
-PLL_EXPORT int pll_utree_check_integrity(const pll_utree_t *tree)
+CORAX_EXPORT int corax_utree_check_integrity(const corax_utree_t *tree)
 {
-  return pll_utree_every_const(tree, cb_check_integrity_mult);
+  return corax_utree_every_const(tree, cb_check_integrity_mult);
 }
 
 /* TODO: Memory allocation checks were not implemented in this function!!! */
-static pll_unode_t *clone_node(const pll_unode_t *node)
+static corax_unode_t *clone_node(const corax_unode_t *node)
 {
-  pll_unode_t *new_node = (pll_unode_t *)malloc(sizeof(pll_unode_t));
-  memcpy(new_node, node, sizeof(pll_unode_t));
+  corax_unode_t *new_node = (corax_unode_t *)malloc(sizeof(corax_unode_t));
+  memcpy(new_node, node, sizeof(corax_unode_t));
 
   if (node->label)
   {
@@ -220,12 +220,12 @@ static pll_unode_t *clone_node(const pll_unode_t *node)
 
   if (node->next)
   {
-    pll_unode_t *snode     = node->next;
-    pll_unode_t *new_snode = new_node;
+    corax_unode_t *snode     = node->next;
+    corax_unode_t *new_snode = new_node;
     do
     {
-      new_snode->next = (pll_unode_t *)malloc(sizeof(pll_unode_t));
-      memcpy(new_snode->next, snode, sizeof(pll_unode_t));
+      new_snode->next = (corax_unode_t *)malloc(sizeof(corax_unode_t));
+      memcpy(new_snode->next, snode, sizeof(corax_unode_t));
       new_snode->next->label = new_node->label;
       snode                  = snode->next;
       new_snode              = new_snode->next;
@@ -237,9 +237,9 @@ static pll_unode_t *clone_node(const pll_unode_t *node)
   return new_node;
 }
 
-static void utree_recurse_clone(pll_unode_t *new_root, const pll_unode_t *root)
+static void utree_recurse_clone(corax_unode_t *new_root, const corax_unode_t *root)
 {
-  const pll_unode_t *node = root->back;
+  const corax_unode_t *node = root->back;
   if (node)
   {
     new_root->back       = clone_node(node);
@@ -247,8 +247,8 @@ static void utree_recurse_clone(pll_unode_t *new_root, const pll_unode_t *root)
 
     if (node->next)
     {
-      pll_unode_t *snode     = node->next;
-      pll_unode_t *new_snode = new_root->back->next;
+      corax_unode_t *snode     = node->next;
+      corax_unode_t *new_snode = new_root->back->next;
       do
       {
         utree_recurse_clone(new_snode, snode);
@@ -259,12 +259,12 @@ static void utree_recurse_clone(pll_unode_t *new_root, const pll_unode_t *root)
   }
 }
 
-PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root)
+CORAX_EXPORT corax_unode_t *corax_utree_graph_clone(const corax_unode_t *root)
 {
-  pll_unode_t *new_root = clone_node(root);
+  corax_unode_t *new_root = clone_node(root);
 
-  const pll_unode_t *snode     = root;
-  pll_unode_t *      new_snode = new_root;
+  const corax_unode_t *snode     = root;
+  corax_unode_t *      new_snode = new_root;
   do
   {
     utree_recurse_clone(new_snode, snode);
@@ -275,20 +275,20 @@ PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root)
   return new_root;
 }
 
-PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *tree)
+CORAX_EXPORT corax_utree_t *corax_utree_clone(const corax_utree_t *tree)
 {
   /* choose the last inner node as the starting point of the clone. It does not
     really matter which node to choose, but since the newick parser places the
     root node at the end of the list, we use the same notation here */
-  pll_unode_t *root = pll_utree_graph_clone(tree->vroot);
+  corax_unode_t *root = corax_utree_graph_clone(tree->vroot);
 
   if (tree->binary)
-    return pll_utree_wraptree(root, tree->tip_count);
+    return corax_utree_wraptree(root, tree->tip_count);
   else
-    return pll_utree_wraptree_multi(root, tree->tip_count, tree->inner_count);
+    return corax_utree_wraptree_multi(root, tree->tip_count, tree->inner_count);
 }
 
-PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
+CORAX_EXPORT void corax_utree_graph_destroy(corax_unode_t *root,
                                         void (*cb_destroy)(void *))
 {
   if (!root) return;
@@ -296,7 +296,7 @@ PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
   dealloc_graph_recursive(root, cb_destroy, 0);
 }
 
-PLL_EXPORT void pll_utree_destroy(pll_utree_t *tree, void (*cb_destroy)(void *))
+CORAX_EXPORT void corax_utree_destroy(corax_utree_t *tree, void (*cb_destroy)(void *))
 {
   unsigned int i;
 
@@ -311,16 +311,16 @@ PLL_EXPORT void pll_utree_destroy(pll_utree_t *tree, void (*cb_destroy)(void *))
   /* deallocate inner nodes */
   for (i = tree->tip_count; i < tree->tip_count + tree->inner_count; ++i)
   {
-    pll_unode_t *first = tree->nodes[i];
+    corax_unode_t *first = tree->nodes[i];
 
     assert(first);
 
     if (first->label) free(first->label);
 
-    pll_unode_t *node = first;
+    corax_unode_t *node = first;
     do
     {
-      pll_unode_t *next = node->next;
+      corax_unode_t *next = node->next;
       dealloc_data(node, cb_destroy);
       free(node);
       node = next;
@@ -332,7 +332,7 @@ PLL_EXPORT void pll_utree_destroy(pll_utree_t *tree, void (*cb_destroy)(void *))
   free(tree);
 }
 
-static void recursive_assign_indices(pll_unode_t * node,
+static void recursive_assign_indices(corax_unode_t * node,
                                      unsigned int *tip_clv_index,
                                      unsigned int *inner_clv_index,
                                      int *         inner_scaler_index,
@@ -345,13 +345,13 @@ static void recursive_assign_indices(pll_unode_t * node,
     node->node_index    = *tip_clv_index;
     node->clv_index     = *tip_clv_index;
     node->pmatrix_index = *tip_clv_index;
-    node->scaler_index  = PLL_SCALE_BUFFER_NONE;
+    node->scaler_index  = CORAX_SCALE_BUFFER_NONE;
     *tip_clv_index      = *tip_clv_index + 1;
   }
   else
   {
     /* inner node */
-    pll_unode_t *snode = level ? node->next : node;
+    corax_unode_t *snode = level ? node->next : node;
     do
     {
       recursive_assign_indices(snode->back,
@@ -381,7 +381,7 @@ static void recursive_assign_indices(pll_unode_t * node,
   }
 }
 
-PLL_EXPORT void pll_utree_reset_template_indices(pll_unode_t *root,
+CORAX_EXPORT void corax_utree_reset_template_indices(corax_unode_t *root,
                                                  unsigned int tip_count)
 {
   unsigned int tip_clv_index      = 0;
@@ -399,8 +399,8 @@ PLL_EXPORT void pll_utree_reset_template_indices(pll_unode_t *root,
                            0);
 }
 
-static void fill_nodes_recursive(pll_unode_t * node,
-                                 pll_unode_t **array,
+static void fill_nodes_recursive(corax_unode_t * node,
+                                 corax_unode_t **array,
                                  unsigned int  array_size,
                                  unsigned int *tip_index,
                                  unsigned int *inner_index,
@@ -416,7 +416,7 @@ static void fill_nodes_recursive(pll_unode_t * node,
   else
   {
     /* inner node */
-    pll_unode_t *snode = level ? node->next : node;
+    corax_unode_t *snode = level ? node->next : node;
     do
     {
       fill_nodes_recursive(
@@ -432,7 +432,7 @@ static void fill_nodes_recursive(pll_unode_t * node,
   array[index] = node;
 }
 
-static unsigned int utree_count_nodes_recursive(pll_unode_t * node,
+static unsigned int utree_count_nodes_recursive(corax_unode_t * node,
                                                 unsigned int *tip_count,
                                                 unsigned int *inner_count,
                                                 unsigned int  level)
@@ -446,7 +446,7 @@ static unsigned int utree_count_nodes_recursive(pll_unode_t * node,
   {
     unsigned int count = 0;
 
-    pll_unode_t *snode = level ? node->next : node;
+    corax_unode_t *snode = level ? node->next : node;
     do
     {
       count += utree_count_nodes_recursive(
@@ -460,7 +460,7 @@ static unsigned int utree_count_nodes_recursive(pll_unode_t * node,
   }
 }
 
-static unsigned int utree_count_nodes(pll_unode_t * root,
+static unsigned int utree_count_nodes(corax_unode_t * root,
                                       unsigned int *tip_count,
                                       unsigned int *inner_count)
 {
@@ -481,35 +481,35 @@ static unsigned int utree_count_nodes(pll_unode_t * root,
   return count;
 }
 
-PLL_EXPORT int pll_unode_is_rooted(const pll_unode_t *root)
+CORAX_EXPORT int corax_unode_is_rooted(const corax_unode_t *root)
 {
   return (root->next && root->next->next == root) ? 1 : 0;
 }
 
-PLL_EXPORT int pll_utree_is_rooted(const pll_utree_t *tree)
+CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree)
 {
-  return pll_unode_is_rooted(tree->vroot);
+  return corax_unode_is_rooted(tree->vroot);
 }
 
-static pll_utree_t *utree_wraptree(pll_unode_t *root,
+static corax_utree_t *utree_wraptree(corax_unode_t *root,
                                    unsigned int tip_count,
                                    unsigned int inner_count,
                                    int          binary)
 {
   unsigned int node_count;
 
-  pll_utree_t *tree = (pll_utree_t *)malloc(sizeof(pll_utree_t));
+  corax_utree_t *tree = (corax_utree_t *)malloc(sizeof(corax_utree_t));
   if (!tree)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   if (tip_count < 3 && tip_count != 0)
   {
-    pll_set_error(
-        PLL_ERROR_INVALID_PARAM, "Invalid tip_count value (%u).", tip_count);
-    return PLL_FAILURE;
+    corax_set_error(
+        CORAX_ERROR_INVALID_PARAM, "Invalid tip_count value (%u).", tip_count);
+    return CORAX_FAILURE;
   }
 
   if (!root->next) root = root->back;
@@ -521,9 +521,9 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
       node_count = utree_count_nodes(root, &tip_count, &inner_count);
       if (inner_count != tip_count - 2)
       {
-        pll_set_error(PLL_ERROR_INVALID_PARAM,
+        corax_set_error(CORAX_ERROR_INVALID_PARAM,
                       "Input tree is not strictly bifurcating.");
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
     }
     else
@@ -542,16 +542,16 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
 
   if (!tip_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Input tree contains no inner nodes.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  tree->nodes = (pll_unode_t **)malloc(node_count * sizeof(pll_unode_t *));
+  tree->nodes = (corax_unode_t **)malloc(node_count * sizeof(corax_unode_t *));
   if (!tree->nodes)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   unsigned int tip_index   = 0;
@@ -567,7 +567,7 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
   tree->inner_count = inner_count;
   tree->edge_count  = node_count - 1;
   tree->binary =
-      (inner_count == tip_count - (pll_unode_is_rooted(root) ? 1 : 2));
+      (inner_count == tip_count - (corax_unode_is_rooted(root) ? 1 : 2));
   tree->vroot = root;
 
   return tree;
@@ -577,13 +577,13 @@ static pll_utree_t *utree_wraptree(pll_unode_t *root,
    that contains a list of nodes, number of tips and number of inner
    nodes. If 0 is passed as tip_count, then an additional recrursion
    of the tree structure is done to detect the number of tips */
-PLL_EXPORT pll_utree_t *pll_utree_wraptree(pll_unode_t *root,
+CORAX_EXPORT corax_utree_t *corax_utree_wraptree(corax_unode_t *root,
                                            unsigned int tip_count)
 {
   return utree_wraptree(root, tip_count, 0, 1);
 }
 
-PLL_EXPORT pll_utree_t *pll_utree_wraptree_multi(pll_unode_t *root,
+CORAX_EXPORT corax_utree_t *corax_utree_wraptree_multi(corax_unode_t *root,
                                                  unsigned int tip_count,
                                                  unsigned int inner_count)
 {
@@ -608,14 +608,14 @@ PLL_EXPORT pll_utree_t *pll_utree_wraptree_multi(pll_unode_t *root,
  *
  * @return the new node
  */
-PLL_EXPORT pll_unode_t *pll_utree_create_node(unsigned int clv_index,
+CORAX_EXPORT corax_unode_t *corax_utree_create_node(unsigned int clv_index,
                                               int          scaler_index,
                                               char *       label,
                                               void *       data)
 {
-  pll_unode_t *new_node = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
-  new_node->next        = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
-  new_node->next->next  = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  corax_unode_t *new_node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+  new_node->next        = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+  new_node->next->next  = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
   if (!(new_node && new_node->next && new_node->next->next))
   {
     if (new_node)
@@ -627,7 +627,7 @@ PLL_EXPORT pll_unode_t *pll_utree_create_node(unsigned int clv_index,
       }
       free(new_node);
     }
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for new node\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for new node\n");
     return NULL;
   }
 
@@ -651,14 +651,14 @@ struct clv_set_data
   unsigned int tip_count;
 };
 
-static int cb_set_clv_minimal(pll_unode_t *node, void *data)
+static int cb_set_clv_minimal(corax_unode_t *node, void *data)
 {
   unsigned int         i, next_index;
   int                  index_found;
   struct clv_set_data *clv_data = (struct clv_set_data *)data;
   int *                v        = 0;
 
-  if (!PLL_UTREE_IS_TIP(node))
+  if (!CORAX_UTREE_IS_TIP(node))
   {
     /* find next free position */
     v           = clv_data->set_indices;
@@ -685,9 +685,9 @@ static int cb_set_clv_minimal(pll_unode_t *node, void *data)
             (int)(next_index + clv_data->tip_count);
 
     /* free indices from children */
-    if (!PLL_UTREE_IS_TIP(node->next->back))
+    if (!CORAX_UTREE_IS_TIP(node->next->back))
     { v[node->next->back->clv_index - clv_data->tip_count] = 0; }
-    if (!PLL_UTREE_IS_TIP(node->next->next->back))
+    if (!CORAX_UTREE_IS_TIP(node->next->next->back))
     { v[node->next->next->back->clv_index - clv_data->tip_count] = 0; }
   }
 
@@ -695,7 +695,7 @@ static int cb_set_clv_minimal(pll_unode_t *node, void *data)
   return 1;
 }
 
-PLL_EXPORT int pll_utree_set_clv_minimal(pll_unode_t *root,
+CORAX_EXPORT int corax_utree_set_clv_minimal(corax_unode_t *root,
                                          unsigned int tip_count)
 {
   unsigned int clv_count   = (unsigned int)ceil(log2(tip_count)) + 2;
@@ -704,8 +704,8 @@ PLL_EXPORT int pll_utree_set_clv_minimal(pll_unode_t *root,
   data.set_indices = set_indices;
   data.max_index   = clv_count;
   data.tip_count   = tip_count;
-  pll_utree_traverse_apply(root, 0, 0, cb_set_clv_minimal, (void *)&data);
+  corax_utree_traverse_apply(root, 0, 0, cb_set_clv_minimal, (void *)&data);
   free(set_indices);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

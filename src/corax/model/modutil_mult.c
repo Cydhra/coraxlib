@@ -37,7 +37,7 @@ const char *skip_datatype(const char *full_model_name)
  * @brief Returns 1 if built-in MULTISTATE model with a given name exists and 0
  * otherwise
  */
-PLL_EXPORT int pllmod_util_model_exists_mult(const char *model_name)
+CORAX_EXPORT int pllmod_util_model_exists_mult(const char *model_name)
 {
   return strncasecmp("MULTI", model_name, 4) == 0 ? 1 : 0;
 }
@@ -45,7 +45,7 @@ PLL_EXPORT int pllmod_util_model_exists_mult(const char *model_name)
 /**
  * @brief Parses model string (MULTIxx) and returns the number of state (xx)
  */
-PLL_EXPORT unsigned int pllmod_util_model_numstates_mult(const char *model_name)
+CORAX_EXPORT unsigned int pllmod_util_model_numstates_mult(const char *model_name)
 {
   unsigned int states;
   if (sscanf(model_name, "MULTI%u", &states) == 1)
@@ -60,10 +60,10 @@ PLL_EXPORT unsigned int pllmod_util_model_numstates_mult(const char *model_name)
  *
  * @param states number of states
  *
- * @return array of 256 bit-encoded state identifiers (pll_state_t) indexed by
+ * @return array of 256 bit-encoded state identifiers (corax_state_t) indexed by
  * ASCII code
  */
-PLL_EXPORT pll_state_t *pllmod_util_model_charmap_mult(unsigned int states)
+CORAX_EXPORT corax_state_t *pllmod_util_model_charmap_mult(unsigned int states)
 {
   return pllmod_util_charmap_create(
       states, mult_statechars, mult_gapchars, 0 /* case_sensitive */
@@ -79,22 +79,22 @@ PLL_EXPORT pll_state_t *pllmod_util_model_charmap_mult(unsigned int states)
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-PLL_EXPORT pllmod_subst_model_t *
+CORAX_EXPORT pllmod_subst_model_t *
            pllmod_util_model_info_mult(const char *model_name)
 {
   unsigned int states = pllmod_util_model_numstates_mult(model_name);
   if (!states)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
                   "Unknown number of states in a MULTISTATE model: %s",
                   model_name);
     return NULL;
   }
 
-  static const unsigned int maxstates = sizeof(pll_state_t) * 8;
+  static const unsigned int maxstates = sizeof(corax_state_t) * 8;
   if (states > maxstates)
   {
-    pll_set_error(
+    corax_set_error(
         PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
         "The specified number of states (%u) exceeds the allowed maximum (%u)",
         states,
@@ -125,7 +125,7 @@ PLL_EXPORT pllmod_subst_model_t *
   }
   else
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
                   "MULTISTATE model not found: %s",
                   subst_model_name);
     return NULL;

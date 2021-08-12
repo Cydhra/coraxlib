@@ -53,37 +53,37 @@ int main(int argc, char *argv[])
   double           f, d_f, dd_f;
   unsigned int     n_sites = 20;
   unsigned int     n_tips  = 5;
-  pll_operation_t *operations;
+  corax_operation_t *operations;
   double *         sumtable;
 
-  operations = (pll_operation_t *)malloc(4 * sizeof(pll_operation_t));
+  operations = (corax_operation_t *)malloc(4 * sizeof(corax_operation_t));
 
   operations[0].parent_clv_index    = 5;
   operations[0].child1_clv_index    = 0;
   operations[0].child2_clv_index    = 1;
   operations[0].child1_matrix_index = 1;
   operations[0].child2_matrix_index = 1;
-  operations[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[0].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[1].parent_clv_index    = 6;
   operations[1].child1_clv_index    = 5;
   operations[1].child2_clv_index    = 2;
   operations[1].child1_matrix_index = 0;
   operations[1].child2_matrix_index = 1;
-  operations[1].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[1].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[2].parent_clv_index    = 7;
   operations[2].child1_clv_index    = 3;
   operations[2].child2_clv_index    = 4;
   operations[2].child1_matrix_index = 1;
   operations[2].child2_matrix_index = 1;
-  operations[2].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[2].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   /* additional operation for moving the root into the tip branch */
 
@@ -92,18 +92,18 @@ int main(int argc, char *argv[])
   operations[3].child2_clv_index    = 3;
   operations[3].child1_matrix_index = 0;
   operations[3].child2_matrix_index = 0;
-  operations[3].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[3].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[3].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[3].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[3].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[3].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   /* check attributes */
   unsigned int attributes = get_attributes(argc, argv);
 
   for (k = 0; k < NUM_CATS; ++k)
   {
-    pll_partition_t *partition;
+    corax_partition_t *partition;
     printf("FREE CREATE\n");
-    partition = pll_partition_create(n_tips,   /* numer of tips */
+    partition = corax_partition_create(n_tips,   /* numer of tips */
                                      4,        /* clv buffers */
                                      N_STATES, /* number of states */
                                      n_sites,  /* sequence length */
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
       return (-1);
     }
 
-    sumtable = (double *)pll_aligned_alloc(
+    sumtable = (double *)corax_aligned_alloc(
         partition->sites * partition->rate_cats * partition->states_padded
             * sizeof(double),
         partition->alignment);
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     if (!sumtable)
     {
       printf("Fail creating sumtable");
-      pll_partition_destroy(partition);
+      corax_partition_destroy(partition);
       return (-1);
     }
 
@@ -145,14 +145,14 @@ int main(int argc, char *argv[])
                                1.745312,
                                1.000000};
 
-    pll_set_frequencies(partition, 0, frequencies);
-    pll_set_subst_params(partition, 0, subst_params);
+    corax_set_frequencies(partition, 0, frequencies);
+    corax_set_subst_params(partition, 0, subst_params);
 
-    if (!(pll_set_tip_states(partition, 0, odd5_map, "DAACBCECBA--ABBCBAAB")
-          && pll_set_tip_states(partition, 1, odd5_map, "CACCABECBA--ABBEBCBB")
-          && pll_set_tip_states(partition, 2, odd5_map, "AE-C-BECAE--CBBCBACB")
-          && pll_set_tip_states(partition, 3, odd5_map, "CEBCBBECAA--AB-C-AAE")
-          && pll_set_tip_states(
+    if (!(corax_set_tip_states(partition, 0, odd5_map, "DAACBCECBA--ABBCBAAB")
+          && corax_set_tip_states(partition, 1, odd5_map, "CACCABECBA--ABBEBCBB")
+          && corax_set_tip_states(partition, 2, odd5_map, "AE-C-BECAE--CBBCBACB")
+          && corax_set_tip_states(partition, 3, odd5_map, "CEBCBBECAA--AB-C-AAE")
+          && corax_set_tip_states(
               partition, 4, odd5_map, "CEACBBECCA--AB-B-AAE")))
       return -1;
 
@@ -168,9 +168,9 @@ int main(int argc, char *argv[])
 
         double *rate_cats = (double *)malloc(n_cat_gamma[k] * sizeof(double));
 
-        if (pll_compute_gamma_cats(
-                alpha[i], n_cat_gamma[k], rate_cats, PLL_GAMMA_RATES_MEAN)
-            == PLL_FAILURE)
+        if (corax_compute_gamma_cats(
+                alpha[i], n_cat_gamma[k], rate_cats, CORAX_GAMMA_RATES_MEAN)
+            == CORAX_FAILURE)
         {
           printf("Fail computing the gamma rates\n");
           continue;
@@ -179,41 +179,41 @@ int main(int argc, char *argv[])
         for (j = 0; j < n_cat_gamma[k]; j++) { printf("%f ", rate_cats[j]); }
         printf("\n");
 
-        pll_set_category_rates(partition, rate_cats);
+        corax_set_category_rates(partition, rate_cats);
         free(rate_cats);
 
         for (j = 0; j < partition->rate_matrices; ++j)
         {
-          pll_update_invariant_sites_proportion(partition, j, pinvar[p]);
+          corax_update_invariant_sites_proportion(partition, j, pinvar[p]);
         }
 
-        pll_update_prob_matrices(
+        corax_update_prob_matrices(
             partition, params_indices, matrix_indices, branch_lengths, 4);
-        pll_update_clvs(partition, operations, 3);
+        corax_update_clvs(partition, operations, 3);
 
         lk_scores[k * NUM_ALPHAS + i] =
-            pll_compute_edge_loglikelihood(partition,
+            corax_compute_edge_loglikelihood(partition,
                                            6,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            7,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            0,
                                            params_indices,
                                            NULL);
 
-        pll_update_sumtable(partition,
+        corax_update_sumtable(partition,
                             6,
                             7,
-                            PLL_SCALE_BUFFER_NONE,
-                            PLL_SCALE_BUFFER_NONE,
+                            CORAX_SCALE_BUFFER_NONE,
+                            CORAX_SCALE_BUFFER_NONE,
                             params_indices,
                             sumtable);
 
         for (b = 0; b < NUM_BRANCHES; ++b)
         {
-          if (!pll_compute_likelihood_derivatives(partition,
-                                                  PLL_SCALE_BUFFER_NONE,
-                                                  PLL_SCALE_BUFFER_NONE,
+          if (!corax_compute_likelihood_derivatives(partition,
+                                                  CORAX_SCALE_BUFFER_NONE,
+                                                  CORAX_SCALE_BUFFER_NONE,
                                                   testbranches[b],
                                                   params_indices,
                                                   sumtable,
@@ -226,13 +226,13 @@ int main(int argc, char *argv[])
 
           /* update logLikelihood */
           unsigned int pmatrix_index = 0;
-          pll_update_prob_matrices(
+          corax_update_prob_matrices(
               partition, params_indices, &pmatrix_index, &testbranches[b], 1);
-          f = pll_compute_edge_loglikelihood(partition,
+          f = corax_compute_edge_loglikelihood(partition,
                                              6,
-                                             PLL_SCALE_BUFFER_NONE,
+                                             CORAX_SCALE_BUFFER_NONE,
                                              7,
-                                             PLL_SCALE_BUFFER_NONE,
+                                             CORAX_SCALE_BUFFER_NONE,
                                              0,
                                              params_indices,
                                              NULL);
@@ -245,9 +245,9 @@ int main(int argc, char *argv[])
         }
 
         /* test original branch length */
-        if (!pll_compute_likelihood_derivatives(partition,
-                                                PLL_SCALE_BUFFER_NONE,
-                                                PLL_SCALE_BUFFER_NONE,
+        if (!corax_compute_likelihood_derivatives(partition,
+                                                CORAX_SCALE_BUFFER_NONE,
+                                                CORAX_SCALE_BUFFER_NONE,
                                                 branch_lengths[0],
                                                 params_indices,
                                                 sumtable,
@@ -260,13 +260,13 @@ int main(int argc, char *argv[])
 
         /* update logLikelihood */
         unsigned int pmatrix_index = 0;
-        pll_update_prob_matrices(
+        corax_update_prob_matrices(
             partition, params_indices, &pmatrix_index, branch_lengths, 1);
-        f = pll_compute_edge_loglikelihood(partition,
+        f = corax_compute_edge_loglikelihood(partition,
                                            6,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            7,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            0,
                                            params_indices,
                                            NULL);
@@ -275,31 +275,31 @@ int main(int argc, char *argv[])
         assert(fabs(f - lk_scores[k * NUM_ALPHAS + i]) < 1e-7);
 
         /* move to a tip branch */
-        pll_update_clvs(partition, operations + 3, 1);
+        corax_update_clvs(partition, operations + 3, 1);
 
         lk_scores[k * NUM_ALPHAS + i] =
-            pll_compute_edge_loglikelihood(partition,
+            corax_compute_edge_loglikelihood(partition,
                                            4,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            7,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            1,
                                            params_indices,
                                            NULL);
 
-        pll_update_sumtable(partition,
+        corax_update_sumtable(partition,
                             4,
                             7,
-                            PLL_SCALE_BUFFER_NONE,
-                            PLL_SCALE_BUFFER_NONE,
+                            CORAX_SCALE_BUFFER_NONE,
+                            CORAX_SCALE_BUFFER_NONE,
                             params_indices,
                             sumtable);
 
         for (b = 0; b < NUM_BRANCHES; ++b)
         {
-          if (!pll_compute_likelihood_derivatives(partition,
-                                                  PLL_SCALE_BUFFER_NONE,
-                                                  PLL_SCALE_BUFFER_NONE,
+          if (!corax_compute_likelihood_derivatives(partition,
+                                                  CORAX_SCALE_BUFFER_NONE,
+                                                  CORAX_SCALE_BUFFER_NONE,
                                                   testbranches[b],
                                                   params_indices,
                                                   sumtable,
@@ -312,13 +312,13 @@ int main(int argc, char *argv[])
 
           /* update logLikelihood */
           pmatrix_index = 1;
-          pll_update_prob_matrices(
+          corax_update_prob_matrices(
               partition, params_indices, &pmatrix_index, &testbranches[b], 1);
-          f = pll_compute_edge_loglikelihood(partition,
+          f = corax_compute_edge_loglikelihood(partition,
                                              4,
-                                             PLL_SCALE_BUFFER_NONE,
+                                             CORAX_SCALE_BUFFER_NONE,
                                              7,
-                                             PLL_SCALE_BUFFER_NONE,
+                                             CORAX_SCALE_BUFFER_NONE,
                                              1,
                                              params_indices,
                                              NULL);
@@ -330,9 +330,9 @@ int main(int argc, char *argv[])
         }
 
         /* test original branch length */
-        if (!pll_compute_likelihood_derivatives(partition,
-                                                PLL_SCALE_BUFFER_NONE,
-                                                PLL_SCALE_BUFFER_NONE,
+        if (!corax_compute_likelihood_derivatives(partition,
+                                                CORAX_SCALE_BUFFER_NONE,
+                                                CORAX_SCALE_BUFFER_NONE,
                                                 branch_lengths[1],
                                                 params_indices,
                                                 sumtable,
@@ -345,13 +345,13 @@ int main(int argc, char *argv[])
 
         /* update logLikelihood */
         pmatrix_index = 1;
-        pll_update_prob_matrices(
+        corax_update_prob_matrices(
             partition, params_indices, &pmatrix_index, &branch_lengths[1], 1);
-        f = pll_compute_edge_loglikelihood(partition,
+        f = corax_compute_edge_loglikelihood(partition,
                                            4,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            7,
-                                           PLL_SCALE_BUFFER_NONE,
+                                           CORAX_SCALE_BUFFER_NONE,
                                            1,
                                            params_indices,
                                            NULL);
@@ -361,8 +361,8 @@ int main(int argc, char *argv[])
       }
     }
 
-    pll_aligned_free(sumtable);
-    pll_partition_destroy(partition);
+    corax_aligned_free(sumtable);
+    corax_partition_destroy(partition);
   }
 
   printf("\n");

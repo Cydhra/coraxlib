@@ -30,8 +30,8 @@
 /*
  * Optimize stationary frequencies for parameters `params_index`.
  */
-PLL_EXPORT double pllmod_algo_opt_frequencies(pll_partition_t *partition,
-                                              pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
+                                              corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
                                               double           bfgs_factor,
@@ -44,8 +44,8 @@ PLL_EXPORT double pllmod_algo_opt_frequencies(pll_partition_t *partition,
  *            Must be sorted and start with '0'.
  *            e.g., 000000 = JC/F81, 010010 = K80/HKY, 012314 = TrN
  */
-PLL_EXPORT double pllmod_algo_opt_subst_rates(pll_partition_t *partition,
-                                              pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
+                                              corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
                                               int *            symmetries,
@@ -54,23 +54,23 @@ PLL_EXPORT double pllmod_algo_opt_subst_rates(pll_partition_t *partition,
                                               double           bfgs_factor,
                                               double           tolerance);
 
-PLL_EXPORT double pllmod_algo_opt_alpha(pll_partition_t *partition,
-                                        pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
+                                        corax_unode_t *    tree,
                                         unsigned int *   params_indices,
                                         double           min_alpha,
                                         double           max_alpha,
                                         double *         alpha,
                                         double           tolerance);
 
-PLL_EXPORT double pllmod_algo_opt_pinv(pll_partition_t *partition,
-                                       pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
+                                       corax_unode_t *    tree,
                                        unsigned int *   params_indices,
                                        double           min_pinv,
                                        double           max_pinv,
                                        double           tolerance);
 
-PLL_EXPORT double pllmod_algo_opt_alpha_pinv(pll_partition_t *partition,
-                                             pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
+                                             corax_unode_t *    tree,
                                              unsigned int *   params_indices,
                                              double           min_alpha,
                                              double           max_alpha,
@@ -84,8 +84,8 @@ PLL_EXPORT double pllmod_algo_opt_alpha_pinv(pll_partition_t *partition,
  * Optimize free rates and rate weights together, linked to
  * `partition->rate_cats`. Uses 2 step L-BFGS-B algorithm.
  */
-PLL_EXPORT double pllmod_algo_opt_rates_weights(pll_partition_t *partition,
-                                                pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
+                                                corax_unode_t *    tree,
                                                 unsigned int *   params_indices,
                                                 double           min_rate,
                                                 double           max_rate,
@@ -94,8 +94,8 @@ PLL_EXPORT double pllmod_algo_opt_rates_weights(pll_partition_t *partition,
                                                 double *         brlen_scaler,
                                                 int scale_branches);
 
-PLL_EXPORT double pllmod_algo_opt_brlen_scaler(pll_partition_t *partition,
-                                               pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
+                                               corax_unode_t *    tree,
                                                unsigned int *   params_indices,
                                                double *         scaler,
                                                double           min_scaler,

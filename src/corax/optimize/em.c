@@ -4,7 +4,7 @@
 /* EXPECTATION-MAXIMIZATION (EM)     */
 /* Wang, Li, Susko, and Roger (2008) */
 /******************************************************************************/
-PLL_EXPORT void
+CORAX_EXPORT void
 pllmod_opt_minimize_em(double *      w,
                        unsigned int  w_count,
                        double *      sitecat_lh,

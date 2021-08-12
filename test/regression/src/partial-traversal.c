@@ -15,7 +15,7 @@ typedef struct
 } node_info_t;
 
 /* a callback function for performing a partial traversal */
-static int cb_clv_traversal(pll_unode_t *node)
+static int cb_clv_traversal(corax_unode_t *node)
 {
   node_info_t *node_info;
 
@@ -61,7 +61,7 @@ static int cb_clv_traversal(pll_unode_t *node)
 }
 
 /* branch lengths not present in the newick file get a value of 0.000001 */
-static void set_missing_branch_length(pll_utree_t *tree, double length)
+static void set_missing_branch_length(corax_utree_t *tree, double length)
 {
   unsigned int i;
 
@@ -84,16 +84,16 @@ int main(int argc, char *argv[])
   unsigned int  matrix_count, ops_count;
   unsigned int *matrix_indices;
   double *      branch_lengths;
-  pll_partition_t *partition;
-  pll_operation_t *operations;
-  pll_unode_t **   travbuffer;
-  pll_unode_t **   inner_nodes_list;
+  corax_partition_t *partition;
+  corax_operation_t *operations;
+  corax_unode_t **   travbuffer;
+  corax_unode_t **   inner_nodes_list;
   unsigned int     params_indices[N_RATE_CATS] = {0, 0, 0, 0};
   int              retval;
 
   /* parse the unrooted binary tree in newick format, and store the number
      of tip nodes in tip_nodes_count */
-  pll_utree_t *tree = pll_utree_parse_newick(TREEFILE);
+  corax_utree_t *tree = corax_utree_parse_newick(TREEFILE);
 
   tip_nodes_count = tree->tip_count;
 
@@ -103,10 +103,10 @@ int main(int argc, char *argv[])
      newick) to 0.000001 */
   set_missing_branch_length(tree, 0.000001);
 
-  retval = pll_utree_check_integrity(tree);
+  retval = corax_utree_check_integrity(tree);
   if (!retval)
   {
-    printf("ERROR: pll_utree validation failed: %s\n", pll_errmsg);
+    printf("ERROR: corax_utree validation failed: %s\n", corax_errmsg);
     exit(-1);
   }
 
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   }
 
   /* open FASTA file */
-  pll_fasta_t *fp = pll_fasta_open(FASTAFILE, pll_map_fasta);
+  corax_fasta_t *fp = corax_fasta_open(FASTAFILE, corax_map_fasta);
   if (!fp) fatal("Error opening file");
 
   char *seq = NULL;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 
   /* read FASTA sequences and make sure they are all of the same length */
   int sites = -1;
-  for (i = 0; pll_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
+  for (i = 0; corax_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
   {
     if (i >= tip_nodes_count)
       fatal("FASTA file contains more sequences than expected");
@@ -171,17 +171,17 @@ int main(int argc, char *argv[])
   }
 
   /* did we stop reading the file because we reached EOF? */
-  if (pll_errno != PLL_ERROR_FILE_EOF) fatal("Error while reading file");
+  if (corax_errno != CORAX_ERROR_FILE_EOF) fatal("Error while reading file");
 
   /* close FASTA file */
-  pll_fasta_close(fp);
+  corax_fasta_close(fp);
 
   if (sites == -1) fatal("Unable to read alignment");
 
   if (i != tip_nodes_count) fatal("Some taxa are missing from FASTA file");
 
   /* create the PLL partition instance */
-  partition = pll_partition_create(tip_nodes_count,
+  partition = corax_partition_create(tip_nodes_count,
                                    inner_nodes_count,
                                    STATES,
                                    (unsigned int)sites,
@@ -203,16 +203,16 @@ int main(int argc, char *argv[])
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape 1 and store them in rate_cats  */
-  pll_compute_gamma_cats(1, 4, rate_cats, PLL_GAMMA_RATES_MEAN);
+  corax_compute_gamma_cats(1, 4, rate_cats, CORAX_GAMMA_RATES_MEAN);
 
   /* set frequencies at model with index 0 (we currently have only one model) */
-  pll_set_frequencies(partition, 0, frequencies);
+  corax_set_frequencies(partition, 0, frequencies);
 
   /* set 6 substitution parameters at model with index 0 */
-  pll_set_subst_params(partition, 0, subst_params);
+  corax_set_subst_params(partition, 0, subst_params);
 
   /* set rate categories */
-  pll_set_category_rates(partition, rate_cats);
+  corax_set_category_rates(partition, rate_cats);
 
   /* find sequences in hash table and link them with the corresponding taxa */
   for (i = 0; i < tip_nodes_count; ++i)
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 
     unsigned int tip_clv_index = *((unsigned int *)(found->data));
 
-    pll_set_tip_states(partition, tip_clv_index, pll_map_nt, seqdata[i]);
+    corax_set_tip_states(partition, tip_clv_index, corax_map_nt, seqdata[i]);
   }
 
   /* destroy hash table */
@@ -249,19 +249,19 @@ int main(int argc, char *argv[])
 
   /* allocate a buffer for storing pointers to nodes of the tree in postorder
      traversal */
-  travbuffer = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
 
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(int));
   operations =
-      (pll_operation_t *)malloc(inner_nodes_count * sizeof(pll_operation_t));
+      (corax_operation_t *)malloc(inner_nodes_count * sizeof(corax_operation_t));
 
   /* get inner nodes */
   inner_nodes_list =
-      (pll_unode_t **)malloc(inner_nodes_count * sizeof(pll_unode_t *));
+      (corax_unode_t **)malloc(inner_nodes_count * sizeof(corax_unode_t *));
   memcpy(inner_nodes_list,
          tree->nodes + tip_nodes_count,
-         inner_nodes_count * sizeof(pll_unode_t *));
+         inner_nodes_count * sizeof(corax_unode_t *));
 
   /* get random directions for each inner node */
   for (i = 0; i < inner_nodes_count; ++i)
@@ -277,22 +277,22 @@ int main(int argc, char *argv[])
 
     /* randomly select an inner node */
     r                 = RAND % inner_nodes_count;
-    pll_unode_t *node = inner_nodes_list[r];
+    corax_unode_t *node = inner_nodes_list[r];
 
     /* compute a partial traversal starting from the randomly selected
        inner node */
 
-    if (!pll_utree_traverse(node,
-                            PLL_TREE_TRAVERSE_POSTORDER,
+    if (!corax_utree_traverse(node,
+                            CORAX_TREE_TRAVERSE_POSTORDER,
                             cb_clv_traversal,
                             travbuffer,
                             &traversal_size))
-      fatal("Function pll_utree_traverse() requires inner nodes as parameters");
+      fatal("Function corax_utree_traverse() requires inner nodes as parameters");
 
     /* given the computed traversal descriptor, generate the operations
        structure, and the corresponding probability matrix indices that
        may need recomputing */
-    pll_utree_create_operations(travbuffer,
+    corax_utree_create_operations(travbuffer,
                                 traversal_size,
                                 branch_lengths,
                                 matrix_indices,
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
        matrix (i ranges from 0 to matrix_count - 1) is generated using branch
        length branch_lengths[i] and can be refered to with index
        matrix_indices[i] */
-    pll_update_prob_matrices(partition,
+    corax_update_prob_matrices(partition,
                              params_indices,
                              matrix_indices,
                              branch_lengths,
@@ -324,13 +324,13 @@ int main(int argc, char *argv[])
     /* use the operations array to compute all ops_count inner CLVs. Operations
        will be carried out sequentially starting from operation 0 towrds
        ops_count-1 */
-    pll_update_clvs(partition, operations, ops_count);
+    corax_update_clvs(partition, operations, ops_count);
 
     /* compute the likelihood on an edge of the unrooted tree by specifying
        the CLV indices at the two end-point of the branch, the probability
        matrix index for the concrete branch length, and the index of the model
        of whose frequency vector is to be used */
-    double logl = pll_compute_edge_loglikelihood(partition,
+    double logl = corax_compute_edge_loglikelihood(partition,
                                                  node->clv_index,
                                                  node->scaler_index,
                                                  node->back->clv_index,
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
   free(inner_nodes_list);
 
   /* destroy all structures allocated for the concrete PLL partition instance */
-  pll_partition_destroy(partition);
+  corax_partition_destroy(partition);
 
   /* deallocate traversal buffer, branch lengths array, matrix indices
      array and operations */
@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
   free(operations);
 
   /* we will no longer need the tree structure */
-  pll_utree_destroy(tree, NULL);
+  corax_utree_destroy(tree, NULL);
 
   return (EXIT_SUCCESS);
 }

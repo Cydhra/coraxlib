@@ -43,10 +43,10 @@ static int c__1 = 1;
 
 
     /* Table of constant values */
-    double c_b14 = PLL_LBFGSB_DEFAULT_FTOL;
-    double c_b15 = PLL_LBFGSB_DEFAULT_GTOL;
-    double c_b16 = PLL_LBFGSB_DEFAULT_XTOL;
-    double c_b17 = PLL_LBFGSB_DEFAULT_STEPMIN;
+    double c_b14 = CORAX_LBFGSB_DEFAULT_FTOL;
+    double c_b15 = CORAX_LBFGSB_DEFAULT_GTOL;
+    double c_b16 = CORAX_LBFGSB_DEFAULT_XTOL;
+    double c_b17 = CORAX_LBFGSB_DEFAULT_STEPMIN;
     /* System generated locals */
     int i__1;
     double d__1;

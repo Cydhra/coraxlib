@@ -29,8 +29,8 @@ typedef struct
   int clv_valid;
 } node_info_t;
 
-static pll_unode_t **      travbuffer;
-static pll_pars_buildop_t *parsops;
+static corax_unode_t **      travbuffer;
+static corax_pars_buildop_t *parsops;
 
 static char *xstrdup(const char *s)
 {
@@ -38,7 +38,7 @@ static char *xstrdup(const char *s)
   char * p   = (char *)malloc(len + 1);
   if (!p)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Memory allocation failed");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Memory allocation failed");
     return NULL;
   }
   return strcpy(p, s);
@@ -49,12 +49,12 @@ static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
 {
   unsigned int            i, j;
   char *                  statebuf;
-  struct pll_random_data *buf;
+  struct corax_random_data *buf;
 
   unsigned int *x = (unsigned int *)malloc(n * sizeof(unsigned int));
   if (!x)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -64,11 +64,11 @@ static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
   if (!seed) return x;
 
   /* init re-entrant randomizer */
-  buf = (struct pll_random_data *)calloc(1, sizeof(struct pll_random_data));
+  buf = (struct corax_random_data *)calloc(1, sizeof(struct corax_random_data));
   statebuf = (char *)calloc(RAND_STATE_SIZE, sizeof(char));
 
-  pll_initstate_r(seed, statebuf, RAND_STATE_SIZE, buf);
-  pll_srandom_r(seed, buf);
+  corax_initstate_r(seed, statebuf, RAND_STATE_SIZE, buf);
+  corax_srandom_r(seed, buf);
 
   /* perform Fisher-Yates shuffle */
   if (n > 1)
@@ -77,11 +77,11 @@ static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
     while (1)
     {
       int rint;
-      pll_random_r(buf, &rint);
+      corax_random_r(buf, &rint);
       double r = ((double)rint / RAND_MAX);
       j        = (unsigned int)(r * (i + 1));
 
-      PLL_SWAP(x[i], x[j]);
+      CORAX_SWAP(x[i], x[j]);
 
       if (i == 0) break;
       --i;
@@ -94,7 +94,7 @@ static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
   return x;
 }
 
-static void dealloc_data_onenode(pll_unode_t *node)
+static void dealloc_data_onenode(corax_unode_t *node)
 {
   if (node->data)
   {
@@ -103,7 +103,7 @@ static void dealloc_data_onenode(pll_unode_t *node)
   }
 }
 
-static void dealloc_data(pll_unode_t *node)
+static void dealloc_data(corax_unode_t *node)
 {
   dealloc_data_onenode(node);
   dealloc_data_onenode(node->next);
@@ -111,7 +111,7 @@ static void dealloc_data(pll_unode_t *node)
 }
 
 /* a callback function for performing a partial traversal */
-static int cb_partial_traversal(pll_unode_t *node)
+static int cb_partial_traversal(corax_unode_t *node)
 {
   node_info_t *node_info;
 
@@ -135,7 +135,7 @@ static int cb_partial_traversal(pll_unode_t *node)
   return 1;
 }
 
-static int cb_validate(pll_unode_t *node)
+static int cb_validate(corax_unode_t *node)
 {
   if (node->data)
   {
@@ -146,18 +146,18 @@ static int cb_validate(pll_unode_t *node)
   return 1;
 }
 
-static pll_unode_t *utree_inner_create(unsigned int i, unsigned int tip_count)
+static corax_unode_t *utree_inner_create(unsigned int i, unsigned int tip_count)
 {
-  pll_unode_t *node = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  corax_unode_t *node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
   if (!node) return NULL;
 
-  node->next = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  node->next = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
   if (!node->next)
   {
     free(node);
     return NULL;
   }
-  node->next->next = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  node->next->next = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
   if (!node->next->next)
   {
     free(node->next);
@@ -196,9 +196,9 @@ static pll_unode_t *utree_inner_create(unsigned int i, unsigned int tip_count)
   return node;
 }
 
-static pll_unode_t *utree_tip_create(unsigned int i)
+static corax_unode_t *utree_tip_create(unsigned int i)
 {
-  pll_unode_t *node = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+  corax_unode_t *node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
   node->next        = NULL;
   node->clv_index   = i;
   node->node_index  = i;
@@ -206,7 +206,7 @@ static pll_unode_t *utree_tip_create(unsigned int i)
   return node;
 }
 
-static void utree_link(pll_unode_t *a, pll_unode_t *b)
+static void utree_link(corax_unode_t *a, corax_unode_t *b)
 {
   /*
 
@@ -222,7 +222,7 @@ static void utree_link(pll_unode_t *a, pll_unode_t *b)
   b->back = a;
 }
 
-static void utree_edgesplit(pll_unode_t *a, pll_unode_t *b, pll_unode_t *c)
+static void utree_edgesplit(corax_unode_t *a, corax_unode_t *b, corax_unode_t *c)
 {
   /*
                 *                                      *
@@ -246,7 +246,7 @@ static void utree_edgesplit(pll_unode_t *a, pll_unode_t *b, pll_unode_t *c)
   utree_link(a, b);
 }
 
-static void invalidate_node(pll_unode_t *node)
+static void invalidate_node(corax_unode_t *node)
 {
   node_info_t *info;
 
@@ -258,10 +258,10 @@ static void invalidate_node(pll_unode_t *node)
   info->clv_valid = 0;
 }
 
-static unsigned int utree_iterate(pll_parsimony_t **list,
-                                  pll_unode_t **    edge_list,
-                                  pll_unode_t *     inner_node,
-                                  pll_unode_t *     tip_node,
+static unsigned int utree_iterate(corax_parsimony_t **list,
+                                  corax_unode_t **    edge_list,
+                                  corax_unode_t *     inner_node,
+                                  corax_unode_t *     tip_node,
                                   unsigned int      edge_count,
                                   unsigned int      partition_count)
 {
@@ -277,33 +277,33 @@ static unsigned int utree_iterate(pll_parsimony_t **list,
   min_cost = ~0u;
 
   /* find first empty slot in edge_list */
-  pll_unode_t **empty_slot = edge_list + edge_count;
+  corax_unode_t **empty_slot = edge_list + edge_count;
 
   /* fill *all* CLV vectors in all directions, ie 3 CLVs per inner nodes ->
    * this way, we can do avoid unnecessary CLV recomputation when
    * evaluating insertion branches in the loop below */
   for (i = 0; i < edge_count; ++i)
   {
-    pll_unode_t *root = edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
+    corax_unode_t *root = edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
 
     if (root->back->next) continue;
 
     /* make a partial traversal */
-    if (!pll_utree_traverse(root,
-                            PLL_TREE_TRAVERSE_POSTORDER,
+    if (!corax_utree_traverse(root,
+                            CORAX_TREE_TRAVERSE_POSTORDER,
                             cb_partial_traversal,
                             travbuffer,
                             &traversal_size))
       assert(0);
 
     /* create parsimony operations */
-    pll_utree_create_pars_buildops(
+    corax_utree_create_pars_buildops(
         travbuffer, traversal_size, parsops, &ops_count);
 
     for (j = 0; j < partition_count; ++j)
     {
       /* update parsimony vectors */
-      pll_fastparsimony_update_vectors(list[j], parsops, ops_count);
+      corax_fastparsimony_update_vectors(list[j], parsops, ops_count);
     }
 
     total_ops += ops_count;
@@ -312,7 +312,7 @@ static unsigned int utree_iterate(pll_parsimony_t **list,
   for (i = 0; i < edge_count; ++i)
   {
     /* make the split */
-    pll_unode_t *d = edge_list[i]->back;
+    corax_unode_t *d = edge_list[i]->back;
     utree_edgesplit(edge_list[i], inner_node, inner_node->next);
     utree_link(inner_node->next->next, tip_node);
 
@@ -330,10 +330,10 @@ static unsigned int utree_iterate(pll_parsimony_t **list,
     for (j = 0; j < partition_count; ++j)
     {
       /* update parsimony vectors */
-      pll_fastparsimony_update_vectors(list[j], parsops, ops_count);
+      corax_fastparsimony_update_vectors(list[j], parsops, ops_count);
 
       /* get parsimony score */
-      cost += pll_fastparsimony_edge_score(
+      cost += corax_fastparsimony_edge_score(
           list[j], tip_node->node_index, tip_node->back->node_index);
     }
 
@@ -366,8 +366,8 @@ static unsigned int utree_iterate(pll_parsimony_t **list,
   for (j = 0; j < edge_count; ++j) invalidate_node(edge_list[j]);
 
   /* re-validate CLVs that remain correct after new tip insertion */
-  if (!pll_utree_traverse(tip_node->back,
-                          PLL_TREE_TRAVERSE_POSTORDER,
+  if (!corax_utree_traverse(tip_node->back,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
                           cb_validate,
                           travbuffer,
                           &traversal_size))
@@ -379,7 +379,7 @@ static unsigned int utree_iterate(pll_parsimony_t **list,
   return min_cost;
 }
 
-PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
+CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **list,
                                                    char *const *     labels,
                                                    unsigned int *    cost,
                                                    unsigned int      count,
@@ -392,7 +392,7 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
 
   if (tips_count < 3)
   {
-    pll_set_error(PLL_ERROR_STEPWISE_TIPS,
+    corax_set_error(CORAX_ERROR_STEPWISE_TIPS,
                   "Stepwise parsimony requires at least three tips.");
     return NULL;
   }
@@ -400,14 +400,14 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
   // if (tips_count != inner_nodes + 2)
   if (inner_nodes < tips_count - 2)
   {
-    pll_set_error(PLL_ERROR_STEPWISE_UNSUPPORTED,
+    corax_set_error(CORAX_ERROR_STEPWISE_UNSUPPORTED,
                   "Stepwise parsimony currently supports only unrooted trees.");
     return NULL;
   }
 
   *cost = ~0u;
 
-  pll_unode_t *root;
+  corax_unode_t *root;
 
   /* check that all parsimony structures have the same number of tips and
      inner nodes */
@@ -416,7 +416,7 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
   {
     if ((list[i]->tips != tips_count) || (list[i]->inner_nodes != inner_nodes))
     {
-      pll_set_error(PLL_ERROR_STEPWISE_STRUCT,
+      corax_set_error(CORAX_ERROR_STEPWISE_STRUCT,
                     "Parsimony structures tips/inner nodes not equal.");
       return NULL;
     }
@@ -426,32 +426,32 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
         allocated, otherwise return an error */
 
   travbuffer =
-      (pll_unode_t **)malloc((2 * tips_count - 2) * sizeof(pll_unode_t *));
+      (corax_unode_t **)malloc((2 * tips_count - 2) * sizeof(corax_unode_t *));
 
   root = utree_inner_create(tips_count - 3, tips_count);
 
   /* allocate parsimony operations container */
-  parsops = (pll_pars_buildop_t *)malloc((tips_count - 2)
-                                         * sizeof(pll_pars_buildop_t));
+  parsops = (corax_pars_buildop_t *)malloc((tips_count - 2)
+                                         * sizeof(corax_pars_buildop_t));
 
   /* create tip node list with a terminating NULL element */
-  pll_unode_t **tip_node_list =
-      (pll_unode_t **)calloc(tips_count + 1, sizeof(pll_unode_t *));
+  corax_unode_t **tip_node_list =
+      (corax_unode_t **)calloc(tips_count + 1, sizeof(corax_unode_t *));
 
   /* create inner node list for (tips_count - 3) inner nodes (root was already
      created, and leave the last slot NULL for termination */
-  pll_unode_t **inner_node_list =
-      (pll_unode_t **)calloc(tips_count - 2, sizeof(pll_unode_t *));
+  corax_unode_t **inner_node_list =
+      (corax_unode_t **)calloc(tips_count - 2, sizeof(corax_unode_t *));
 
   if (!inner_node_list || !parsops || !tip_node_list || !root || !travbuffer)
   {
-    pll_utree_graph_destroy(root, NULL);
+    corax_utree_graph_destroy(root, NULL);
     free(parsops);
     free(inner_node_list);
     free(tip_node_list);
     free(travbuffer);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -461,14 +461,14 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
     inner_node_list[i] = utree_inner_create(i, tips_count);
     if (!inner_node_list[i])
     {
-      pll_utree_graph_destroy(root, NULL);
+      corax_utree_graph_destroy(root, NULL);
       free(parsops);
       free(tip_node_list);
       free(travbuffer);
-      for (j = 0; j < i; ++j) pll_utree_graph_destroy(inner_node_list[j], NULL);
+      for (j = 0; j < i; ++j) corax_utree_graph_destroy(inner_node_list[j], NULL);
       free(inner_node_list);
 
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
     }
   }
@@ -488,14 +488,14 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
     {
       free(tip_node_list[i]);
 
-      pll_utree_graph_destroy(root, NULL);
+      corax_utree_graph_destroy(root, NULL);
       free(parsops);
       free(inner_node_list);
       free(travbuffer);
-      for (j = 0; j < i; ++j) pll_utree_graph_destroy(tip_node_list[j], NULL);
+      for (j = 0; j < i; ++j) corax_utree_graph_destroy(tip_node_list[j], NULL);
       free(tip_node_list);
 
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
       return NULL;
     }
   }
@@ -517,8 +517,8 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
   utree_link(root->next->next, tip_node_list[2]);
 
   /* available placements */
-  pll_unode_t **edge_list =
-      (pll_unode_t **)calloc(2 * tips_count - 3, sizeof(pll_unode_t *));
+  corax_unode_t **edge_list =
+      (corax_unode_t **)calloc(2 * tips_count - 3, sizeof(corax_unode_t *));
   edge_list[0] = root;
   edge_list[1] = root->next;
   edge_list[2] = root->next->next;
@@ -566,7 +566,7 @@ PLL_EXPORT pll_utree_t *pll_fastparsimony_stepwise(pll_parsimony_t **list,
   free(parsops);
 
   /* wrap tree */
-  pll_utree_t *tree = pll_utree_wraptree(root, tips_count);
+  corax_utree_t *tree = corax_utree_wraptree(root, tips_count);
 
   return tree;
 }

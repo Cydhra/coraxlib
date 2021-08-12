@@ -44,7 +44,7 @@ double *pllmod_util_get_equal_freqs(unsigned int states)
   double *basefreqs = calloc(states, sizeof(double));
   if (!basefreqs)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory.");
     return NULL;
   }
 
@@ -55,11 +55,11 @@ double *pllmod_util_get_equal_freqs(unsigned int states)
 
 double *pllmod_util_get_equal_rates(unsigned int states)
 {
-  const unsigned int rates      = pll_subst_rate_count(states);
+  const unsigned int rates      = corax_subst_rate_count(states);
   double *           substrates = calloc(rates, sizeof(double));
   if (!substrates)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory.");
     return NULL;
   }
 
@@ -82,7 +82,7 @@ double *pllmod_util_get_equal_rates(unsigned int states)
  *
  * @return array defining substitution rate symmetries
  */
-PLL_EXPORT int *pllmod_util_model_string_to_sym(const char *s)
+CORAX_EXPORT int *pllmod_util_model_string_to_sym(const char *s)
 {
   size_t len      = strlen(s);
   int *  sym_list = calloc(len, sizeof(int));
@@ -109,7 +109,7 @@ PLL_EXPORT int *pllmod_util_model_string_to_sym(const char *s)
  *
  * @return custom model instance
  */
-PLL_EXPORT pllmod_subst_model_t *
+CORAX_EXPORT pllmod_subst_model_t *
            pllmod_util_model_create_custom(const char *  name,
                                            unsigned int  states,
                                            const double *rates,
@@ -119,7 +119,7 @@ PLL_EXPORT pllmod_subst_model_t *
 {
   if (states <= 1)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid number of states: %d",
                   states);
     return NULL;
@@ -128,7 +128,7 @@ PLL_EXPORT pllmod_subst_model_t *
   const size_t rate_count = states * (states - 1) / 2;
   if (rate_sym_str && strlen(rate_sym_str) != rate_count)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid rates symmetry definition: %s",
                   rate_sym_str);
     return NULL;
@@ -136,7 +136,7 @@ PLL_EXPORT pllmod_subst_model_t *
 
   if (freq_sym_str && strlen(freq_sym_str) != states)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid freqs symmetry definition: %s",
                   freq_sym_str);
     return NULL;
@@ -164,7 +164,7 @@ PLL_EXPORT pllmod_subst_model_t *
 /**
  * @brief Creates a copy of substitution model instance
  */
-PLL_EXPORT pllmod_subst_model_t *
+CORAX_EXPORT pllmod_subst_model_t *
            pllmod_util_model_clone(const pllmod_subst_model_t *src)
 {
   if (!src) return NULL;
@@ -193,7 +193,7 @@ PLL_EXPORT pllmod_subst_model_t *
 /**
  * @brief Destroy a substitution model instance and free associated memory
  */
-PLL_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model)
+CORAX_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model)
 {
   if (model->dynamic_malloc)
   {
@@ -226,7 +226,7 @@ PLL_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model)
  *
  * @return mixture model instance
  */
-PLL_EXPORT pllmod_mixture_model_t *
+CORAX_EXPORT pllmod_mixture_model_t *
            pllmod_util_model_mixture_create(const char *                 name,
                                             unsigned int                 ncomp,
                                             pllmod_subst_model_t **const models,
@@ -236,7 +236,7 @@ PLL_EXPORT pllmod_mixture_model_t *
 {
   if (ncomp <= 0)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MIXTURE_INVALID_SIZE,
+    corax_set_error(PLLMOD_UTIL_ERROR_MIXTURE_INVALID_SIZE,
                   "Invalid number of components: %d",
                   ncomp);
     return NULL;
@@ -248,7 +248,7 @@ PLL_EXPORT pllmod_mixture_model_t *
   {
     if (models[i]->states != models[0]->states)
     {
-      pll_set_error(
+      corax_set_error(
           PLLMOD_UTIL_ERROR_MIXTURE_INVALID_COMPONENT,
           "Distinct number of states in mixture components 0 and %d: %d != %d",
           i,
@@ -283,7 +283,7 @@ PLL_EXPORT pllmod_mixture_model_t *
 /**
  * @brief Create a copy of mixture model
  */
-PLL_EXPORT pllmod_mixture_model_t *
+CORAX_EXPORT pllmod_mixture_model_t *
            pllmod_util_model_mixture_clone(const pllmod_mixture_model_t *src)
 {
   if (src)
@@ -300,7 +300,7 @@ PLL_EXPORT pllmod_mixture_model_t *
 /**
  * @brief Destroy a mixture model instance and free associated memory
  */
-PLL_EXPORT void
+CORAX_EXPORT void
 pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture)
 {
   if (mixture->name) free(mixture->name);
@@ -334,17 +334,17 @@ pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture)
  *
  * @return character map
  */
-PLL_EXPORT pll_state_t *pllmod_util_charmap_create(unsigned int states,
+CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
                                                    const char * statechars,
                                                    const char * gapchars,
                                                    int          case_sensitive)
 {
   size_t                    i;
-  static const unsigned int maxstates = sizeof(pll_state_t) * 8;
+  static const unsigned int maxstates = sizeof(corax_state_t) * 8;
 
   if (states > maxstates)
   {
-    pll_set_error(
+    corax_set_error(
         PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
         "The specified number of states (%u) exceeds the allowed maximum (%u)",
         states,
@@ -354,18 +354,18 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_create(unsigned int states,
 
   if (states > strlen(statechars))
   {
-    pll_set_error(
+    corax_set_error(
         PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
         "Character map string is too short for a given number of states: %u",
         states);
     return NULL;
   }
 
-  pll_state_t *map = calloc(256, sizeof(pll_state_t));
+  corax_state_t *map = calloc(256, sizeof(corax_state_t));
 
   /* fill map */
-  pll_state_t state    = 1;
-  pll_state_t gapstate = 0;
+  corax_state_t state    = 1;
+  corax_state_t gapstate = 0;
   for (i = 0; i < states; ++i)
   {
     int c = statechars[i];
@@ -382,9 +382,9 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_create(unsigned int states,
     state <<= 1;
   }
 
-  assert(((unsigned int)PLL_STATE_CTZ(state) == states)
+  assert(((unsigned int)CORAX_STATE_CTZ(state) == states)
          || (states == maxstates && state == 0));
-  assert(PLL_STATE_POPCNT(gapstate) == states);
+  assert(CORAX_STATE_POPCNT(gapstate) == states);
 
   /* fill gaps */
   if (gapchars)
@@ -411,18 +411,18 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_create(unsigned int states,
  *
  * @return character map
  */
-PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
+CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
                                                   const char * fname,
                                                   int          case_sensitive,
                                                   char **      state_names)
 {
   size_t                    i, j;
-  static const unsigned int maxstates = sizeof(pll_state_t) * 8;
+  static const unsigned int maxstates = sizeof(corax_state_t) * 8;
   unsigned int              obs_states, mod_states;
 
   if (states > maxstates)
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
                   "The specified number of states (%u) "
                   "exceeds the allowed maximum (%u)",
                   states,
@@ -434,46 +434,46 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
 
   if (!f)
   {
-    pll_set_error(PLL_ERROR_FILE_OPEN, "Cannot open file: %s", fname);
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_FILE_OPEN, "Cannot open file: %s", fname);
+    return CORAX_FAILURE;
   }
 
   if (fscanf(f, "%u %u", &obs_states, &mod_states) != 2)
   {
     fclose(f);
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Invalid character map file: %s",
                   fname);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (mod_states != states)
   {
     fclose(f);
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Invalid number of states in the charmap file: %u",
                   mod_states);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   char statechars[1025];
   if (fscanf(f, "%1024s", statechars) != 1)
   {
     fclose(f);
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Error reading observed state list");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (obs_states != strlen(statechars))
   {
     fclose(f);
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
                   "Length of the character map string (%u) does not "
                   "correspond to the declared number of observed states (%u)",
                   strlen(statechars),
                   obs_states);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* read state names */
@@ -483,15 +483,15 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
     if (fscanf(f, "%1024s", sname) != 1)
     {
       fclose(f);
-      pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Error reading name of state # %u",
                     i);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     if (state_names) state_names[i] = strdup(sname);
   }
 
-  pll_state_t *map = calloc(256, sizeof(pll_state_t));
+  corax_state_t *map = calloc(256, sizeof(corax_state_t));
 
   /* fill map */
   for (i = 0; i < obs_states; ++i)
@@ -501,38 +501,38 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
       ;
     if (fscanf(f, "%c", &ostate) != 1)
     {
-      pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Error reading observed state %u",
                     i);
       free(map);
       fclose(f);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     if (!strchr(statechars, ostate))
     {
-      pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Undeclared observed state: %c",
                     ostate);
       free(map);
       fclose(f);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
-    pll_state_t mstate = 1;
+    corax_state_t mstate = 1;
     int         c      = (int)ostate;
     for (j = 0; j < mod_states; ++j)
     {
       int flag;
       if (fscanf(f, "%d", &flag) != 1 && fscanf(f, ",%d", &flag) != 1)
       {
-        pll_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+        corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                       "Error reading state map value: %c -> %u",
                       c,
                       j);
         free(map);
         fclose(f);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
 
       if (flag)
@@ -548,7 +548,7 @@ PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
       mstate <<= 1;
     }
 
-    assert(((unsigned int)PLL_STATE_CTZ(mstate) == states)
+    assert(((unsigned int)CORAX_STATE_CTZ(mstate) == states)
            || (states == maxstates && mstate == 0));
   }
 

@@ -12,7 +12,7 @@ static int v_int_max(int *v, int n)
 struct cb_params
 {
   const unsigned int *params_indices;
-  pll_partition_t *   partition;
+  corax_partition_t *   partition;
   int                 update_pmatrices;
   int                 update_clvs;
 };
@@ -20,7 +20,7 @@ struct cb_params
 /**
  * callback function for updating p-matrices and partials
  */
-static int cb_update_matrices_clvs(pll_unode_t *node, void *data)
+static int cb_update_matrices_clvs(corax_unode_t *node, void *data)
 {
   struct cb_params *st_data = (struct cb_params *)data;
 
@@ -33,21 +33,21 @@ static int cb_update_matrices_clvs(pll_unode_t *node, void *data)
     assert(fabs(node->length - node->back->length) < 1e-8);
     assert(node->pmatrix_index == node->back->pmatrix_index);
 
-    pll_update_prob_matrices(st_data->partition,
+    corax_update_prob_matrices(st_data->partition,
                              st_data->params_indices,
                              &matrix_index,
                              &branch_length,
                              1);
   }
 
-  if (st_data->update_clvs && !PLL_UTREE_IS_TIP(node))
+  if (st_data->update_clvs && !CORAX_UTREE_IS_TIP(node))
   {
     /* check integrity */
     assert(node->next->pmatrix_index == node->next->back->pmatrix_index);
     assert(node->next->next->pmatrix_index
            == node->next->next->back->pmatrix_index);
 
-    pll_operation_t op;
+    corax_operation_t op;
     op.child1_clv_index    = node->next->back->clv_index;
     op.child1_scaler_index = node->next->back->scaler_index;
     op.child1_matrix_index = node->next->pmatrix_index;
@@ -57,16 +57,16 @@ static int cb_update_matrices_clvs(pll_unode_t *node, void *data)
     op.parent_clv_index    = node->clv_index;
     op.parent_scaler_index = node->scaler_index;
 
-    pll_update_clvs(st_data->partition, &op, 1);
+    corax_update_clvs(st_data->partition, &op, 1);
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
+static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
 {
-  pll_partition_t *   partition      = params->lk_params.partition;
-  pll_operation_t *   operations     = params->lk_params.operations;
+  corax_partition_t *   partition      = params->lk_params.partition;
+  corax_operation_t *   operations     = params->lk_params.operations;
   double *            branch_lengths = params->lk_params.branch_lengths;
   const unsigned int *matrix_indices = params->lk_params.matrix_indices;
   unsigned int        params_index   = params->params_index;
@@ -97,9 +97,9 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     if ((subst_rates = (double *)malloc((size_t)n_subst_rates * sizeof(double)))
         == NULL)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for substitution rate parameters");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     assert(subst_rates);
@@ -129,7 +129,7 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
       xptr += n_subst_rates - 1;
     }
 
-    pll_set_subst_params(partition, params_index, subst_rates);
+    corax_set_subst_params(partition, params_index, subst_rates);
     free(subst_rates);
   }
 
@@ -143,9 +143,9 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     double *     freqs;
     if ((freqs = (double *)malloc((size_t)n_states * sizeof(double))) == NULL)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for frequencies");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     for (i = 0; i < (n_states - 1); ++i)
@@ -164,7 +164,7 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     }
     freqs[params->highest_freq_state] = 1.0 / sum_ratios;
 
-    pll_set_frequencies(partition, params_index, freqs);
+    corax_set_frequencies(partition, params_index, freqs);
     free(freqs);
     xptr += (n_states - 1);
   }
@@ -175,9 +175,9 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     unsigned int i;
     for (i = 0; i < (partition->rate_cats); ++i)
     {
-      if (!pll_update_invariant_sites_proportion(
+      if (!corax_update_invariant_sites_proportion(
               partition, params_indices[i], xptr[0]))
-      { return PLL_FAILURE; }
+      { return CORAX_FAILURE; }
     }
     xptr++;
   }
@@ -190,16 +190,16 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     if ((rate_cats = malloc((size_t)partition->rate_cats * sizeof(double)))
         == NULL)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for substitution rate categories");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     params->lk_params.alpha_value = xptr[0];
-    if (!pll_compute_gamma_cats(
-            xptr[0], partition->rate_cats, rate_cats, PLL_GAMMA_RATES_MEAN))
-    { return PLL_FAILURE; }
-    pll_set_category_rates(partition, rate_cats);
+    if (!corax_compute_gamma_cats(
+            xptr[0], partition->rate_cats, rate_cats, CORAX_GAMMA_RATES_MEAN))
+    { return CORAX_FAILURE; }
+    corax_set_category_rates(partition, rate_cats);
 
     free(rate_cats);
     xptr++;
@@ -208,7 +208,7 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
   /* update free rates */
   if (params->which_parameters & PLLMOD_OPT_PARAM_FREE_RATES)
   {
-    pll_set_category_rates(partition, xptr);
+    corax_set_category_rates(partition, xptr);
     xptr += params->lk_params.partition->rate_cats;
   }
 
@@ -223,9 +223,9 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     if ((weights = (double *)malloc((size_t)rate_cats * sizeof(double)))
         == NULL)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for substitution rate weights");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     for (i = 0; i < (rate_cats - 1); ++i)
@@ -243,7 +243,7 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
       }
     }
     weights[params->highest_weight_state] = 1.0 / sum_ratios;
-    pll_set_category_weights(partition, weights);
+    corax_set_category_weights(partition, weights);
     free(weights);
     xptr += (rate_cats - 1);
   }
@@ -262,7 +262,7 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
     assert(!isnan(xptr[0]));
     /* assign branch length */
     *branch_lengths = *xptr;
-    pll_update_prob_matrices(
+    corax_update_prob_matrices(
         partition,
         params_indices,
         &params->lk_params.where.unrooted_t.edge_pmatrix_index,
@@ -272,18 +272,18 @@ static int set_x_to_parameters(pll_optimize_options_t *params, double *x)
   }
   else
   {
-    pll_update_prob_matrices(
+    corax_update_prob_matrices(
         partition, params_indices, matrix_indices, branch_lengths, n_branches);
 
-    pll_update_clvs(partition, operations, n_inner_nodes);
+    corax_update_clvs(partition, operations, n_inner_nodes);
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static double compute_negative_lnl_unrooted(void *p, double *x)
 {
-  pll_optimize_options_t *params    = (pll_optimize_options_t *)p;
-  pll_partition_t *       partition = params->lk_params.partition;
+  corax_optimize_options_t *params    = (corax_optimize_options_t *)p;
+  corax_partition_t *       partition = params->lk_params.partition;
   double                  score;
 
   if (x && !set_x_to_parameters(params, x)) return (double)-INFINITY;
@@ -291,7 +291,7 @@ static double compute_negative_lnl_unrooted(void *p, double *x)
   if (params->lk_params.rooted)
   {
     score = -1
-            * pll_compute_root_loglikelihood(
+            * corax_compute_root_loglikelihood(
                 partition,
                 params->lk_params.where.rooted_t.root_clv_index,
                 params->lk_params.where.rooted_t.scaler_index,
@@ -301,7 +301,7 @@ static double compute_negative_lnl_unrooted(void *p, double *x)
   else
   {
     score = -1
-            * pll_compute_edge_loglikelihood(
+            * corax_compute_edge_loglikelihood(
                 partition,
                 params->lk_params.where.unrooted_t.parent_clv_index,
                 params->lk_params.where.unrooted_t.parent_scaler_index,
@@ -321,10 +321,10 @@ static double brent_target(void *p, double x)
   return score;
 }
 
-static unsigned int count_n_free_variables(pll_optimize_options_t *params)
+static unsigned int count_n_free_variables(corax_optimize_options_t *params)
 {
   unsigned int     num_variables = 0;
-  pll_partition_t *partition     = params->lk_params.partition;
+  corax_partition_t *partition     = params->lk_params.partition;
 
   /* count number of variables for dynamic allocation */
   if (params->which_parameters & PLLMOD_OPT_PARAM_SUBST_RATES)
@@ -367,7 +367,7 @@ static unsigned int count_n_free_variables(pll_optimize_options_t *params)
  *
  * @return    the negative likelihood score
  */
-PLL_EXPORT double pllmod_opt_optimize_onedim(pll_optimize_options_t *params,
+CORAX_EXPORT double pllmod_opt_optimize_onedim(corax_optimize_options_t *params,
                                              double                  umin,
                                              double                  umax)
 {
@@ -412,7 +412,7 @@ PLL_EXPORT double pllmod_opt_optimize_onedim(pll_optimize_options_t *params,
   set_x_to_parameters(params, &xres);
 
   return score;
-} /* pll_optimize_parameters_onedim */
+} /* corax_optimize_parameters_onedim */
 
 /******************************************************************************/
 /* L-BFGS-B OPTIMIZATION */
@@ -431,12 +431,12 @@ PLL_EXPORT double pllmod_opt_optimize_onedim(pll_optimize_options_t *params,
  *
  * @return        the negative likelihood score
  */
-PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *params,
+CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *params,
                                                double *                umin,
                                                double *                umax)
 {
   unsigned int     i;
-  pll_partition_t *partition = params->lk_params.partition;
+  corax_partition_t *partition = params->lk_params.partition;
 
   /* L-BFGS-B parameters */
   //  double initial_score;
@@ -458,7 +458,7 @@ PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *params,
 
   if (!(x && lower_bounds && upper_bounds && bound_type))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for l-bfgs-b parameters");
     if (x) free(x);
     if (lower_bounds) free(lower_bounds);
@@ -638,7 +638,7 @@ PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *params,
       free(lower_bounds);
       free(upper_bounds);
       free(bound_type);
-      pll_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN,
+      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN,
                     "Topology optimization is not implemented");
 
       return (double)-INFINITY;
@@ -696,9 +696,9 @@ PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *params,
   if (isnan(score))
   {
     score = (double)-INFINITY;
-    if (!pll_errno)
+    if (!corax_errno)
     {
-      pll_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 
@@ -710,8 +710,8 @@ PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *params,
  * if update_pmatrices or update_partials are set, p-matrices and CLVs are
  * updated before computing the likelihood.
  */
-PLL_EXPORT double pllmod_opt_compute_lk(pll_partition_t *   partition,
-                                        pll_unode_t *       tree,
+CORAX_EXPORT double pllmod_opt_compute_lk(corax_partition_t *   partition,
+                                        corax_unode_t *       tree,
                                         const unsigned int *params_indices,
                                         int                 update_pmatrices,
                                         int                 update_partials)
@@ -729,11 +729,11 @@ PLL_EXPORT double pllmod_opt_compute_lk(pll_partition_t *   partition,
     parameters.update_pmatrices = update_pmatrices;
     parameters.update_clvs      = update_partials;
 
-    pll_utree_traverse_apply(
+    corax_utree_traverse_apply(
         tree, 0, 0, cb_update_matrices_clvs, (void *)&parameters);
   }
 
-  double logl = pll_compute_edge_loglikelihood(partition,
+  double logl = corax_compute_edge_loglikelihood(partition,
                                                tree->clv_index,
                                                tree->scaler_index,
                                                tree->back->clv_index,

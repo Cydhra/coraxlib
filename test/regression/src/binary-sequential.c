@@ -36,7 +36,7 @@
 #define BLOCK_ID_PARTITION 101
 #define BLOCK_ID_TREE      102
 
-static pll_partition_t * parse_msa(unsigned int attributes, pll_utree_t * tree)
+static corax_partition_t * parse_msa(unsigned int attributes, corax_utree_t * tree)
 {
   unsigned int i;
   unsigned int tip_clv_index;
@@ -46,10 +46,10 @@ static pll_partition_t * parse_msa(unsigned int attributes, pll_utree_t * tree)
        read_len   = 0,
        header_len = 0,
        seqno      = 0;
-  pll_fasta_t * fp;
-  pll_partition_t * partition;
+  corax_fasta_t * fp;
+  corax_partition_t * partition;
 
-  pll_unode_t ** tipnodes = tree->nodes;
+  corax_unode_t ** tipnodes = tree->nodes;
   unsigned int tip_nodes_count = tree->tip_count;
 
   headers = (char **)calloc(tip_nodes_count, sizeof(char *));
@@ -70,15 +70,15 @@ static pll_partition_t * parse_msa(unsigned int attributes, pll_utree_t * tree)
     hsearch(entry, ENTER);
   }
 
-  fp = pll_fasta_open (MSA_FILENAME, pll_map_fasta);
+  fp = corax_fasta_open (MSA_FILENAME, corax_map_fasta);
   if (!fp)
   {
-    printf (" ERROR opening file (%d): %s\n", pll_errno, pll_errmsg);
+    printf (" ERROR opening file (%d): %s\n", corax_errno, corax_errmsg);
     return NULL;
   }
 
   i = 0;
-  while (pll_fasta_getnext (fp, &header, &header_len, &seq, &read_len, &seqno))
+  while (corax_fasta_getnext (fp, &header, &header_len, &seq, &read_len, &seqno))
   {
     if (!seq_len)
     {
@@ -96,15 +96,15 @@ static pll_partition_t * parse_msa(unsigned int attributes, pll_utree_t * tree)
     ++i;
   }
 
-  if (pll_errno != PLL_ERROR_FILE_EOF)
+  if (corax_errno != CORAX_ERROR_FILE_EOF)
   {
-    printf (" ERROR at the end (%d): %s\n", pll_errno, pll_errmsg);
+    printf (" ERROR at the end (%d): %s\n", corax_errno, corax_errmsg);
     return NULL;
   }
 
-  pll_fasta_close (fp);
+  corax_fasta_close (fp);
 
-  partition = pll_partition_create(tip_nodes_count,      /* tips */
+  partition = corax_partition_create(tip_nodes_count,      /* tips */
                                     tip_nodes_count - 2, /* clv buffers */
                                     N_STATES,            /* states */
                                     seq_len,             /* sites */
@@ -127,7 +127,7 @@ static pll_partition_t * parse_msa(unsigned int attributes, pll_utree_t * tree)
       fatal("Sequence with header %s does not appear in the tree", headers[i]);
 
     tip_clv_index = *((unsigned int *)(found->data));
-    pll_set_tip_states(partition, tip_clv_index, pll_map_nt, seqdata[i]);
+    corax_set_tip_states(partition, tip_clv_index, corax_map_nt, seqdata[i]);
   }
 
   hdestroy();
@@ -155,9 +155,9 @@ int write(void * data, size_t size, size_t count, FILE * file)
   size_t ret = fwrite(data, size, count, file);
   if (ret != count)
   {
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int main (int argc, char * argv[])
@@ -165,14 +165,14 @@ int main (int argc, char * argv[])
   unsigned int attributes = get_attributes(argc, argv);
   unsigned int matrix_count, ops_count;
   unsigned int tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
-  pll_partition_t * partition;
-  pll_unode_t * tree;
+  corax_partition_t * partition;
+  corax_unode_t * tree;
   double logl, save_logl;
 
-  pll_unode_t ** travbuffer;
+  corax_unode_t ** travbuffer;
   double * branch_lengths;
   unsigned int * matrix_indices;
-  pll_operation_t * operations;
+  corax_operation_t * operations;
 
   double frequencies[N_STATES]             = { 0.17, 0.19, 0.25, 0.39 };
   double subst_params[N_SUBST_RATES]       = {1,1,1,1,1,1};
@@ -183,13 +183,13 @@ int main (int argc, char * argv[])
                lk_child_clv_index, lk_child_scaler_index,
                lk_pmatrix_index;
 
-  pll_utree_t * parsed_tree = pll_utree_parse_newick(TREE_FILENAME);
+  corax_utree_t * parsed_tree = corax_utree_parse_newick(TREE_FILENAME);
   tip_nodes_count = parsed_tree->tip_count;
   tree = parsed_tree->nodes[2*tip_nodes_count - 3];
 
   if (!tree)
   {
-    printf ("Error %d parsing tree: %s\n", pll_errno, pll_errmsg);
+    printf ("Error %d parsing tree: %s\n", corax_errno, corax_errmsg);
     return 1;
   }
 
@@ -209,29 +209,29 @@ int main (int argc, char * argv[])
     return 1;
   }
 
-  pll_compute_gamma_cats(ALPHA, N_RATE_CATS, rate_cats, PLL_GAMMA_RATES_MEAN);
-  pll_set_frequencies(partition, 0, frequencies);
-  pll_set_subst_params(partition, 0, subst_params);
-  pll_set_category_rates(partition, rate_cats);
+  corax_compute_gamma_cats(ALPHA, N_RATE_CATS, rate_cats, CORAX_GAMMA_RATES_MEAN);
+  corax_set_frequencies(partition, 0, frequencies);
+  corax_set_subst_params(partition, 0, subst_params);
+  corax_set_category_rates(partition, rate_cats);
 
-  travbuffer = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(int));
-  operations = (pll_operation_t *)malloc(inner_nodes_count *
-                                                sizeof(pll_operation_t));
+  operations = (corax_operation_t *)malloc(inner_nodes_count *
+                                                sizeof(corax_operation_t));
 
   unsigned int traversal_size;
 
-  pll_unode_t * node = tree;
+  corax_unode_t * node = tree;
 
-  if (!pll_utree_traverse(node,
-                          PLL_TREE_TRAVERSE_POSTORDER,
+  if (!corax_utree_traverse(node,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
                           cb_full_traversal,
                           travbuffer,
                           &traversal_size))
-    fatal("Function pll_utree_traverse() requires inner nodes as parameters");
+    fatal("Function corax_utree_traverse() requires inner nodes as parameters");
 
-  pll_utree_create_operations(travbuffer,
+  corax_utree_create_operations(travbuffer,
                               traversal_size,
                               branch_lengths,
                               matrix_indices,
@@ -250,13 +250,13 @@ int main (int argc, char * argv[])
   printf ("Operations: %d\n", ops_count);
   printf ("Matrices: %d\n", matrix_count);
 
-  pll_update_prob_matrices(partition,
+  corax_update_prob_matrices(partition,
                            params_indices,
                            matrix_indices,
                            branch_lengths,
                            matrix_count);
 
-  pll_update_clvs(partition, operations, ops_count);
+  corax_update_clvs(partition, operations, ops_count);
 
   lk_parent_clv_index = node->clv_index;
   lk_parent_scaler_index = node->scaler_index;
@@ -264,7 +264,7 @@ int main (int argc, char * argv[])
   lk_child_scaler_index = node->back->scaler_index;
   lk_pmatrix_index = node->pmatrix_index;
 
-  logl = pll_compute_edge_loglikelihood(partition,
+  logl = corax_compute_edge_loglikelihood(partition,
                                         lk_parent_clv_index,
                                         lk_parent_scaler_index,
                                         lk_child_clv_index,
@@ -277,7 +277,7 @@ int main (int argc, char * argv[])
   printf("Log-L: %f\n", logl);
 
   FILE * bin_file;
-  pll_binary_header_t bin_header;
+  corax_binary_header_t bin_header;
   const char * bin_fname = "test.bin";
 
   printf("** create binary file\n");
@@ -309,11 +309,11 @@ int main (int argc, char * argv[])
   pllmod_binary_close(bin_file);
 
   /* clean */
-  pll_partition_destroy(partition);
-  pll_utree_destroy(parsed_tree, NULL);
+  corax_partition_destroy(partition);
+  corax_utree_destroy(parsed_tree, NULL);
 
   /* reload */
-  pll_binary_header_t input_header;
+  corax_binary_header_t input_header;
   unsigned int bin_attributes = 0;
   bin_file = pllmod_binary_open(bin_fname, &input_header);
 
@@ -331,10 +331,10 @@ int main (int argc, char * argv[])
     fatal("Error loading tree!\n");
 
 printf("\n\n\n");
-//pll_utree_show_ascii(tree, (1<<5)-1);
+//corax_utree_show_ascii(tree, (1<<5)-1);
 
 /* first check if partition was restored correctly */
-logl = pll_compute_edge_loglikelihood(partition,
+logl = corax_compute_edge_loglikelihood(partition,
                                       lk_parent_clv_index,
                                       lk_parent_scaler_index,
                                       lk_child_clv_index,
@@ -353,14 +353,14 @@ pllmod_binary_close(bin_file);
 
   printf("Log-L: %f\n", logl);
 
-  if (!pll_utree_traverse(tree,
-                          PLL_TREE_TRAVERSE_POSTORDER,
+  if (!corax_utree_traverse(tree,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
                           cb_full_traversal,
                           travbuffer,
                           &traversal_size))
-    fatal("Function pll_utree_traverse() requires inner nodes as parameters");
+    fatal("Function corax_utree_traverse() requires inner nodes as parameters");
 
-  pll_utree_create_operations(travbuffer,
+  corax_utree_create_operations(travbuffer,
                               traversal_size,
                               branch_lengths,
                               matrix_indices,
@@ -368,15 +368,15 @@ pllmod_binary_close(bin_file);
                               &matrix_count,
                               &ops_count);
 
-  pll_update_prob_matrices(partition,
+  corax_update_prob_matrices(partition,
                            params_indices,
                            matrix_indices,
                            branch_lengths,
                            matrix_count);
 
-  pll_update_clvs(partition, operations, ops_count);
+  corax_update_clvs(partition, operations, ops_count);
 
-  logl = pll_compute_edge_loglikelihood(partition,
+  logl = corax_compute_edge_loglikelihood(partition,
                                         tree->clv_index,
                                         tree->scaler_index,
                                         tree->back->clv_index,
@@ -393,8 +393,8 @@ pllmod_binary_close(bin_file);
     fatal("Error: Saved and loaded logL do not agree!!\n");
 
   /* clean */
-  pll_partition_destroy(partition);
-  pll_utree_graph_destroy(tree, NULL);
+  corax_partition_destroy(partition);
+  corax_utree_graph_destroy(tree, NULL);
 
   free(travbuffer);
   free(branch_lengths);

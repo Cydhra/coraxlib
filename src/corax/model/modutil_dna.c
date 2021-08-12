@@ -185,7 +185,7 @@ static int get_model_index(const char *model_name)
 /**
  * @brief Returns number of available built-in DNA evolution models
  */
-PLL_EXPORT unsigned int pllmod_util_model_count_dna()
+CORAX_EXPORT unsigned int pllmod_util_model_count_dna()
 {
   return DNA_MODELS_COUNT;
 }
@@ -193,7 +193,7 @@ PLL_EXPORT unsigned int pllmod_util_model_count_dna()
 /**
  * @brief Returns list of available built-in DNA evolution models (names)
  */
-PLL_EXPORT char **pllmod_util_model_names_dna()
+CORAX_EXPORT char **pllmod_util_model_names_dna()
 {
   char **names = calloc(DNA_MODELS_COUNT, sizeof(char *));
 
@@ -212,7 +212,7 @@ PLL_EXPORT char **pllmod_util_model_names_dna()
  * @brief Returns 1 if built-in DNA models with a given name exists and 0
  * otherwise
  */
-PLL_EXPORT int pllmod_util_model_exists_dna(const char *model_name)
+CORAX_EXPORT int pllmod_util_model_exists_dna(const char *model_name)
 {
   return get_model_index(model_name) >= 0 ? 1 : 0;
 }
@@ -226,7 +226,7 @@ PLL_EXPORT int pllmod_util_model_exists_dna(const char *model_name)
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-PLL_EXPORT pllmod_subst_model_t *
+CORAX_EXPORT pllmod_subst_model_t *
            pllmod_util_model_info_dna(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
@@ -236,7 +236,7 @@ PLL_EXPORT pllmod_subst_model_t *
   }
   else
   {
-    pll_set_error(
+    corax_set_error(
         PLLMOD_UTIL_ERROR_MODEL_UNKNOWN, "DNA model not found: %s", model_name);
     return NULL;
   }

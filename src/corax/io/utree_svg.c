@@ -21,25 +21,25 @@
 
 #include "utree_io.h"
 
-typedef struct pll_svg_data_s
+typedef struct corax_svg_data_s
 {
   int    height;
   double x;
   double y;
-} pll_svg_data_t;
+} corax_svg_data_t;
 
-typedef struct pll_svg_aux_s
+typedef struct corax_svg_aux_s
 {
   int    tip_occ;
   double scaler;
   double canvas_width;
   double max_font_len;
   double max_tree_len;
-} pll_svg_aux_t;
+} corax_svg_aux_t;
 
-static pll_svg_data_t *create_data(int height, double x, double y)
+static corax_svg_data_t *create_data(int height, double x, double y)
 {
-  pll_svg_data_t *data = (pll_svg_data_t *)malloc(sizeof(pll_svg_data_t));
+  corax_svg_data_t *data = (corax_svg_data_t *)malloc(sizeof(corax_svg_data_t));
   if (!data) return NULL;
 
   data->height = height;
@@ -49,7 +49,7 @@ static pll_svg_data_t *create_data(int height, double x, double y)
   return data;
 }
 
-static int utree_height_recursive(pll_unode_t *node)
+static int utree_height_recursive(corax_unode_t *node)
 {
   if (!node->next)
   {
@@ -61,9 +61,9 @@ static int utree_height_recursive(pll_unode_t *node)
   if (!utree_height_recursive(node->next->back)) return 0;
   if (!utree_height_recursive(node->next->next->back)) return 0;
 
-  pll_svg_data_t *d1 = (pll_svg_data_t *)(node->next->back->data);
-  pll_svg_data_t *d2 = (pll_svg_data_t *)(node->next->next->back->data);
-  pll_svg_data_t *d  = create_data(0, 0, 0);
+  corax_svg_data_t *d1 = (corax_svg_data_t *)(node->next->back->data);
+  corax_svg_data_t *d2 = (corax_svg_data_t *)(node->next->next->back->data);
+  corax_svg_data_t *d  = create_data(0, 0, 0);
   if (!d) return 0;
 
   if (d1->height > d2->height)
@@ -76,19 +76,19 @@ static int utree_height_recursive(pll_unode_t *node)
   return 1;
 }
 
-static int utree_set_height(pll_unode_t *root)
+static int utree_set_height(corax_unode_t *root)
 {
-  if (!root->next) return PLL_FAILURE;
+  if (!root->next) return CORAX_FAILURE;
 
-  if (!utree_height_recursive(root->back)) return PLL_FAILURE;
-  if (!utree_height_recursive(root)) return PLL_FAILURE;
+  if (!utree_height_recursive(root->back)) return CORAX_FAILURE;
+  if (!utree_height_recursive(root)) return CORAX_FAILURE;
 
-  pll_svg_data_t *db = (pll_svg_data_t *)(root->back->data);
-  pll_svg_data_t *d  = (pll_svg_data_t *)(root->data);
+  corax_svg_data_t *db = (corax_svg_data_t *)(root->back->data);
+  corax_svg_data_t *d  = (corax_svg_data_t *)(root->data);
 
   if (db->height >= d->height) d->height = db->height + 1;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static void draw_line(
@@ -114,18 +114,18 @@ static void draw_circle(FILE *fp, double cx, double cy, double r)
           r);
 }
 
-static void utree_set_offset(pll_unode_t *           node,
-                             const pll_svg_attrib_t *attr,
-                             const pll_svg_aux_t *   aux)
+static void utree_set_offset(corax_unode_t *           node,
+                             const corax_svg_attrib_t *attr,
+                             const corax_svg_aux_t *   aux)
 {
-  pll_unode_t *parent = NULL;
+  corax_unode_t *parent = NULL;
 
   /* scale node's branch length (edge towards parent) */
-  pll_svg_data_t *data = (pll_svg_data_t *)(node->data);
+  corax_svg_data_t *data = (corax_svg_data_t *)(node->data);
   data->x              = node->length * aux->scaler;
 
   /* did we reach the root ? */
-  pll_svg_data_t *parent_data = (pll_svg_data_t *)(node->back->data);
+  corax_svg_data_t *parent_data = (corax_svg_data_t *)(node->back->data);
   if (parent_data->height > data->height) parent = node->back;
 
   /* if node has a parent then add up the parent's x coord such that
@@ -147,16 +147,16 @@ static void utree_set_offset(pll_unode_t *           node,
 }
 
 static void utree_plot(FILE *                  fp,
-                       pll_unode_t *           node,
-                       const pll_svg_attrib_t *attr,
-                       pll_svg_aux_t *         aux)
+                       corax_unode_t *           node,
+                       const corax_svg_attrib_t *attr,
+                       corax_svg_aux_t *         aux)
 {
   double y;
   //  static int tip_occ = 0;
-  pll_unode_t *parent = NULL;
+  corax_unode_t *parent = NULL;
 
-  pll_svg_data_t *data        = (pll_svg_data_t *)(node->data);
-  pll_svg_data_t *parent_data = (pll_svg_data_t *)(node->back->data);
+  corax_svg_data_t *data        = (corax_svg_data_t *)(node->data);
+  corax_svg_data_t *parent_data = (corax_svg_data_t *)(node->back->data);
 
   if (parent_data->height > data->height) parent = node->back;
 
@@ -184,8 +184,8 @@ static void utree_plot(FILE *                  fp,
     {
       double ly, ry;
 
-      pll_svg_data_t *nb_data  = node->next->back->data;
-      pll_svg_data_t *nnb_data = node->next->next->back->data;
+      corax_svg_data_t *nb_data  = node->next->back->data;
+      corax_svg_data_t *nnb_data = node->next->next->back->data;
 
       ly = nb_data->y;
       ry = nnb_data->y;
@@ -214,7 +214,7 @@ static void utree_plot(FILE *                  fp,
   else
   {
     double          ly, ry, x;
-    pll_svg_data_t *nb_data = (pll_svg_data_t *)(node->next->back->data);
+    corax_svg_data_t *nb_data = (corax_svg_data_t *)(node->next->back->data);
 
     ly = nb_data->y;
     ry = parent_data->y;
@@ -226,9 +226,9 @@ static void utree_plot(FILE *                  fp,
   }
 }
 
-static void utree_scaler_init(const pll_svg_attrib_t *attr,
-                              pll_svg_aux_t *         aux,
-                              pll_utree_t *           tree)
+static void utree_scaler_init(const corax_svg_attrib_t *attr,
+                              corax_svg_aux_t *         aux,
+                              corax_utree_t *           tree)
 {
   unsigned int i;
   double       len = 0;
@@ -238,16 +238,16 @@ static void utree_scaler_init(const pll_svg_attrib_t *attr,
      max_tree_len */
   for (i = 0; i < tree->tip_count; ++i)
   {
-    pll_unode_t *node = tree->nodes[i];
+    corax_unode_t *node = tree->nodes[i];
 
     len  = node->length;
     node = node->back;
     while (1)
     {
-      pll_svg_data_t *data    = (pll_svg_data_t *)(node->data);
-      pll_svg_data_t *nb_data = (pll_svg_data_t *)(node->next->back->data);
-      pll_svg_data_t *nnb_data =
-          (pll_svg_data_t *)(node->next->next->back->data);
+      corax_svg_data_t *data    = (corax_svg_data_t *)(node->data);
+      corax_svg_data_t *nb_data = (corax_svg_data_t *)(node->next->back->data);
+      corax_svg_data_t *nnb_data =
+          (corax_svg_data_t *)(node->next->next->back->data);
 
       if (nb_data->height > data->height)
         node = node->next->back;
@@ -279,9 +279,9 @@ static void utree_scaler_init(const pll_svg_attrib_t *attr,
 }
 
 static void print_header(FILE *                  fp,
-                         pll_utree_t *           tree,
-                         const pll_svg_attrib_t *attr,
-                         pll_svg_aux_t *         aux)
+                         corax_utree_t *           tree,
+                         const corax_svg_attrib_t *attr,
+                         corax_svg_aux_t *         aux)
 {
   long svg_height;
 
@@ -338,13 +338,13 @@ static void print_header(FILE *                  fp,
 }
 
 static void svg_make(FILE *                  fp,
-                     pll_utree_t *           tree,
-                     pll_unode_t *           root,
-                     const pll_svg_attrib_t *attr)
+                     corax_utree_t *           tree,
+                     corax_unode_t *           root,
+                     const corax_svg_attrib_t *attr)
 {
 
   /* initialize auxiliary variables */
-  pll_svg_aux_t aux;
+  corax_svg_aux_t aux;
   aux.max_font_len = 0;
   aux.max_tree_len = 0;
   aux.canvas_width = 0;
@@ -363,11 +363,11 @@ static void svg_make(FILE *                  fp,
   fprintf(fp, "</svg>\n");
 }
 
-PLL_EXPORT pll_svg_attrib_t *pll_svg_attrib_create()
+CORAX_EXPORT corax_svg_attrib_t *corax_svg_attrib_create()
 {
-  pll_svg_attrib_t *x;
+  corax_svg_attrib_t *x;
 
-  x = (pll_svg_attrib_t *)malloc(sizeof(pll_svg_attrib_t));
+  x = (corax_svg_attrib_t *)malloc(sizeof(corax_svg_attrib_t));
   if (!x) return NULL;
 
   /* set some defaults */
@@ -388,26 +388,26 @@ PLL_EXPORT pll_svg_attrib_t *pll_svg_attrib_create()
   return x;
 }
 
-PLL_EXPORT void pll_svg_attrib_destroy(pll_svg_attrib_t *attrib)
+CORAX_EXPORT void corax_svg_attrib_destroy(corax_svg_attrib_t *attrib)
 {
   free(attrib);
 }
 
-PLL_EXPORT int pll_utree_export_svg(pll_utree_t *           tree,
-                                    pll_unode_t *           root,
-                                    const pll_svg_attrib_t *attribs,
+CORAX_EXPORT int corax_utree_export_svg(corax_utree_t *           tree,
+                                    corax_unode_t *           root,
+                                    const corax_svg_attrib_t *attribs,
                                     const char *            filename)
 {
   unsigned int i;
 
   /* clone the tree */
-  int rc = PLL_SUCCESS;
+  int rc = CORAX_SUCCESS;
 
-  if (!root || !(root->next)) return PLL_FAILURE;
+  if (!root || !(root->next)) return CORAX_FAILURE;
 
   /* open output file for writing */
   FILE *fp = fopen(filename, "w");
-  if (!fp) { return PLL_FAILURE; }
+  if (!fp) { return CORAX_FAILURE; }
 
   /* backup data */
   void **data_old =
@@ -415,8 +415,8 @@ PLL_EXPORT int pll_utree_export_svg(pll_utree_t *           tree,
   if (!data_old)
   {
     fclose(fp);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* copy old data */
@@ -430,7 +430,7 @@ PLL_EXPORT int pll_utree_export_svg(pll_utree_t *           tree,
      and compute the height of each node */
   // if (!utree_set_height(cloned))
   if (!utree_set_height(root))
-    rc = PLL_FAILURE;
+    rc = CORAX_FAILURE;
   else
     svg_make(fp, tree, root, attribs);
 

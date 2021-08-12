@@ -70,33 +70,33 @@ typedef struct msa_errors
   int            status;
 } pllmod_msa_errors_t;
 
-PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition);
-PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition);
-PLL_EXPORT double
-pllmod_msa_empirical_invariant_sites(pll_partition_t *partition);
+CORAX_EXPORT double *pllmod_msa_empirical_frequencies(corax_partition_t *partition);
+CORAX_EXPORT double *pllmod_msa_empirical_subst_rates(corax_partition_t *partition);
+CORAX_EXPORT double
+pllmod_msa_empirical_invariant_sites(corax_partition_t *partition);
 
-PLL_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const pll_msa_t *  msa,
-                                                 const pll_state_t *tipmap);
+CORAX_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const corax_msa_t *  msa,
+                                                 const corax_state_t *tipmap);
 
-PLL_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs);
+CORAX_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs);
 
-PLL_EXPORT pllmod_msa_stats_t *
-           pllmod_msa_compute_stats(const pll_msa_t *   msa,
+CORAX_EXPORT pllmod_msa_stats_t *
+           pllmod_msa_compute_stats(const corax_msa_t *   msa,
                                     unsigned int        states,
-                                    const pll_state_t * tipmap,
+                                    const corax_state_t * tipmap,
                                     const unsigned int *weights,
                                     unsigned long       stats_mask);
 
-PLL_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats);
+CORAX_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats);
 
-PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
+CORAX_EXPORT corax_msa_t *pllmod_msa_filter(corax_msa_t *    msa,
                                         unsigned long *remove_seqs,
                                         unsigned long  remove_seqs_count,
                                         unsigned long *remove_cols,
                                         unsigned long  remove_cols_count,
                                         unsigned int   inplace);
 
-PLL_EXPORT pll_msa_t **pllmod_msa_split(const pll_msa_t *   msa,
+CORAX_EXPORT corax_msa_t **pllmod_msa_split(const corax_msa_t *   msa,
                                         const unsigned int *site_part,
                                         unsigned int        part_count);
 

@@ -20,7 +20,7 @@
 #ifndef LBFGSB_H
 #define LBFGSB_H
 
-#define PLL_LBFGSB_ERROR             1.0e-4
+#define CORAX_LBFGSB_ERROR             1.0e-4
 
 typedef int ftnlen;
 typedef int logical;
@@ -161,11 +161,11 @@ typedef int logical;
  * lucky.
  * */
 
-#define PLL_LBFGSB_DEFAULT_FTOL .001
-#define PLL_LBFGSB_DEFAULT_GTOL .9
-#define PLL_LBFGSB_DEFAULT_XTOL .1
-#define PLL_LBFGSB_DEFAULT_STEPMIN 0.
-#define PLL_LBFGSB_DBL_EPSILON 2.2e-16
+#define CORAX_LBFGSB_DEFAULT_FTOL .001
+#define CORAX_LBFGSB_DEFAULT_GTOL .9
+#define CORAX_LBFGSB_DEFAULT_XTOL .1
+#define CORAX_LBFGSB_DEFAULT_STEPMIN 0.
+#define CORAX_LBFGSB_DBL_EPSILON 2.2e-16
 
 #ifdef __cplusplus
     extern "C" {

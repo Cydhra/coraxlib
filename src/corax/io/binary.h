@@ -63,14 +63,14 @@ typedef struct
   unsigned int access_type; //! PLLMOD_BIN_ACCESS_{SEQUENTIAL|RANDOM}
   char         pad[4];      //! padding
   long         map_offset;  //! offset of the block map
-} pll_binary_header_t;
+} corax_binary_header_t;
 
 /* block map for random access */
 typedef struct
 {
   long block_id;     //! user-defined block id
   long block_offset; //! offset in the file
-} pll_block_map_t;
+} corax_block_map_t;
 
 /*
  * Header stored before each block
@@ -87,91 +87,91 @@ typedef struct
   unsigned int alignment;  //! if memory should be aligned
   char         pad[4];     //! padding
   size_t       block_len;  //! block length
-} pll_block_header_t;
+} corax_block_header_t;
 
-PLL_EXPORT FILE *pllmod_binary_create(const char *         filename,
-                                      pll_binary_header_t *header,
+CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
+                                      corax_binary_header_t *header,
                                       unsigned int         access_type,
                                       unsigned int         n_blocks);
 
-PLL_EXPORT FILE *pllmod_binary_open(const char *         filename,
-                                    pll_binary_header_t *header);
+CORAX_EXPORT FILE *pllmod_binary_open(const char *         filename,
+                                    corax_binary_header_t *header);
 
-PLL_EXPORT FILE *pllmod_binary_append_open(const char *         filename,
-                                           pll_binary_header_t *header);
+CORAX_EXPORT FILE *pllmod_binary_append_open(const char *         filename,
+                                           corax_binary_header_t *header);
 
-PLL_EXPORT int pllmod_binary_close(FILE *bin_file);
+CORAX_EXPORT int pllmod_binary_close(FILE *bin_file);
 
-PLL_EXPORT pll_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
+CORAX_EXPORT corax_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
                                                   unsigned int *n_blocks);
 
-PLL_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
                                             int              block_id,
-                                            pll_partition_t *partition,
+                                            corax_partition_t *partition,
                                             unsigned int     attributes);
 
-PLL_EXPORT pll_partition_t *
+CORAX_EXPORT corax_partition_t *
            pllmod_binary_partition_load(FILE *           bin_file,
                                         int              block_id,
-                                        pll_partition_t *partition,
+                                        corax_partition_t *partition,
                                         unsigned int *   attributes,
                                         long int         offset);
 
-PLL_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
                                           int              block_id,
-                                          pll_partition_t *partition,
+                                          corax_partition_t *partition,
                                           unsigned int     attributes);
 
-PLL_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
                                           int              block_id,
-                                          pll_partition_t *partition,
+                                          corax_partition_t *partition,
                                           unsigned int *   attributes,
                                           long int         offset);
 
-PLL_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
                                                  int              block_id,
-                                                 pll_partition_t *partition,
+                                                 corax_partition_t *partition,
                                                  unsigned int     clv_index,
                                                  unsigned int     attributes);
 
-PLL_EXPORT int pllmod_binary_pernoderepeats_load(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_pernoderepeats_load(FILE *           bin_file,
                                                  int              block_id,
-                                                 pll_partition_t *partition,
+                                                 corax_partition_t *partition,
                                                  unsigned int     clv_index,
                                                  unsigned int *   attributes,
                                                  long int         offset);
 
-PLL_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
                                       int              block_id,
-                                      pll_partition_t *partition,
+                                      corax_partition_t *partition,
                                       unsigned int     clv_index,
                                       unsigned int     attributes);
 
-PLL_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
+CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
                                       int              block_id,
-                                      pll_partition_t *partition,
+                                      corax_partition_t *partition,
                                       unsigned int     clv_index,
                                       unsigned int *   attributes,
                                       long int         offset);
 
-PLL_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
+CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
                                         int          block_id,
-                                        pll_unode_t *tree,
+                                        corax_unode_t *tree,
                                         unsigned int tip_count,
                                         unsigned int attributes);
 
-PLL_EXPORT pll_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
+CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
                                                  int           block_id,
                                                  unsigned int *attributes,
                                                  long int      offset);
 
-PLL_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
+CORAX_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
                                          int          block_id,
                                          void *       data,
                                          size_t       size,
                                          unsigned int attributes);
 
-PLL_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
+CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
                                            int           block_id,
                                            size_t *      size,
                                            unsigned int *type,

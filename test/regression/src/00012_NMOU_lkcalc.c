@@ -31,7 +31,7 @@ unsigned int        params_indices[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* odd map with 7 states: A..G */
-const pll_state_t odd_map[256] = {
+const corax_state_t odd_map[256] = {
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -62,43 +62,43 @@ int main(int argc, char *argv[])
   unsigned int     n_sites = 12;
   unsigned int     n_tips  = 5;
   double           rate_cats[N_CAT_GAMMA];
-  pll_operation_t *operations;
+  corax_operation_t *operations;
   int              return_val;
 
-  operations = (pll_operation_t *)malloc(4 * sizeof(pll_operation_t));
+  operations = (corax_operation_t *)malloc(4 * sizeof(corax_operation_t));
 
   operations[0].parent_clv_index    = 5;
   operations[0].child1_clv_index    = 0;
   operations[0].child2_clv_index    = 1;
   operations[0].child1_matrix_index = 1;
   operations[0].child2_matrix_index = 1;
-  operations[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[0].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[1].parent_clv_index    = 6;
   operations[1].child1_clv_index    = 5;
   operations[1].child2_clv_index    = 2;
   operations[1].child1_matrix_index = 0;
   operations[1].child2_matrix_index = 1;
-  operations[1].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[1].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[1].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[1].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   operations[2].parent_clv_index    = 7;
   operations[2].child1_clv_index    = 3;
   operations[2].child2_clv_index    = 4;
   operations[2].child1_matrix_index = 1;
   operations[2].child2_matrix_index = 1;
-  operations[2].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[2].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[2].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[2].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   /* check attributes */
   unsigned int attributes = get_attributes(argc, argv);
 
-  pll_partition_t *partition;
-  partition = pll_partition_create(n_tips,       /* numer of tips */
+  corax_partition_t *partition;
+  partition = corax_partition_create(n_tips,       /* numer of tips */
                                    4,            /* clv buffers */
                                    N_STATES_ODD, /* number of states */
                                    n_sites,      /* sequence length */
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
   if (!partition)
   {
-    printf("Error %d: %s\n", pll_errno, pll_errmsg);
+    printf("Error %d: %s\n", corax_errno, corax_errmsg);
     fatal("Fail creating partition");
   }
 
@@ -123,52 +123,52 @@ int main(int argc, char *argv[])
   double *persite_lnl = (double *)malloc(n_sites * sizeof(double));
   double  checksum;
 
-  if (pll_compute_gamma_cats(
-          alpha, n_cat_gamma, rate_cats, PLL_GAMMA_RATES_MEAN)
-      == PLL_FAILURE)
+  if (corax_compute_gamma_cats(
+          alpha, n_cat_gamma, rate_cats, CORAX_GAMMA_RATES_MEAN)
+      == CORAX_FAILURE)
   {
-    printf("Error %d: %s\n", pll_errno, pll_errmsg);
+    printf("Error %d: %s\n", corax_errno, corax_errmsg);
     fatal("Fail computing gamma cats");
   }
 
-  pll_set_frequencies(partition, 0, frequencies);
-  pll_set_subst_params(partition, 0, subst_params);
+  corax_set_frequencies(partition, 0, frequencies);
+  corax_set_subst_params(partition, 0, subst_params);
 
-  return_val = PLL_SUCCESS;
-  return_val &= pll_set_tip_states(partition, 0, odd_map, "AAB-CCD-EFAA");
-  return_val &= pll_set_tip_states(partition, 1, odd_map, "ACC-FBA-ABGG");
-  return_val &= pll_set_tip_states(partition, 2, odd_map, "A-C-GAG-GCCF");
-  return_val &= pll_set_tip_states(partition, 3, odd_map, "ADCFCAA-A-CG");
-  return_val &= pll_set_tip_states(partition, 4, odd_map, "ABC-BCA-A-BG");
+  return_val = CORAX_SUCCESS;
+  return_val &= corax_set_tip_states(partition, 0, odd_map, "AAB-CCD-EFAA");
+  return_val &= corax_set_tip_states(partition, 1, odd_map, "ACC-FBA-ABGG");
+  return_val &= corax_set_tip_states(partition, 2, odd_map, "A-C-GAG-GCCF");
+  return_val &= corax_set_tip_states(partition, 3, odd_map, "ADCFCAA-A-CG");
+  return_val &= corax_set_tip_states(partition, 4, odd_map, "ABC-BCA-A-BG");
 
   if (!return_val) fatal("Error setting tip states");
 
-  pll_set_category_rates(partition, rate_cats);
+  corax_set_category_rates(partition, rate_cats);
 
-  pll_update_prob_matrices(
+  corax_update_prob_matrices(
       partition, params_indices, matrix_indices, branch_lengths, 4);
-  pll_update_clvs(partition, operations, 3);
+  corax_update_clvs(partition, operations, 3);
 
   for (j = 0; j < 4; ++j)
   {
     printf("[%d] P-matrix for branch length %f\n", j + 1, branch_lengths[j]);
-    pll_show_pmatrix(partition, j, FLOAT_PRECISION);
+    corax_show_pmatrix(partition, j, FLOAT_PRECISION);
     printf("\n");
   }
 
   /* show CLVs */
   printf("[5] CLV 5: ");
-  pll_show_clv(partition, 5, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+  corax_show_clv(partition, 5, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
   printf("[6] CLV 6: ");
-  pll_show_clv(partition, 6, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+  corax_show_clv(partition, 6, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
   printf("[7] CLV 7: ");
-  pll_show_clv(partition, 7, PLL_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
+  corax_show_clv(partition, 7, CORAX_SCALE_BUFFER_NONE, FLOAT_PRECISION + 1);
 
-  lk_score = pll_compute_edge_loglikelihood(partition,
+  lk_score = corax_compute_edge_loglikelihood(partition,
                                             6,
-                                            PLL_SCALE_BUFFER_NONE,
+                                            CORAX_SCALE_BUFFER_NONE,
                                             7,
-                                            PLL_SCALE_BUFFER_NONE,
+                                            CORAX_SCALE_BUFFER_NONE,
                                             0,
                                             params_indices,
                                             persite_lnl);
@@ -192,17 +192,17 @@ int main(int argc, char *argv[])
   operations[0].child2_clv_index    = 3;
   operations[0].child1_matrix_index = 0;
   operations[0].child2_matrix_index = 1;
-  operations[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[0].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
-  pll_update_clvs(partition, operations, 1);
+  corax_update_clvs(partition, operations, 1);
 
-  lk_score = pll_compute_edge_loglikelihood(partition,
+  lk_score = corax_compute_edge_loglikelihood(partition,
                                             7,
-                                            PLL_SCALE_BUFFER_NONE,
+                                            CORAX_SCALE_BUFFER_NONE,
                                             4,
-                                            PLL_SCALE_BUFFER_NONE,
+                                            CORAX_SCALE_BUFFER_NONE,
                                             1,
                                             params_indices,
                                             persite_lnl);
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
   printf("\n");
   printf("checksum logL:    %.6f\n", checksum);
 
-  pll_partition_destroy(partition);
+  corax_partition_destroy(partition);
   free(persite_lnl);
   free(operations);
 

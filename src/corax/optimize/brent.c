@@ -77,7 +77,7 @@ static int brent_opt_pre_loop(opt_params *bp)
                     / (bp->v * bp->v * bp->xw + bp->x * bp->x * bp->wv
                        + bp->w * bp->w * bp->vx);
     }
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (fabs(bp->e) > bp->tol1)
@@ -110,7 +110,7 @@ static int brent_opt_pre_loop(opt_params *bp)
   bp->u =
       (fabs(bp->d) >= bp->tol1 ? bp->x + bp->d : bp->x + SIGN(bp->tol1, bp->d));
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int brent_opt_init(double      ax,
@@ -418,7 +418,7 @@ brent_opt_alt(unsigned int xnum,
   free(fu);
   free(converged);
   free(brent_params);
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -438,7 +438,7 @@ brent_opt_alt(unsigned int xnum,
  * @return            the parameter value that minimizes the function in
  * [xmin,xmax]
  */
-PLL_EXPORT double pllmod_opt_minimize_brent(double  xmin,
+CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
                                             double  xguess,
                                             double  xmax,
                                             double  xtol,
@@ -491,7 +491,7 @@ PLL_EXPORT double pllmod_opt_minimize_brent(double  xmin,
  * @param global_range 0=xmin/xmax point to arrays of size xnum with individual
  * per-variable ranges; 1=xmin/xmax is a global range for all variables
  */
-PLL_EXPORT int pllmod_opt_minimize_brent_multi(
+CORAX_EXPORT int pllmod_opt_minimize_brent_multi(
     unsigned int xnum,
     int *        opt_mask,
     double *     xmin,

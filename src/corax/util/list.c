@@ -21,21 +21,21 @@
 
 #include "corax/corax.h"
 
-static int dlist_insert(pll_dlist_t **dlist, void *data, int insert_end)
+static int dlist_insert(corax_dlist_t **dlist, void *data, int insert_end)
 {
   if (!*dlist)
   {
-    *dlist = (pll_dlist_t *)malloc(sizeof(pll_dlist_t));
+    *dlist = (corax_dlist_t *)malloc(sizeof(corax_dlist_t));
     if (!*dlist)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-      return PLL_FAILURE;
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      return CORAX_FAILURE;
     }
 
     (*dlist)->next = NULL;
     (*dlist)->prev = NULL;
     (*dlist)->data = data;
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   }
 
   /* go to the last element if we chose to append */
@@ -43,36 +43,36 @@ static int dlist_insert(pll_dlist_t **dlist, void *data, int insert_end)
     for (; (*dlist)->next; dlist = &(*dlist)->next)
       ;
 
-  (*dlist)->next = (pll_dlist_t *)malloc(sizeof(pll_dlist_t));
+  (*dlist)->next = (corax_dlist_t *)malloc(sizeof(corax_dlist_t));
   if (!(*dlist)->next)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   (*dlist)->next->next = NULL;
   (*dlist)->next->data = data;
   (*dlist)->next->prev = (*dlist);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pll_dlist_append(pll_dlist_t **dlist, void *data)
+CORAX_EXPORT int corax_dlist_append(corax_dlist_t **dlist, void *data)
 {
   return dlist_insert(dlist, data, 1);
 }
 
-PLL_EXPORT int pll_dlist_prepend(pll_dlist_t **dlist, void *data)
+CORAX_EXPORT int corax_dlist_prepend(corax_dlist_t **dlist, void *data)
 {
   return dlist_insert(dlist, data, 0);
 }
 
-PLL_EXPORT int pll_dlist_remove(pll_dlist_t **dlist, void *data)
+CORAX_EXPORT int corax_dlist_remove(corax_dlist_t **dlist, void *data)
 {
   for (; (*dlist) && (*dlist)->data != data; dlist = &((*dlist)->next))
     ;
 
-  if (!*dlist) return PLL_FAILURE;
+  if (!*dlist) return CORAX_FAILURE;
 
   if ((*dlist)->next) (*dlist)->next->prev = (*dlist)->prev;
   if ((*dlist)->prev) (*dlist)->prev->next = (*dlist)->next;
@@ -80,5 +80,5 @@ PLL_EXPORT int pll_dlist_remove(pll_dlist_t **dlist, void *data)
   free(*dlist);
   *dlist = NULL;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

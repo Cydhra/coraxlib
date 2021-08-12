@@ -41,7 +41,7 @@ const char * header[100] = {
   "T81", "T82", "T83", "T84", "T85", "T86", "T87", "T88", "T89", "T90",
   "T91", "T92", "T93", "T94", "T95", "T96", "T97", "T98", "T99", "T100"};
 
-static int cb_set_bl(pll_unode_t * tree,
+static int cb_set_bl(corax_unode_t * tree,
                      void * data)
 {
   assert(tree->pmatrix_index == tree->back->pmatrix_index);
@@ -49,7 +49,7 @@ static int cb_set_bl(pll_unode_t * tree,
   return 1;
 }
 
-static int cb_set_names(pll_unode_t * tree,
+static int cb_set_names(corax_unode_t * tree,
                         void * data)
 {
   const char ** names = (const char **) data;
@@ -64,7 +64,7 @@ static int cb_set_names(pll_unode_t * tree,
   return 1;
 }
 
-static pll_unode_t * get_utree_root(pll_utree_t * tree)
+static corax_unode_t * get_utree_root(corax_utree_t * tree)
 {
   return tree->nodes[tree->tip_count + tree->inner_count - 1];
 }
@@ -74,13 +74,13 @@ int main (int argc, char * argv[])
    unsigned int n_taxa = N_TAXA_SMALL;
    //unsigned int attributes = get_attributes(argc, argv);
 
-   pll_utree_t * random_tree = pll_utree_random_create(n_taxa,
+   corax_utree_t * random_tree = corax_utree_random_create(n_taxa,
                                                          (const char **)header,
                                                          42);
-   pll_unode_t * root = random_tree->nodes[2*n_taxa - 3];
+   corax_unode_t * root = random_tree->nodes[2*n_taxa - 3];
 
    /* set arbitrary branch lengths */
-   pll_utree_traverse_apply(root,
+   corax_utree_traverse_apply(root,
                             NULL,
                             NULL,
                             cb_set_bl,
@@ -89,13 +89,13 @@ int main (int argc, char * argv[])
    printf("Root set to %d\n", root->node_index);
 
    printf("\nINITIAL RANDOM TREE:\n\n");
-   pll_utree_show_ascii(root, PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_BRANCH_LENGTH | PLL_UTREE_SHOW_LABEL | PLL_UTREE_SHOW_PMATRIX_INDEX);
+   corax_utree_show_ascii(root, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_BRANCH_LENGTH | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
    int rf_distance;
-   pll_utree_t * tree;
-   pll_utree_t * tree2;
-   pll_unode_t * stree;
-   pll_unode_t * root2;
+   corax_utree_t * tree;
+   corax_utree_t * tree2;
+   corax_unode_t * stree;
+   corax_unode_t * root2;
 
    /* serialize and expand */
    stree = pllmod_utree_serialize(root, n_taxa);
@@ -104,14 +104,14 @@ int main (int argc, char * argv[])
    free(stree);
 
    /* reset names */
-   pll_utree_traverse_apply(root2,
+   corax_utree_traverse_apply(root2,
                             NULL,
                             NULL,
                             cb_set_names,
                             header);
 
    printf("\n\nRECONSTRUCTED TREE:\n\n");
-   pll_utree_show_ascii(root2, PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_BRANCH_LENGTH | PLL_UTREE_SHOW_LABEL | PLL_UTREE_SHOW_PMATRIX_INDEX);
+   corax_utree_show_ascii(root2, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_BRANCH_LENGTH | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
    rf_distance = pllmod_utree_rf_distance(root,
                                           root2,
@@ -119,7 +119,7 @@ int main (int argc, char * argv[])
    assert(!rf_distance);
 
    /* try now with root at tip */
-   //pll_utree_destroy(tree, NULL);
+   //corax_utree_destroy(tree, NULL);
    while(root2->node_index > n_taxa) root2 = root2->next?root2->next->back:root2->back;
    printf("Root set to %d\n", root2->node_index);
 
@@ -129,23 +129,23 @@ int main (int argc, char * argv[])
    free(stree);
 
    /* reset names */
-   pll_utree_traverse_apply(root,
+   corax_utree_traverse_apply(root,
                             NULL,
                             NULL,
                             cb_set_names,
                             header);
 
    printf("\nRECONSTRUCTED FROM TIP:\n\n");
-   pll_utree_show_ascii(root, PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_BRANCH_LENGTH | PLL_UTREE_SHOW_LABEL | PLL_UTREE_SHOW_PMATRIX_INDEX);
+   corax_utree_show_ascii(root, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_BRANCH_LENGTH | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
    rf_distance = pllmod_utree_rf_distance(root,
                                           root2,
                                           n_taxa);
    assert(!rf_distance);
 
-   pll_utree_destroy(random_tree, NULL);
-   pll_utree_destroy(tree, NULL);
-   pll_utree_destroy(tree2, NULL);
+   corax_utree_destroy(random_tree, NULL);
+   corax_utree_destroy(tree, NULL);
+   corax_utree_destroy(tree2, NULL);
 
-   return PLL_SUCCESS;
+   return CORAX_SUCCESS;
 }

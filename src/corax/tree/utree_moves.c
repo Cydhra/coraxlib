@@ -22,7 +22,7 @@
 #include "utree_moves.h"
 #include "corax/corax.h"
 
-static int utree_find(pll_unode_t *start, pll_unode_t *target)
+static int utree_find(corax_unode_t *start, corax_unode_t *target)
 {
   /* checks whether the subtree rooted at 'start' (in the direction of
      start->next and start->next->next) contains the node 'target' */
@@ -45,8 +45,8 @@ static int utree_find(pll_unode_t *start, pll_unode_t *target)
   return 0;
 }
 
-static void utree_link(pll_unode_t *a,
-                       pll_unode_t *b,
+static void utree_link(corax_unode_t *a,
+                       corax_unode_t *b,
                        double       length,
                        unsigned int pmatrix_index)
 {
@@ -58,47 +58,47 @@ static void utree_link(pll_unode_t *a,
   a->pmatrix_index = b->pmatrix_index = pmatrix_index;
 }
 
-static void utree_swap(pll_unode_t *t1, pll_unode_t *t2)
+static void utree_swap(corax_unode_t *t1, corax_unode_t *t2)
 {
   /* swaps the positions of trees t1 and t2. The two trees retain the branch
   lengths from their root to their respective parent nodes, and retain their
   pmatrix indices (i.e. no updating of pmatrices is required) */
 
-  pll_unode_t *temp = t1->back;
+  corax_unode_t *temp = t1->back;
 
   utree_link(t1, t2->back, t2->back->length, t2->back->pmatrix_index);
   utree_link(t2, temp, temp->length, temp->pmatrix_index);
 }
 
-static int utree_nni(pll_unode_t *p, int type)
+static int utree_nni(corax_unode_t *p, int type)
 {
-  pll_unode_t *subtree1;
-  pll_unode_t *subtree2;
+  corax_unode_t *subtree1;
+  corax_unode_t *subtree2;
 
-  if ((type != PLL_UTREE_MOVE_NNI_LEFT) && (type != PLL_UTREE_MOVE_NNI_RIGHT))
+  if ((type != CORAX_UTREE_MOVE_NNI_LEFT) && (type != CORAX_UTREE_MOVE_NNI_RIGHT))
   {
-    pll_set_error(PLL_ERROR_NNI_INVALIDMOVE, "Invalid NNI move type");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_NNI_INVALIDMOVE, "Invalid NNI move type");
+    return CORAX_FAILURE;
   }
 
   /* check if selected node p is edge  */
   if (!(p->next) || !(p->back->next))
   {
-    pll_set_error(PLL_ERROR_NNI_TERMINALBRANCH, "Specified terminal branch");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_NNI_TERMINALBRANCH, "Specified terminal branch");
+    return CORAX_FAILURE;
   }
 
   subtree1 = p->next;
   subtree2 =
-      (type == PLL_UTREE_MOVE_NNI_LEFT) ? p->back->next : p->back->next->next;
+      (type == CORAX_UTREE_MOVE_NNI_LEFT) ? p->back->next : p->back->next->next;
 
   utree_swap(subtree1, subtree2);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int utree_spr(pll_unode_t *   p,
-                     pll_unode_t *   r,
+static int utree_spr(corax_unode_t *   p,
+                     corax_unode_t *   r,
                      double *        branch_lengths,
                      unsigned int *  matrix_indices)
 {
@@ -136,7 +136,7 @@ static int utree_spr(pll_unode_t *   p,
      Node r must not be part of the subtree to be pruned (C in this case). Note
      that for speed reasons, the function *does not* check this property to save
      a tree traversal. A safer (albeit slower) function that checks this
-     property is pll_utree_spr_safe
+     property is corax_utree_spr_safe
   */
 
   int k = 0;
@@ -144,30 +144,30 @@ static int utree_spr(pll_unode_t *   p,
   if ((!branch_lengths && matrix_indices)
       || (branch_lengths && !matrix_indices))
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Parameters 4,5 must be both NULL or both set");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* if p is a tip node then prompt an error */
   if (!p->next)
   {
-    pll_set_error(PLL_ERROR_SPR_TERMINALBRANCH,
+    corax_set_error(CORAX_ERROR_SPR_TERMINALBRANCH,
                   "Prune edge must be defined by an inner node");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* check whether the move will result in the same tree */
   if (r == p || r == p->back || r == p->next || r == p->next->back
       || r == p->next->next || r == p->next->next->back)
   {
-    pll_set_error(PLL_ERROR_SPR_NOCHANGE, "Proposed move yields the same tree");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_SPR_NOCHANGE, "Proposed move yields the same tree");
+    return CORAX_FAILURE;
   }
 
   /* (b) connect u and v */
-  pll_unode_t *u = p->next->back;
-  pll_unode_t *v = p->next->next->back;
+  corax_unode_t *u = p->next->back;
+  corax_unode_t *v = p->next->next->back;
   utree_link(u, v, u->length + v->length, u->pmatrix_index);
   /* if requested, store the new branch length for the corresponding
      pmatrix index */
@@ -205,25 +205,25 @@ static int utree_spr(pll_unode_t *   p,
     matrix_indices[k] = r->pmatrix_index;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /******************************************************************************/
 /* Topological operations */
 
-static int utree_find_node_in_subtree(pll_unode_t *root, pll_unode_t *node)
+static int utree_find_node_in_subtree(corax_unode_t *root, corax_unode_t *node)
 {
-  if (root == node) { return PLL_SUCCESS; }
+  if (root == node) { return CORAX_SUCCESS; }
 
   if (root->next)
   {
-    if (root->next == node || root->next->next == node) { return PLL_SUCCESS; }
+    if (root->next == node || root->next->next == node) { return CORAX_SUCCESS; }
 
     return utree_find_node_in_subtree(root->next->back, node)
            || utree_find_node_in_subtree(root->next->next->back, node);
   }
 
-  return PLL_FAILURE;
+  return CORAX_FAILURE;
 }
 
 /**
@@ -237,20 +237,20 @@ static int utree_find_node_in_subtree(pll_unode_t *root, pll_unode_t *node)
  * @param[in] length     the branch length
  *
  */
-PLL_EXPORT int pllmod_utree_connect_nodes(pll_unode_t *parent,
-                                          pll_unode_t *child,
+CORAX_EXPORT int pllmod_utree_connect_nodes(corax_unode_t *parent,
+                                          corax_unode_t *child,
                                           double       length)
 {
-  if (!(parent && child)) return PLL_FAILURE;
+  if (!(parent && child)) return CORAX_FAILURE;
 
   parent->back = child;
   child->back  = parent;
-  pll_utree_set_length(parent, length);
+  corax_utree_set_length(parent, length);
 
   /* PMatrix index is set to parent node */
   child->pmatrix_index = parent->pmatrix_index;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -275,20 +275,20 @@ PLL_EXPORT int pllmod_utree_connect_nodes(pll_unode_t *parent,
  * @param[in] edge            edge to remove
  * @param[out] parent_subtree edge corresponding to the 'edge' subtree
  * @param[out] child_subtree  edge corresponding to the 'edge->back' subtree
- * @return PLL_SUCCESS if OK
+ * @return CORAX_SUCCESS if OK
  */
-PLL_EXPORT int pllmod_utree_bisect(pll_unode_t * edge,
-                                   pll_unode_t **parent_subtree,
-                                   pll_unode_t **child_subtree)
+CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
+                                   corax_unode_t **parent_subtree,
+                                   corax_unode_t **child_subtree)
 {
   assert(parent_subtree);
   assert(child_subtree);
 
-  pll_unode_t *aux_tree;
+  corax_unode_t *aux_tree;
 
-  if (!edge->next) return PLL_FAILURE;
+  if (!edge->next) return CORAX_FAILURE;
 
-  pll_unode_t *c_edge = edge->back;
+  corax_unode_t *c_edge = edge->back;
 
   /* connect parent subtree */
   (*parent_subtree) = edge->next->back;
@@ -308,7 +308,7 @@ PLL_EXPORT int pllmod_utree_bisect(pll_unode_t * edge,
 
   c_edge->next->pmatrix_index = c_edge->next->next->pmatrix_index;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -329,26 +329,26 @@ PLL_EXPORT int pllmod_utree_bisect(pll_unode_t * edge,
  *
  * @return the new created edge
  */
-PLL_EXPORT pll_utree_edge_t pllmod_utree_reconnect(pll_utree_edge_t *edge,
-                                                   pll_unode_t *pruned_edge)
+CORAX_EXPORT corax_utree_edge_t pllmod_utree_reconnect(corax_utree_edge_t *edge,
+                                                   corax_unode_t *pruned_edge)
 {
   /* create and connect 2 new nodes */
-  pll_unode_t *parent_node, *child_node;
+  corax_unode_t *parent_node, *child_node;
   assert(pruned_edge->back);
 
   parent_node = pruned_edge;
   child_node  = pruned_edge->back;
   assert(parent_node->back == child_node && child_node->back == parent_node);
 
-  assert(!PLL_UTREE_IS_TIP(parent_node));
-  assert(!PLL_UTREE_IS_TIP(child_node));
+  assert(!CORAX_UTREE_IS_TIP(parent_node));
+  assert(!CORAX_UTREE_IS_TIP(child_node));
 
-  pll_utree_edge_t new_edge;
+  corax_utree_edge_t new_edge;
   new_edge.child  = child_node;
   new_edge.length = edge->length;
 
   /* set length */
-  pll_utree_set_length(parent_node, edge->length);
+  corax_utree_set_length(parent_node, edge->length);
 
   /* reconnect parent close to edge.parent */
   pllmod_utree_connect_nodes(
@@ -383,15 +383,15 @@ PLL_EXPORT pll_utree_edge_t pllmod_utree_reconnect(pll_utree_edge_t *edge,
  * @param edge the edge to prune
  * @return the new connected edge, if the operation was applied correctly
  */
-PLL_EXPORT pll_unode_t *pllmod_utree_prune(pll_unode_t *edge)
+CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge)
 {
-  pll_unode_t *edge1, *edge2;
+  corax_unode_t *edge1, *edge2;
 
   assert(edge);
   if (!edge->next)
   {
     /* invalid node */
-    pll_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to prune a tip node");
     return NULL;
   }
@@ -425,28 +425,28 @@ PLL_EXPORT pll_unode_t *pllmod_utree_prune(pll_unode_t *edge)
  *
  * @param edge the edge to regraft
  * @param tree the tree to connect `edge` to
- * @return PLL_SUCCESS if the operation was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the operation was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_regraft(pll_unode_t *edge, pll_unode_t *tree)
+CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
 {
-  pll_unode_t *edge1, *edge2;
+  corax_unode_t *edge1, *edge2;
   double       new_length;
 
   assert(edge && tree);
   if (!edge->next)
   {
     /* invalid node */
-    pll_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to regraft a tip node");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   if (edge->next->back || edge->next->next->back)
   {
     /* invalid node */
-    pll_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to regraft a connected node");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* connect tree with edge, splitting the branch designed by tree */
@@ -456,7 +456,7 @@ PLL_EXPORT int pllmod_utree_regraft(pll_unode_t *edge, pll_unode_t *tree)
   pllmod_utree_connect_nodes(edge1, edge->next, new_length);
   pllmod_utree_connect_nodes(edge->next->next, edge2, new_length);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -468,23 +468,23 @@ PLL_EXPORT int pllmod_utree_regraft(pll_unode_t *edge, pll_unode_t *tree)
  * @param[out] rollback_info Rollback information for undoing this move.
  *                           If it is NULL, rollback information is ignored.
  *
- * @return PLL_SUCCESS if the move was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the move was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
-                                pll_utree_edge_t *   r_edge,
-                                pll_tree_rollback_t *rollback_info)
+CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
+                                corax_utree_edge_t *   r_edge,
+                                corax_tree_rollback_t *rollback_info)
 {
-  pll_unode_t *parent, *child;
+  corax_unode_t *parent, *child;
 
   /* validate if the move can be applied */
 
   /* 1. bisection point must not be a leaf branch */
   if (!(b_edge->next && b_edge->back->next))
   {
-    pll_set_error(PLLMOD_TREE_ERROR_TBR_LEAF_BISECTION,
+    corax_set_error(PLLMOD_TREE_ERROR_TBR_LEAF_BISECTION,
                   "attempting to bisect at a leaf node");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* 2. reconnection edges are different from bisection point */
@@ -493,9 +493,9 @@ PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
       || b_edge->back == r_edge->parent || b_edge->back == r_edge->parent->back
       || b_edge->back == r_edge->child || b_edge->back == r_edge->child->back)
   {
-    pll_set_error(PLLMOD_TREE_ERROR_TBR_OVERLAPPED_NODES,
+    corax_set_error(PLLMOD_TREE_ERROR_TBR_OVERLAPPED_NODES,
                   "TBR nodes are overlapped");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* 3. reconnection edges must belong to different subtrees rooted at b_edge
@@ -506,9 +506,9 @@ PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
       && !(utree_find_node_in_subtree(b_edge->back, r_edge->parent)
            && utree_find_node_in_subtree(b_edge, r_edge->child)))
   {
-    pll_set_error(PLLMOD_TREE_ERROR_TBR_SAME_SUBTREE,
+    corax_set_error(PLLMOD_TREE_ERROR_TBR_SAME_SUBTREE,
                   "TBR reconnection in same subtree");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* save rollback information */
@@ -536,7 +536,7 @@ PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
   /* reconnect at r_edge */
   pllmod_utree_reconnect(r_edge, b_edge);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
@@ -548,21 +548,21 @@ PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
  * @param[out] rollback_info Rollback information for undoing this move.
  *                           If it is NULL, rollback information is ignored.
  *
- * @return PLL_SUCCESS if the move was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the move was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_spr(pll_unode_t *        p_edge,
-                                pll_unode_t *        r_edge,
-                                pll_tree_rollback_t *rollback_info)
+CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
+                                corax_unode_t *        r_edge,
+                                corax_tree_rollback_t *rollback_info)
 {
   int retval;
 
-  if (PLL_UTREE_IS_TIP(p_edge))
+  if (CORAX_UTREE_IS_TIP(p_edge))
   {
     /* invalid move */
-    pll_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to prune a leaf branch");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* save rollback information */
@@ -584,47 +584,47 @@ PLL_EXPORT int pllmod_utree_spr(pll_unode_t *        p_edge,
 }
 
 /* this is a safer (but slower) function for performing an spr move, than
-   pll_utree_spr(). See the last paragraph in the comments section of the
-   pll_utree_spr() function for more details */
-PLL_EXPORT int pllmod_utree_spr_safe(pll_unode_t *   p,
-                                     pll_unode_t *   r,
-                                     pll_tree_rollback_t *rollback_info)
+   corax_utree_spr(). See the last paragraph in the comments section of the
+   corax_utree_spr() function for more details */
+CORAX_EXPORT int pllmod_utree_spr_safe(corax_unode_t *   p,
+                                     corax_unode_t *   r,
+                                     corax_tree_rollback_t *rollback_info)
 {
   /* check all possible scenarios of failure */
   if (!p)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Node p is set to NULL");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Node p is set to NULL");
+    return CORAX_FAILURE;
   }
 
   if (!r)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Node r is set to NULL");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Node r is set to NULL");
+    return CORAX_FAILURE;
   }
 
   if (!p->next)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Prune edge must be defined by an inner node");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* check whether the move results in the same tree */
   if (r == p || r == p->back || r == p->next || r == p->next->back
       || r == p->next->next || r == p->next->next->back)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Proposed move yields the same tree");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* node r must not be in the same subtree as the one that is to be pruned */
   if (utree_find(p->back, r))
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Node r is part of the subtree to be pruned");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   return pllmod_utree_spr(p, r, rollback_info);
@@ -636,32 +636,32 @@ PLL_EXPORT int pllmod_utree_spr_safe(pll_unode_t *   p,
  * The CLV, scaler and pmatrix indices are updated.
  *
  * @param[in] edge NNI interchange edge
- * @param[in] type move type: PLL_NNI_LEFT, PLL_NNI_RIGHT
+ * @param[in] type move type: CORAX_NNI_LEFT, CORAX_NNI_RIGHT
  * @param[out] rollback_info Rollback information for undoing this move.
  *                           If it is NULL, rollback information is ignored.
  *
- * @return PLL_SUCCESS if the move was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the move was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_nni(pll_unode_t *        edge,
+CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
                                 int                  type,
-                                pll_tree_rollback_t *rollback_info)
+                                corax_tree_rollback_t *rollback_info)
 {
   /* validate preconditions */
   assert(edge && edge->back);
 
-  if (!(type == PLL_UTREE_MOVE_NNI_LEFT || type == PLL_UTREE_MOVE_NNI_RIGHT))
+  if (!(type == CORAX_UTREE_MOVE_NNI_LEFT || type == CORAX_UTREE_MOVE_NNI_RIGHT))
   {
     /* invalid move */
-    pll_set_error(PLLMOD_TREE_ERROR_NNI_INVALID_MOVE, "Invalid NNI move type");
-    return PLL_FAILURE;
+    corax_set_error(PLLMOD_TREE_ERROR_NNI_INVALID_MOVE, "Invalid NNI move type");
+    return CORAX_FAILURE;
   }
-  if (PLL_UTREE_IS_TIP(edge) || PLL_UTREE_IS_TIP(edge->back))
+  if (CORAX_UTREE_IS_TIP(edge) || CORAX_UTREE_IS_TIP(edge->back))
   {
     /* invalid move */
-    pll_set_error(PLLMOD_TREE_ERROR_NNI_LEAF,
+    corax_set_error(PLLMOD_TREE_ERROR_NNI_LEAF,
                   "Attempting to apply NNI on a leaf branch");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* save rollback information */
@@ -678,93 +678,93 @@ PLL_EXPORT int pllmod_utree_nni(pll_unode_t *        edge,
     rollback_info->NNI.edge_bl        = edge->length;
   }
 
-  if (!utree_nni(edge, type)) return PLL_FAILURE;
+  if (!utree_nni(edge, type)) return CORAX_FAILURE;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int utree_rollback_tbr(pll_tree_rollback_t *rollback_info)
+static int utree_rollback_tbr(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
   assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_TBR);
 
-  pll_unode_t *p             = rollback_info->TBR.bisect_edge;
-  pll_unode_t *q             = p->next->back;
-  pll_unode_t *r             = p->back->next->back;
+  corax_unode_t *p             = rollback_info->TBR.bisect_edge;
+  corax_unode_t *q             = p->next->back;
+  corax_unode_t *r             = p->back->next->back;
   double       reconn_length = rollback_info->TBR.reconn_edge.length;
 
   /* undo move */
   if (!pllmod_utree_tbr(p, &(rollback_info->TBR.reconn_edge), 0))
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 
   /* reset branches */
-  pll_utree_set_length(p, reconn_length);
-  pll_utree_set_length(q, rollback_info->TBR.bisect_left_bl);
-  pll_utree_set_length(r, rollback_info->TBR.bisect_right_bl);
-  pll_utree_set_length(p->next, rollback_info->TBR.reconn_parent_left_bl);
-  pll_utree_set_length(p->next->next,
+  corax_utree_set_length(p, reconn_length);
+  corax_utree_set_length(q, rollback_info->TBR.bisect_left_bl);
+  corax_utree_set_length(r, rollback_info->TBR.bisect_right_bl);
+  corax_utree_set_length(p->next, rollback_info->TBR.reconn_parent_left_bl);
+  corax_utree_set_length(p->next->next,
                        rollback_info->TBR.reconn_parent_right_bl);
-  pll_utree_set_length(p->back->next, rollback_info->TBR.reconn_child_left_bl);
-  pll_utree_set_length(p->back->next->next,
+  corax_utree_set_length(p->back->next, rollback_info->TBR.reconn_child_left_bl);
+  corax_utree_set_length(p->back->next->next,
                        rollback_info->TBR.reconn_child_right_bl);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int utree_rollback_spr(pll_tree_rollback_t *rollback_info)
+static int utree_rollback_spr(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
   assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_SPR);
 
-  pll_unode_t *p  = rollback_info->SPR.prune_edge;
-  pll_unode_t *r  = rollback_info->SPR.regraft_edge;
-  pll_unode_t *z1 = p->next->back;
-  pll_unode_t *z2 = r->back;
+  corax_unode_t *p  = rollback_info->SPR.prune_edge;
+  corax_unode_t *r  = rollback_info->SPR.regraft_edge;
+  corax_unode_t *z1 = p->next->back;
+  corax_unode_t *z2 = r->back;
 
   /* undo move */
-  if (!pllmod_utree_spr(p, r, 0)) return PLL_FAILURE;
+  if (!pllmod_utree_spr(p, r, 0)) return CORAX_FAILURE;
 
   /* reset branches */
-  pll_utree_set_length(z1, rollback_info->SPR.regraft_bl);
-  pll_utree_set_length(p, rollback_info->SPR.prune_bl);
-  pll_utree_set_length(r, rollback_info->SPR.prune_left_bl);
-  pll_utree_set_length(z2, rollback_info->SPR.prune_right_bl);
+  corax_utree_set_length(z1, rollback_info->SPR.regraft_bl);
+  corax_utree_set_length(p, rollback_info->SPR.prune_bl);
+  corax_utree_set_length(r, rollback_info->SPR.prune_left_bl);
+  corax_utree_set_length(z2, rollback_info->SPR.prune_right_bl);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int utree_rollback_nni(pll_tree_rollback_t *rollback_info)
+static int utree_rollback_nni(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
   assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_NNI);
 
-  pll_unode_t *p = rollback_info->NNI.edge;
-  pll_unode_t *q = p->back;
+  corax_unode_t *p = rollback_info->NNI.edge;
+  corax_unode_t *q = p->back;
 
   /* undo move */
-  if (!pllmod_utree_nni(p, rollback_info->NNI.type, 0)) return PLL_FAILURE;
+  if (!pllmod_utree_nni(p, rollback_info->NNI.type, 0)) return CORAX_FAILURE;
 
   /* reset branches */
 
-  pll_utree_set_length(p, rollback_info->NNI.edge_bl);
-  pll_utree_set_length(p->next, rollback_info->NNI.left_left_bl);
-  pll_utree_set_length(p->next->next, rollback_info->NNI.left_right_bl);
-  pll_utree_set_length(q->next, rollback_info->NNI.right_left_bl);
-  pll_utree_set_length(q->next->next, rollback_info->NNI.right_right_bl);
+  corax_utree_set_length(p, rollback_info->NNI.edge_bl);
+  corax_utree_set_length(p->next, rollback_info->NNI.left_left_bl);
+  corax_utree_set_length(p->next->next, rollback_info->NNI.left_right_bl);
+  corax_utree_set_length(q->next, rollback_info->NNI.right_left_bl);
+  corax_utree_set_length(q->next->next, rollback_info->NNI.right_right_bl);
 
   // assert(UNIMPLEMENTED);
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
  * Rollback the previous move
  * @param  rollback_info the rollback info returned by the previous move
- * @return PLL_SUCCESS if the rollback move was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the rollback move was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_tree_rollback(pll_tree_rollback_t *rollback_info)
+CORAX_EXPORT int pllmod_tree_rollback(corax_tree_rollback_t *rollback_info)
 {
-  int retval = PLL_FAILURE;
+  int retval = CORAX_FAILURE;
   switch (rollback_info->rearrange_type)
   {
   case PLLMOD_TREE_REARRANGE_TBR:

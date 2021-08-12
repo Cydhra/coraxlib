@@ -1,15 +1,15 @@
 #include "corax/corax.h"
 
-static void shuffle_tree_nodes(const pll_utree_t *tree, unsigned int seed)
+static void shuffle_tree_nodes(const corax_utree_t *tree, unsigned int seed)
 {
   unsigned int      node_count = tree->tip_count + tree->inner_count;
-  pll_random_state *rstate     = pll_random_create(seed);
-  pll_unode_t **    subnodes =
-      (pll_unode_t **)calloc(tree->tip_count, sizeof(pll_unode_t *));
+  corax_random_state *rstate     = corax_random_create(seed);
+  corax_unode_t **    subnodes =
+      (corax_unode_t **)calloc(tree->tip_count, sizeof(corax_unode_t *));
 
   for (unsigned int i = tree->tip_count; i < node_count; ++i)
   {
-    pll_unode_t *node   = tree->nodes[i];
+    corax_unode_t *node   = tree->nodes[i];
     unsigned int degree = 0;
     do
     {
@@ -21,11 +21,11 @@ static void shuffle_tree_nodes(const pll_utree_t *tree, unsigned int seed)
     // Fisher–Yates shuffle
     for (unsigned int j = degree - 1; j > 0; --j)
     {
-      unsigned int r = pll_random_getint(rstate, j + 1);
-      PLL_SWAP(subnodes[j], subnodes[r]);
+      unsigned int r = corax_random_getint(rstate, j + 1);
+      CORAX_SWAP(subnodes[j], subnodes[r]);
     }
 
-    // re-connect pll_unodes in the new, shuffled order
+    // re-connect corax_unodes in the new, shuffled order
     tree->nodes[i] = node = subnodes[0];
     for (unsigned int j = 1; j < degree; ++j)
     {
@@ -37,13 +37,13 @@ static void shuffle_tree_nodes(const pll_utree_t *tree, unsigned int seed)
     node->next = tree->nodes[i];
   }
 
-  pll_random_destroy(rstate);
+  corax_random_destroy(rstate);
   free(subnodes);
 }
 
-static void split_multi_node(pll_utree_t *tree,
-                             pll_unode_t *first,
-                             pll_unode_t *last,
+static void split_multi_node(corax_utree_t *tree,
+                             corax_unode_t *first,
+                             corax_unode_t *last,
                              unsigned int degree)
 {
   assert(last->next == first);
@@ -58,10 +58,10 @@ static void split_multi_node(pll_utree_t *tree,
     unsigned int new_clv_id     = tree->tip_count + tree->inner_count;
     unsigned int new_scaler_id  = tree->inner_count;
 
-    pll_unode_t *second = first->next;
+    corax_unode_t *second = first->next;
 
-    pll_unode_t *old_link = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
-    pll_unode_t *new_link = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+    corax_unode_t *old_link = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+    corax_unode_t *new_link = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
 
     old_link->data = second->data;
     new_link->data = second->next->data;
@@ -91,7 +91,7 @@ static void split_multi_node(pll_utree_t *tree,
 
     // set backpointers old<->new
     pllmod_utree_connect_nodes(
-        old_link, new_link, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+        old_link, new_link, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
     tree->nodes[tree->inner_count + tree->tip_count] = new_link;
 
@@ -103,7 +103,7 @@ static void split_multi_node(pll_utree_t *tree,
   }
 }
 
-static int utree_insert_tips_random(pll_unode_t **nodes,
+static int utree_insert_tips_random(corax_unode_t **nodes,
                                     unsigned int  taxa_count,
                                     unsigned int  start_tip,
                                     unsigned int  random_seed)
@@ -115,38 +115,38 @@ static int utree_insert_tips_random(pll_unode_t **nodes,
   unsigned int placed_branches_count = 0;
   unsigned int last_branch_id        = 0;
 
-  pll_unode_t **    branches = NULL;
-  pll_random_state *rstate   = NULL;
+  corax_unode_t **    branches = NULL;
+  corax_random_state *rstate   = NULL;
 
-  branches = (pll_unode_t **)calloc(max_branches, sizeof(pll_unode_t *));
+  branches = (corax_unode_t **)calloc(max_branches, sizeof(corax_unode_t *));
 
   if (!branches)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for branches!");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for branches!");
+    return CORAX_FAILURE;
   }
 
-  rstate = pll_random_create(random_seed);
+  rstate = corax_random_create(random_seed);
 
   if (!rstate)
   {
     free(branches);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   // check pmatrix indices on tip branches
   for (i = 0; i < taxa_count; ++i)
-    last_branch_id = PLL_MAX(last_branch_id, nodes[i]->pmatrix_index);
+    last_branch_id = CORAX_MAX(last_branch_id, nodes[i]->pmatrix_index);
 
   for (i = taxa_count; i < taxa_count + start_inner_count; ++i)
   {
-    pll_unode_t *snode = nodes[i];
+    corax_unode_t *snode = nodes[i];
     do
     {
       if (snode->clv_index > snode->back->clv_index)
       {
         branches[placed_branches_count++] = snode;
-        last_branch_id = PLL_MAX(last_branch_id, snode->pmatrix_index);
+        last_branch_id = CORAX_MAX(last_branch_id, snode->pmatrix_index);
       }
       snode = snode->next;
     } while (snode != nodes[i]);
@@ -156,22 +156,22 @@ static int utree_insert_tips_random(pll_unode_t **nodes,
   for (i = start_tip; i < taxa_count; ++i)
   {
     /* take tips iteratively */
-    pll_unode_t *next_tip   = nodes[i];
-    pll_unode_t *next_inner = nodes[taxa_count + i - 2];
+    corax_unode_t *next_tip   = nodes[i];
+    corax_unode_t *next_inner = nodes[taxa_count + i - 2];
 
     /* select random branch from the tree */
-    int rand_branch_id       = pll_random_getint(rstate, placed_branches_count);
-    pll_unode_t *next_branch = branches[rand_branch_id];
+    int rand_branch_id       = corax_random_getint(rstate, placed_branches_count);
+    corax_unode_t *next_branch = branches[rand_branch_id];
 
     /* connect tip to selected branch */
     pllmod_utree_connect_nodes(
-        next_branch->back, next_inner, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+        next_branch->back, next_inner, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
     pllmod_utree_connect_nodes(
-        next_branch, next_inner->next, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+        next_branch, next_inner->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
     pllmod_utree_connect_nodes(
-        next_tip, next_inner->next->next, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+        next_tip, next_inner->next->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
-    if (PLL_UTREE_IS_TIP(next_inner->back))
+    if (CORAX_UTREE_IS_TIP(next_inner->back))
     {
       next_inner->next->pmatrix_index = next_inner->next->back->pmatrix_index =
           ++last_branch_id;
@@ -190,15 +190,15 @@ static int utree_insert_tips_random(pll_unode_t **nodes,
 
   /* clean */
   free(branches);
-  pll_random_destroy(rstate);
+  corax_random_destroy(rstate);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /**
  * Extend a tree by inserting new taxa to randomly chosen branches
  */
-PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
+CORAX_EXPORT int corax_utree_random_extend(corax_utree_t *      tree,
                                        unsigned int       ext_taxa_count,
                                        const char *const *ext_names,
                                        unsigned int       random_seed)
@@ -218,14 +218,14 @@ PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
   unsigned int i;
   int          retval;
 
-  pll_unode_t **old_nodes = tree->nodes;
-  pll_unode_t **new_nodes =
-      (pll_unode_t **)calloc(new_node_count, sizeof(pll_unode_t *));
+  corax_unode_t **old_nodes = tree->nodes;
+  corax_unode_t **new_nodes =
+      (corax_unode_t **)calloc(new_node_count, sizeof(corax_unode_t *));
 
   if (!new_nodes)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for nodes!");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for nodes!");
+    return CORAX_FAILURE;
   }
 
   // 1:1 mapping for old tips
@@ -236,16 +236,16 @@ PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
   {
     unsigned int new_idx = i + ext_taxa_count;
     new_nodes[new_idx]   = old_nodes[i];
-    pll_unode_t *snode   = new_nodes[new_idx];
+    corax_unode_t *snode   = new_nodes[new_idx];
     assert(snode->next);
     do
     {
       snode->clv_index += ext_taxa_count;
       snode->node_index += ext_taxa_count;
-      last_clv_id     = PLL_MAX(last_clv_id, snode->clv_index);
-      last_node_id    = PLL_MAX(last_node_id, snode->node_index);
-      next_scaler_id  = PLL_MAX(next_scaler_id, snode->scaler_index);
-      last_pmatrix_id = PLL_MAX(last_pmatrix_id, snode->pmatrix_index);
+      last_clv_id     = CORAX_MAX(last_clv_id, snode->clv_index);
+      last_node_id    = CORAX_MAX(last_node_id, snode->node_index);
+      next_scaler_id  = CORAX_MAX(next_scaler_id, snode->scaler_index);
+      last_pmatrix_id = CORAX_MAX(last_pmatrix_id, snode->pmatrix_index);
       snode           = snode->next;
     } while (snode != new_nodes[new_idx]);
   }
@@ -253,10 +253,10 @@ PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
   // create new tip nodes
   for (i = old_taxa_count; i < new_taxa_count; ++i)
   {
-    pll_unode_t *node   = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+    corax_unode_t *node   = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
     node->clv_index     = i;
     node->node_index    = i;
-    node->scaler_index  = PLL_SCALE_BUFFER_NONE;
+    node->scaler_index  = CORAX_SCALE_BUFFER_NONE;
     node->pmatrix_index = ++last_pmatrix_id; // ????
 
     node->label = ext_names ? strdup(ext_names[i - old_taxa_count]) : NULL;
@@ -267,8 +267,8 @@ PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
   // create new inner nodes
   for (i = old_node_count + ext_taxa_count; i < new_node_count; ++i)
   {
-    pll_unode_t *node =
-        pll_utree_create_node(++last_clv_id, ++next_scaler_id, NULL, NULL);
+    corax_unode_t *node =
+        corax_utree_create_node(++last_clv_id, ++next_scaler_id, NULL, NULL);
 
     node->node_index             = ++last_node_id;
     node->next->node_index       = ++last_node_id;
@@ -287,19 +287,19 @@ PLL_EXPORT int pll_utree_random_extend(pll_utree_t *      tree,
     tree->tip_count   = new_taxa_count;
     tree->inner_count = new_inner_count;
     tree->edge_count += 2 * ext_taxa_count;
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   }
   else
   {
     free(new_nodes);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 }
 
 /**
  * Creates a random topology with default branch lengths
  */
-PLL_EXPORT pll_utree_t *pll_utree_random_create(unsigned int       taxa_count,
+CORAX_EXPORT corax_utree_t *corax_utree_random_create(unsigned int       taxa_count,
                                                 const char *const *names,
                                                 unsigned int       random_seed)
 {
@@ -315,21 +315,21 @@ PLL_EXPORT pll_utree_t *pll_utree_random_create(unsigned int       taxa_count,
   unsigned int inner_node_count = taxa_count - 2;
   unsigned int node_count       = tip_node_count + inner_node_count;
 
-  pll_unode_t **nodes =
-      (pll_unode_t **)calloc(node_count, sizeof(pll_unode_t *));
+  corax_unode_t **nodes =
+      (corax_unode_t **)calloc(node_count, sizeof(corax_unode_t *));
 
-  pll_unode_t *tree_root;
+  corax_unode_t *tree_root;
 
-  pll_utree_t *wrapped_tree;
+  corax_utree_t *wrapped_tree;
 
   unsigned int node_id = 0;
 
   /* allocate tips */
   for (i = 0; i < taxa_count; ++i)
   {
-    nodes[i]                = (pll_unode_t *)calloc(1, sizeof(pll_unode_t));
+    nodes[i]                = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
     nodes[i]->clv_index     = i;
-    nodes[i]->scaler_index  = PLL_SCALE_BUFFER_NONE;
+    nodes[i]->scaler_index  = CORAX_SCALE_BUFFER_NONE;
     nodes[i]->pmatrix_index = i;
     nodes[i]->node_index    = node_id++;
 
@@ -347,7 +347,7 @@ PLL_EXPORT pll_utree_t *pll_utree_random_create(unsigned int       taxa_count,
   /* allocate inner */
   for (i = taxa_count; i < node_count; ++i)
   {
-    nodes[i] = pll_utree_create_node(i, (int)i, NULL, NULL);
+    nodes[i] = corax_utree_create_node(i, (int)i, NULL, NULL);
     nodes[i]->scaler_index -= taxa_count;
     nodes[i]->next->scaler_index -= taxa_count;
     nodes[i]->next->next->scaler_index -= taxa_count;
@@ -363,11 +363,11 @@ PLL_EXPORT pll_utree_t *pll_utree_random_create(unsigned int       taxa_count,
 
   /* build minimal tree with 3 tips and 1 inner node */
   pllmod_utree_connect_nodes(
-      nodes[0], nodes[taxa_count], PLL_TREE_DEFAULT_BRANCH_LENGTH);
+      nodes[0], nodes[taxa_count], CORAX_TREE_DEFAULT_BRANCH_LENGTH);
   pllmod_utree_connect_nodes(
-      nodes[1], nodes[taxa_count]->next, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+      nodes[1], nodes[taxa_count]->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
   pllmod_utree_connect_nodes(
-      nodes[2], nodes[taxa_count]->next->next, PLL_TREE_DEFAULT_BRANCH_LENGTH);
+      nodes[2], nodes[taxa_count]->next->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
   /* insert remaining taxa_count-3 tips into the tree */
   utree_insert_tips_random(nodes, taxa_count, 3, random_seed);
@@ -375,30 +375,30 @@ PLL_EXPORT pll_utree_t *pll_utree_random_create(unsigned int       taxa_count,
   /* clean */
   free(nodes);
 
-  wrapped_tree = pll_utree_wraptree(tree_root, tip_node_count);
+  wrapped_tree = corax_utree_wraptree(tree_root, tip_node_count);
   return (wrapped_tree);
 }
 
-PLL_EXPORT
-pll_utree_t *pll_utree_random_resolve_multi(const pll_utree_t *multi_tree,
+CORAX_EXPORT
+corax_utree_t *corax_utree_random_resolve_multi(const corax_utree_t *multi_tree,
                                             unsigned int       random_seed,
                                             int *              clv_index_map)
 {
   if (!multi_tree)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter multi_tree is NULL.");
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Parameter multi_tree is NULL.");
     return NULL;
   }
 
   if (multi_tree->vroot->next
       && multi_tree->vroot->next->next == multi_tree->vroot)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
                   "Unrooted tree is expected but a rooted tree was provided.");
     return NULL;
   }
 
-  pll_utree_t *bin_tree = pll_utree_clone(multi_tree);
+  corax_utree_t *bin_tree = corax_utree_clone(multi_tree);
 
   unsigned int tip_count        = bin_tree->tip_count;
   unsigned int multi_node_count = bin_tree->tip_count + bin_tree->inner_count;
@@ -418,17 +418,17 @@ pll_utree_t *pll_utree_random_resolve_multi(const pll_utree_t *multi_tree,
 
   if (random_seed) shuffle_tree_nodes(bin_tree, random_seed);
 
-  bin_tree->nodes = (pll_unode_t **)realloc(
-      bin_tree->nodes, bin_node_count * sizeof(pll_unode_t *));
+  bin_tree->nodes = (corax_unode_t **)realloc(
+      bin_tree->nodes, bin_node_count * sizeof(corax_unode_t *));
 
   // iterate over inner nodes, resolve multifurcations, and map new->old CLV
   // indices
   unsigned int old_inner_count = bin_tree->inner_count;
   for (unsigned int i = tip_count; i < multi_node_count; ++i)
   {
-    pll_unode_t *start  = bin_tree->nodes[i];
-    pll_unode_t *end    = NULL;
-    pll_unode_t *snode  = start;
+    corax_unode_t *start  = bin_tree->nodes[i];
+    corax_unode_t *end    = NULL;
+    corax_unode_t *snode  = start;
     unsigned int degree = 0;
     do
     {
@@ -456,14 +456,14 @@ pll_utree_t *pll_utree_random_resolve_multi(const pll_utree_t *multi_tree,
   bin_tree->binary = 1;
 
   /* re-assign node indices such that:
-   * (1) all 3 pll_unode's of an inner node have consecutive indices: (x, x+1,
+   * (1) all 3 corax_unode's of an inner node have consecutive indices: (x, x+1,
    * x+2) (2) for any two random multifurcation resolutions R1 and R2 holds (x,
    * x+1, x+2) in R1 iff (x, x+1, x+2) in R2
    */
   unsigned int max_node_index = tip_count;
   for (unsigned int i = tip_count; i < bin_node_count; ++i)
   {
-    pll_unode_t *node            = bin_tree->nodes[i];
+    corax_unode_t *node            = bin_tree->nodes[i];
     node->node_index             = max_node_index++;
     node->next->node_index       = max_node_index++;
     node->next->next->node_index = max_node_index++;

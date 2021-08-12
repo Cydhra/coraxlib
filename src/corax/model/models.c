@@ -176,7 +176,7 @@ create_ratematrix(double *params, double *freqs, unsigned int states)
   double **qmatrix;
 
   /* normalize substitution parameters */
-  unsigned int params_count = pll_subst_rate_count(states);
+  unsigned int params_count = corax_subst_rate_count(states);
   double *params_normalized = (double *)malloc(sizeof(double) * params_count);
   if (!params_normalized) return NULL;
 
@@ -219,7 +219,7 @@ create_ratematrix(double *params, double *freqs, unsigned int states)
     for (j = i + 1; j < states; ++j)
     {
       double factor =
-          (freqs[i] <= PLL_EIGEN_MINFREQ || freqs[j] <= PLL_EIGEN_MINFREQ)
+          (freqs[i] <= CORAX_EIGEN_MINFREQ || freqs[j] <= CORAX_EIGEN_MINFREQ)
               ? 0
               : params_normalized[k];
       k++;
@@ -250,7 +250,7 @@ static unsigned int eliminate_zero_states(double **    mat,
   unsigned int new_states = 0;
   for (i = 0; i < states; i++)
   {
-    if (forg[i] > PLL_EIGEN_MINFREQ) new_forg[new_states++] = forg[i];
+    if (forg[i] > CORAX_EIGEN_MINFREQ) new_forg[new_states++] = forg[i];
   }
 
   assert(new_states <= states);
@@ -259,11 +259,11 @@ static unsigned int eliminate_zero_states(double **    mat,
   {
     for (i = 0, inew = 0; i < states; i++)
     {
-      if (forg[i] > PLL_EIGEN_MINFREQ)
+      if (forg[i] > CORAX_EIGEN_MINFREQ)
       {
         for (j = 0, jnew = 0; j < states; j++)
         {
-          if (forg[j] > PLL_EIGEN_MINFREQ)
+          if (forg[j] > CORAX_EIGEN_MINFREQ)
           {
             mat[inew][jnew] = mat[i][j];
             jnew++;
@@ -277,12 +277,12 @@ static unsigned int eliminate_zero_states(double **    mat,
   return new_states;
 }
 
-PLL_EXPORT unsigned int pll_subst_rate_count(unsigned int states)
+CORAX_EXPORT unsigned int corax_subst_rate_count(unsigned int states)
 {
   return states * (states - 1) / 2;
 }
 
-PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
+CORAX_EXPORT int corax_update_eigen(corax_partition_t *partition,
                                 unsigned int     params_index)
 {
   unsigned int i, j;
@@ -305,8 +305,8 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
   a = create_ratematrix(subst_params, freqs, states);
   if (!a)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   d         = (double *)malloc(states * sizeof(double));
@@ -319,8 +319,8 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
     if (new_freqs) free(new_freqs);
     for (i = 0; i < states; ++i) free(a[i]);
     free(a);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* Here we use a technical trick to reduce rate matrix if some states
@@ -333,7 +333,7 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
   mytqli(d, e, new_states, a);
 
   for (i = 0, inew = 0; i < states; i++)
-    eigenvals[i] = (freqs[i] > PLL_EIGEN_MINFREQ) ? d[inew++] : 0;
+    eigenvals[i] = (freqs[i] > CORAX_EIGEN_MINFREQ) ? d[inew++] : 0;
 
   assert(inew == new_states);
 
@@ -354,11 +354,11 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
 
     for (i = 0, inew = 0; i < states; i++)
     {
-      if (freqs[i] > PLL_EIGEN_MINFREQ)
+      if (freqs[i] > CORAX_EIGEN_MINFREQ)
       {
         for (j = 0, jnew = 0; j < states; j++)
         {
-          if (freqs[j] > PLL_EIGEN_MINFREQ)
+          if (freqs[j] > CORAX_EIGEN_MINFREQ)
           {
             /* multiply the eigen vectors from the right with sqrt(pi) */
             eigenvecs[i * states_padded + j] = a[inew][jnew] * new_freqs[jnew];
@@ -395,10 +395,10 @@ PLL_EXPORT int pll_update_eigen(pll_partition_t *partition,
   for (i = 0; i < states; ++i) free(a[i]);
   free(a);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pll_update_prob_matrices(pll_partition_t *   partition,
+CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t *   partition,
                                         const unsigned int *params_indices,
                                         const unsigned int *matrix_indices,
                                         const double *      branch_lengths,
@@ -411,11 +411,11 @@ PLL_EXPORT int pll_update_prob_matrices(pll_partition_t *   partition,
   {
     if (!partition->eigen_decomp_valid[params_indices[n]])
     {
-      if (!pll_update_eigen(partition, params_indices[n])) return PLL_FAILURE;
+      if (!corax_update_eigen(partition, params_indices[n])) return CORAX_FAILURE;
     }
   }
 
-  return pll_core_update_pmatrix(partition->pmatrix,
+  return corax_core_update_pmatrix(partition->pmatrix,
                                  partition->states,
                                  partition->rate_cats,
                                  partition->rates,
@@ -430,7 +430,7 @@ PLL_EXPORT int pll_update_prob_matrices(pll_partition_t *   partition,
                                  partition->attributes);
 }
 
-PLL_EXPORT void pll_set_frequencies(pll_partition_t *partition,
+CORAX_EXPORT void corax_set_frequencies(corax_partition_t *partition,
                                     unsigned int     freqs_index,
                                     const double *   frequencies)
 {
@@ -445,7 +445,7 @@ PLL_EXPORT void pll_set_frequencies(pll_partition_t *partition,
   for (i = 0; i < partition->states; ++i)
     sum += partition->frequencies[freqs_index][i];
 
-  if (fabs(sum - 1.0) > PLL_MISC_EPSILON)
+  if (fabs(sum - 1.0) > CORAX_MISC_EPSILON)
   {
     for (i = 0; i < partition->states; ++i)
       partition->frequencies[freqs_index][i] /= sum;
@@ -454,13 +454,13 @@ PLL_EXPORT void pll_set_frequencies(pll_partition_t *partition,
   partition->eigen_decomp_valid[freqs_index] = 0;
 }
 
-PLL_EXPORT void pll_set_category_rates(pll_partition_t *partition,
+CORAX_EXPORT void corax_set_category_rates(corax_partition_t *partition,
                                        const double *   rates)
 {
   memcpy(partition->rates, rates, partition->rate_cats * sizeof(double));
 }
 
-PLL_EXPORT void pll_set_category_weights(pll_partition_t *partition,
+CORAX_EXPORT void corax_set_category_weights(corax_partition_t *partition,
                                          const double *   rate_weights)
 {
   memcpy(partition->rate_weights,
@@ -468,11 +468,11 @@ PLL_EXPORT void pll_set_category_weights(pll_partition_t *partition,
          partition->rate_cats * sizeof(double));
 }
 
-PLL_EXPORT void pll_set_subst_params(pll_partition_t *partition,
+CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
                                      unsigned int     params_index,
                                      const double *   params)
 {
-  unsigned int count = pll_subst_rate_count(partition->states);
+  unsigned int count = corax_subst_rate_count(partition->states);
 
   memcpy(partition->subst_params[params_index], params, count * sizeof(double));
   partition->eigen_decomp_valid[params_index] = 0;
@@ -480,51 +480,51 @@ PLL_EXPORT void pll_set_subst_params(pll_partition_t *partition,
   /* NOTE: For protein models PLL/RAxML do a rate scaling by 10.0/max_rate */
 }
 
-PLL_EXPORT int pll_update_invariant_sites_proportion(pll_partition_t *partition,
+CORAX_EXPORT int corax_update_invariant_sites_proportion(corax_partition_t *partition,
                                                      unsigned int params_index,
                                                      double       prop_invar)
 {
 
   /* check that there is no ascertainment bias correction */
-  if (prop_invar != 0.0 && (partition->attributes & PLL_ATTRIB_AB_MASK))
+  if (prop_invar != 0.0 && (partition->attributes & CORAX_ATTRIB_AB_MASK))
   {
-    pll_set_error(
-        PLL_ERROR_INVAR_INCOMPAT,
+    corax_set_error(
+        CORAX_ERROR_INVAR_INCOMPAT,
         "Invariant sites are not compatible with asc bias correction");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* validate new invariant sites proportion */
   if (prop_invar < 0 || prop_invar >= 1)
   {
-    pll_set_error(PLL_ERROR_INVAR_PROPORTION,
+    corax_set_error(CORAX_ERROR_INVAR_PROPORTION,
                   "Invalid proportion of invariant sites (%f)",
                   prop_invar);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (params_index > partition->rate_matrices)
   {
-    pll_set_error(
-        PLL_ERROR_INVAR_PARAMINDEX, "Invalid params index (%u)", params_index);
-    return PLL_FAILURE;
+    corax_set_error(
+        CORAX_ERROR_INVAR_PARAMINDEX, "Invalid params index (%u)", params_index);
+    return CORAX_FAILURE;
   }
 
   if (prop_invar > 0.0 && !partition->invariant)
   {
-    if (!pll_update_invariant_sites(partition))
+    if (!corax_update_invariant_sites(partition))
     {
-      pll_set_error(PLL_ERROR_INVAR_NONEFOUND, "No invariant sites found");
-      return PLL_FAILURE;
+      corax_set_error(CORAX_ERROR_INVAR_NONEFOUND, "No invariant sites found");
+      return CORAX_FAILURE;
     }
   }
 
   partition->prop_invar[params_index] = prop_invar;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
+CORAX_EXPORT unsigned int corax_count_invariant_sites(corax_partition_t *partition,
                                                   unsigned int *state_inv_count)
 {
   unsigned int i, j, k;
@@ -532,8 +532,8 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
   unsigned int tips            = partition->tips;
   unsigned int sites           = partition->sites;
   unsigned int states          = partition->states;
-  pll_state_t  gap_state       = 0;
-  pll_state_t  cur_state;
+  corax_state_t  gap_state       = 0;
+  corax_state_t  cur_state;
   int *        invariant = partition->invariant;
   double *     tipclv;
 
@@ -554,7 +554,7 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
     {
       if (invariant[i] > -1)
       {
-        cur_state = (pll_state_t)invariant[i];
+        cur_state = (corax_state_t)invariant[i];
         /* since the invariant sites array is generated in the library,
            it should not contain invalid values */
         assert(cur_state < states);
@@ -567,7 +567,7 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
   }
   else
   {
-    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
     {
       for (j = 0; j < sites; ++j)
       {
@@ -577,18 +577,18 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
           cur_state &= ((unsigned int)(partition->tipchars[i][j]));
           if (!cur_state) { break; }
         }
-        if (PLL_STATE_POPCNT(cur_state) == 1)
+        if (CORAX_STATE_POPCNT(cur_state) == 1)
         {
           invariant_count += partition->pattern_weights[j];
-          if (state_inv_count) state_inv_count[PLL_STATE_CTZ(cur_state)]++;
+          if (state_inv_count) state_inv_count[CORAX_STATE_CTZ(cur_state)]++;
         }
       }
     }
     else
     {
       /* warning: note that this operation traverses the clvs by columns, and
-         hence it may be slow. If PLL_ATTRIB_PATTERN_TIP is not set, I suggest
-         to call pll_update_invariant_sites() before calling this function in
+         hence it may be slow. If CORAX_ATTRIB_PATTERN_TIP is not set, I suggest
+         to call corax_update_invariant_sites() before calling this function in
          order to populate partition->invariant beforehand. It can be freed
          afterwards. */
       unsigned int span_padded =
@@ -598,22 +598,22 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
       {
         unsigned int clv_shift = j * span_padded;
         tipclv                 = partition->clv[0] + clv_shift;
-        pll_state_t state      = gap_state;
+        corax_state_t state      = gap_state;
         for (i = 0; i < tips; ++i)
         {
           tipclv    = partition->clv[i] + clv_shift;
           cur_state = 0;
           for (k = 0; k < states; ++k)
           {
-            cur_state |= ((pll_state_t)tipclv[k] << k);
+            cur_state |= ((corax_state_t)tipclv[k] << k);
           }
           state &= cur_state;
           if (!state) { break; }
         }
-        if (PLL_STATE_POPCNT(state) == 1)
+        if (CORAX_STATE_POPCNT(state) == 1)
         {
           invariant_count += partition->pattern_weights[j];
-          if (state_inv_count) state_inv_count[PLL_STATE_CTZ(state)]++;
+          if (state_inv_count) state_inv_count[CORAX_STATE_CTZ(state)]++;
         }
       }
     }
@@ -621,17 +621,17 @@ PLL_EXPORT unsigned int pll_count_invariant_sites(pll_partition_t *partition,
   return invariant_count;
 }
 
-PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
+CORAX_EXPORT int corax_update_invariant_sites(corax_partition_t *partition)
 {
   unsigned int i, j, k;
-  pll_state_t  state;
+  corax_state_t  state;
   unsigned int states        = partition->states;
   unsigned int states_padded = partition->states_padded;
   unsigned int sites         = partition->sites;
   unsigned int tips          = partition->tips;
   unsigned int rate_cats     = partition->rate_cats;
-  pll_state_t  gap_state     = 0;
-  pll_state_t *invariant;
+  corax_state_t  gap_state     = 0;
+  corax_state_t *invariant;
   double *     tipclv;
 
   /* gap state has always all bits set to one */
@@ -648,13 +648,13 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
     partition->invariant = (int *)malloc(sites * sizeof(int));
   }
 
-  invariant = (pll_state_t *)malloc(sites * sizeof(pll_state_t));
+  invariant = (corax_state_t *)malloc(sites * sizeof(corax_state_t));
 
   if (!invariant || !partition->invariant)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate charmap for invariant sites array.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* initialize all elements to the gap state */
@@ -662,7 +662,7 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
 
   /* depending on the attribute flag, fill each element of the invariant array
      with the bitwise AND of gap and all states in the corresponding site */
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
     if (states == 4)
     {
@@ -698,7 +698,7 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
         unsigned int site = site_id ? site_id[j] : j;
         tipclv            = partition->clv[i] + span_padded * site;
         state             = 0;
-        for (k = 0; k < states; ++k) { state |= ((pll_state_t)tipclv[k] << k); }
+        for (k = 0; k < states; ++k) { state |= ((corax_state_t)tipclv[k] << k); }
         invariant[j] &= state;
       }
     }
@@ -708,13 +708,13 @@ PLL_EXPORT int pll_update_invariant_sites(pll_partition_t *partition)
      index in invariant to the frequency index of the basecall, otherwise -1 */
   for (i = 0; i < partition->sites; ++i)
   {
-    if (invariant[i] == 0 || PLL_STATE_POPCNT(invariant[i]) > 1)
+    if (invariant[i] == 0 || CORAX_STATE_POPCNT(invariant[i]) > 1)
       partition->invariant[i] = -1;
     else
-      partition->invariant[i] = PLL_STATE_CTZ(invariant[i]);
+      partition->invariant[i] = CORAX_STATE_CTZ(invariant[i]);
   }
 
   free(invariant);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

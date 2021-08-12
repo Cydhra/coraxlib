@@ -38,7 +38,7 @@
 #define N_STATES_ODD 7
 
 /* odd map with 7 states: A..G */
-const pll_state_t odd7_map[256] = {
+const corax_state_t odd7_map[256] = {
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -82,11 +82,11 @@ const char *odd_msa[] = {"AAB-CCD-EAFAA",
                          "ADCFCAA-AD-CG",
                          "ABC-BCA-AB-BG"};
 
-pll_msa_t *
+corax_msa_t *
 copy_msa(const char *sequence[], unsigned int count, unsigned int len)
 {
   unsigned int i;
-  pll_msa_t *  msa = (pll_msa_t *)calloc(1, sizeof(pll_msa_t));
+  corax_msa_t *  msa = (corax_msa_t *)calloc(1, sizeof(corax_msa_t));
 
   msa->count  = count;
   msa->length = len ? len : strlen(sequence[0]);
@@ -101,7 +101,7 @@ copy_msa(const char *sequence[], unsigned int count, unsigned int len)
   return msa;
 }
 
-static void print_msa(pll_msa_t *msa)
+static void print_msa(corax_msa_t *msa)
 {
   unsigned int i, j;
 
@@ -112,7 +112,7 @@ static void print_msa(pll_msa_t *msa)
   }
 }
 
-static void print_uncompressed_msa(pll_msa_t *   msa,
+static void print_uncompressed_msa(corax_msa_t *   msa,
                                    unsigned int *site_pattern_map,
                                    unsigned int  uncomp_len)
 {
@@ -130,13 +130,13 @@ static void print_uncompressed_msa(pll_msa_t *   msa,
   }
 }
 
-static void test_compress(int datatype, pll_bool_t backmap)
+static void test_compress(int datatype, corax_bool_t backmap)
 {
   unsigned int i;
 
   unsigned int       seqlen           = 0;
-  const pll_state_t *map              = NULL;
-  pll_msa_t *        msa              = NULL;
+  const corax_state_t *map              = NULL;
+  corax_msa_t *        msa              = NULL;
   unsigned int *     site_pattern_map = NULL;
   unsigned int *     w                = NULL;
   const char *       dt_name          = NULL;
@@ -145,12 +145,12 @@ static void test_compress(int datatype, pll_bool_t backmap)
   switch (datatype)
   {
   case DATATYPE_NT:
-    map     = pll_map_nt;
+    map     = corax_map_nt;
     msa     = copy_msa(nt_msa, MSA_SEQCOUNT, 0);
     dt_name = "DNA";
     break;
   case DATATYPE_AA:
-    map     = pll_map_aa;
+    map     = corax_map_aa;
     msa     = copy_msa(aa_msa, MSA_SEQCOUNT, 0);
     dt_name = "AA";
     break;
@@ -177,7 +177,7 @@ static void test_compress(int datatype, pll_bool_t backmap)
 
   printf("\n");
 
-  w = pll_compress_site_patterns_msa(msa, map, site_pattern_map);
+  w = corax_compress_site_patterns_msa(msa, map, site_pattern_map);
 
   if (w)
   {
@@ -208,11 +208,11 @@ static void test_compress(int datatype, pll_bool_t backmap)
     }
   }
   else
-    printf("Pattern compression failed: ERR-%d  %s\n ", pll_errno, pll_errmsg);
+    printf("Pattern compression failed: ERR-%d  %s\n ", corax_errno, corax_errmsg);
 
   printf("\n\n");
 
-  pll_msa_destroy(msa);
+  corax_msa_destroy(msa);
   free(w);
   free(site_pattern_map);
 }
@@ -221,16 +221,16 @@ int main(int argc, char *argv[])
 {
   unsigned int attributes = get_attributes(argc, argv);
 
-  if (attributes != PLL_ATTRIB_ARCH_CPU) skip_test();
+  if (attributes != CORAX_ATTRIB_ARCH_CPU) skip_test();
 
-  test_compress(DATATYPE_NT, PLL_FALSE);
-  test_compress(DATATYPE_NT, PLL_TRUE);
+  test_compress(DATATYPE_NT, CORAX_FALSE);
+  test_compress(DATATYPE_NT, CORAX_TRUE);
 
-  test_compress(DATATYPE_AA, PLL_FALSE);
-  test_compress(DATATYPE_AA, PLL_TRUE);
+  test_compress(DATATYPE_AA, CORAX_FALSE);
+  test_compress(DATATYPE_AA, CORAX_TRUE);
 
-  test_compress(DATATYPE_ODD, PLL_FALSE);
-  test_compress(DATATYPE_ODD, PLL_TRUE);
+  test_compress(DATATYPE_ODD, CORAX_FALSE);
+  test_compress(DATATYPE_ODD, CORAX_TRUE);
 
   return (EXIT_SUCCESS);
 }

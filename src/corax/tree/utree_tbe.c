@@ -40,13 +40,13 @@ typedef struct tbe_data
   unsigned int         tip_count_div_2;
 } tbe_data_t;
 
-int cb_full_traversal(pll_unode_t *node)
+int cb_full_traversal(corax_unode_t *node)
 {
   (void)node;
   return 1;
 }
 
-void postorder_init_recursive(pll_unode_t *        node,
+void postorder_init_recursive(corax_unode_t *        node,
                               unsigned int *       index,
                               unsigned int *       subtree_size,
                               index_information_t *idx_infos)
@@ -56,7 +56,7 @@ void postorder_init_recursive(pll_unode_t *        node,
     subtree_size[node->clv_index] = 1;
     return;
   }
-  pll_unode_t *snode = node->next;
+  corax_unode_t *snode = node->next;
   do
   {
     postorder_init_recursive(snode->back, index, subtree_size, idx_infos);
@@ -72,7 +72,7 @@ void postorder_init_recursive(pll_unode_t *        node,
   *index            = *index + 1;
 }
 
-void postorder_init(pll_unode_t *        root,
+void postorder_init(corax_unode_t *        root,
                     unsigned int *       trav_size,
                     unsigned int *       subtree_size,
                     index_information_t *idx_infos)
@@ -82,7 +82,7 @@ void postorder_init(pll_unode_t *        root,
   postorder_init_recursive(root, trav_size, subtree_size, idx_infos);
 }
 
-tbe_data_t *init_tbe_data(pll_unode_t *root, unsigned int tip_count)
+tbe_data_t *init_tbe_data(corax_unode_t *root, unsigned int tip_count)
 {
   tbe_data_t *data      = (tbe_data_t *)malloc(sizeof(tbe_data_t));
   data->tip_count       = tip_count;
@@ -150,8 +150,8 @@ unsigned int search_mindist(const pllmod_tbe_split_info_t *query,
  * it should be called twice, with original and inverted s1 (or s2),
  * to account for possible complementary split encoding.
  * */
-static unsigned int utree_split_hamming_distance_lbound(pll_split_t  s1,
-                                                        pll_split_t  s2,
+static unsigned int utree_split_hamming_distance_lbound(corax_split_t  s1,
+                                                        corax_split_t  s2,
                                                         unsigned int split_len,
                                                         unsigned int min_hdist)
 {
@@ -159,7 +159,7 @@ static unsigned int utree_split_hamming_distance_lbound(pll_split_t  s1,
   unsigned int i;
 
   for (i = 0; (i < split_len) && (hdist <= min_hdist); ++i)
-  { hdist += PLL_POPCNT32(s1[i] ^ s2[i]); }
+  { hdist += CORAX_POPCNT32(s1[i] ^ s2[i]); }
 
   return hdist;
 }
@@ -170,11 +170,11 @@ static unsigned int utree_split_hamming_distance_lbound(pll_split_t  s1,
  *
  */
 
-PLL_EXPORT
+CORAX_EXPORT
 pllmod_tbe_split_info_t *
-pllmod_utree_tbe_nature_init(pll_unode_t *       ref_root,
+pllmod_utree_tbe_nature_init(corax_unode_t *       ref_root,
                              unsigned int        tip_count,
-                             const pll_unode_t **split_to_node_map)
+                             const corax_unode_t **split_to_node_map)
 {
   unsigned int nodes_count = 2 * tip_count - 2;
   unsigned int split_count = tip_count - 3;
@@ -183,25 +183,25 @@ pllmod_utree_tbe_nature_init(pll_unode_t *       ref_root,
   unsigned int b_leaf_idx[nodes_count];
 
   pllmod_tbe_split_info_t *split_info = NULL;
-  pll_unode_t **           travbuffer = NULL;
+  corax_unode_t **           travbuffer = NULL;
 
   split_info = (pllmod_tbe_split_info_t *)malloc(sizeof(pllmod_tbe_split_info_t)
                                                  * split_count);
 
-  travbuffer = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
 
   if (!split_info || !travbuffer)
   {
     if (split_info) free(split_info);
     if (travbuffer) free(travbuffer);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory\n");
+    return CORAX_FAILURE;
   }
 
   // do a post-order traversal of the reference tree.
   unsigned int trav_size;
-  pll_utree_traverse(ref_root,
-                     PLL_TREE_TRAVERSE_POSTORDER,
+  corax_utree_traverse(ref_root,
+                     CORAX_TREE_TRAVERSE_POSTORDER,
                      cb_full_traversal,
                      travbuffer,
                      &trav_size);
@@ -252,9 +252,9 @@ pllmod_utree_tbe_nature_init(pll_unode_t *       ref_root,
   return split_info;
 }
 
-PLL_EXPORT int pllmod_utree_tbe_nature(pll_split_t *            ref_splits,
-                                       pll_split_t *            bs_splits,
-                                       pll_unode_t *            bs_root,
+CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
+                                       corax_split_t *            bs_splits,
+                                       corax_unode_t *            bs_root,
                                        unsigned int             tip_count,
                                        double *                 support,
                                        pllmod_tbe_split_info_t *split_info)
@@ -264,21 +264,21 @@ PLL_EXPORT int pllmod_utree_tbe_nature(pll_split_t *            ref_splits,
 
   if (!ref_splits || !bs_splits || !support || !split_info)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter is NULL!\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Parameter is NULL!\n");
+    return CORAX_FAILURE;
   }
 
   bitv_hashtable_t *bs_splits_hash = pllmod_utree_split_hashtable_insert(
       NULL, bs_splits, tip_count, split_count, NULL, 0);
 
-  if (!bs_splits_hash) return PLL_FAILURE;
+  if (!bs_splits_hash) return CORAX_FAILURE;
 
   tbe_data_t *tbe_data = NULL;
 
   /* iterate over all splits of the reference tree */
   for (i = 0; i < split_count; i++)
   {
-    pll_split_t ref_split = ref_splits[i];
+    corax_split_t ref_split = ref_splits[i];
 
     if (pllmod_utree_split_hashtable_lookup(
             bs_splits_hash, ref_split, tip_count))
@@ -306,38 +306,38 @@ PLL_EXPORT int pllmod_utree_tbe_nature(pll_split_t *            ref_splits,
 
   if (tbe_data) free_tbe_data(tbe_data);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /* This is an old, naive and rather inefficient TBE computation method by
  * Alexey, keep it here just in case */
-PLL_EXPORT int pllmod_utree_tbe_naive(pll_split_t *ref_splits,
-                                      pll_split_t *bs_splits,
+CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
+                                      corax_split_t *bs_splits,
                                       unsigned int tip_count,
                                       double *     support)
 {
   unsigned int i, j, k;
   unsigned int split_count  = tip_count - 3;
   unsigned int split_len    = bitv_length(tip_count);
-  unsigned int split_size   = sizeof(pll_split_base_t) * 8;
+  unsigned int split_size   = sizeof(corax_split_base_t) * 8;
   unsigned int split_offset = tip_count % split_size;
   unsigned int split_mask   = split_offset ? (1u << split_offset) - 1 : ~0u;
 
-  pll_split_t   inv_split = NULL;
+  corax_split_t   inv_split = NULL;
   unsigned int *bs_light  = NULL;
 
   if (!ref_splits || !bs_splits || !support)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter is NULL!\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Parameter is NULL!\n");
+    return CORAX_FAILURE;
   }
 
   bitv_hashtable_t *bs_splits_hash = pllmod_utree_split_hashtable_insert(
       NULL, bs_splits, tip_count, split_count, NULL, 0);
 
-  if (!bs_splits_hash) { return PLL_FAILURE; }
+  if (!bs_splits_hash) { return CORAX_FAILURE; }
 
-  inv_split = (pll_split_t)calloc(split_len, sizeof(pll_split_base_t));
+  inv_split = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
   bs_light  = calloc(split_count, sizeof(unsigned int));
 
   if (!inv_split || !bs_light)
@@ -345,8 +345,8 @@ PLL_EXPORT int pllmod_utree_tbe_naive(pll_split_t *ref_splits,
     if (inv_split) free(inv_split);
     if (bs_light) free(bs_light);
     pllmod_utree_split_hashtable_destroy(bs_splits_hash);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory\n");
+    return CORAX_FAILURE;
   }
 
   /* precompute lightside size for all bootstrap splits */
@@ -356,7 +356,7 @@ PLL_EXPORT int pllmod_utree_tbe_naive(pll_split_t *ref_splits,
   /* iterate over all splits of the reference tree */
   for (i = 0; i < split_count; i++)
   {
-    pll_split_t  ref_split = ref_splits[i];
+    corax_split_t  ref_split = ref_splits[i];
     unsigned int p         = pllmod_utree_split_lightside(ref_split, tip_count);
     unsigned int min_hdist = p - 1;
 
@@ -390,8 +390,8 @@ PLL_EXPORT int pllmod_utree_tbe_naive(pll_split_t *ref_splits,
           ref_split, bs_splits[j], split_len, min_hdist);
       hdist_inv = utree_split_hamming_distance_lbound(
           inv_split, bs_splits[j], split_len, min_hdist);
-      min_hdist = PLL_MIN(min_hdist, hdist);
-      min_hdist = PLL_MIN(min_hdist, hdist_inv);
+      min_hdist = CORAX_MIN(min_hdist, hdist);
+      min_hdist = CORAX_MIN(min_hdist, hdist_inv);
     }
 
     assert(min_hdist > 0);
@@ -403,5 +403,5 @@ PLL_EXPORT int pllmod_utree_tbe_naive(pll_split_t *ref_splits,
   free(inv_split);
   free(bs_light);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

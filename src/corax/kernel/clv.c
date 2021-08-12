@@ -21,7 +21,7 @@
 
 #include "corax/corax.h"
 
-static void case_tiptip(pll_partition_t *partition, const pll_operation_t *op)
+static void case_tiptip(corax_partition_t *partition, const corax_operation_t *op)
 {
   const double *left_matrix  = partition->pmatrix[op->child1_matrix_index];
   const double *right_matrix = partition->pmatrix[op->child2_matrix_index];
@@ -33,13 +33,13 @@ static void case_tiptip(pll_partition_t *partition, const pll_operation_t *op)
   if (partition->asc_bias_alloc) sites += partition->states;
 
   /* get parent scaler */
-  if (op->parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (op->parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[op->parent_scaler_index];
 
   /* precompute lookup table */
-  pll_core_create_lookup(partition->states,
+  corax_core_create_lookup(partition->states,
                          partition->rate_cats,
                          partition->ttlookup,
                          left_matrix,
@@ -49,7 +49,7 @@ static void case_tiptip(pll_partition_t *partition, const pll_operation_t *op)
                          partition->attributes);
 
   /* and update CLV at inner node */
-  pll_core_update_clv_tt(partition->states,
+  corax_core_update_clv_tt(partition->states,
                          sites,
                          partition->rate_cats,
                          parent_clv,
@@ -62,7 +62,7 @@ static void case_tiptip(pll_partition_t *partition, const pll_operation_t *op)
                          partition->attributes);
 }
 
-static void case_tipinner(pll_partition_t *partition, const pll_operation_t *op)
+static void case_tipinner(corax_partition_t *partition, const corax_operation_t *op)
 {
   double *      parent_clv = partition->clv[op->parent_clv_index];
   unsigned int  tip_clv_index;
@@ -77,7 +77,7 @@ static void case_tipinner(pll_partition_t *partition, const pll_operation_t *op)
   if (partition->asc_bias_alloc) sites += partition->states;
 
   /* get parent scaler */
-  if (op->parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (op->parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[op->parent_scaler_index];
@@ -89,7 +89,7 @@ static void case_tipinner(pll_partition_t *partition, const pll_operation_t *op)
     tip_matrix_index   = op->child1_matrix_index;
     inner_clv_index    = op->child2_clv_index;
     inner_matrix_index = op->child2_matrix_index;
-    if (op->child2_scaler_index == PLL_SCALE_BUFFER_NONE)
+    if (op->child2_scaler_index == CORAX_SCALE_BUFFER_NONE)
       right_scaler = NULL;
     else
       right_scaler = partition->scale_buffer[op->child2_scaler_index];
@@ -100,13 +100,13 @@ static void case_tipinner(pll_partition_t *partition, const pll_operation_t *op)
     tip_matrix_index   = op->child2_matrix_index;
     inner_clv_index    = op->child1_clv_index;
     inner_matrix_index = op->child1_matrix_index;
-    if (op->child1_scaler_index == PLL_SCALE_BUFFER_NONE)
+    if (op->child1_scaler_index == CORAX_SCALE_BUFFER_NONE)
       right_scaler = NULL;
     else
       right_scaler = partition->scale_buffer[op->child1_scaler_index];
   }
 
-  pll_core_update_clv_ti(partition->states,
+  corax_core_update_clv_ti(partition->states,
                          sites,
                          partition->rate_cats,
                          parent_clv,
@@ -121,8 +121,8 @@ static void case_tipinner(pll_partition_t *partition, const pll_operation_t *op)
                          partition->attributes);
 }
 
-static void case_innerinner(pll_partition_t *      partition,
-                            const pll_operation_t *op)
+static void case_innerinner(corax_partition_t *      partition,
+                            const corax_operation_t *op)
 {
   const double *left_matrix  = partition->pmatrix[op->child1_matrix_index];
   const double *right_matrix = partition->pmatrix[op->child2_matrix_index];
@@ -138,23 +138,23 @@ static void case_innerinner(pll_partition_t *      partition,
   if (partition->asc_bias_alloc) sites += partition->states;
 
   /* get parent scaler */
-  if (op->parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (op->parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[op->parent_scaler_index];
 
-  if (op->child1_scaler_index != PLL_SCALE_BUFFER_NONE)
+  if (op->child1_scaler_index != CORAX_SCALE_BUFFER_NONE)
     left_scaler = partition->scale_buffer[op->child1_scaler_index];
   else
     left_scaler = NULL;
 
   /* if child2 has a scaler add its values to the parent scaler */
-  if (op->child2_scaler_index != PLL_SCALE_BUFFER_NONE)
+  if (op->child2_scaler_index != CORAX_SCALE_BUFFER_NONE)
     right_scaler = partition->scale_buffer[op->child2_scaler_index];
   else
     right_scaler = NULL;
 
-  pll_core_update_clv_ii(partition->states,
+  corax_core_update_clv_ii(partition->states,
                          sites,
                          partition->rate_cats,
                          parent_clv,
@@ -168,7 +168,7 @@ static void case_innerinner(pll_partition_t *      partition,
                          partition->attributes);
 }
 
-static void case_repeats(pll_partition_t *partition, const pll_operation_t *op)
+static void case_repeats(corax_partition_t *partition, const corax_operation_t *op)
 {
   const double *left_matrix  = partition->pmatrix[op->child1_matrix_index];
   const double *right_matrix = partition->pmatrix[op->child2_matrix_index];
@@ -179,41 +179,41 @@ static void case_repeats(pll_partition_t *partition, const pll_operation_t *op)
   unsigned int *left_scaler;
   unsigned int *right_scaler;
   unsigned int  parent_sites =
-      pll_get_sites_number(partition, op->parent_clv_index);
+      corax_get_sites_number(partition, op->parent_clv_index);
   const unsigned int *parent_id_site =
-      pll_get_id_site(partition, op->parent_clv_index);
+      corax_get_id_site(partition, op->parent_clv_index);
   const unsigned int *left_site_id =
-      pll_get_site_id(partition, op->child1_clv_index);
+      corax_get_site_id(partition, op->child1_clv_index);
   const unsigned int *right_site_id =
-      pll_get_site_id(partition, op->child2_clv_index);
+      corax_get_site_id(partition, op->child2_clv_index);
   unsigned int left_sites =
-      pll_get_sites_number(partition, op->child1_clv_index);
+      corax_get_sites_number(partition, op->child1_clv_index);
   unsigned int right_sites =
-      pll_get_sites_number(partition, op->child2_clv_index);
+      corax_get_sites_number(partition, op->child2_clv_index);
   double *bclv_buffer =
       partition->repeats ? partition->repeats->bclv_buffer : 0;
   ;
   unsigned int inv = left_sites < right_sites;
 
   /* get parent scaler */
-  if (op->parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (op->parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[op->parent_scaler_index];
 
-  if (op->child1_scaler_index != PLL_SCALE_BUFFER_NONE)
+  if (op->child1_scaler_index != CORAX_SCALE_BUFFER_NONE)
     left_scaler = partition->scale_buffer[op->child1_scaler_index];
   else
     left_scaler = NULL;
 
   /* if child2 has a scaler add its values to the parent scaler */
-  if (op->child2_scaler_index != PLL_SCALE_BUFFER_NONE)
+  if (op->child2_scaler_index != CORAX_SCALE_BUFFER_NONE)
     right_scaler = partition->scale_buffer[op->child2_scaler_index];
   else
     right_scaler = NULL;
 
   /* call the function with the shortest clv on the left */
-  pll_core_update_clv_repeats(partition->states,
+  corax_core_update_clv_repeats(partition->states,
                               parent_sites,
                               inv ? left_sites : right_sites,
                               !inv ? left_sites : right_sites,
@@ -233,34 +233,34 @@ static void case_repeats(pll_partition_t *partition, const pll_operation_t *op)
                               partition->attributes);
 }
 
-PLL_EXPORT void pll_update_clvs(pll_partition_t *      partition,
-                                const pll_operation_t *operations,
+CORAX_EXPORT void corax_update_clvs(corax_partition_t *      partition,
+                                const corax_operation_t *operations,
                                 unsigned int           count)
 {
-  pll_update_clvs_rep(partition, operations, count, 1);
+  corax_update_clvs_rep(partition, operations, count, 1);
 }
 
-PLL_EXPORT void pll_update_clvs_rep(pll_partition_t *      partition,
-                                    const pll_operation_t *operations,
+CORAX_EXPORT void corax_update_clvs_rep(corax_partition_t *      partition,
+                                    const corax_operation_t *operations,
                                     unsigned int           count,
                                     unsigned int           update_repeats)
 {
   unsigned int           i;
-  const pll_operation_t *op;
+  const corax_operation_t *op;
 
   for (i = 0; i < count; ++i)
   {
     op = &(operations[i]);
-    if (pll_repeats_enabled(partition) && update_repeats)
-      pll_update_repeats(partition, op);
+    if (corax_repeats_enabled(partition) && update_repeats)
+      corax_update_repeats(partition, op);
 
-    if (pll_repeats_enabled(partition)
+    if (corax_repeats_enabled(partition)
         && (partition->repeats->pernode_ids[op->child1_clv_index]
             || partition->repeats->pernode_ids[op->child2_clv_index]))
     {
       case_repeats(partition, op);
     }
-    else if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    else if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
     {
       if ((op->child1_clv_index < partition->tips)
           && (op->child2_clv_index < partition->tips))

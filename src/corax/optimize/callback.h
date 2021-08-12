@@ -26,16 +26,16 @@
 
 struct default_params
 {
-  pll_partition_t *partition;
-  pll_unode_t *    tree;
+  corax_partition_t *partition;
+  corax_unode_t *    tree;
   unsigned int *   params_indices; /* indices for computing the likelihood */
   int gamma_mode; /* discrete GAMMA rates computation mode (mean, median) */
 };
 
 struct freqs_params
 {
-  pll_partition_t *partition;
-  pll_unode_t *    tree;
+  corax_partition_t *partition;
+  corax_unode_t *    tree;
   unsigned int *   params_indices;   /* indices for computing the likelihood */
   unsigned int     params_index;     /* index of the frequencies to optimize */
   unsigned int     fixed_freq_state; /* index of the fixed frequency */
@@ -43,8 +43,8 @@ struct freqs_params
 
 struct algo_subst_params
 {
-  pll_partition_t *partition;
-  pll_unode_t *    tree;
+  corax_partition_t *partition;
+  corax_unode_t *    tree;
   int *            symmetries;        /* substitution parameters symmetries */
   unsigned int     subst_free_params; /* number of free parameters */
   unsigned int *   params_indices;    /* indices for computing the likelihood */
@@ -53,16 +53,16 @@ struct algo_subst_params
 
 struct rate_weights_params
 {
-  pll_partition_t *partition;
-  pll_unode_t *    tree;
+  corax_partition_t *partition;
+  corax_unode_t *    tree;
   unsigned int *   params_indices; /* indices for computing the likelihood */
   unsigned int     fixed_weight_state; /* index of the fixed weight */
 };
 
 struct brlen_scaler_params
 {
-  pll_partition_t *partition;
-  pll_unode_t *    tree;
+  corax_partition_t *partition;
+  corax_unode_t *    tree;
   unsigned int *   params_indices; /* indices for computing the likelihood */
   double           old_scaler;     /* previous value of branch length scaler*/
 };

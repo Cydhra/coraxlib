@@ -25,7 +25,7 @@
 
 #define TREEFILE  "testdata/medium.tree"
 
-void run_ham_test(unsigned int test_num, pll_split_t s1, pll_split_t s2,
+void run_ham_test(unsigned int test_num, corax_split_t s1, corax_split_t s2,
               unsigned int num_tips)
 {
   pllmod_utree_split_show(s1, num_tips);
@@ -43,11 +43,11 @@ void run_ham_test(unsigned int test_num, pll_split_t s1, pll_split_t s2,
 
 void test_hamming()
 {
-  pll_split_base_t sb1[2] = {0x1, 0xFFFFFFFF};
-  pll_split_base_t sb2[2] = {0x2, 0xFFFFFFF0};
+  corax_split_base_t sb1[2] = {0x1, 0xFFFFFFFF};
+  corax_split_base_t sb2[2] = {0x2, 0xFFFFFFF0};
 
-  pll_split_t s1 = (pll_split_t) &sb1;
-  pll_split_t s2 = (pll_split_t) &sb2;
+  corax_split_t s1 = (corax_split_t) &sb1;
+  corax_split_t s2 = (corax_split_t) &sb2;
 
   run_ham_test(1, s1, s2, 64);
 
@@ -58,20 +58,20 @@ void test_hamming()
 
 void run_tbe_test(const char* tree1_str, const char* tree2_str)
 {
-  pll_utree_t * tree1 = pll_utree_parse_newick_string (tree1_str);
-  pll_utree_t * tree2 = pll_utree_parse_newick_string (tree2_str);
+  corax_utree_t * tree1 = corax_utree_parse_newick_string (tree1_str);
+  corax_utree_t * tree2 = corax_utree_parse_newick_string (tree2_str);
 
   unsigned int split_count = tree1->tip_count - 3;
-  pll_unode_t ** node_split_map = (pll_unode_t **) calloc(split_count, sizeof(pll_unode_t *));
+  corax_unode_t ** node_split_map = (corax_unode_t **) calloc(split_count, sizeof(corax_unode_t *));
   double * tbe = (double *) calloc(split_count, sizeof(double));
 
   pllmod_utree_consistency_set(tree1, tree2);
 
-  pll_split_t * splits1 = pllmod_utree_split_create(tree1->vroot,
+  corax_split_t * splits1 = pllmod_utree_split_create(tree1->vroot,
                                                     tree1->tip_count,
                                                     node_split_map);
 
-  pll_split_t * splits2 = pllmod_utree_split_create(tree2->vroot,
+  corax_split_t * splits2 = pllmod_utree_split_create(tree2->vroot,
                                                     tree2->tip_count,
                                                     NULL);
 
@@ -89,7 +89,7 @@ void run_tbe_test(const char* tree1_str, const char* tree2_str)
 
   printf("\n\n");
 
-  char * newick = pll_utree_export_newick(tree1->vroot, NULL);
+  char * newick = corax_utree_export_newick(tree1->vroot, NULL);
   printf("TBE tree: %s\n", newick);
 
   free(newick);
@@ -99,8 +99,8 @@ void run_tbe_test(const char* tree1_str, const char* tree2_str)
   pllmod_utree_split_destroy(splits1);
   pllmod_utree_split_destroy(splits2);
 
-  pll_utree_destroy (tree1, NULL);
-  pll_utree_destroy (tree2, NULL);
+  corax_utree_destroy (tree1, NULL);
+  corax_utree_destroy (tree2, NULL);
 }
 
 void test_tbe()
@@ -144,7 +144,7 @@ int main (int argc, char * argv[])
 {
   unsigned int attributes = get_attributes(argc, argv);
 
-  if (attributes != PLL_ATTRIB_ARCH_CPU)
+  if (attributes != CORAX_ATTRIB_ARCH_CPU)
   {
     skip_test();
   }

@@ -21,15 +21,15 @@
 
 #include "corax/corax.h"
 
-PLL_EXPORT
+CORAX_EXPORT
 unsigned int
-pll_fastparsimony_edge_score_4x4_avx(const pll_parsimony_t *parsimony,
+corax_fastparsimony_edge_score_4x4_avx(const corax_parsimony_t *parsimony,
                                      unsigned int           node1_score_index,
                                      unsigned int           node2_score_index)
 {
   unsigned int i;
 
-  unsigned int bits[32] __attribute__((aligned(PLL_ALIGNMENT_AVX)));
+  unsigned int bits[32] __attribute__((aligned(CORAX_ALIGNMENT_AVX)));
 
   unsigned int *node1[8];
   unsigned int *node2[8];
@@ -92,20 +92,20 @@ pll_fastparsimony_edge_score_4x4_avx(const pll_parsimony_t *parsimony,
     /* seems there is no difference in speed between popcnt32 and popcnt64 */
 
     unsigned long long * p = (unsigned long long *)bits;
-    score += PLL_POPCNT64(p[0]);
-    score += PLL_POPCNT64(p[1]);
-    score += PLL_POPCNT64(p[2]);
-    score += PLL_POPCNT64(p[3]);
+    score += CORAX_POPCNT64(p[0]);
+    score += CORAX_POPCNT64(p[1]);
+    score += CORAX_POPCNT64(p[2]);
+    score += CORAX_POPCNT64(p[3]);
 #else
 
-    score += (unsigned int)PLL_POPCNT32(bits[0]);
-    score += (unsigned int)PLL_POPCNT32(bits[1]);
-    score += (unsigned int)PLL_POPCNT32(bits[2]);
-    score += (unsigned int)PLL_POPCNT32(bits[3]);
-    score += (unsigned int)PLL_POPCNT32(bits[4]);
-    score += (unsigned int)PLL_POPCNT32(bits[5]);
-    score += (unsigned int)PLL_POPCNT32(bits[6]);
-    score += (unsigned int)PLL_POPCNT32(bits[7]);
+    score += (unsigned int)CORAX_POPCNT32(bits[0]);
+    score += (unsigned int)CORAX_POPCNT32(bits[1]);
+    score += (unsigned int)CORAX_POPCNT32(bits[2]);
+    score += (unsigned int)CORAX_POPCNT32(bits[3]);
+    score += (unsigned int)CORAX_POPCNT32(bits[4]);
+    score += (unsigned int)CORAX_POPCNT32(bits[5]);
+    score += (unsigned int)CORAX_POPCNT32(bits[6]);
+    score += (unsigned int)CORAX_POPCNT32(bits[7]);
 #endif
   }
 
@@ -115,13 +115,13 @@ pll_fastparsimony_edge_score_4x4_avx(const pll_parsimony_t *parsimony,
   return score + score1 + score2 + parsimony->const_cost;
 }
 
-PLL_EXPORT
-void pll_fastparsimony_update_vector_4x4_avx(pll_parsimony_t *parsimony,
-                                             const pll_pars_buildop_t *op)
+CORAX_EXPORT
+void corax_fastparsimony_update_vector_4x4_avx(corax_parsimony_t *parsimony,
+                                             const corax_pars_buildop_t *op)
 {
   unsigned int i;
 
-  unsigned int bits[32] __attribute__((aligned(PLL_ALIGNMENT_AVX)));
+  unsigned int bits[32] __attribute__((aligned(CORAX_ALIGNMENT_AVX)));
 
   unsigned int *parent[8];
   unsigned int *child1[8];
@@ -208,20 +208,20 @@ void pll_fastparsimony_update_vector_4x4_avx(pll_parsimony_t *parsimony,
     /* seems there is no difference in speed between popcnt32 and popcnt64 */
 
     unsigned long long * p = (unsigned long long *)bits;
-    score += PLL_POPCNT64(p[0]);
-    score += PLL_POPCNT64(p[1]);
-    score += PLL_POPCNT64(p[2]);
-    score += PLL_POPCNT64(p[3]);
+    score += CORAX_POPCNT64(p[0]);
+    score += CORAX_POPCNT64(p[1]);
+    score += CORAX_POPCNT64(p[2]);
+    score += CORAX_POPCNT64(p[3]);
 #else
 
-    score += (unsigned int)PLL_POPCNT32(bits[0]);
-    score += (unsigned int)PLL_POPCNT32(bits[1]);
-    score += (unsigned int)PLL_POPCNT32(bits[2]);
-    score += (unsigned int)PLL_POPCNT32(bits[3]);
-    score += (unsigned int)PLL_POPCNT32(bits[4]);
-    score += (unsigned int)PLL_POPCNT32(bits[5]);
-    score += (unsigned int)PLL_POPCNT32(bits[6]);
-    score += (unsigned int)PLL_POPCNT32(bits[7]);
+    score += (unsigned int)CORAX_POPCNT32(bits[0]);
+    score += (unsigned int)CORAX_POPCNT32(bits[1]);
+    score += (unsigned int)CORAX_POPCNT32(bits[2]);
+    score += (unsigned int)CORAX_POPCNT32(bits[3]);
+    score += (unsigned int)CORAX_POPCNT32(bits[4]);
+    score += (unsigned int)CORAX_POPCNT32(bits[5]);
+    score += (unsigned int)CORAX_POPCNT32(bits[6]);
+    score += (unsigned int)CORAX_POPCNT32(bits[7]);
 #endif
   }
 
@@ -231,14 +231,14 @@ void pll_fastparsimony_update_vector_4x4_avx(pll_parsimony_t *parsimony,
   parsimony->node_cost[op->parent_score_index] = score + score1 + score2;
 }
 
-PLL_EXPORT
-void pll_fastparsimony_update_vector_avx(pll_parsimony_t *         parsimony,
-                                         const pll_pars_buildop_t *op)
+CORAX_EXPORT
+void corax_fastparsimony_update_vector_avx(corax_parsimony_t *         parsimony,
+                                         const corax_pars_buildop_t *op)
 {
   unsigned int i, j;
   unsigned int states = parsimony->states;
 
-  unsigned int bits[32] __attribute__((aligned(PLL_ALIGNMENT_AVX)));
+  unsigned int bits[32] __attribute__((aligned(CORAX_ALIGNMENT_AVX)));
 
   unsigned int *parent;
   unsigned int *child1;
@@ -303,19 +303,19 @@ void pll_fastparsimony_update_vector_avx(pll_parsimony_t *         parsimony,
     /* seems there is no difference in speed between popcnt32 and popcnt64 */
 
     unsigned long long * p = (unsigned long long *)bits;
-    score += PLL_POPCNT64(p[0]);
-    score += PLL_POPCNT64(p[1]);
-    score += PLL_POPCNT64(p[2]);
-    score += PLL_POPCNT64(p[3]);
+    score += CORAX_POPCNT64(p[0]);
+    score += CORAX_POPCNT64(p[1]);
+    score += CORAX_POPCNT64(p[2]);
+    score += CORAX_POPCNT64(p[3]);
 #else
-    score += (unsigned int)PLL_POPCNT32(bits[0]);
-    score += (unsigned int)PLL_POPCNT32(bits[1]);
-    score += (unsigned int)PLL_POPCNT32(bits[2]);
-    score += (unsigned int)PLL_POPCNT32(bits[3]);
-    score += (unsigned int)PLL_POPCNT32(bits[4]);
-    score += (unsigned int)PLL_POPCNT32(bits[5]);
-    score += (unsigned int)PLL_POPCNT32(bits[6]);
-    score += (unsigned int)PLL_POPCNT32(bits[7]);
+    score += (unsigned int)CORAX_POPCNT32(bits[0]);
+    score += (unsigned int)CORAX_POPCNT32(bits[1]);
+    score += (unsigned int)CORAX_POPCNT32(bits[2]);
+    score += (unsigned int)CORAX_POPCNT32(bits[3]);
+    score += (unsigned int)CORAX_POPCNT32(bits[4]);
+    score += (unsigned int)CORAX_POPCNT32(bits[5]);
+    score += (unsigned int)CORAX_POPCNT32(bits[6]);
+    score += (unsigned int)CORAX_POPCNT32(bits[7]);
 #endif
   }
 
@@ -325,15 +325,15 @@ void pll_fastparsimony_update_vector_avx(pll_parsimony_t *         parsimony,
   parsimony->node_cost[op->parent_score_index] = score + score1 + score2;
 }
 
-PLL_EXPORT
-unsigned int pll_fastparsimony_edge_score_avx(const pll_parsimony_t *parsimony,
+CORAX_EXPORT
+unsigned int corax_fastparsimony_edge_score_avx(const corax_parsimony_t *parsimony,
                                               unsigned int node1_score_index,
                                               unsigned int node2_score_index)
 {
   unsigned int i, j;
   unsigned int states = parsimony->states;
 
-  unsigned int bits[32] __attribute__((aligned(PLL_ALIGNMENT_AVX)));
+  unsigned int bits[32] __attribute__((aligned(CORAX_ALIGNMENT_AVX)));
 
   unsigned int *node1;
   unsigned int *node2;
@@ -377,19 +377,19 @@ unsigned int pll_fastparsimony_edge_score_avx(const pll_parsimony_t *parsimony,
     /* seems there is no difference in speed between popcnt32 and popcnt64 */
 
     unsigned long long * p = (unsigned long long *)bits;
-    score += PLL_POPCNT64(p[0]);
-    score += PLL_POPCNT64(p[1]);
-    score += PLL_POPCNT64(p[2]);
-    score += PLL_POPCNT64(p[3]);
+    score += CORAX_POPCNT64(p[0]);
+    score += CORAX_POPCNT64(p[1]);
+    score += CORAX_POPCNT64(p[2]);
+    score += CORAX_POPCNT64(p[3]);
 #else
-    score += (unsigned int)PLL_POPCNT32(bits[0]);
-    score += (unsigned int)PLL_POPCNT32(bits[1]);
-    score += (unsigned int)PLL_POPCNT32(bits[2]);
-    score += (unsigned int)PLL_POPCNT32(bits[3]);
-    score += (unsigned int)PLL_POPCNT32(bits[4]);
-    score += (unsigned int)PLL_POPCNT32(bits[5]);
-    score += (unsigned int)PLL_POPCNT32(bits[6]);
-    score += (unsigned int)PLL_POPCNT32(bits[7]);
+    score += (unsigned int)CORAX_POPCNT32(bits[0]);
+    score += (unsigned int)CORAX_POPCNT32(bits[1]);
+    score += (unsigned int)CORAX_POPCNT32(bits[2]);
+    score += (unsigned int)CORAX_POPCNT32(bits[3]);
+    score += (unsigned int)CORAX_POPCNT32(bits[4]);
+    score += (unsigned int)CORAX_POPCNT32(bits[5]);
+    score += (unsigned int)CORAX_POPCNT32(bits[6]);
+    score += (unsigned int)CORAX_POPCNT32(bits[7]);
 #endif
   }
 

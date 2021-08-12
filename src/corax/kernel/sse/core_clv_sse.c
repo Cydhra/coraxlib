@@ -44,7 +44,7 @@ static void fill_parent_scaler(unsigned int        scaler_size,
   }
 }
 
-PLL_EXPORT void pll_core_create_lookup_4x4_sse(unsigned int  rate_cats,
+CORAX_EXPORT void corax_core_create_lookup_4x4_sse(unsigned int  rate_cats,
                                                double *      lookup,
                                                const double *left_matrix,
                                                const double *right_matrix)
@@ -225,17 +225,17 @@ PLL_EXPORT void pll_core_create_lookup_4x4_sse(unsigned int  rate_cats,
   }
 }
 
-PLL_EXPORT void pll_core_create_lookup_sse(unsigned int       states,
+CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int       states,
                                            unsigned int       rate_cats,
                                            double *           ttlookup,
                                            const double *     left_matrix,
                                            const double *     right_matrix,
-                                           const pll_state_t *tipmap,
+                                           const corax_state_t *tipmap,
                                            unsigned int       tipmap_size)
 {
   if (states == 4)
   {
-    pll_core_create_lookup_4x4_sse(
+    corax_core_create_lookup_4x4_sse(
         rate_cats, ttlookup, left_matrix, right_matrix);
     return;
   }
@@ -262,10 +262,10 @@ PLL_EXPORT void pll_core_create_lookup_sse(unsigned int       states,
 
   for (j = 0; j < maxstates; ++j)
   {
-    pll_state_t jstate = tipmap[j];
+    corax_state_t jstate = tipmap[j];
     for (k = 0; k < maxstates; ++k)
     {
-      pll_state_t kstate = tipmap[k];
+      corax_state_t kstate = tipmap[k];
       jmat               = left_matrix;
       kmat               = right_matrix;
 
@@ -376,8 +376,8 @@ static void pshow_sse(char * name, __m128d x)
 }
 #endif
 
-PLL_EXPORT void
-pll_core_update_clv_tt_4x4_sse(unsigned int         sites,
+CORAX_EXPORT void
+corax_core_update_clv_tt_4x4_sse(unsigned int         sites,
                                unsigned int         rate_cats,
                                double *             parent_clv,
                                unsigned int *       parent_scaler,
@@ -392,7 +392,7 @@ pll_core_update_clv_tt_4x4_sse(unsigned int         sites,
   const double *offset;
 
   size_t scaler_size =
-      (attrib & PLL_ATTRIB_RATE_SCALERS) ? sites * rate_cats : sites;
+      (attrib & CORAX_ATTRIB_RATE_SCALERS) ? sites * rate_cats : sites;
 
   if (parent_scaler)
     memset(parent_scaler, 0, sizeof(unsigned int) * scaler_size);
@@ -411,7 +411,7 @@ pll_core_update_clv_tt_4x4_sse(unsigned int         sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int  sites,
+CORAX_EXPORT void corax_core_update_clv_ii_4x4_sse(unsigned int  sites,
                                                unsigned int  rate_cats,
                                                double *      parent_clv,
                                                unsigned int *parent_scaler,
@@ -434,15 +434,15 @@ PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int  sites,
   unsigned int scale_mask;
   unsigned int init_mask;
 
-  __m128d v_scale_threshold = _mm_set1_pd(PLL_SCALE_THRESHOLD);
-  __m128d v_scale_factor    = _mm_set1_pd(PLL_SCALE_FACTOR);
+  __m128d v_scale_threshold = _mm_set1_pd(CORAX_SCALE_THRESHOLD);
+  __m128d v_scale_factor    = _mm_set1_pd(CORAX_SCALE_FACTOR);
 
   __m128d xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8, xmm9, xmm10;
 
   if (parent_scaler)
   {
     /* determine the scaling mode and init the vars accordingly */
-    scale_mode               = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 2 : 1;
+    scale_mode               = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 2 : 1;
     init_mask                = (scale_mode == 1) ? 0x3 : 0;
     const size_t scaler_size = (scale_mode == 2) ? sites * rate_cats : sites;
     /* add up the scale vector of the two children if available */
@@ -600,7 +600,7 @@ PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int  sites,
       if (scale_mode == 2)
       {
         /* PER-RATE SCALING: if *all* entries of the *rate* CLV were below
-         * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+         * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
         if (rate_mask == 0x3)
         {
           xmm9  = _mm_mul_pd(xmm9, v_scale_factor);
@@ -620,7 +620,7 @@ PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int  sites,
     }
 
     /* PER-SITE SCALING: if *all* entries of the *site* CLV were below
-     * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+     * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
     if (scale_mask == 0x3)
     {
       parent_clv -= span;
@@ -636,7 +636,7 @@ PLL_EXPORT void pll_core_update_clv_ii_4x4_sse(unsigned int  sites,
   }
 }
 
-PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int         states,
+CORAX_EXPORT void corax_core_update_clv_tt_sse(unsigned int         states,
                                            unsigned int         sites,
                                            unsigned int         rate_cats,
                                            double *             parent_clv,
@@ -655,7 +655,7 @@ PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int         states,
 
   if (states == 4)
   {
-    pll_core_update_clv_tt_4x4_sse(sites,
+    corax_core_update_clv_tt_4x4_sse(sites,
                                    rate_cats,
                                    parent_clv,
                                    parent_scaler,
@@ -667,7 +667,7 @@ PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int         states,
   }
 
   size_t scaler_size =
-      (attrib & PLL_ATTRIB_RATE_SCALERS) ? sites * rate_cats : sites;
+      (attrib & CORAX_ATTRIB_RATE_SCALERS) ? sites * rate_cats : sites;
 
   if (parent_scaler)
     memset(parent_scaler, 0, sizeof(unsigned int) * scaler_size);
@@ -686,7 +686,7 @@ PLL_EXPORT void pll_core_update_clv_tt_sse(unsigned int         states,
   }
 }
 
-PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
+CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int        states,
                                            unsigned int        sites,
                                            unsigned int        rate_cats,
                                            double *            parent_clv,
@@ -709,7 +709,7 @@ PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
   /* dedicated functions for 4x4 matrices */
   if (states == 4)
   {
-    pll_core_update_clv_ii_4x4_sse(sites,
+    corax_core_update_clv_ii_4x4_sse(sites,
                                    rate_cats,
                                    parent_clv,
                                    parent_scaler,
@@ -732,13 +732,13 @@ PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
   unsigned int scale_mode; /* 0 = none, 1 = per-site, 2 = per-rate */
   unsigned int scale_mask;
   unsigned int init_mask;
-  __m128d      v_scale_threshold = _mm_set1_pd(PLL_SCALE_THRESHOLD);
-  __m128d      v_scale_factor    = _mm_set1_pd(PLL_SCALE_FACTOR);
+  __m128d      v_scale_threshold = _mm_set1_pd(CORAX_SCALE_THRESHOLD);
+  __m128d      v_scale_factor    = _mm_set1_pd(CORAX_SCALE_FACTOR);
 
   if (parent_scaler)
   {
     /* determine the scaling mode and init the vars accordingly */
-    scale_mode               = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 2 : 1;
+    scale_mode               = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 2 : 1;
     init_mask                = (scale_mode == 1) ? 0x3 : 0;
     const size_t scaler_size = (scale_mode == 2) ? sites * rate_cats : sites;
     /* add up the scale vector of the two children if available */
@@ -828,7 +828,7 @@ PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
       if (scale_mode == 2)
       {
         /* PER-RATE SCALING: if *all* entries of the *rate* CLV were below
-         * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+         * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
         if (rate_mask == 0x3)
         {
           for (i = 0; i < states_padded; i += 2)
@@ -849,7 +849,7 @@ PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
     }
 
     /* PER-SITE SCALING: if *all* entries of the *site* CLV were below
-     * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+     * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
     if (scale_mask == 0x3)
     {
       parent_clv -= span_padded;
@@ -865,8 +865,8 @@ PLL_EXPORT void pll_core_update_clv_ii_sse(unsigned int        states,
   }
 }
 
-PLL_EXPORT void
-pll_core_update_clv_repeats_generic_sse(unsigned int        states,
+CORAX_EXPORT void
+corax_core_update_clv_repeats_generic_sse(unsigned int        states,
                                         unsigned int        parent_sites,
                                         unsigned int        left_sites,
                                         unsigned int        right_sites,
@@ -901,17 +901,17 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
   unsigned int scale_mode; /* 0 = none, 1 = per-site, 2 = per-rate */
   unsigned int scale_mask;
   unsigned int init_mask;
-  __m128d      v_scale_threshold = _mm_set1_pd(PLL_SCALE_THRESHOLD);
-  __m128d      v_scale_factor    = _mm_set1_pd(PLL_SCALE_FACTOR);
+  __m128d      v_scale_threshold = _mm_set1_pd(CORAX_SCALE_THRESHOLD);
+  __m128d      v_scale_factor    = _mm_set1_pd(CORAX_SCALE_FACTOR);
 
   if (parent_scaler)
   {
     /* determine the scaling mode and init the vars accordingly */
-    scale_mode = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 2 : 1;
+    scale_mode = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 2 : 1;
     init_mask  = (scale_mode == 1) ? 0x3 : 0;
     /* add up the scale vector of the two children if available */
     if (scale_mode == 2)
-      pll_fill_parent_scaler_repeats_per_rate(parent_sites,
+      corax_fill_parent_scaler_repeats_per_rate(parent_sites,
                                               rate_cats,
                                               parent_scaler,
                                               parent_id_site,
@@ -920,7 +920,7 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
                                               right_scaler,
                                               right_site_id);
     else
-      pll_fill_parent_scaler_repeats(parent_sites,
+      corax_fill_parent_scaler_repeats(parent_sites,
                                      parent_scaler,
                                      parent_id_site,
                                      left_scaler,
@@ -937,9 +937,9 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
   /* compute CLV */
   for (n = 0; n < parent_sites; ++n)
   {
-    unsigned int  site = PLL_GET_SITE(parent_id_site, n);
-    unsigned int  lid  = PLL_GET_ID(left_site_id, site);
-    unsigned int  rid  = PLL_GET_ID(right_site_id, site);
+    unsigned int  site = CORAX_GET_SITE(parent_id_site, n);
+    unsigned int  lid  = CORAX_GET_ID(left_site_id, site);
+    unsigned int  rid  = CORAX_GET_ID(right_site_id, site);
     const double *lclv = &left_clv[lid * span_padded];
     const double *rclv = &right_clv[rid * span_padded];
     lmat               = left_matrix;
@@ -1017,7 +1017,7 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
       if (scale_mode == 2)
       {
         /* PER-RATE SCALING: if *all* entries of the *rate* CLV were below
-         * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+         * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
         if (rate_mask == 0x3)
         {
           for (i = 0; i < states_padded; i += 2)
@@ -1038,7 +1038,7 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
     }
 
     /* PER-SITE SCALING: if *all* entries of the *site* CLV were below
-     * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+     * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
     if (scale_mask == 0x3)
     {
       parent_clv -= span_padded;
@@ -1054,8 +1054,8 @@ pll_core_update_clv_repeats_generic_sse(unsigned int        states,
   }
 }
 
-PLL_EXPORT void
-pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
+CORAX_EXPORT void
+corax_core_update_clv_ti_4x4_sse(unsigned int         sites,
                                unsigned int         rate_cats,
                                double *             parent_clv,
                                unsigned int *       parent_scaler,
@@ -1078,8 +1078,8 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
   unsigned int scale_mask;
   unsigned int init_mask;
 
-  __m128d v_scale_threshold = _mm_set1_pd(PLL_SCALE_THRESHOLD);
-  __m128d v_scale_factor    = _mm_set1_pd(PLL_SCALE_FACTOR);
+  __m128d v_scale_threshold = _mm_set1_pd(CORAX_SCALE_THRESHOLD);
+  __m128d v_scale_factor    = _mm_set1_pd(CORAX_SCALE_FACTOR);
 
   __m128d xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8;
   __m128d ymm0, ymm1, ymm2, ymm3;
@@ -1087,13 +1087,13 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
   /* precompute a lookup table of four values per entry (one for each state),
      for all 16 states (including ambiguities) and for each rate category. */
   double *lookup =
-      pll_aligned_alloc(64 * rate_cats * sizeof(double), PLL_ALIGNMENT_SSE);
+      corax_aligned_alloc(64 * rate_cats * sizeof(double), CORAX_ALIGNMENT_SSE);
   if (!lookup)
   {
     /* TODO: in the highly unlikely event that allocation fails, we should
        resort to a non-lookup-precomputation version of this function,
        available at commit e.g.  a4fc873fdc65741e402cdc1c59919375143d97d1 */
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate space for precomputation.");
     return;
   }
@@ -1175,7 +1175,7 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
   if (parent_scaler)
   {
     /* determine the scaling mode and init the vars accordingly */
-    scale_mode               = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 2 : 1;
+    scale_mode               = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 2 : 1;
     init_mask                = (scale_mode == 1) ? 0x3 : 0;
     const size_t scaler_size = (scale_mode == 2) ? sites * rate_cats : sites;
     /* update the parent scaler with the scaler of the right child */
@@ -1259,7 +1259,7 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
       xmm8 = _mm_mul_pd(xmm4, xmm2);
 
       //      for (i = 0; i < states; ++i)
-      //        scaling = scaling && (parent_clv[i] < PLL_SCALE_THRESHOLD);
+      //        scaling = scaling && (parent_clv[i] < CORAX_SCALE_THRESHOLD);
 
       /* check if scaling is needed for the current rate category */
       __m128d      v_cmp     = _mm_cmplt_pd(xmm3, v_scale_threshold);
@@ -1270,7 +1270,7 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
       if (scale_mode == 2)
       {
         /* PER-RATE SCALING: if *all* entries of the *rate* CLV were below
-         * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+         * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
         if (rate_mask == 0x3)
         {
           xmm3 = _mm_mul_pd(xmm3, v_scale_factor);
@@ -1290,7 +1290,7 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
     }
 
     /* PER-SITE SCALING: if *all* entries of the *site* CLV were below
-     * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+     * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
     if (scale_mask == 0x3)
     {
       parent_clv -= span;
@@ -1304,10 +1304,10 @@ pll_core_update_clv_ti_4x4_sse(unsigned int         sites,
       parent_scaler[n] += 1;
     }
   }
-  pll_aligned_free(lookup);
+  corax_aligned_free(lookup);
 }
 
-PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
+CORAX_EXPORT void corax_core_update_clv_ti_sse(unsigned int         states,
                                            unsigned int         sites,
                                            unsigned int         rate_cats,
                                            double *             parent_clv,
@@ -1317,7 +1317,7 @@ PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
                                            const double *       left_matrix,
                                            const double *       right_matrix,
                                            const unsigned int * right_scaler,
-                                           const pll_state_t *  tipmap,
+                                           const corax_state_t *  tipmap,
                                            unsigned int         tipmap_size,
                                            unsigned int         attrib)
 {
@@ -1328,12 +1328,12 @@ PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
   const double *lmat;
   const double *rmat;
 
-  pll_state_t lstate;
+  corax_state_t lstate;
 
   /* dedicated functions for 4x4 matrices */
   if (states == 4)
   {
-    pll_core_update_clv_ti_4x4_sse(sites,
+    corax_core_update_clv_ti_4x4_sse(sites,
                                    rate_cats,
                                    parent_clv,
                                    parent_scaler,
@@ -1355,13 +1355,13 @@ PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
   unsigned int scale_mode; /* 0 = none, 1 = per-site, 2 = per-rate */
   unsigned int scale_mask;
   unsigned int init_mask;
-  __m128d      v_scale_threshold = _mm_set1_pd(PLL_SCALE_THRESHOLD);
-  __m128d      v_scale_factor    = _mm_set1_pd(PLL_SCALE_FACTOR);
+  __m128d      v_scale_threshold = _mm_set1_pd(CORAX_SCALE_THRESHOLD);
+  __m128d      v_scale_factor    = _mm_set1_pd(CORAX_SCALE_FACTOR);
 
   if (parent_scaler)
   {
     /* determine the scaling mode and init the vars accordingly */
-    scale_mode               = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 2 : 1;
+    scale_mode               = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 2 : 1;
     init_mask                = (scale_mode == 1) ? 0x3 : 0;
     const size_t scaler_size = (scale_mode == 2) ? sites * rate_cats : sites;
     /* add up the scale vector of the two children if available */
@@ -1463,7 +1463,7 @@ PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
       if (scale_mode == 2)
       {
         /* PER-RATE SCALING: if *all* entries of the *rate* CLV were below
-         * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+         * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
         if (rate_mask == 0x3)
         {
           for (i = 0; i < states_padded; i += 2)
@@ -1483,7 +1483,7 @@ PLL_EXPORT void pll_core_update_clv_ti_sse(unsigned int         states,
     }
 
     /* PER-SITE SCALING: if *all* entries of the *site* CLV were below
-     * the threshold then scale (all) entries by PLL_SCALE_FACTOR */
+     * the threshold then scale (all) entries by CORAX_SCALE_FACTOR */
     if (scale_mask == 0x3)
     {
       parent_clv -= span_padded;

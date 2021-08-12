@@ -35,9 +35,9 @@ int bin_fwrite(void *data, size_t size, size_t count, FILE *file)
   if (ret != count)
   {
     file_io_error(file, ftell(file), "write data");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int bin_fread(void *data, size_t size, size_t count, FILE *file)
@@ -46,79 +46,79 @@ int bin_fread(void *data, size_t size, size_t count, FILE *file)
   if (ret != count)
   {
     file_io_error(file, ftell(file), "read data");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_block_header_apply(FILE *              bin_file,
-                              pll_block_header_t *block_header,
+                              corax_block_header_t *block_header,
                               int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   strcpy(block_header->pad, "000");
 
-  if (!bin_func(block_header, sizeof(pll_block_header_t), 1, bin_file))
+  if (!bin_func(block_header, sizeof(corax_block_header_t), 1, bin_file))
   {
     file_io_error(bin_file, ftell(bin_file), "block header apply");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-int binary_update_header(FILE *bin_file, pll_block_header_t *header)
+int binary_update_header(FILE *bin_file, corax_block_header_t *header)
 {
   unsigned int    next_block;
-  pll_block_map_t next_map;
+  corax_block_map_t next_map;
 
   long int cur_position = ftell(bin_file);
 
-  pll_binary_header_t bin_header;
+  corax_binary_header_t bin_header;
 
   /* update header */
   if (fseek(bin_file, 0, SEEK_SET) == -1)
   {
     file_io_error(bin_file, 0, "update position to head");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  if (!bin_fread(&bin_header, sizeof(pll_binary_header_t), 1, bin_file))
+  if (!bin_fread(&bin_header, sizeof(corax_binary_header_t), 1, bin_file))
   {
     file_io_error(bin_file, cur_position, "update binary header [r]");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   if (fseek(bin_file, 0, SEEK_SET) == -1)
   {
     file_io_error(bin_file, 0, "update position to head");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   next_block = bin_header.n_blocks;
   ++bin_header.n_blocks;
 
-  if (!bin_fwrite(&bin_header, sizeof(pll_binary_header_t), 1, bin_file))
+  if (!bin_fwrite(&bin_header, sizeof(corax_binary_header_t), 1, bin_file))
   {
     file_io_error(bin_file, cur_position, "update binary header [w]");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (header && (header->attributes & PLLMOD_BIN_ATTRIB_UPDATE_MAP))
   {
     /* update map */
     assert(next_block < bin_header.max_blocks);
-    if (fseek(bin_file, next_block * sizeof(pll_block_map_t), SEEK_CUR) == -1)
+    if (fseek(bin_file, next_block * sizeof(corax_block_map_t), SEEK_CUR) == -1)
     {
       file_io_error(bin_file,
-                    next_block * sizeof(pll_block_map_t),
+                    next_block * sizeof(corax_block_map_t),
                     "update position to map");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     next_map.block_id     = header->block_id;
     next_map.block_offset = cur_position;
-    if (!bin_fwrite(&next_map, sizeof(pll_block_map_t), 1, bin_file))
+    if (!bin_fwrite(&next_map, sizeof(corax_block_map_t), 1, bin_file))
     {
       file_io_error(bin_file, cur_position, "update binary map [w]");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
 
@@ -126,15 +126,15 @@ int binary_update_header(FILE *bin_file, pll_block_header_t *header)
   if (fseek(bin_file, cur_position, SEEK_SET) == -1)
   {
     file_io_error(bin_file, cur_position, "update position to block");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 long int binary_get_offset(FILE *bin_file, int block_id)
 {
-  pll_block_map_t *map;
+  corax_block_map_t *map;
   unsigned int     i, n_blocks;
   long int         offset = PLLMOD_BIN_INVALID_OFFSET;
 
@@ -157,11 +157,11 @@ long int binary_get_offset(FILE *bin_file, int block_id)
 }
 
 int binary_partition_desc_apply(FILE *           bin_file,
-                                pll_partition_t *partition,
+                                corax_partition_t *partition,
                                 unsigned int     attributes,
                                 int (*bin_func)(void *, size_t, size_t, FILE *))
 {
-  PLL_UNUSED(attributes);
+  CORAX_UNUSED(attributes);
 
   /* partition descriptor */
   bin_func(&partition->tips, sizeof(unsigned int), 1, bin_file);
@@ -179,15 +179,15 @@ int binary_partition_desc_apply(FILE *           bin_file,
   /* The variables below are used only if PATTERN_TIP is active. Otherwise
      they could be uninitialized and hence raise a valgrind error if we try
      to write them into the binary file. */
-  if (!(partition->attributes & PLL_ATTRIB_PATTERN_TIP))
+  if (!(partition->attributes & CORAX_ATTRIB_PATTERN_TIP))
     partition->maxstates = 0;
   bin_func(&partition->maxstates, sizeof(unsigned int), 1, bin_file);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_partition_body_apply(FILE *           bin_file,
-                                pll_partition_t *partition,
+                                corax_partition_t *partition,
                                 unsigned int     attributes,
                                 int (*bin_func)(void *, size_t, size_t, FILE *))
 {
@@ -230,7 +230,7 @@ int binary_partition_body_apply(FILE *           bin_file,
   bin_func(partition->rates, sizeof(double), rate_cats, bin_file);
   bin_func(partition->rate_weights, sizeof(double), rate_cats, bin_file);
   bin_func(partition->prop_invar, sizeof(double), rate_matrices, bin_file);
-  if (partition->attributes & PLL_ATTRIB_SITE_REPEATS)
+  if (partition->attributes & CORAX_ATTRIB_SITE_REPEATS)
   {
     bin_func(partition->repeats->pernode_ids,
              sizeof(unsigned int),
@@ -247,7 +247,7 @@ int binary_partition_body_apply(FILE *           bin_file,
     unsigned int first_clv_index = 0;
 
     /* dump tipchars if TIP_PATTERN is used*/
-    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
     {
       for (i = 0; i < tips; ++i)
       {
@@ -256,7 +256,7 @@ int binary_partition_body_apply(FILE *           bin_file,
                  sites_alloc,
                  bin_file);
       }
-      bin_func(partition->charmap, sizeof(char), PLL_ASCII_SIZE, bin_file);
+      bin_func(partition->charmap, sizeof(char), CORAX_ASCII_SIZE, bin_file);
       first_clv_index = tips;
 
       unsigned int l2_maxstates =
@@ -266,20 +266,20 @@ int binary_partition_body_apply(FILE *           bin_file,
       size_t alloc_size = (1 << (2 * l2_maxstates))
                           * (partition->states_padded * partition->rate_cats);
       bin_func(partition->ttlookup, sizeof(double), alloc_size, bin_file);
-      bin_func(partition->tipmap, sizeof(char), PLL_ASCII_SIZE, bin_file);
+      bin_func(partition->tipmap, sizeof(char), CORAX_ASCII_SIZE, bin_file);
     }
-    if (partition->attributes & PLL_ATTRIB_SITE_REPEATS)
+    if (partition->attributes & CORAX_ATTRIB_SITE_REPEATS)
     {
       /* dump repeats */
       for (i = first_clv_index; i < (partition->clv_buffers + tips); ++i)
       {
-        unsigned int clvs_to_alloc = pll_get_sites_number(partition, i);
+        unsigned int clvs_to_alloc = corax_get_sites_number(partition, i);
         if (clvs_to_alloc != partition->repeats->pernode_allocated_clvs[i])
         {
           partition->repeats->reallocate_repeats(
               partition,
               i,
-              (i < tips) ? (unsigned int)PLL_SCALE_BUFFER_NONE : i - tips,
+              (i < tips) ? (unsigned int)CORAX_SCALE_BUFFER_NONE : i - tips,
               clvs_to_alloc);
         }
         if (partition->repeats->pernode_ids[i]) // repeats
@@ -290,7 +290,7 @@ int binary_partition_body_apply(FILE *           bin_file,
                    bin_file);
           bin_func(partition->repeats->pernode_id_site[i],
                    sizeof(unsigned int),
-                   pll_get_sites_number(partition, i),
+                   corax_get_sites_number(partition, i),
                    bin_file);
         }
       }
@@ -301,13 +301,13 @@ int binary_partition_body_apply(FILE *           bin_file,
     {
       bin_func(partition->clv[i],
                sizeof(double),
-               pll_get_clv_size(partition, i),
+               corax_get_clv_size(partition, i),
                bin_file);
     }
     for (i = 0; i < partition->scale_buffers; ++i)
       bin_func(partition->scale_buffer[i],
                sizeof(unsigned int),
-               pll_get_sites_number(partition, partition->tips + i),
+               corax_get_sites_number(partition, partition->tips + i),
                bin_file);
   }
 
@@ -329,103 +329,103 @@ int binary_partition_body_apply(FILE *           bin_file,
       break;
     }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_partition_apply(FILE *           bin_file,
-                           pll_partition_t *partition,
+                           corax_partition_t *partition,
                            unsigned int     attributes,
                            int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   if (!binary_partition_desc_apply(bin_file, partition, attributes, bin_func))
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   if (!binary_partition_body_apply(bin_file, partition, attributes, bin_func))
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_repeats_apply(FILE *           bin_file,
-                         pll_partition_t *partition,
+                         corax_partition_t *partition,
                          unsigned int     attributes,
                          size_t           nodes,
                          int (*bin_func)(void *, size_t, size_t, FILE *))
 {
-  PLL_UNUSED(attributes);
+  CORAX_UNUSED(attributes);
   if (!bin_func(partition->repeats->pernode_ids,
                 sizeof(unsigned int),
                 nodes,
                 bin_file))
   {
-    pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
-    return PLL_FAILURE;
+    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
+    return CORAX_FAILURE;
   }
   if (!bin_func(partition->repeats->pernode_allocated_clvs,
                 sizeof(unsigned int),
                 nodes,
                 bin_file))
   {
-    pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
-    return PLL_FAILURE;
+    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
+    return CORAX_FAILURE;
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_clv_apply(FILE *           bin_file,
-                     pll_partition_t *partition,
+                     corax_partition_t *partition,
                      unsigned int     clv_index,
                      unsigned int     attributes,
                      size_t           clv_size,
                      int (*bin_func)(void *, size_t, size_t, FILE *))
 {
-  PLL_UNUSED(attributes);
+  CORAX_UNUSED(attributes);
   if (clv_index > (partition->tips + partition->clv_buffers))
   {
-    pll_set_error(PLLMOD_BIN_ERROR_INVALID_INDEX, "Invalid CLV index");
-    return PLL_FAILURE;
+    corax_set_error(PLLMOD_BIN_ERROR_INVALID_INDEX, "Invalid CLV index");
+    return CORAX_FAILURE;
   }
   if (!bin_func(partition->clv[clv_index], sizeof(double), clv_size, bin_file))
   {
-    pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing CLV");
-    return PLL_FAILURE;
+    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing CLV");
+    return CORAX_FAILURE;
   }
-  if ((partition->attributes & PLL_ATTRIB_SITE_REPEATS)
+  if ((partition->attributes & CORAX_ATTRIB_SITE_REPEATS)
       && partition->repeats->pernode_ids[clv_index])
   {
     unsigned int uncompressed_sites =
         partition->sites + (partition->asc_bias_alloc ? partition->states : 0);
-    unsigned int compressed_sites = pll_get_sites_number(partition, clv_index);
+    unsigned int compressed_sites = corax_get_sites_number(partition, clv_index);
     if (!bin_func(partition->repeats->pernode_site_id[clv_index],
                   sizeof(unsigned int),
                   uncompressed_sites,
                   bin_file))
     {
-      pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
+      corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
                     "Error loading/storing CLV (site_id)");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     if (!bin_func(partition->repeats->pernode_id_site[clv_index],
                   sizeof(unsigned int),
                   compressed_sites,
                   bin_file))
     {
-      pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
+      corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
                     "Error loading/storing CLV (id_site)");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int binary_node_apply(FILE *       bin_file,
-                      pll_unode_t *node,
+                      corax_unode_t *node,
                       int          write,
                       int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   char *        label     = 0;
   unsigned long label_len = 0;
 
-  bin_func(node, sizeof(pll_unode_t), 1, bin_file);
+  bin_func(node, sizeof(corax_unode_t), 1, bin_file);
   if (write && node->label) label_len = strlen(node->label);
   bin_func(&label_len, sizeof(unsigned long), 1, bin_file);
   if (label_len)
@@ -440,7 +440,7 @@ int binary_node_apply(FILE *       bin_file,
     node->label[label_len] = '\0';
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /* static functions */
@@ -453,5 +453,5 @@ void file_io_error(FILE *bin_file, long int setp, const char *msg)
   if (setp != PLLMOD_BIN_INVALID_OFFSET) fseek(bin_file, setp, SEEK_SET);
 
   /* update error data */
-  pll_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Binary file I/O error: %s", msg);
+  corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Binary file I/O error: %s", msg);
 }

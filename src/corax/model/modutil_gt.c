@@ -137,7 +137,7 @@ static int get_model_index(const char *model_name)
 /**
  * @brief Returns number of available built-in protein evolution models
  */
-PLL_EXPORT unsigned int pllmod_util_model_count_genotype()
+CORAX_EXPORT unsigned int pllmod_util_model_count_genotype()
 {
   return GT_MODELS_COUNT;
 }
@@ -145,7 +145,7 @@ PLL_EXPORT unsigned int pllmod_util_model_count_genotype()
 /**
  * @brief Returns list of available built-in protein evolution models (names)
  */
-PLL_EXPORT char **pllmod_util_model_names_genotype()
+CORAX_EXPORT char **pllmod_util_model_names_genotype()
 {
   char **names = calloc(GT_MODELS_COUNT, sizeof(char *));
 
@@ -164,12 +164,12 @@ PLL_EXPORT char **pllmod_util_model_names_genotype()
  * @brief Returns 1 if built-in genotype models with a given name exists and 0
  * otherwise
  */
-PLL_EXPORT int pllmod_util_model_exists_genotype(const char *model_name)
+CORAX_EXPORT int pllmod_util_model_exists_genotype(const char *model_name)
 {
   return get_model_index(model_name) >= 0 ? 1 : 0;
 }
 
-PLL_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name)
+CORAX_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name)
 {
   int idx = get_model_index(model_name);
   if (idx >= 0)
@@ -178,7 +178,7 @@ PLL_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name)
     return 0;
 }
 
-PLL_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name)
+CORAX_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name)
 {
   int idx = get_model_index(model_name);
   if (idx >= 0)
@@ -196,7 +196,7 @@ PLL_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name)
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-PLL_EXPORT pllmod_subst_model_t *
+CORAX_EXPORT pllmod_subst_model_t *
            pllmod_util_model_info_genotype(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
@@ -206,7 +206,7 @@ PLL_EXPORT pllmod_subst_model_t *
   }
   else
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
                   "Genotype model not found: %s",
                   model_name);
     return NULL;
@@ -214,35 +214,35 @@ PLL_EXPORT pllmod_subst_model_t *
 }
 
 /**
- * @brief Set given protein model to a pll_partition_t instance
+ * @brief Set given protein model to a corax_partition_t instance
  *
  * @param partition partition instance
  * @param model_name name of the protein model
  * @param model_freqs 0: set model rate matrices only, 1: set model AA
  * frequencies as well
  *
- * @return PLL_SUCCESS on success, PLL_FAILURE on error (check pll_errmsg for
+ * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg for
  * details)
  */
-PLL_EXPORT int pllmod_util_model_set_genotype(pll_partition_t *partition,
+CORAX_EXPORT int pllmod_util_model_set_genotype(corax_partition_t *partition,
                                               const char *     model_name,
                                               int              model_freqs)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
   {
-    pll_set_subst_params(partition, 0, gt_model_list[model_index].rates);
+    corax_set_subst_params(partition, 0, gt_model_list[model_index].rates);
     if (model_freqs)
     {
-      pll_set_frequencies(partition, 0, gt_model_list[model_index].freqs);
+      corax_set_frequencies(partition, 0, gt_model_list[model_index].freqs);
     }
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   }
   else
   {
-    pll_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
                   "Genotype model not found: %s",
                   model_name);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 }

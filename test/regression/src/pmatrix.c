@@ -43,9 +43,9 @@ static unsigned int params_indices[16]     = {
 static double       branch_lengths[N_BRANCHES] = {1e-6, 1e-2, 0.2, 1.0, 100.};
 static unsigned int matrix_indices[N_BRANCHES] = {0, 1, 2, 3, 4};
 
-static pll_partition_t *part_nt, *part_aa, *part_odd;
+static corax_partition_t *part_nt, *part_aa, *part_odd;
 
-void check_matrix(pll_partition_t *p, unsigned int matrix_index)
+void check_matrix(corax_partition_t *p, unsigned int matrix_index)
 {
   const double *mat = p->pmatrix[matrix_index];
   unsigned int  i;
@@ -56,7 +56,7 @@ void check_matrix(pll_partition_t *p, unsigned int matrix_index)
   }
 }
 
-pll_partition_t *init_partition(unsigned int attrs, int datatype)
+corax_partition_t *init_partition(unsigned int attrs, int datatype)
 {
   unsigned int i;
 
@@ -77,7 +77,7 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
     assert(0);
   }
 
-  pll_partition_t *p = pll_partition_create(N_BRANCHES - 1, /* tips */
+  corax_partition_t *p = corax_partition_create(N_BRANCHES - 1, /* tips */
                                             0,              /* clv vectors */
                                             states,
                                             N_SITES,
@@ -87,9 +87,9 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
                                             0, /* scalers */
                                             attrs);
 
-  if (!p) fatal("ERROR creating partition: %s\n", pll_errmsg);
+  if (!p) fatal("ERROR creating partition: %s\n", corax_errmsg);
 
-  pll_set_category_rates(p, cat_rates);
+  corax_set_category_rates(p, cat_rates);
 
   printf("category rates(%d): [", N_CAT_GAMMA);
   for (i = 0; i < N_CAT_GAMMA; ++i) printf("%lf ", cat_rates[i]);
@@ -166,12 +166,12 @@ double *init_rates(unsigned int n_rates)
   return subst_rates;
 }
 
-int eval(pll_partition_t *partition, double *base_freqs, double *subst_rates)
+int eval(corax_partition_t *partition, double *base_freqs, double *subst_rates)
 {
   unsigned int i;
 
-  pll_set_frequencies(partition, 0, base_freqs);
-  pll_set_subst_params(partition, 0, subst_rates);
+  corax_set_frequencies(partition, 0, base_freqs);
+  corax_set_subst_params(partition, 0, subst_rates);
 
   printf("datatype = ");
   if (partition->states == 4)
@@ -192,13 +192,13 @@ int eval(pll_partition_t *partition, double *base_freqs, double *subst_rates)
     printf("%lf ", partition->subst_params[0][i]);
   printf("]\n");
 
-  pll_update_prob_matrices(
+  corax_update_prob_matrices(
       partition, params_indices, matrix_indices, branch_lengths, N_BRANCHES);
 
   for (i = 0; i < N_BRANCHES; ++i)
   {
     printf("P-matrix: %d, brlen = %lf\n", i, branch_lengths[i]);
-    pll_show_pmatrix(partition, i, 9);
+    corax_show_pmatrix(partition, i, 9);
     check_matrix(partition, i);
   }
 
@@ -207,9 +207,9 @@ int eval(pll_partition_t *partition, double *base_freqs, double *subst_rates)
 
 void cleanup()
 {
-  pll_partition_destroy(part_nt);
-  pll_partition_destroy(part_aa);
-  pll_partition_destroy(part_odd);
+  corax_partition_destroy(part_nt);
+  corax_partition_destroy(part_aa);
+  corax_partition_destroy(part_odd);
 }
 
 int main(int argc, char *argv[])
@@ -220,15 +220,15 @@ int main(int argc, char *argv[])
   unsigned int attributes = get_attributes(argc, argv);
 
   /* pattern tip is not relevant for pmatrix computation */
-  if (attributes & PLL_ATTRIB_PATTERN_TIP) skip_test();
+  if (attributes & CORAX_ATTRIB_PATTERN_TIP) skip_test();
 
   init(attributes);
 
-  pll_partition_t *parts[] = {part_nt, part_aa, part_odd};
+  corax_partition_t *parts[] = {part_nt, part_aa, part_odd};
 
   for (i = 0; i < 3; ++i)
   {
-    pll_partition_t *p = parts[i];
+    corax_partition_t *p = parts[i];
 
     const unsigned int n_states = p->states;
     const unsigned int n_rates  = n_states * (n_states - 1) / 2;

@@ -147,7 +147,7 @@ static const struct random_poly_info random_poly_info = {
    information a given number of times to get rid of any initial dependencies
    introduced by the L.C.R.N.G.  Note that the initialization of randtbl[]
    for default usage relies on values produced by this routine.  */
-int pll_srandom_r(unsigned int seed, struct pll_random_data *buf)
+int corax_srandom_r(unsigned int seed, struct corax_random_data *buf)
 {
   int      type;
   int32_t *state;
@@ -187,7 +187,7 @@ int pll_srandom_r(unsigned int seed, struct pll_random_data *buf)
   while (--kc >= 0)
   {
     int32_t discard;
-    (void)pll_random_r(buf, &discard);
+    (void)corax_random_r(buf, &discard);
   }
 
 done:
@@ -208,10 +208,10 @@ fail:
    Note: The first thing we do is save the current state, if any, just like
    setstate so that it doesn't matter when initstate is called.
    Returns 0 on success, non-zero on failure.  */
-int pll_initstate_r(unsigned int            seed,
+int corax_initstate_r(unsigned int            seed,
                     char *                  arg_state,
                     size_t                  n,
-                    struct pll_random_data *buf)
+                    struct corax_random_data *buf)
 {
   if (buf == NULL) goto fail;
 
@@ -249,7 +249,7 @@ int pll_initstate_r(unsigned int            seed,
 
   buf->state = state;
 
-  pll_srandom_r(seed, buf);
+  corax_srandom_r(seed, buf);
 
   state[-1] = TYPE_0;
   if (type != TYPE_0)
@@ -258,8 +258,8 @@ int pll_initstate_r(unsigned int            seed,
   return 0;
 
 fail:
-  pll_set_error(
-      PLL_ERROR_EINVAL,
+  corax_set_error(
+      CORAX_ERROR_EINVAL,
       "A state array of less than 8 bytes was specified to initstate_r.");
   return -1;
 }
@@ -272,7 +272,7 @@ fail:
    to the order in which things are done, it is OK to call setstate with the
    same state as the current state
    Returns 0 on success, non-zero on failure.  */
-int pll_setstate_r(char *arg_state, struct pll_random_data *buf)
+int corax_setstate_r(char *arg_state, struct corax_random_data *buf)
 {
   int32_t *new_state = 1 + (int32_t *)arg_state;
   int      type;
@@ -310,7 +310,7 @@ int pll_setstate_r(char *arg_state, struct pll_random_data *buf)
   return 0;
 
 fail:
-  pll_set_error(PLL_ERROR_EINVAL,
+  corax_set_error(CORAX_ERROR_EINVAL,
                 "The statebuf or buf argument to setstate_r() was NULL.");
   return -1;
 }
@@ -326,7 +326,7 @@ fail:
    rear pointers can't wrap on the same call by not testing the rear
    pointer if the front one has wrapped.  Returns a 31-bit random number.  */
 
-int pll_random_r(struct pll_random_data *buf, int32_t *result)
+int corax_random_r(struct corax_random_data *buf, int32_t *result)
 {
   int32_t *state;
 
@@ -368,32 +368,32 @@ int pll_random_r(struct pll_random_data *buf, int32_t *result)
   return 0;
 
 fail:
-  pll_set_error(PLL_ERROR_EINVAL,
+  corax_set_error(CORAX_ERROR_EINVAL,
                 "The buf or result argument to random_r() was NULL.");
   return -1;
 }
 
-PLL_EXPORT pll_random_state *pll_random_create(unsigned int seed)
+CORAX_EXPORT corax_random_state *corax_random_create(unsigned int seed)
 {
-  pll_random_state *rstate =
-      (pll_random_state *)calloc(1, sizeof(pll_random_state));
+  corax_random_state *rstate =
+      (corax_random_state *)calloc(1, sizeof(corax_random_state));
   rstate->state_buf = (char *)calloc(RAND_STATE_SIZE, sizeof(char));
 
-  pll_initstate_r(seed, rstate->state_buf, RAND_STATE_SIZE, &rstate->rdata);
-  pll_srandom_r(seed, &rstate->rdata);
+  corax_initstate_r(seed, rstate->state_buf, RAND_STATE_SIZE, &rstate->rdata);
+  corax_srandom_r(seed, &rstate->rdata);
 
   return rstate;
 }
 
 /* return a random integer r, 0 <= r < maxval */
-PLL_EXPORT int pll_random_getint(pll_random_state *rstate, int maxval)
+CORAX_EXPORT int corax_random_getint(corax_random_state *rstate, int maxval)
 {
   int32_t r;
-  pll_random_r(&rstate->rdata, &r);
+  corax_random_r(&rstate->rdata, &r);
   return r % maxval;
 }
 
-PLL_EXPORT void pll_random_destroy(pll_random_state *rstate)
+CORAX_EXPORT void corax_random_destroy(corax_random_state *rstate)
 {
   if (rstate)
   {

@@ -29,25 +29,25 @@ static double compute_asc_bias_correction(double       logl_base,
   double logl_correction = 0.0;
   switch (asc_bias_type)
   {
-  case PLL_ATTRIB_AB_LEWIS:
+  case CORAX_ATTRIB_AB_LEWIS:
     logl_correction = -(sum_w * log(1 - logl_base));
     break;
-  case PLL_ATTRIB_AB_STAMATAKIS:
+  case CORAX_ATTRIB_AB_STAMATAKIS:
     /* no need to add anything here */
     logl_correction = logl_base;
     break;
-  case PLL_ATTRIB_AB_FELSENSTEIN:
+  case CORAX_ATTRIB_AB_FELSENSTEIN:
     logl_correction = sum_w_inv * log(logl_base);
     break;
   default:
-    pll_set_error(PLL_ERROR_AB_INVALIDMETHOD,
+    corax_set_error(CORAX_ERROR_AB_INVALIDMETHOD,
                   "Illegal ascertainment bias algorithm");
     return -INFINITY;
   }
   return logl_correction;
 }
 
-static double root_loglikelihood_asc_bias(pll_partition_t *   partition,
+static double root_loglikelihood_asc_bias(corax_partition_t *   partition,
                                           unsigned int        sites,
                                           const double *      clv,
                                           unsigned int *      scaler,
@@ -67,7 +67,7 @@ static double root_loglikelihood_asc_bias(pll_partition_t *   partition,
 
   double       logl_correction = 0;
   unsigned int sum_w_inv       = 0;
-  int          asc_bias_type   = partition->attributes & PLL_ATTRIB_AB_MASK;
+  int          asc_bias_type   = partition->attributes & CORAX_ATTRIB_AB_MASK;
 
   /* point clvp to state sites */
   clv += sites * partition->rate_cats * partition->states_padded;
@@ -89,16 +89,16 @@ static double root_loglikelihood_asc_bias(pll_partition_t *   partition,
     scale_factors = scaler ? scaler[sites + i] : 0;
 
     sum_w_inv += pattern_weights[sites + i];
-    if (asc_bias_type == PLL_ATTRIB_AB_STAMATAKIS)
+    if (asc_bias_type == CORAX_ATTRIB_AB_STAMATAKIS)
     {
       /* 2a. site_lk is the lnl weighted by the number of occurences */
       site_lk = log(term) * partition->pattern_weights[sites + i];
-      if (scale_factors) site_lk += scale_factors * log(PLL_SCALE_THRESHOLD);
+      if (scale_factors) site_lk += scale_factors * log(CORAX_SCALE_THRESHOLD);
     }
     else
     {
       /* 2b. site_lk is the actual likelihood */
-      site_lk = term * pow(PLL_SCALE_THRESHOLD, scale_factors);
+      site_lk = term * pow(CORAX_SCALE_THRESHOLD, scale_factors);
     }
 
     /* logl_correction is the sum of weighted log likelihoods if
@@ -113,8 +113,8 @@ static double root_loglikelihood_asc_bias(pll_partition_t *   partition,
   return logl;
 }
 
-PLL_EXPORT double
-pll_compute_root_loglikelihood(pll_partition_t *   partition,
+CORAX_EXPORT double
+corax_compute_root_loglikelihood(corax_partition_t *   partition,
                                unsigned int        clv_index,
                                int                 scaler_index,
                                const unsigned int *freqs_indices,
@@ -124,16 +124,16 @@ pll_compute_root_loglikelihood(pll_partition_t *   partition,
   unsigned int *scaler;
   unsigned int  identifiers;
   /* get scaler array if specified */
-  if (scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (scaler_index == CORAX_SCALE_BUFFER_NONE)
     scaler = NULL;
   else
     scaler = partition->scale_buffer[scaler_index];
 
   /* compute log-likelihood via the core function */
-  if (pll_repeats_enabled(partition)
+  if (corax_repeats_enabled(partition)
       && partition->repeats->pernode_ids[clv_index])
   {
-    logl = pll_core_root_loglikelihood_repeats(
+    logl = corax_core_root_loglikelihood_repeats(
         partition->states,
         partition->sites,
         partition->rate_cats,
@@ -152,7 +152,7 @@ pll_compute_root_loglikelihood(pll_partition_t *   partition,
   else
   {
     /* compute log-likelihood via the core function */
-    logl = pll_core_root_loglikelihood(partition->states,
+    logl = corax_core_root_loglikelihood(partition->states,
                                        partition->sites,
                                        partition->rate_cats,
                                        partition->clv[clv_index],
@@ -168,13 +168,13 @@ pll_compute_root_loglikelihood(pll_partition_t *   partition,
   }
 
   /* ascertainment bias correction */
-  if (partition->attributes & PLL_ATTRIB_AB_MASK)
+  if (partition->attributes & CORAX_ATTRIB_AB_MASK)
   {
     /* Note the assertion must be done for all rate matrices
     assert(prop_invar == 0);
     */
     identifiers =
-        pll_get_sites_number(partition, clv_index) - partition->rate_cats;
+        corax_get_sites_number(partition, clv_index) - partition->rate_cats;
     logl += root_loglikelihood_asc_bias(partition,
                                         identifiers,
                                         partition->clv[clv_index],
@@ -185,7 +185,7 @@ pll_compute_root_loglikelihood(pll_partition_t *   partition,
   return logl;
 }
 
-static double edge_loglikelihood_asc_bias_ti(pll_partition_t *partition,
+static double edge_loglikelihood_asc_bias_ti(corax_partition_t *partition,
                                              unsigned int     parent_clv_index,
                                              unsigned int *   parent_scaler,
                                              unsigned int     matrix_index,
@@ -207,7 +207,7 @@ static double edge_loglikelihood_asc_bias_ti(pll_partition_t *partition,
 
   double       logl_correction = 0;
   unsigned int sum_w_inv       = 0;
-  int          asc_bias_type   = partition->attributes & PLL_ATTRIB_AB_MASK;
+  int          asc_bias_type   = partition->attributes & CORAX_ATTRIB_AB_MASK;
 
   /* point clvp to state sites */
   clvp += partition->sites * partition->rate_cats * partition->states_padded;
@@ -237,16 +237,16 @@ static double edge_loglikelihood_asc_bias_ti(pll_partition_t *partition,
     scale_factors = (parent_scaler) ? parent_scaler[n] : 0;
 
     sum_w_inv += pattern_weights[n];
-    if (asc_bias_type == PLL_ATTRIB_AB_STAMATAKIS)
+    if (asc_bias_type == CORAX_ATTRIB_AB_STAMATAKIS)
     {
       /* 2a. site_lk is the lnl weighted by the number of occurences */
       site_lk = log(terma) * pattern_weights[n];
-      if (scale_factors) site_lk += scale_factors * log(PLL_SCALE_THRESHOLD);
+      if (scale_factors) site_lk += scale_factors * log(CORAX_SCALE_THRESHOLD);
     }
     else
     {
       /* 2b. site_lk is the actual likelihood */
-      site_lk = terma * pow(PLL_SCALE_THRESHOLD, scale_factors);
+      site_lk = terma * pow(CORAX_SCALE_THRESHOLD, scale_factors);
     }
 
     /* logl_correction is the sum of weighted log likelihoods if
@@ -260,7 +260,7 @@ static double edge_loglikelihood_asc_bias_ti(pll_partition_t *partition,
   return logl;
 }
 
-static double edge_loglikelihood_tipinner(pll_partition_t *partition,
+static double edge_loglikelihood_tipinner(corax_partition_t *partition,
                                           unsigned int     parent_clv_index,
                                           int              parent_scaler_index,
                                           unsigned int     child_clv_index,
@@ -273,7 +273,7 @@ static double edge_loglikelihood_tipinner(pll_partition_t *partition,
 
   unsigned int *parent_scaler;
 
-  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[parent_scaler_index];
@@ -281,7 +281,7 @@ static double edge_loglikelihood_tipinner(pll_partition_t *partition,
   if (states == 4)
   {
     logl =
-        pll_core_edge_loglikelihood_ti_4x4(partition->sites,
+        corax_core_edge_loglikelihood_ti_4x4(partition->sites,
                                            partition->rate_cats,
                                            partition->clv[parent_clv_index],
                                            parent_scaler,
@@ -298,7 +298,7 @@ static double edge_loglikelihood_tipinner(pll_partition_t *partition,
   }
   else
   {
-    logl = pll_core_edge_loglikelihood_ti(partition->states,
+    logl = corax_core_edge_loglikelihood_ti(partition->states,
                                           partition->sites,
                                           partition->rate_cats,
                                           partition->clv[parent_clv_index],
@@ -318,7 +318,7 @@ static double edge_loglikelihood_tipinner(pll_partition_t *partition,
   }
 
   /* ascertainment bias correction */
-  if (partition->attributes & PLL_ATTRIB_AB_MASK)
+  if (partition->attributes & CORAX_ATTRIB_AB_MASK)
   {
     /* Note the assertion must be done for all rate matrices
     assert(prop_invar == 0);
@@ -333,7 +333,7 @@ static double edge_loglikelihood_tipinner(pll_partition_t *partition,
   return logl;
 }
 
-static double edge_loglikelihood_asc_bias_ii(pll_partition_t *   partition,
+static double edge_loglikelihood_asc_bias_ii(corax_partition_t *   partition,
                                              const double *      clvp,
                                              unsigned int *      parent_scaler,
                                              unsigned int        parent_sites,
@@ -370,7 +370,7 @@ static double edge_loglikelihood_asc_bias_ii(pll_partition_t *   partition,
 
   double       logl_correction = 0;
   unsigned int sum_w_inv       = 0;
-  int          asc_bias_type   = partition->attributes & PLL_ATTRIB_AB_MASK;
+  int          asc_bias_type   = partition->attributes & CORAX_ATTRIB_AB_MASK;
 
   /* 1. compute per-site logl for each state */
   for (n = 0; n < partition->states; ++n)
@@ -399,16 +399,16 @@ static double edge_loglikelihood_asc_bias_ii(pll_partition_t *   partition,
     scale_factors += (child_scaler) ? child_scaler[n] : 0;
 
     sum_w_inv += pattern_weights[n];
-    if (asc_bias_type == PLL_ATTRIB_AB_STAMATAKIS)
+    if (asc_bias_type == CORAX_ATTRIB_AB_STAMATAKIS)
     {
       /* 2a. site_lk is the lnl weighted by the number of occurences */
       site_lk = log(terma) * pattern_weights[n];
-      if (scale_factors) site_lk += scale_factors * log(PLL_SCALE_THRESHOLD);
+      if (scale_factors) site_lk += scale_factors * log(CORAX_SCALE_THRESHOLD);
     }
     else
     {
       /* 2b. site_lk is the actual likelihood */
-      site_lk = terma * pow(PLL_SCALE_THRESHOLD, scale_factors);
+      site_lk = terma * pow(CORAX_SCALE_THRESHOLD, scale_factors);
     }
 
     /* logl_correction is the sum of weighted log likelihoods if
@@ -423,7 +423,7 @@ static double edge_loglikelihood_asc_bias_ii(pll_partition_t *   partition,
   return logl;
 }
 
-static double edge_loglikelihood(pll_partition_t *   partition,
+static double edge_loglikelihood(corax_partition_t *   partition,
                                  unsigned int        parent_clv_index,
                                  int                 parent_scaler_index,
                                  unsigned int        child_clv_index,
@@ -440,18 +440,18 @@ static double edge_loglikelihood(pll_partition_t *   partition,
   unsigned int *parent_scaler;
   unsigned int *child_scaler;
 
-  if (child_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (child_scaler_index == CORAX_SCALE_BUFFER_NONE)
     child_scaler = NULL;
   else
     child_scaler = partition->scale_buffer[child_scaler_index];
 
-  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
   /* compute log-likelihood via the core function */
-  logl = pll_core_edge_loglikelihood_ii(partition->states,
+  logl = corax_core_edge_loglikelihood_ii(partition->states,
                                         partition->sites,
                                         partition->rate_cats,
                                         clvp,
@@ -469,7 +469,7 @@ static double edge_loglikelihood(pll_partition_t *   partition,
                                         partition->attributes);
 
   /* ascertainment bias correction */
-  if (partition->attributes & PLL_ATTRIB_AB_MASK)
+  if (partition->attributes & CORAX_ATTRIB_AB_MASK)
   {
     /* Note the assertion must be done for all rate matrices
     assert(prop_invar == 0);
@@ -487,7 +487,7 @@ static double edge_loglikelihood(pll_partition_t *   partition,
   return logl;
 }
 
-static double edge_loglikelihood_repeats(pll_partition_t *partition,
+static double edge_loglikelihood_repeats(corax_partition_t *partition,
                                          unsigned int     parent_clv_index,
                                          int              parent_scaler_index,
                                          unsigned int     child_clv_index,
@@ -502,29 +502,29 @@ static double edge_loglikelihood_repeats(pll_partition_t *partition,
   const double *clvc = partition->clv[child_clv_index];
 
   const unsigned int *parent_site_id =
-      pll_get_site_id(partition, parent_clv_index);
+      corax_get_site_id(partition, parent_clv_index);
   const unsigned int *child_site_id =
-      pll_get_site_id(partition, child_clv_index);
-  unsigned int parent_sites = pll_get_sites_number(partition, parent_clv_index);
-  unsigned int child_sites  = pll_get_sites_number(partition, child_clv_index);
+      corax_get_site_id(partition, child_clv_index);
+  unsigned int parent_sites = corax_get_sites_number(partition, parent_clv_index);
+  unsigned int child_sites  = corax_get_sites_number(partition, child_clv_index);
   unsigned int inv          = parent_sites > child_sites;
 
   unsigned int *parent_scaler;
   unsigned int *child_scaler;
 
-  if (child_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (child_scaler_index == CORAX_SCALE_BUFFER_NONE)
     child_scaler = NULL;
   else
     child_scaler = partition->scale_buffer[child_scaler_index];
 
-  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+  if (parent_scaler_index == CORAX_SCALE_BUFFER_NONE)
     parent_scaler = NULL;
   else
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
   /* compute log-likelihood via the core function */
   logl =
-      pll_core_edge_loglikelihood_repeats(partition->states,
+      corax_core_edge_loglikelihood_repeats(partition->states,
                                           partition->sites,
                                           !inv ? parent_sites : child_sites,
                                           partition->rate_cats,
@@ -546,7 +546,7 @@ static double edge_loglikelihood_repeats(pll_partition_t *partition,
                                           partition->attributes);
 
   /* ascertainment bias correction */
-  if (partition->attributes & PLL_ATTRIB_AB_MASK)
+  if (partition->attributes & CORAX_ATTRIB_AB_MASK)
   {
     /* Note the assertion must be done for all rate matrices
     assert(prop_invar == 0);
@@ -564,8 +564,8 @@ static double edge_loglikelihood_repeats(pll_partition_t *partition,
   return logl;
 }
 
-PLL_EXPORT double
-pll_compute_edge_loglikelihood(pll_partition_t *   partition,
+CORAX_EXPORT double
+corax_compute_edge_loglikelihood(corax_partition_t *   partition,
                                unsigned int        parent_clv_index,
                                int                 parent_scaler_index,
                                unsigned int        child_clv_index,
@@ -576,7 +576,7 @@ pll_compute_edge_loglikelihood(pll_partition_t *   partition,
 {
   double logl;
 
-  if (pll_repeats_enabled(partition)
+  if (corax_repeats_enabled(partition)
       && (partition->repeats->pernode_ids[parent_clv_index]
           || partition->repeats->pernode_ids[child_clv_index]))
   {
@@ -590,7 +590,7 @@ pll_compute_edge_loglikelihood(pll_partition_t *   partition,
                                       persite_lnl);
   }
 
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
     if ((parent_clv_index < partition->tips)
         || (child_clv_index < partition->tips))
       return edge_loglikelihood_tipinner(
@@ -617,8 +617,8 @@ pll_compute_edge_loglikelihood(pll_partition_t *   partition,
   return logl;
 }
 
-PLL_EXPORT int
-pll_compute_node_ancestral_extbuf(pll_partition_t *   partition,
+CORAX_EXPORT int
+corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
                                   unsigned int        node_clv_index,
                                   int                 node_scaler_index,
                                   unsigned int        other_clv_index,
@@ -632,22 +632,22 @@ pll_compute_node_ancestral_extbuf(pll_partition_t *   partition,
 {
   if (!partition || !ancestral)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter value is NULL!");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Parameter value is NULL!");
+    return CORAX_FAILURE;
   }
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "NULL buffer pointer");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "NULL buffer pointer");
+    return CORAX_FAILURE;
   }
 
-  if (pll_repeats_enabled(partition))
+  if (corax_repeats_enabled(partition))
   {
-    pll_set_error(
-        PLL_ERROR_EINVAL,
+    corax_set_error(
+        CORAX_ERROR_EINVAL,
         "Site repeats are not compatible with ancestral state reconstruction!");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   unsigned int n, i, j;
@@ -660,14 +660,14 @@ pll_compute_node_ancestral_extbuf(pll_partition_t *   partition,
 
   const double *node_clv = partition->clv[node_clv_index];
 
-  unsigned int *node_scaler = (node_scaler_index == PLL_SCALE_BUFFER_NONE)
+  unsigned int *node_scaler = (node_scaler_index == CORAX_SCALE_BUFFER_NONE)
                                   ? NULL
                                   : partition->scale_buffer[node_scaler_index];
 
   if (other_clv_index < partition->tips
-      && (partition->attributes & PLL_ATTRIB_PATTERN_TIP))
+      && (partition->attributes & CORAX_ATTRIB_PATTERN_TIP))
   {
-    pll_core_update_clv_ti(states,
+    corax_core_update_clv_ti(states,
                            sites,
                            rate_cats,
                            temp_clv,
@@ -685,11 +685,11 @@ pll_compute_node_ancestral_extbuf(pll_partition_t *   partition,
   {
     const double *other_clv = partition->clv[other_clv_index];
     unsigned int *other_scaler =
-        (other_scaler_index == PLL_SCALE_BUFFER_NONE)
+        (other_scaler_index == CORAX_SCALE_BUFFER_NONE)
             ? NULL
             : partition->scale_buffer[other_scaler_index];
 
-    pll_core_update_clv_ii(states,
+    corax_core_update_clv_ii(states,
                            sites,
                            rate_cats,
                            temp_clv,
@@ -731,10 +731,10 @@ pll_compute_node_ancestral_extbuf(pll_partition_t *   partition,
     ancp += states;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t *partition,
+CORAX_EXPORT int corax_compute_node_ancestral(corax_partition_t *partition,
                                           unsigned int     node_clv_index,
                                           int              node_scaler_index,
                                           unsigned int     other_clv_index,
@@ -743,7 +743,7 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t *partition,
                                           const unsigned int *freqs_indices,
                                           double *            ancestral)
 {
-  int          retval = PLL_FAILURE;
+  int          retval = CORAX_FAILURE;
   unsigned int i, j, k;
 
   unsigned int states        = partition->states;
@@ -752,25 +752,25 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t *partition,
   unsigned int rate_cats     = partition->rate_cats;
 
   unsigned int clv_size =
-      pll_get_clv_size(partition, node_clv_index) * sizeof(double);
+      corax_get_clv_size(partition, node_clv_index) * sizeof(double);
   double *temp_clv =
-      (double *)pll_aligned_alloc(clv_size, partition->alignment);
+      (double *)corax_aligned_alloc(clv_size, partition->alignment);
   unsigned int scaler_size =
-      ((partition->attributes & PLL_ATTRIB_RATE_SCALERS) ? sites * rate_cats
+      ((partition->attributes & CORAX_ATTRIB_RATE_SCALERS) ? sites * rate_cats
                                                          : sites)
       * sizeof(unsigned int);
   unsigned int *temp_scaler =
-      (unsigned int *)pll_aligned_alloc(scaler_size, partition->alignment);
+      (unsigned int *)corax_aligned_alloc(scaler_size, partition->alignment);
   unsigned int displacement =
       (states_padded - states) * (states_padded) * sizeof(double);
   unsigned int pmat_size =
       states_padded * states * rate_cats * sizeof(double) + displacement;
   double *ident_pmat =
-      (double *)pll_aligned_alloc(pmat_size, partition->alignment);
+      (double *)corax_aligned_alloc(pmat_size, partition->alignment);
 
   if (!temp_clv || !temp_scaler || !ident_pmat)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory");
     goto cleanup;
   }
 
@@ -788,7 +788,7 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t *partition,
     pmat += states * states_padded;
   }
 
-  retval = pll_compute_node_ancestral_extbuf(partition,
+  retval = corax_compute_node_ancestral_extbuf(partition,
                                              node_clv_index,
                                              node_scaler_index,
                                              other_clv_index,
@@ -801,9 +801,9 @@ PLL_EXPORT int pll_compute_node_ancestral(pll_partition_t *partition,
                                              ident_pmat);
 
 cleanup:
-  pll_aligned_free(temp_clv);
-  pll_aligned_free(temp_scaler);
-  pll_aligned_free(ident_pmat);
+  corax_aligned_free(temp_clv);
+  corax_aligned_free(temp_scaler);
+  corax_aligned_free(ident_pmat);
 
   return retval;
 }

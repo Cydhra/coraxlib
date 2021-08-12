@@ -40,8 +40,8 @@ static void fill_weights(double *      weights,
                          double *      ub,
                          unsigned int  n_weights);
 
-PLL_EXPORT double pllmod_algo_opt_frequencies(pll_partition_t *partition,
-                                              pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
+                                              corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
                                               double           bfgs_factor,
@@ -116,8 +116,8 @@ PLL_EXPORT double pllmod_algo_opt_frequencies(pll_partition_t *partition,
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_subst_rates(pll_partition_t *partition,
-                                              pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
+                                              corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
                                               int *            symmetries,
@@ -227,8 +227,8 @@ PLL_EXPORT double pllmod_algo_opt_subst_rates(pll_partition_t *partition,
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_alpha(pll_partition_t *partition,
-                                        pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
+                                        corax_unode_t *    tree,
                                         unsigned int *   params_indices,
                                         double           min_alpha,
                                         double           max_alpha,
@@ -243,7 +243,7 @@ PLL_EXPORT double pllmod_algo_opt_alpha(pll_partition_t *partition,
   opt_params.partition      = partition;
   opt_params.tree           = tree;
   opt_params.params_indices = params_indices;
-  opt_params.gamma_mode     = PLL_GAMMA_RATES_MEAN; // for now
+  opt_params.gamma_mode     = CORAX_GAMMA_RATES_MEAN; // for now
 
   xres = pllmod_opt_minimize_brent(min_alpha,
                                    *alpha,
@@ -260,8 +260,8 @@ PLL_EXPORT double pllmod_algo_opt_alpha(pll_partition_t *partition,
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_pinv(pll_partition_t *partition,
-                                       pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
+                                       corax_unode_t *    tree,
                                        unsigned int *   params_indices,
                                        double           min_pinv,
                                        double           max_pinv,
@@ -291,8 +291,8 @@ PLL_EXPORT double pllmod_algo_opt_pinv(pll_partition_t *partition,
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_alpha_pinv(pll_partition_t *partition,
-                                             pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
+                                             corax_unode_t *    tree,
                                              unsigned int *   params_indices,
                                              double           min_alpha,
                                              double           max_alpha,
@@ -312,7 +312,7 @@ PLL_EXPORT double pllmod_algo_opt_alpha_pinv(pll_partition_t *partition,
   opt_params.partition      = partition;
   opt_params.tree           = tree;
   opt_params.params_indices = params_indices;
-  opt_params.gamma_mode     = PLL_GAMMA_RATES_MEAN; // for now
+  opt_params.gamma_mode     = CORAX_GAMMA_RATES_MEAN; // for now
 
   /* init alpha */
   x[0]  = *alpha;
@@ -344,8 +344,8 @@ PLL_EXPORT double pllmod_algo_opt_alpha_pinv(pll_partition_t *partition,
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_brlen_scaler(pll_partition_t *partition,
-                                               pll_unode_t *    root,
+CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
+                                               corax_unode_t *    root,
                                                unsigned int *   params_indices,
                                                double *         scaler,
                                                double           min_scaler,
@@ -358,8 +358,8 @@ PLL_EXPORT double pllmod_algo_opt_brlen_scaler(pll_partition_t *partition,
   struct brlen_scaler_params opt_params;
 
   /* create a temporary tree with the scaled branches */
-  pll_unode_t *scaled_tree = pll_utree_graph_clone(root);
-  pll_utree_scale_branches_all(scaled_tree, *scaler);
+  corax_unode_t *scaled_tree = corax_utree_graph_clone(root);
+  corax_utree_scale_branches_all(scaled_tree, *scaler);
 
   opt_params.partition      = partition;
   opt_params.tree           = scaled_tree;
@@ -377,15 +377,15 @@ PLL_EXPORT double pllmod_algo_opt_brlen_scaler(pll_partition_t *partition,
 
   cur_logl = target_brlen_scaler_func(&opt_params, xres);
 
-  pll_utree_graph_destroy(scaled_tree, NULL);
+  corax_utree_graph_destroy(scaled_tree, NULL);
 
   *scaler = xres;
 
   return cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_rates_weights(pll_partition_t *partition,
-                                                pll_unode_t *    tree,
+CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
+                                                corax_unode_t *    tree,
                                                 unsigned int *   params_indices,
                                                 double           min_rate,
                                                 double           max_rate,
@@ -467,7 +467,7 @@ PLL_EXPORT double pllmod_algo_opt_rates_weights(pll_partition_t *partition,
   if (scale_branches)
   {
     /* scale branch lengths such that likelihood is conserved */
-    pll_utree_scale_branches_all(tree, sum_weightrates);
+    corax_utree_scale_branches_all(tree, sum_weightrates);
 
     /* update pmatrices and partials according to the new branches */
     cur_logl = -1

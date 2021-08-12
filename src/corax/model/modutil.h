@@ -68,83 +68,83 @@ typedef struct model_alias
 } pllmod_subst_model_alias_t;
 
 /* general model management functions */
-PLL_EXPORT double *pllmod_util_get_equal_freqs(unsigned int states);
-PLL_EXPORT double *pllmod_util_get_equal_rates(unsigned int states);
+CORAX_EXPORT double *pllmod_util_get_equal_freqs(unsigned int states);
+CORAX_EXPORT double *pllmod_util_get_equal_rates(unsigned int states);
 
-PLL_EXPORT pll_state_t *pllmod_util_charmap_create(unsigned int states,
+CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
                                                    const char * statechars,
                                                    const char * gapchars,
                                                    int          case_sensitive);
 
-PLL_EXPORT pll_state_t *pllmod_util_charmap_parse(unsigned int states,
+CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
                                                   const char * fname,
                                                   int          case_sensitive,
                                                   char **      state_names);
 
-PLL_EXPORT      pllmod_subst_model_t *
+CORAX_EXPORT      pllmod_subst_model_t *
                 pllmod_util_model_create_custom(const char *  name,
                                                 unsigned int  states,
                                                 const double *rates,
                                                 const double *freqs,
                                                 const char *  rate_sym_str,
                                                 const char *  freq_sym_str);
-PLL_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model);
-PLL_EXPORT      pllmod_subst_model_t *
+CORAX_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model);
+CORAX_EXPORT      pllmod_subst_model_t *
                 pllmod_util_model_clone(const pllmod_subst_model_t *src);
-PLL_EXPORT int *pllmod_util_model_string_to_sym(const char *s);
+CORAX_EXPORT int *pllmod_util_model_string_to_sym(const char *s);
 
-PLL_EXPORT pllmod_mixture_model_t *
+CORAX_EXPORT pllmod_mixture_model_t *
            pllmod_util_model_mixture_create(const char *                 name,
                                             unsigned int                 ncomp,
                                             pllmod_subst_model_t **const models,
                                             const double *               mix_rates,
                                             const double *               mix_weights,
                                             int                          mix_type);
-PLL_EXPORT void
+CORAX_EXPORT void
            pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture);
-PLL_EXPORT pllmod_mixture_model_t *
+CORAX_EXPORT pllmod_mixture_model_t *
            pllmod_util_model_mixture_clone(const pllmod_mixture_model_t *src);
 
 /* functions for working with built-in DNA models */
-PLL_EXPORT unsigned int pllmod_util_model_count_dna();
-PLL_EXPORT char **      pllmod_util_model_names_dna();
-PLL_EXPORT int          pllmod_util_model_exists_dna(const char *model_name);
-PLL_EXPORT              pllmod_subst_model_t *
+CORAX_EXPORT unsigned int pllmod_util_model_count_dna();
+CORAX_EXPORT char **      pllmod_util_model_names_dna();
+CORAX_EXPORT int          pllmod_util_model_exists_dna(const char *model_name);
+CORAX_EXPORT              pllmod_subst_model_t *
                         pllmod_util_model_info_dna(const char *model_name);
 
 /* functions for working with built-in protein models */
-PLL_EXPORT unsigned int pllmod_util_model_count_protein();
-PLL_EXPORT char **      pllmod_util_model_names_protein();
-PLL_EXPORT int pllmod_util_model_exists_protein(const char *model_name);
-PLL_EXPORT     pllmod_subst_model_t *
+CORAX_EXPORT unsigned int pllmod_util_model_count_protein();
+CORAX_EXPORT char **      pllmod_util_model_names_protein();
+CORAX_EXPORT int pllmod_util_model_exists_protein(const char *model_name);
+CORAX_EXPORT     pllmod_subst_model_t *
                pllmod_util_model_info_protein(const char *model_name);
-PLL_EXPORT int pllmod_util_model_set_protein(pll_partition_t *partition,
+CORAX_EXPORT int pllmod_util_model_set_protein(corax_partition_t *partition,
                                              const char *     model_name,
                                              int              model_freqs);
 
-PLL_EXPORT int pllmod_util_model_exists_protmix(const char *model_name);
-PLL_EXPORT     pllmod_mixture_model_t *
+CORAX_EXPORT int pllmod_util_model_exists_protmix(const char *model_name);
+CORAX_EXPORT     pllmod_mixture_model_t *
                pllmod_util_model_info_protmix(const char *model_name);
-PLL_EXPORT int pllmod_util_model_set_protmix(pll_partition_t *partition,
+CORAX_EXPORT int pllmod_util_model_set_protmix(corax_partition_t *partition,
                                              const char *     model_name,
                                              int              model_freqs);
 
 /* functions for working with multistates models */
-PLL_EXPORT int pllmod_util_model_exists_mult(const char *model_name);
-PLL_EXPORT unsigned int
+CORAX_EXPORT int pllmod_util_model_exists_mult(const char *model_name);
+CORAX_EXPORT unsigned int
            pllmod_util_model_numstates_mult(const char *model_name);
-PLL_EXPORT pll_state_t *pllmod_util_model_charmap_mult(unsigned int states);
-PLL_EXPORT              pllmod_subst_model_t *
+CORAX_EXPORT corax_state_t *pllmod_util_model_charmap_mult(unsigned int states);
+CORAX_EXPORT              pllmod_subst_model_t *
                         pllmod_util_model_info_mult(const char *model_name);
 
 /* functions for working with built-in genotype models */
-PLL_EXPORT unsigned int pllmod_util_model_count_genotype();
-PLL_EXPORT char **      pllmod_util_model_names_genotype();
-PLL_EXPORT int pllmod_util_model_exists_genotype(const char *model_name);
-PLL_EXPORT     pllmod_subst_model_t *
+CORAX_EXPORT unsigned int pllmod_util_model_count_genotype();
+CORAX_EXPORT char **      pllmod_util_model_names_genotype();
+CORAX_EXPORT int pllmod_util_model_exists_genotype(const char *model_name);
+CORAX_EXPORT     pllmod_subst_model_t *
                pllmod_util_model_info_genotype(const char *model_name);
 
-PLL_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name);
-PLL_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name);
+CORAX_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name);
+CORAX_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name);
 
 #endif

@@ -22,21 +22,21 @@
 #include "treeinfo.h"
 #include "corax/corax.h"
 
-static int treeinfo_check_tree(pllmod_treeinfo_t *treeinfo, pll_utree_t *tree);
+static int treeinfo_check_tree(pllmod_treeinfo_t *treeinfo, corax_utree_t *tree);
 static int treeinfo_init_tree(pllmod_treeinfo_t *treeinfo);
 
 /* a callback function for performing a full traversal */
-static int cb_full_traversal(pll_unode_t *node)
+static int cb_full_traversal(corax_unode_t *node)
 {
-  PLL_UNUSED(node);
-  return PLL_SUCCESS;
+  CORAX_UNUSED(node);
+  return CORAX_SUCCESS;
 }
 
 /* a callback function for performing a partial traversal on invalid CLVs */
-static int cb_partial_traversal(pll_unode_t *node)
+static int cb_partial_traversal(corax_unode_t *node)
 {
   /* do not include tips */
-  if (!node->next) return PLL_FAILURE;
+  if (!node->next) return CORAX_FAILURE;
 
   pllmod_treeinfo_t *treeinfo = (pllmod_treeinfo_t *)node->data;
 
@@ -47,11 +47,11 @@ static int cb_partial_traversal(pll_unode_t *node)
     for (unsigned int i = 0; i < treeinfo->init_partition_count; ++i)
     {
       unsigned int p = treeinfo->init_partition_idx[i];
-      if (treeinfo->clv_valid[p][node->node_index] == 0) return PLL_SUCCESS;
+      if (treeinfo->clv_valid[p][node->node_index] == 0) return CORAX_SUCCESS;
     }
 
     /* CLVs for all partitions are valid -> skip subtree */
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   else
     return (treeinfo->clv_valid[treeinfo->active_partition][node->node_index]
@@ -65,7 +65,7 @@ static int treeinfo_partition_active(pllmod_treeinfo_t *treeinfo,
           || treeinfo->active_partition == (int)partition_index);
 }
 
-PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
+CORAX_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(corax_unode_t *root,
                                                      unsigned int tips,
                                                      unsigned int partitions,
                                                      int          brlen_linkage)
@@ -75,7 +75,7 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
 
   if (!(treeinfo = (pllmod_treeinfo_t *)calloc(1, sizeof(pllmod_treeinfo_t))))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for treeinfo\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for treeinfo\n");
     return NULL;
   }
 
@@ -84,12 +84,12 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   treeinfo->partition_count = partitions;
   treeinfo->brlen_linkage   = brlen_linkage;
 
-  /* create pll_utree structure and store it in treeinfo */
-  treeinfo->tree = pll_utree_wraptree(root, tips);
+  /* create corax_utree structure and store it in treeinfo */
+  treeinfo->tree = corax_utree_wraptree(root, tips);
 
   if (!treeinfo->tree || !treeinfo_check_tree(treeinfo, treeinfo->tree))
   {
-    assert(pll_errno);
+    assert(corax_errno);
     free(treeinfo);
     return NULL;
   }
@@ -103,7 +103,7 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   /* allocate a buffer for storing pointers to nodes of the tree in postorder
      traversal */
   treeinfo->travbuffer =
-      (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+      (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
 
   /* allocate a buffer for matrix indices */
   treeinfo->matrix_indices =
@@ -111,23 +111,23 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
 
   /* allocate a buffer for operations (parent/child clv indices) */
   treeinfo->operations =
-      (pll_operation_t *)malloc(inner_nodes_count * sizeof(pll_operation_t));
+      (corax_operation_t *)malloc(inner_nodes_count * sizeof(corax_operation_t));
 
   treeinfo->subnodes =
-      (pll_unode_t **)malloc(treeinfo->subnode_count * sizeof(pll_unode_t *));
+      (corax_unode_t **)malloc(treeinfo->subnode_count * sizeof(corax_unode_t *));
 
   /* check memory allocation */
   if (!treeinfo->travbuffer || !treeinfo->matrix_indices
       || !treeinfo->operations || !treeinfo->subnodes)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for treeinfo structures\n");
     return NULL;
   }
 
   /* allocate arrays for storing per-partition info */
   treeinfo->partitions =
-      (pll_partition_t **)calloc(partitions, sizeof(pll_partition_t *));
+      (corax_partition_t **)calloc(partitions, sizeof(corax_partition_t *));
   treeinfo->params_to_optimize = (int *)calloc(partitions, sizeof(int));
   treeinfo->alphas             = (double *)calloc(partitions, sizeof(double));
   treeinfo->gamma_mode         = (int *)calloc(partitions, sizeof(int));
@@ -144,14 +144,14 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   treeinfo->init_partition_idx =
       (unsigned int *)calloc(partitions, sizeof(unsigned int));
   treeinfo->init_partitions =
-      (pll_partition_t **)calloc(partitions, sizeof(pll_partition_t *));
+      (corax_partition_t **)calloc(partitions, sizeof(corax_partition_t *));
 
   /* allocate array for storing linked/average branch lengths */
   treeinfo->linked_branch_lengths =
       (double *)malloc(branch_count * sizeof(double));
 
   /* allocate branch length scalers if needed */
-  if (brlen_linkage == PLL_BRLEN_SCALED)
+  if (brlen_linkage == CORAX_BRLEN_SCALED)
     treeinfo->brlen_scalers = (double *)calloc(partitions, sizeof(double));
   else
     treeinfo->brlen_scalers = NULL;
@@ -163,9 +163,9 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
       || !treeinfo->pmatrix_valid || !treeinfo->linked_branch_lengths
       || !treeinfo->partition_loglh || !treeinfo->gamma_mode
       || !treeinfo->init_partition_idx
-      || (brlen_linkage == PLL_BRLEN_SCALED && !treeinfo->brlen_scalers))
+      || (brlen_linkage == CORAX_BRLEN_SCALED && !treeinfo->brlen_scalers))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for treeinfo arrays\n");
     return NULL;
   }
@@ -174,10 +174,10 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   for (p = 0; p < partitions; ++p)
   {
     /* use mean GAMMA rates per default */
-    treeinfo->gamma_mode[p] = PLL_GAMMA_RATES_MEAN;
+    treeinfo->gamma_mode[p] = CORAX_GAMMA_RATES_MEAN;
 
     /* allocate arrays for storing the per-partition branch lengths */
-    if (brlen_linkage == PLL_BRLEN_UNLINKED)
+    if (brlen_linkage == CORAX_BRLEN_UNLINKED)
     {
       treeinfo->branch_lengths[p] =
           (double *)malloc(branch_count * sizeof(double));
@@ -191,7 +191,7 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
     /* check memory allocation */
     if (!treeinfo->branch_lengths[p])
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for arrays for partition %d\n",
                     p);
       return NULL;
@@ -205,7 +205,7 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   if (!treeinfo_init_tree(treeinfo))
   {
     pllmod_treeinfo_destroy(treeinfo);
-    assert(pll_errno);
+    assert(corax_errno);
     return NULL;
   }
 
@@ -214,7 +214,7 @@ PLL_EXPORT pllmod_treeinfo_t *pllmod_treeinfo_create(pll_unode_t *root,
   return treeinfo;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_parallel_context(
     pllmod_treeinfo_t *treeinfo,
     void *             parallel_context,
@@ -223,13 +223,13 @@ int pllmod_treeinfo_set_parallel_context(
   treeinfo->parallel_context   = parallel_context;
   treeinfo->parallel_reduce_cb = parallel_reduce_cb;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
+CORAX_EXPORT int
 pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
                                unsigned int        partition_index,
-                               pll_partition_t *   partition,
+                               corax_partition_t *   partition,
                                int                 params_to_optimize,
                                int                 gamma_mode,
                                double              alpha,
@@ -238,22 +238,22 @@ pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
 {
   if (!treeinfo)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Treeinfo structure is NULL\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Treeinfo structure is NULL\n");
+    return CORAX_FAILURE;
   }
   else if (partition_index >= treeinfo->partition_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Partition %d is out of bounds\n",
                   partition_index);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   else if (treeinfo->partitions[partition_index])
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Partition %d is already initialized\n",
                   partition_index);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   unsigned int local_partition_index    = treeinfo->init_partition_count++;
@@ -281,9 +281,9 @@ pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
   if (!treeinfo->clv_valid[partition_index]
       || !treeinfo->pmatrix_valid[partition_index])
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for parameter indices\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* allocate param_indices array and initialize it to all 0s,
@@ -295,9 +295,9 @@ pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
   /* check memory allocation */
   if (!treeinfo->param_indices[partition_index])
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for parameter indices\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* if param_indices were provided, use them instead of default */
@@ -317,9 +317,9 @@ pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
     /* check memory allocation */
     if (!treeinfo->subst_matrix_symmetries[partition_index])
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for substitution scheme\n");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     memcpy(treeinfo->subst_matrix_symmetries[partition_index],
@@ -331,70 +331,70 @@ pllmod_treeinfo_init_partition(pllmod_treeinfo_t * treeinfo,
 
   /* allocate memory for derivative precomputation table */
   unsigned int sites_alloc = partition->sites;
-  if (partition->attributes & PLL_ATTRIB_AB_FLAG)
+  if (partition->attributes & CORAX_ATTRIB_AB_FLAG)
     sites_alloc += partition->states;
   unsigned int precomp_size =
       sites_alloc * partition->rate_cats * partition->states_padded;
 
-  treeinfo->deriv_precomp[partition_index] = (double *)pll_aligned_alloc(
+  treeinfo->deriv_precomp[partition_index] = (double *)corax_aligned_alloc(
       precomp_size * sizeof(double), partition->alignment);
 
   if (!treeinfo->deriv_precomp[partition_index])
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for derivative buffers\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   memset(treeinfo->deriv_precomp[partition_index],
          0,
          precomp_size * sizeof(double));
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pllmod_treeinfo_set_active_partition(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_set_active_partition(pllmod_treeinfo_t *treeinfo,
                                                     int partition_index)
 {
   if (partition_index != PLLMOD_TREEINFO_PARTITION_ALL
       && partition_index >= (int)treeinfo->partition_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Partition %d is out of bounds\n",
                   partition_index);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   else
   {
     treeinfo->active_partition = partition_index;
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   }
 }
 
-PLL_EXPORT int pllmod_treeinfo_set_root(pllmod_treeinfo_t *treeinfo,
-                                        pll_unode_t *      root)
+CORAX_EXPORT int pllmod_treeinfo_set_root(pllmod_treeinfo_t *treeinfo,
+                                        corax_unode_t *      root)
 {
   if (!treeinfo || !root || root->data != (void *)treeinfo)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid root node!\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Invalid root node!\n");
+    return CORAX_FAILURE;
   }
 
   /* root must be an inner node! */
-  treeinfo->root        = PLL_UTREE_IS_TIP(root) ? root->back : root;
+  treeinfo->root        = CORAX_UTREE_IS_TIP(root) ? root->back : root;
   treeinfo->tree->vroot = treeinfo->root;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_get_branch_length_all(const pllmod_treeinfo_t *treeinfo,
-                                          const pll_unode_t *      edge,
+                                          const corax_unode_t *      edge,
                                           double *                 lengths)
 {
   unsigned int pmatrix_index = edge->pmatrix_index;
 
-  if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     for (unsigned int p = 0; p < treeinfo->partition_count; ++p)
     {
@@ -405,24 +405,24 @@ int pllmod_treeinfo_get_branch_length_all(const pllmod_treeinfo_t *treeinfo,
   else
     lengths[0] = treeinfo->branch_lengths[0][pmatrix_index];
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pllmod_treeinfo_set_branch_length(pllmod_treeinfo_t *treeinfo,
-                                                 pll_unode_t *      edge,
+CORAX_EXPORT int pllmod_treeinfo_set_branch_length(pllmod_treeinfo_t *treeinfo,
+                                                 corax_unode_t *      edge,
                                                  double             length)
 {
-  assert(treeinfo->brlen_linkage != PLL_BRLEN_UNLINKED);
+  assert(treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED);
   return pllmod_treeinfo_set_branch_length_all(treeinfo, edge, &length);
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_branch_length_all(pllmod_treeinfo_t *treeinfo,
-                                          pll_unode_t *      edge,
+                                          corax_unode_t *      edge,
                                           const double *     lengths)
 {
   unsigned int pmatrix_index = edge->pmatrix_index;
-  if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     for (unsigned int p = 0; p < treeinfo->partition_count; ++p)
     {
@@ -433,7 +433,7 @@ int pllmod_treeinfo_set_branch_length_all(pllmod_treeinfo_t *treeinfo,
   else
   {
     treeinfo->branch_lengths[0][pmatrix_index] = lengths[0];
-    pll_utree_set_length(edge, lengths[0]);
+    corax_utree_set_length(edge, lengths[0]);
   }
 
 #if 0
@@ -455,12 +455,12 @@ int pllmod_treeinfo_set_branch_length_all(pllmod_treeinfo_t *treeinfo,
   }
 #endif
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_branch_length_partition(pllmod_treeinfo_t *treeinfo,
-                                                pll_unode_t *      edge,
+                                                corax_unode_t *      edge,
                                                 int    partition_index,
                                                 double length)
 {
@@ -468,13 +468,13 @@ int pllmod_treeinfo_set_branch_length_partition(pllmod_treeinfo_t *treeinfo,
   const int    old_active_partition = treeinfo->active_partition;
 
   if (!pllmod_treeinfo_set_active_partition(treeinfo, partition_index))
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 
   if (partition_index != PLLMOD_TREEINFO_PARTITION_ALL)
     treeinfo->branch_lengths[partition_index][pmatrix_index] = length;
-  else if (treeinfo->brlen_linkage != PLL_BRLEN_UNLINKED)
+  else if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED)
   {
-    pll_utree_set_length(edge, length);
+    corax_utree_set_length(edge, length);
     treeinfo->branch_lengths[0][pmatrix_index] = length;
   }
   else
@@ -505,31 +505,31 @@ int pllmod_treeinfo_set_branch_length_partition(pllmod_treeinfo_t *treeinfo,
   }
 #endif
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
-pll_utree_t *
+CORAX_EXPORT
+corax_utree_t *
 pllmod_treeinfo_get_partition_tree(const pllmod_treeinfo_t *treeinfo,
                                    int                      partition_index)
 {
-  pll_utree_t *ptree = pll_utree_clone(treeinfo->tree);
+  corax_utree_t *ptree = corax_utree_clone(treeinfo->tree);
 
   // set partition-specific branch lengths
-  if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     unsigned int  node_count = ptree->tip_count + ptree->inner_count;
     unsigned int  edge_count = ptree->edge_count;
     const double *brlens     = treeinfo->branch_lengths[partition_index];
     for (unsigned int i = 0; i < node_count; ++i)
     {
-      pll_unode_t *snode = ptree->nodes[i];
+      corax_unode_t *snode = ptree->nodes[i];
       do
       {
         unsigned int pmat_idx = snode->pmatrix_index;
         if (pmat_idx > edge_count)
         {
-          pll_set_error(PLL_ERROR_INVALID_TREE,
+          corax_set_error(CORAX_ERROR_INVALID_TREE,
                         "p-matrix index out of bounds (%u). "
                         "treeinfo structure requires that each branch "
                         "is assigned a unique p-matrix index "
@@ -546,12 +546,12 @@ pllmod_treeinfo_get_partition_tree(const pllmod_treeinfo_t *treeinfo,
   return ptree;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 pllmod_treeinfo_topology_t *
 pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
                              pllmod_treeinfo_topology_t *topol)
 {
-  unsigned int brlen_set_count = (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  unsigned int brlen_set_count = (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
                                      ? treeinfo->init_partition_count
                                      : 0;
 
@@ -561,9 +561,9 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
         1, sizeof(pllmod_treeinfo_topology_t));
     if (!topol)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for topology structure\n");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     topol->edge_count      = treeinfo->tree->edge_count;
@@ -573,10 +573,10 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
         topol->edge_count, sizeof(pllmod_treeinfo_edge_t));
     if (!topol->edges)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for topology buffers\n");
       pllmod_treeinfo_destroy_topology(topol);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     if (topol->brlen_set_count)
@@ -585,10 +585,10 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
           (double **)calloc(topol->brlen_set_count, sizeof(double *));
       if (!topol->branch_lengths)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC,
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
                       "Cannot allocate memory for branch length buffers\n");
         pllmod_treeinfo_destroy_topology(topol);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
 
       for (unsigned int i = 0; i < topol->brlen_set_count; ++i)
@@ -597,10 +597,10 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
             (double *)calloc(topol->edge_count, sizeof(double));
         if (!topol->branch_lengths[i])
         {
-          pll_set_error(PLL_ERROR_MEM_ALLOC,
+          corax_set_error(CORAX_ERROR_MEM_ALLOC,
                         "Cannot allocate memory for branch length buffers\n");
           pllmod_treeinfo_destroy_topology(topol);
-          return PLL_FAILURE;
+          return CORAX_FAILURE;
         }
       }
     }
@@ -608,16 +608,16 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
   else if (treeinfo->tree->edge_count != topol->edge_count
            || brlen_set_count != topol->brlen_set_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Incompatible treeinfo_topology structure!\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   // save topology as a list of edges
   unsigned int edge_num = 0;
   for (unsigned int i = 0; i < treeinfo->subnode_count; ++i)
   {
-    const pll_unode_t *snode = treeinfo->subnodes[i];
+    const corax_unode_t *snode = treeinfo->subnodes[i];
     if (snode->node_index < snode->back->node_index)
     {
       topol->edges[edge_num].pmatrix_index = snode->pmatrix_index;
@@ -641,7 +641,7 @@ pllmod_treeinfo_get_topology(const pllmod_treeinfo_t *   treeinfo,
   return topol;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_set_topology(pllmod_treeinfo_t *               treeinfo,
                                  const pllmod_treeinfo_topology_t *topol)
 {
@@ -649,33 +649,33 @@ int pllmod_treeinfo_set_topology(pllmod_treeinfo_t *               treeinfo,
 
   if (!treeinfo || !topol)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "treeinfo and/or topology is empty!\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   if (treeinfo->tree->edge_count != topol->edge_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Incompatible topology: edge count differs!\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  brlen_set_count = (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  brlen_set_count = (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
                         ? treeinfo->init_partition_count
                         : 0;
   if (brlen_set_count != topol->brlen_set_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Incompatible topology: brlen set count differs!!\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   // re-connect branches and reset pmatrix indices
   for (unsigned int i = 0; i < topol->edge_count; ++i)
   {
     const pllmod_treeinfo_edge_t *edge = &topol->edges[i];
-    pll_unode_t *left_node             = treeinfo->subnodes[edge->left_index];
-    pll_unode_t *right_node            = treeinfo->subnodes[edge->right_index];
+    corax_unode_t *left_node             = treeinfo->subnodes[edge->left_index];
+    corax_unode_t *right_node            = treeinfo->subnodes[edge->right_index];
     pllmod_utree_connect_nodes(left_node, right_node, edge->brlen);
     left_node->pmatrix_index = right_node->pmatrix_index = edge->pmatrix_index;
 
@@ -707,10 +707,10 @@ int pllmod_treeinfo_set_topology(pllmod_treeinfo_t *               treeinfo,
 
   pllmod_treeinfo_invalidate_all(treeinfo);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_destroy_topology(pllmod_treeinfo_topology_t *topol)
 {
   if (topol)
@@ -724,23 +724,23 @@ int pllmod_treeinfo_destroy_topology(pllmod_treeinfo_topology_t *topol)
     }
     free(topol);
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pllmod_treeinfo_destroy_partition(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_destroy_partition(pllmod_treeinfo_t *treeinfo,
                                                  unsigned int partition_index)
 {
   if (!treeinfo)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Treeinfo structure is NULL\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Treeinfo structure is NULL\n");
+    return CORAX_FAILURE;
   }
   else if (partition_index >= treeinfo->partition_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Partition %d is out of bounds\n",
                   partition_index);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (treeinfo->clv_valid[partition_index])
@@ -773,10 +773,10 @@ PLL_EXPORT int pllmod_treeinfo_destroy_partition(pllmod_treeinfo_t *treeinfo,
     treeinfo->deriv_precomp[partition_index] = NULL;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo)
+CORAX_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo)
 {
   if (!treeinfo) return;
 
@@ -791,7 +791,7 @@ PLL_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo)
   unsigned int p;
   for (p = 0; p < treeinfo->partition_count; ++p)
   {
-    if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+    if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
       free(treeinfo->branch_lengths[p]);
 
     pllmod_treeinfo_destroy_partition(treeinfo, p);
@@ -834,7 +834,7 @@ PLL_EXPORT void pllmod_treeinfo_destroy(pllmod_treeinfo_t *treeinfo)
   free(treeinfo);
 }
 
-PLL_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
                                                     int update_all)
 {
   unsigned int p, m;
@@ -852,16 +852,16 @@ PLL_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
         if (treeinfo->pmatrix_valid[p][m] && !update_all) continue;
 
         double p_brlen = treeinfo->branch_lengths[p][m];
-        if (treeinfo->brlen_linkage == PLL_BRLEN_SCALED)
+        if (treeinfo->brlen_linkage == CORAX_BRLEN_SCALED)
           p_brlen *= treeinfo->brlen_scalers[p];
 
-        int ret = pll_update_prob_matrices(treeinfo->partitions[p],
+        int ret = corax_update_prob_matrices(treeinfo->partitions[p],
                                            treeinfo->param_indices[p],
                                            &m,
                                            &p_brlen,
                                            1);
 
-        if (!ret) return PLL_FAILURE;
+        if (!ret) return CORAX_FAILURE;
 
         treeinfo->pmatrix_valid[p][m] = 1;
         updated++;
@@ -869,10 +869,10 @@ PLL_EXPORT int pllmod_treeinfo_update_prob_matrices(pllmod_treeinfo_t *treeinfo,
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_all(pllmod_treeinfo_t *treeinfo)
+CORAX_EXPORT void pllmod_treeinfo_invalidate_all(pllmod_treeinfo_t *treeinfo)
 {
   unsigned int i, m;
   unsigned int clv_count = treeinfo->tip_count + (treeinfo->tip_count - 2) * 3;
@@ -892,8 +892,8 @@ PLL_EXPORT void pllmod_treeinfo_invalidate_all(pllmod_treeinfo_t *treeinfo)
   }
 }
 
-PLL_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
-                                             pll_unode_t **     travbuffer,
+CORAX_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
+                                             corax_unode_t **     travbuffer,
                                              unsigned int       travbuffer_size)
 {
   for (unsigned int i = 0; i < treeinfo->init_partition_count; ++i)
@@ -905,7 +905,7 @@ PLL_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
     {
       for (unsigned int j = 0; j < travbuffer_size; ++j)
       {
-        const pll_unode_t *node = travbuffer[j];
+        const corax_unode_t *node = travbuffer[j];
         if (node->next)
         {
           treeinfo->clv_valid[p][node->node_index] = 1;
@@ -919,11 +919,11 @@ PLL_EXPORT int pllmod_treeinfo_validate_clvs(pllmod_treeinfo_t *treeinfo,
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_pmatrix(pllmod_treeinfo_t *treeinfo,
-                                                   const pll_unode_t *edge)
+CORAX_EXPORT void pllmod_treeinfo_invalidate_pmatrix(pllmod_treeinfo_t *treeinfo,
+                                                   const corax_unode_t *edge)
 {
   for (unsigned int i = 0; i < treeinfo->init_partition_count; ++i)
   {
@@ -933,8 +933,8 @@ PLL_EXPORT void pllmod_treeinfo_invalidate_pmatrix(pllmod_treeinfo_t *treeinfo,
   }
 }
 
-PLL_EXPORT void pllmod_treeinfo_invalidate_clv(pllmod_treeinfo_t *treeinfo,
-                                               const pll_unode_t *edge)
+CORAX_EXPORT void pllmod_treeinfo_invalidate_clv(pllmod_treeinfo_t *treeinfo,
+                                               const corax_unode_t *edge)
 {
   for (unsigned int i = 0; i < treeinfo->init_partition_count; ++i)
   {
@@ -950,7 +950,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
                                      double **          persite_lnl)
 {
   /* tree root must be an inner node! */
-  assert(!PLL_UTREE_IS_TIP(treeinfo->root));
+  assert(!CORAX_UTREE_IS_TIP(treeinfo->root));
 
   unsigned int traversal_size = 0;
   unsigned int ops_count;
@@ -962,7 +962,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
 
   /* NOTE: in unlinked brlen mode, up-to-date brlens for partition p
    * have to be prefetched to treeinfo->branch_lengths[p] !!! */
-  int collect_brlen = (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED ? 0 : 1);
+  int collect_brlen = (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED ? 0 : 1);
 
   pllmod_treeinfo_set_active_partition(treeinfo, PLLMOD_TREEINFO_PARTITION_ALL);
 
@@ -971,8 +971,8 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
   if (!incremental || (update_pmatrices && collect_brlen))
   {
     /* perform a FULL postorder traversal of the unrooted tree */
-    if (!pll_utree_traverse(treeinfo->root,
-                            PLL_TREE_TRAVERSE_POSTORDER,
+    if (!corax_utree_traverse(treeinfo->root,
+                            CORAX_TREE_TRAVERSE_POSTORDER,
                             cb_full_traversal,
                             treeinfo->travbuffer,
                             &traversal_size))
@@ -987,7 +987,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
       assert(traversal_size == treeinfo->tip_count * 2 - 2);
       for (i = 0; i < traversal_size; ++i)
       {
-        pll_unode_t *node = treeinfo->travbuffer[i];
+        corax_unode_t *node = treeinfo->travbuffer[i];
         treeinfo->branch_lengths[0][node->pmatrix_index] = node->length;
       }
     }
@@ -998,8 +998,8 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
   if (incremental)
   {
     /* compute partial traversal and update only invalid CLVs */
-    if (!pll_utree_traverse(treeinfo->root,
-                            PLL_TREE_TRAVERSE_POSTORDER,
+    if (!corax_utree_traverse(treeinfo->root,
+                            CORAX_TREE_TRAVERSE_POSTORDER,
                             cb_partial_traversal,
                             treeinfo->travbuffer,
                             &traversal_size))
@@ -1007,7 +1007,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
   }
 
   /* create operations based on partial traversal obtained above */
-  pll_utree_create_operations(treeinfo->travbuffer,
+  corax_utree_create_operations(treeinfo->travbuffer,
                               traversal_size,
                               NULL,
                               NULL,
@@ -1036,7 +1036,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
     /* use the operations array to compute all ops_count inner CLVs. Operations
        will be carried out sequentially starting from operation 0 towards
        ops_count-1 */
-    pll_update_clvs(treeinfo->partitions[p], treeinfo->operations, ops_count);
+    corax_update_clvs(treeinfo->partitions[p], treeinfo->operations, ops_count);
 
     pllmod_treeinfo_validate_clvs(
         treeinfo, treeinfo->travbuffer, traversal_size);
@@ -1046,7 +1046,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
        matrix index for the concrete branch length, and the index of the model
        of whose frequency vector is to be used */
     treeinfo->partition_loglh[p] =
-        pll_compute_edge_loglikelihood(treeinfo->partitions[p],
+        corax_compute_edge_loglikelihood(treeinfo->partitions[p],
                                        treeinfo->root->clv_index,
                                        treeinfo->root->scaler_index,
                                        treeinfo->root->back->clv_index,
@@ -1062,7 +1062,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
     treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
                                  treeinfo->partition_loglh,
                                  p,
-                                 PLL_REDUCE_SUM);
+                                 CORAX_REDUCE_SUM);
   }
 
   /* accumulate loglh by summing up over all the partitions */
@@ -1077,25 +1077,25 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
   return total_loglh;
 }
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh(pllmod_treeinfo_t *treeinfo,
                                                 int                incremental)
 {
   return treeinfo_compute_loglh(treeinfo, incremental, 1, NULL);
 }
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh_flex(
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh_flex(
     pllmod_treeinfo_t *treeinfo, int incremental, int update_pmatrices)
 {
   return treeinfo_compute_loglh(treeinfo, incremental, update_pmatrices, NULL);
 }
 
-PLL_EXPORT double pllmod_treeinfo_compute_loglh_persite(
+CORAX_EXPORT double pllmod_treeinfo_compute_loglh_persite(
     pllmod_treeinfo_t *treeinfo, int incremental, double **persite_lnl)
 {
   return treeinfo_compute_loglh(treeinfo, incremental, 1, persite_lnl);
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_scale_branches_all(pllmod_treeinfo_t *treeinfo,
                                        double             scaler)
 {
@@ -1104,7 +1104,7 @@ int pllmod_treeinfo_scale_branches_all(pllmod_treeinfo_t *treeinfo,
   for (i = 0; i < treeinfo->subnode_count; ++i)
     treeinfo->subnodes[i]->length *= scaler;
 
-  if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     for (p = 0; p < treeinfo->partition_count; ++p)
     {
@@ -1118,37 +1118,37 @@ int pllmod_treeinfo_scale_branches_all(pllmod_treeinfo_t *treeinfo,
       treeinfo->branch_lengths[0][i] *= scaler;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_scale_branches_partition(pllmod_treeinfo_t *treeinfo,
                                              unsigned int       partition_idx,
                                              double             scaler)
 {
   unsigned int i;
 
-  if (treeinfo->brlen_linkage != PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
                   "Per-partition branch length scaling is supported "
                   "in unlinked branch length mode only.\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (partition_idx >= treeinfo->partition_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Partition ID out of bounds\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Partition ID out of bounds\n");
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < treeinfo->tree->edge_count; ++i)
     treeinfo->branch_lengths[partition_idx][i] *= scaler;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 int pllmod_treeinfo_normalize_brlen_scalers(pllmod_treeinfo_t *treeinfo)
 {
   double       sum_scalers = 0.;
@@ -1171,10 +1171,10 @@ int pllmod_treeinfo_normalize_brlen_scalers(pllmod_treeinfo_t *treeinfo)
     // TODO: although this reduce is unlikely to become a bottleneck, it can
     // be avoided by storing _total_ pattern_weight_sum in treeinfo
     treeinfo->parallel_reduce_cb(
-        treeinfo->parallel_context, &sum_scalers, 1, PLL_REDUCE_SUM);
+        treeinfo->parallel_context, &sum_scalers, 1, CORAX_REDUCE_SUM);
 
     treeinfo->parallel_reduce_cb(
-        treeinfo->parallel_context, &sum_sites, 1, PLL_REDUCE_SUM);
+        treeinfo->parallel_context, &sum_sites, 1, CORAX_REDUCE_SUM);
   }
 
   const double mean_rate = sum_scalers / sum_sites;
@@ -1184,38 +1184,38 @@ int pllmod_treeinfo_normalize_brlen_scalers(pllmod_treeinfo_t *treeinfo)
     if (treeinfo->partitions[p]) treeinfo->brlen_scalers[p] /= mean_rate;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int treeinfo_check_tree(pllmod_treeinfo_t *treeinfo, pll_utree_t *tree)
+static int treeinfo_check_tree(pllmod_treeinfo_t *treeinfo, corax_utree_t *tree)
 {
   if (!treeinfo || !tree)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Parameter is NULL\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Parameter is NULL\n");
+    return CORAX_FAILURE;
   }
 
   if (treeinfo->tip_count != tree->tip_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE_SIZE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE_SIZE,
                   "Invalid tree size. Got %d instead of %d\n",
                   tree->tip_count,
                   treeinfo->tip_count);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (!tree->binary)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE, "Binary tree expected\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_TREE, "Binary tree expected\n");
+    return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_init_tree(pllmod_treeinfo_t *treeinfo)
 {
-  pll_utree_t *tree       = treeinfo->tree;
+  corax_utree_t *tree       = treeinfo->tree;
   unsigned int node_count = tree->tip_count + tree->inner_count;
   unsigned int edge_count = tree->edge_count;
 
@@ -1227,19 +1227,19 @@ static int treeinfo_init_tree(pllmod_treeinfo_t *treeinfo)
    *    indexed by pmatrix_index */
   for (unsigned int i = 0; i < node_count; ++i)
   {
-    pll_unode_t *snode = tree->nodes[i];
+    corax_unode_t *snode = tree->nodes[i];
     do
     {
       unsigned int pmat_idx = snode->pmatrix_index;
       if (pmat_idx > edge_count)
       {
-        pll_set_error(PLL_ERROR_INVALID_TREE,
+        corax_set_error(CORAX_ERROR_INVALID_TREE,
                       "p-matrix index out of bounds (%u). "
                       "treeinfo structure require that each branch "
                       "branch is assigned a unique p-matrix index "
                       "between 0 and branch_count-1\n",
                       pmat_idx);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       treeinfo->subnodes[snode->node_index] = snode;
       treeinfo->branch_lengths[0][pmat_idx] = snode->length;
@@ -1249,7 +1249,7 @@ static int treeinfo_init_tree(pllmod_treeinfo_t *treeinfo)
   }
 
   /* in unlinked branch length mode, copy brlen to other partitions */
-  if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
   {
     for (unsigned int i = 1; i < treeinfo->partition_count; ++i)
     {
@@ -1263,28 +1263,28 @@ static int treeinfo_init_tree(pllmod_treeinfo_t *treeinfo)
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pllmod_treeinfo_set_tree(pllmod_treeinfo_t *treeinfo,
-                                        pll_utree_t *      tree)
+CORAX_EXPORT int pllmod_treeinfo_set_tree(pllmod_treeinfo_t *treeinfo,
+                                        corax_utree_t *      tree)
 {
-  if (!treeinfo_check_tree(treeinfo, tree)) return PLL_FAILURE;
+  if (!treeinfo_check_tree(treeinfo, tree)) return CORAX_FAILURE;
 
   unsigned int node_count = tree->tip_count + tree->inner_count;
 
-  /* make a shallow copy of pll_utree_t structure, that is,
-   * pll_unodes will not be cloned! */
-  pll_unode_t **nodes = treeinfo->tree->nodes;
-  memcpy(treeinfo->tree, tree, sizeof(pll_utree_t));
+  /* make a shallow copy of corax_utree_t structure, that is,
+   * corax_unodes will not be cloned! */
+  corax_unode_t **nodes = treeinfo->tree->nodes;
+  memcpy(treeinfo->tree, tree, sizeof(corax_utree_t));
   treeinfo->tree->nodes = nodes;
   memcpy(
-      treeinfo->tree->nodes, tree->nodes, node_count * sizeof(pll_unode_t *));
+      treeinfo->tree->nodes, tree->nodes, node_count * sizeof(corax_unode_t *));
 
   return treeinfo_init_tree(treeinfo);
 }
 
-PLL_EXPORT int
+CORAX_EXPORT int
 pllmod_treeinfo_set_constraint_clvmap(pllmod_treeinfo_t *treeinfo,
                                       const int *        clv_index_map)
 {
@@ -1297,9 +1297,9 @@ pllmod_treeinfo_set_constraint_clvmap(pllmod_treeinfo_t *treeinfo,
     treeinfo->constraint = malloc(cons_size);
     if (!treeinfo->constraint)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Can't allocate memory for topological constraint\n");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
 
@@ -1307,18 +1307,18 @@ pllmod_treeinfo_set_constraint_clvmap(pllmod_treeinfo_t *treeinfo,
 
   for (unsigned int i = 0; i < tip_count + inner_count; ++i)
   {
-    const pll_unode_t *node = treeinfo->tree->nodes[i];
+    const corax_unode_t *node = treeinfo->tree->nodes[i];
     const unsigned int cons_group_id =
         (unsigned int)clv_index_map[node->clv_index] + 1;
 
     treeinfo->constraint[node->clv_index] = cons_group_id;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pllmod_treeinfo_set_constraint_tree(pllmod_treeinfo_t *treeinfo,
-                                                   const pll_utree_t *cons_tree)
+CORAX_EXPORT int pllmod_treeinfo_set_constraint_tree(pllmod_treeinfo_t *treeinfo,
+                                                   const corax_utree_t *cons_tree)
 {
   unsigned int node_count    = cons_tree->tip_count * 2 - 2;
   int *        clv_index_map = NULL;
@@ -1326,40 +1326,40 @@ PLL_EXPORT int pllmod_treeinfo_set_constraint_tree(pllmod_treeinfo_t *treeinfo,
 
   if (treeinfo->tip_count < cons_tree->tip_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE_SIZE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE_SIZE,
                   "Invalid tree size. Got %d instead of %d\n",
                   cons_tree->tip_count,
                   treeinfo->tip_count);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   clv_index_map = (int *)calloc(node_count, sizeof(int));
   if (!clv_index_map)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Can't allocate memory for clv_index_map\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  pll_utree_t *bin_cons_tree =
-      pll_utree_random_resolve_multi(cons_tree, 0, clv_index_map);
+  corax_utree_t *bin_cons_tree =
+      corax_utree_random_resolve_multi(cons_tree, 0, clv_index_map);
 
   if (!bin_cons_tree)
   {
-    assert(pll_errno);
+    assert(corax_errno);
     free(clv_index_map);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   // HACK; copy clv group ids from inner nodes to tips
   for (unsigned int i = 0; i < bin_cons_tree->tip_count; ++i)
   {
-    pll_unode_t *node = bin_cons_tree->nodes[i];
+    corax_unode_t *node = bin_cons_tree->nodes[i];
     assert(!node->next);
     clv_index_map[node->clv_index] = clv_index_map[node->back->clv_index];
   }
 
-  pll_utree_destroy(bin_cons_tree, NULL);
+  corax_utree_destroy(bin_cons_tree, NULL);
 
   if (treeinfo->tip_count > cons_tree->tip_count)
   {
@@ -1408,7 +1408,7 @@ PLL_EXPORT int pllmod_treeinfo_set_constraint_tree(pllmod_treeinfo_t *treeinfo,
 }
 
 static unsigned int
-find_cons_id(pll_unode_t *node, const unsigned int *constraint, unsigned int s)
+find_cons_id(corax_unode_t *node, const unsigned int *constraint, unsigned int s)
 {
   unsigned int cons_group_id = constraint[node->clv_index];
   if (!node->next || cons_group_id > 0)
@@ -1420,15 +1420,15 @@ find_cons_id(pll_unode_t *node, const unsigned int *constraint, unsigned int s)
     if (left_id == right_id)
       return left_id;
     else if (!s)
-      return PLL_MAX(left_id, right_id);
+      return CORAX_MAX(left_id, right_id);
     else
       return (left_id == 0 || left_id == s) ? right_id : left_id;
   }
 }
 
-PLL_EXPORT int pllmod_treeinfo_check_constraint(pllmod_treeinfo_t *treeinfo,
-                                                pll_unode_t *      subtree,
-                                                pll_unode_t *      regraft_edge)
+CORAX_EXPORT int pllmod_treeinfo_check_constraint(pllmod_treeinfo_t *treeinfo,
+                                                corax_unode_t *      subtree,
+                                                corax_unode_t *      regraft_edge)
 {
   if (treeinfo->constraint)
   {
@@ -1442,15 +1442,15 @@ PLL_EXPORT int pllmod_treeinfo_check_constraint(pllmod_treeinfo_t *treeinfo,
       unsigned int r2 =
           find_cons_id(regraft_edge->back, treeinfo->constraint, s);
 
-      res = (s == r1 || s == r2) ? PLL_SUCCESS : PLL_FAILURE;
+      res = (s == r1 || s == r2) ? CORAX_SUCCESS : CORAX_FAILURE;
     }
     else
-      res = PLL_SUCCESS;
+      res = CORAX_SUCCESS;
 
     return res;
   }
   else
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
 }
 
 static pllmod_ancestral_t *
@@ -1467,7 +1467,7 @@ pllmod_treeinfo_create_ancestral(const pllmod_treeinfo_t *treeinfo)
   ancestral->partition_count = treeinfo->init_partition_count;
 
   ancestral->nodes =
-      (pll_unode_t **)calloc(ancestral->node_count, sizeof(pll_unode_t *));
+      (corax_unode_t **)calloc(ancestral->node_count, sizeof(corax_unode_t *));
   ancestral->partition_indices =
       (unsigned int *)calloc(ancestral->partition_count, sizeof(unsigned int));
 
@@ -1476,11 +1476,11 @@ pllmod_treeinfo_create_ancestral(const pllmod_treeinfo_t *treeinfo)
   size_t vector_size = 0;
   for (i = 0; i < ancestral->partition_count; ++i)
   {
-    const pll_partition_t *partition = treeinfo->init_partitions[i];
+    const corax_partition_t *partition = treeinfo->init_partitions[i];
     vector_size += partition->sites * partition->states;
   }
 
-  ancestral->tree = pll_utree_clone(treeinfo->tree);
+  ancestral->tree = corax_utree_clone(treeinfo->tree);
 
   for (i = 0; i < ancestral->node_count; ++i)
     ancestral->probs[i] = (double *)calloc(vector_size, sizeof(double));
@@ -1488,7 +1488,7 @@ pllmod_treeinfo_create_ancestral(const pllmod_treeinfo_t *treeinfo)
   return ancestral;
 }
 
-PLL_EXPORT void pllmod_treeinfo_destroy_ancestral(pllmod_ancestral_t *ancestral)
+CORAX_EXPORT void pllmod_treeinfo_destroy_ancestral(pllmod_ancestral_t *ancestral)
 {
   unsigned int i;
 
@@ -1499,11 +1499,11 @@ PLL_EXPORT void pllmod_treeinfo_destroy_ancestral(pllmod_ancestral_t *ancestral)
 
   for (i = 0; i < ancestral->node_count; ++i) free(ancestral->probs[i]);
 
-  pll_utree_destroy(ancestral->tree, NULL);
+  corax_utree_destroy(ancestral->tree, NULL);
   free(ancestral->probs);
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 pllmod_ancestral_t *
 pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
 {
@@ -1512,10 +1512,10 @@ pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
   unsigned int node_count =
       treeinfo->tree->tip_count + treeinfo->tree->inner_count;
 
-  pll_unode_t *old_root = treeinfo->root;
+  corax_unode_t *old_root = treeinfo->root;
 
-  pll_unode_t **travbuffer =
-      (pll_unode_t **)calloc(node_count, sizeof(pll_unode_t *));
+  corax_unode_t **travbuffer =
+      (corax_unode_t **)calloc(node_count, sizeof(corax_unode_t *));
 
   pllmod_ancestral_t *ancestral = pllmod_treeinfo_create_ancestral(treeinfo);
 
@@ -1523,14 +1523,14 @@ pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
   {
     if (travbuffer) free(travbuffer);
     if (ancestral) pllmod_treeinfo_destroy_ancestral(ancestral);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Can't allocate memory for ancestral probabilities\n");
     return NULL;
   }
 
   /* perform a FULL postorder traversal of the unrooted tree */
-  if (!pll_utree_traverse(ancestral->tree->vroot,
-                          PLL_TREE_TRAVERSE_POSTORDER,
+  if (!corax_utree_traverse(ancestral->tree->vroot,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
                           cb_full_traversal,
                           travbuffer,
                           &traversal_size))
@@ -1552,9 +1552,9 @@ pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
   unsigned int n = 0;
   for (i = 0; i < traversal_size; ++i)
   {
-    pll_unode_t *node = travbuffer[i];
+    corax_unode_t *node = travbuffer[i];
 
-    if (PLL_UTREE_IS_TIP(node)) continue;
+    if (CORAX_UTREE_IS_TIP(node)) continue;
 
     /* generate inner node label if it is empty */
     if (!node->label)
@@ -1575,8 +1575,8 @@ pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
   /* now compute ancestral state probs for every internal node */
   for (i = 0; i < ancestral->node_count; ++i)
   {
-    pll_unode_t *node          = ancestral->nodes[i];
-    pll_unode_t *treeinfo_node = treeinfo->subnodes[node->node_index];
+    corax_unode_t *node          = ancestral->nodes[i];
+    corax_unode_t *treeinfo_node = treeinfo->subnodes[node->node_index];
     double *     ancp          = ancestral->probs[i];
 
     treeinfo->root = treeinfo_node;
@@ -1584,13 +1584,13 @@ pllmod_treeinfo_compute_ancestral(pllmod_treeinfo_t *treeinfo)
 
     for (p = 0; p < treeinfo->init_partition_count; ++p)
     {
-      pll_partition_t *partition = treeinfo->init_partitions[p];
+      corax_partition_t *partition = treeinfo->init_partitions[p];
       size_t           part_span = partition->sites * partition->states;
       unsigned int     pidx      = treeinfo->init_partition_idx[p];
 
       ancestral->partition_indices[p] = pidx;
 
-      if (!pll_compute_node_ancestral(partition,
+      if (!corax_compute_node_ancestral(partition,
                                       node->clv_index,
                                       node->scaler_index,
                                       node->back->clv_index,

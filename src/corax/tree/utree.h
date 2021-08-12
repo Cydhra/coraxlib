@@ -1,7 +1,7 @@
 /**
  * @file utree.h
  *
- * @brief This header file contains functions related to the pll_utree_t struct
+ * @brief This header file contains functions related to the corax_utree_t struct
  *
  * @author whoever
  */
@@ -14,20 +14,20 @@
  * Deallocate the memory associated with a utree. `cb_destroy` is used to delete
  * the user data allocated in data.
  *
- * @ingroup pll_utree_t
+ * @ingroup corax_utree_t
  */
-PLL_EXPORT void pll_utree_destroy(pll_utree_t *tree,
+CORAX_EXPORT void corax_utree_destroy(corax_utree_t *tree,
                                   void (*cb_destroy)(void *));
 
-PLL_EXPORT void pll_utree_reset_template_indices(pll_unode_t *node,
+CORAX_EXPORT void corax_utree_reset_template_indices(corax_unode_t *node,
                                                  unsigned int tip_count);
 
-PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
+CORAX_EXPORT void corax_utree_graph_destroy(corax_unode_t *root,
                                         void (*cb_destroy)(void *));
 
 /**
  * Takes a tree, represented by a node, and optionally a tip count. Will produce
- * a pll_utree_t that contains that tree. The pointer to the original node is
+ * a corax_utree_t that contains that tree. The pointer to the original node is
  * not invalidated.
  *
  * @param root Pointer to the virtual root. Should be an "inner node".
@@ -35,27 +35,27 @@ PLL_EXPORT void pll_utree_graph_destroy(pll_unode_t *root,
  * @param tip_count Number of tips in contained in the tree represented by
  * `root`
  *
- * @ingroup pll_utree_t
+ * @ingroup corax_utree_t
  */
-PLL_EXPORT pll_utree_t *pll_utree_wraptree(pll_unode_t *root,
+CORAX_EXPORT corax_utree_t *corax_utree_wraptree(corax_unode_t *root,
                                            unsigned int tip_count);
 
-PLL_EXPORT pll_utree_t *pll_utree_wraptree_multi(pll_unode_t *root,
+CORAX_EXPORT corax_utree_t *corax_utree_wraptree_multi(corax_unode_t *root,
                                                  unsigned int tip_count,
                                                  unsigned int inner_count);
 
-PLL_EXPORT pll_unode_t *pll_utree_create_node(unsigned int clv_index,
+CORAX_EXPORT corax_unode_t *corax_utree_create_node(unsigned int clv_index,
                                               int          scaler_index,
                                               char *       label,
                                               void *       data);
 
-PLL_EXPORT int pll_unode_is_rooted(const pll_unode_t *root);
+CORAX_EXPORT int corax_unode_is_rooted(const corax_unode_t *root);
 
-PLL_EXPORT int pll_utree_is_rooted(const pll_utree_t *tree);
+CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
 
 /**
- * Given the `pll_unode_t**` from a traversal using `pll_utree_traverse`, this
- * will create a list of `pll_operation_t`.
+ * Given the `corax_unode_t**` from a traversal using `corax_utree_traverse`, this
+ * will create a list of `corax_operation_t`.
  *
  * @param trav_buffer
  *
@@ -77,20 +77,20 @@ PLL_EXPORT int pll_utree_is_rooted(const pll_utree_t *tree);
  * @param[out] ops_count Out parameter indicating the actual number of
  * operations.
  *
- * @ingroup pll_utree_t
- * @ingroup pll_operation_t
+ * @ingroup corax_utree_t
+ * @ingroup corax_operation_t
  */
-PLL_EXPORT void pll_utree_create_operations(pll_unode_t *const *trav_buffer,
+CORAX_EXPORT void corax_utree_create_operations(corax_unode_t *const *trav_buffer,
                                             unsigned int     trav_buffer_size,
                                             double *         branches,
                                             unsigned int *   pmatrix_indices,
-                                            pll_operation_t *ops,
+                                            corax_operation_t *ops,
                                             unsigned int *   matrix_count,
                                             unsigned int *   ops_count);
 
-PLL_EXPORT int pll_utree_check_integrity(const pll_utree_t *root);
+CORAX_EXPORT int corax_utree_check_integrity(const corax_utree_t *root);
 
-PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root);
+CORAX_EXPORT corax_unode_t *corax_utree_graph_clone(const corax_unode_t *root);
 
 /**
  * Clone a tree. This is a semi-deep copy. The fields `label` and the pointers
@@ -98,9 +98,9 @@ PLL_EXPORT pll_unode_t *pll_utree_graph_clone(const pll_unode_t *root);
  *
  * @param root The tree to clone.
  */
-PLL_EXPORT pll_utree_t *pll_utree_clone(const pll_utree_t *root);
+CORAX_EXPORT corax_utree_t *corax_utree_clone(const corax_utree_t *root);
 
-PLL_EXPORT int pll_utree_set_clv_minimal(pll_unode_t *root,
+CORAX_EXPORT int corax_utree_set_clv_minimal(corax_unode_t *root,
                                          unsigned int tip_count);
 
 #endif /* CORAX_TREE_UTREE_H_ */

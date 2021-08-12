@@ -235,7 +235,7 @@ l4:
   return (ch);
 }
 
-PLL_EXPORT int pll_compute_gamma_cats(double       alpha,
+CORAX_EXPORT int corax_compute_gamma_cats(double       alpha,
                                       unsigned int categories,
                                       double *     output_rates,
                                       int          rates_mode)
@@ -251,12 +251,12 @@ PLL_EXPORT int pll_compute_gamma_cats(double       alpha,
 
   if (alpha < ALPHA_MIN || categories < 1)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "Invalid alpha value (%f)", alpha);
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Invalid alpha value (%f)", alpha);
+    return CORAX_FAILURE;
   }
 
   if (categories == 1) { output_rates[0] = 1.0; }
-  else if (rates_mode == PLL_GAMMA_RATES_MEDIAN)
+  else if (rates_mode == CORAX_GAMMA_RATES_MEDIAN)
   {
     double middle = 1.0 / (2.0 * categories), t = 0.0;
 
@@ -266,7 +266,7 @@ PLL_EXPORT int pll_compute_gamma_cats(double       alpha,
     for (i = 0; i < categories; i++) t += output_rates[i];
     for (i = 0; i < categories; i++) output_rates[i] *= factor / t;
   }
-  else if (rates_mode == PLL_GAMMA_RATES_MEAN)
+  else if (rates_mode == CORAX_GAMMA_RATES_MEAN)
   {
     gammaProbs = (double *)malloc(categories * sizeof(double));
 
@@ -289,11 +289,11 @@ PLL_EXPORT int pll_compute_gamma_cats(double       alpha,
   }
   else
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Invalid GAMMA discretization mode (%d)",
                   rates_mode);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

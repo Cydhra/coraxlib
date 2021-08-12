@@ -48,40 +48,40 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
   /* scaling stuff*/
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
   /* transposed inv_eigenvecs */
-  double *tt_inv_eigenvecs = (double *)pll_aligned_alloc(
-      (states * states * rate_cats) * sizeof(double), PLL_ALIGNMENT_AVX);
+  double *tt_inv_eigenvecs = (double *)corax_aligned_alloc(
+      (states * states * rate_cats) * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   if (!tt_inv_eigenvecs)
   {
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < rate_cats; ++i)
@@ -115,7 +115,7 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -200,15 +200,15 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
     }
   }
 
-  pll_aligned_free(tt_inv_eigenvecs);
+  corax_aligned_free(tt_inv_eigenvecs);
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
                                          unsigned int        sites,
                                          unsigned int        parent_sites,
                                          unsigned int        rate_cats,
@@ -238,39 +238,39 @@ pll_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
   /* scaling stuff*/
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
   /* transposed inv_eigenvecs */
-  double *tt_inv_eigenvecs = (double *)pll_aligned_alloc(
-      (states * states * rate_cats) * sizeof(double), PLL_ALIGNMENT_AVX);
+  double *tt_inv_eigenvecs = (double *)corax_aligned_alloc(
+      (states * states * rate_cats) * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   if (!tt_inv_eigenvecs)
   {
     if (rate_scalings) free(rate_scalings);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < rate_cats; ++i)
@@ -287,8 +287,8 @@ pll_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
   /* vectorized loop from update_sumtable() */
   for (n = 0; n < sites; n++)
   {
-    unsigned int  pid    = PLL_GET_ID(parent_site_id, n);
-    unsigned int  cid    = PLL_GET_ID(child_site_id, n);
+    unsigned int  pid    = CORAX_GET_ID(parent_site_id, n);
+    unsigned int  cid    = CORAX_GET_ID(child_site_id, n);
     const double *t_clvp = &clvp[pid * span_padded];
     const double *t_clvc = &clvc[cid * span_padded];
     /* compute per-rate scalers and obtain minimum value (within site) */
@@ -308,7 +308,7 @@ pll_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -393,15 +393,15 @@ pll_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
     }
   }
 
-  pll_aligned_free(tt_inv_eigenvecs);
+  corax_aligned_free(tt_inv_eigenvecs);
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
                                              unsigned int        sites,
                                              unsigned int        parent_sites,
                                              unsigned int        rate_cats,
@@ -436,42 +436,42 @@ pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
   /* scaling stuff*/
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
   /* transposed inv_eigenvecs */
-  tt_inv_eigenvecs_buff = (double *)pll_aligned_alloc(
-      (states * states * rate_cats) * sizeof(double), PLL_ALIGNMENT_AVX);
+  tt_inv_eigenvecs_buff = (double *)corax_aligned_alloc(
+      (states * states * rate_cats) * sizeof(double), CORAX_ALIGNMENT_AVX);
   tt_inv_eigenvecs_ptr = (double **)malloc(rate_cats * sizeof(double *));
   if (!tt_inv_eigenvecs_buff || !tt_inv_eigenvecs_ptr)
   {
     if (rate_scalings) free(rate_scalings);
-    if (tt_inv_eigenvecs_buff) pll_aligned_free(tt_inv_eigenvecs_buff);
+    if (tt_inv_eigenvecs_buff) corax_aligned_free(tt_inv_eigenvecs_buff);
     if (tt_inv_eigenvecs_ptr) free(tt_inv_eigenvecs_ptr);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < rate_cats; ++i)
@@ -550,7 +550,7 @@ pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
   /* vectorized loop from update_sumtable() */
   for (n = 0; n < sites; n++)
   {
-    unsigned int cid     = PLL_GET_ID(child_site_id, n);
+    unsigned int cid     = CORAX_GET_ID(child_site_id, n);
     unsigned int pid     = parent_site_id[n];
     lbclv                = &bclv_buffer[(pid)*span_padded];
     const double *t_clvc = &clvc[cid * span_padded];
@@ -571,7 +571,7 @@ pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -638,16 +638,16 @@ pll_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
     }
   }
 
-  pll_aligned_free(tt_inv_eigenvecs_buff);
+  corax_aligned_free(tt_inv_eigenvecs_buff);
   free(tt_inv_eigenvecs_ptr);
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_repeats_generic_avx(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
                                              unsigned int        sites,
                                              unsigned int        parent_sites,
                                              unsigned int        rate_cats,
@@ -678,53 +678,53 @@ pll_core_update_sumtable_repeats_generic_avx(unsigned int        states,
   /* scaling stuff */
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
   /* padded eigenvecs */
-  double *tt_eigenvecs = (double *)pll_aligned_alloc(
+  double *tt_eigenvecs = (double *)corax_aligned_alloc(
       (states_padded * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
   if (!tt_eigenvecs)
   {
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* transposed padded inv_eigenvecs */
-  double *tt_inv_eigenvecs = (double *)pll_aligned_alloc(
+  double *tt_inv_eigenvecs = (double *)corax_aligned_alloc(
       (states_padded * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
   if (!tt_inv_eigenvecs)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   memset(tt_eigenvecs,
@@ -752,8 +752,8 @@ pll_core_update_sumtable_repeats_generic_avx(unsigned int        states,
   /* vectorized loop from update_sumtable() */
   for (n = 0; n < sites; n++)
   {
-    unsigned int  pid    = PLL_GET_ID(parent_site_id, n);
-    unsigned int  cid    = PLL_GET_ID(child_site_id, n);
+    unsigned int  pid    = CORAX_GET_ID(parent_site_id, n);
+    unsigned int  cid    = CORAX_GET_ID(child_site_id, n);
     const double *t_clvp = &clvp[pid * span_padded];
     const double *t_clvc = &clvc[cid * span_padded];
     /* compute per-rate scalers and obtain minimum value (within site) */
@@ -773,7 +773,7 @@ pll_core_update_sumtable_repeats_generic_avx(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -892,14 +892,14 @@ pll_core_update_sumtable_repeats_generic_avx(unsigned int        states,
     }
   }
 
-  pll_aligned_free(tt_inv_eigenvecs);
-  pll_aligned_free(tt_eigenvecs);
+  corax_aligned_free(tt_inv_eigenvecs);
+  corax_aligned_free(tt_eigenvecs);
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
-PLL_EXPORT int
-pll_core_update_sumtable_ii_avx(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_ii_avx(unsigned int        states,
                                 unsigned int        sites,
                                 unsigned int        rate_cats,
                                 const double *      clvp,
@@ -942,53 +942,53 @@ pll_core_update_sumtable_ii_avx(unsigned int        states,
   /* scaling stuff */
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
   /* padded eigenvecs */
-  double *tt_eigenvecs = (double *)pll_aligned_alloc(
+  double *tt_eigenvecs = (double *)corax_aligned_alloc(
       (states_padded * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
   if (!tt_eigenvecs)
   {
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* transposed padded inv_eigenvecs */
-  double *tt_inv_eigenvecs = (double *)pll_aligned_alloc(
+  double *tt_inv_eigenvecs = (double *)corax_aligned_alloc(
       (states_padded * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
   if (!tt_inv_eigenvecs)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   memset(tt_eigenvecs,
@@ -1033,7 +1033,7 @@ pll_core_update_sumtable_ii_avx(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -1152,11 +1152,11 @@ pll_core_update_sumtable_ii_avx(unsigned int        states,
     }
   }
 
-  pll_aligned_free(tt_inv_eigenvecs);
-  pll_aligned_free(tt_eigenvecs);
+  corax_aligned_free(tt_inv_eigenvecs);
+  corax_aligned_free(tt_eigenvecs);
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
@@ -1184,44 +1184,44 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
 
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
-  eigenvecs_trans = (double *)pll_aligned_alloc(
-      (states * states * rate_cats) * sizeof(double), PLL_ALIGNMENT_AVX);
+  eigenvecs_trans = (double *)corax_aligned_alloc(
+      (states * states * rate_cats) * sizeof(double), CORAX_ALIGNMENT_AVX);
 
-  precomp_left = (double *)pll_aligned_alloc(
-      (16 * states * rate_cats) * sizeof(double), PLL_ALIGNMENT_AVX);
+  precomp_left = (double *)corax_aligned_alloc(
+      (16 * states * rate_cats) * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   if (!eigenvecs_trans || !precomp_left)
   {
-    if (eigenvecs_trans) pll_aligned_free(eigenvecs_trans);
-    if (precomp_left) pll_aligned_free(precomp_left);
+    if (eigenvecs_trans) corax_aligned_free(eigenvecs_trans);
+    if (precomp_left) corax_aligned_free(precomp_left);
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* transpose eigenvecs matrix -> for efficient vectorization */
@@ -1300,7 +1300,7 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -1339,15 +1339,15 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
     }
   }
 
-  pll_aligned_free(eigenvecs_trans);
-  pll_aligned_free(precomp_left);
+  corax_aligned_free(eigenvecs_trans);
+  corax_aligned_free(precomp_left);
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_ti_avx(unsigned int         states,
+CORAX_EXPORT int
+corax_core_update_sumtable_ti_avx(unsigned int         states,
                                 unsigned int         sites,
                                 unsigned int         rate_cats,
                                 const double *       parent_clv,
@@ -1356,7 +1356,7 @@ pll_core_update_sumtable_ti_avx(unsigned int         states,
                                 double *const *      eigenvecs,
                                 double *const *      inv_eigenvecs,
                                 double *const *      freqs,
-                                const pll_state_t *  tipmap,
+                                const corax_state_t *  tipmap,
                                 unsigned int         tipmap_size,
                                 double *             sumtable,
                                 unsigned int         attrib)
@@ -1392,46 +1392,46 @@ pll_core_update_sumtable_ti_avx(unsigned int         states,
   /* scaling stuff */
   unsigned int  min_scaler       = 0;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  __m256d v_scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  __m256d v_scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for rate scalers");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       v_scale_minlh[i] = _mm256_set1_pd(scale_factor);
     }
   }
 
-  eigenvecs_padded = (double *)pll_aligned_alloc(
+  eigenvecs_padded = (double *)corax_aligned_alloc(
       (states_padded * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
-  precomp_left = (double *)pll_aligned_alloc(
+  precomp_left = (double *)corax_aligned_alloc(
       (maxstates * states_padded * rate_cats) * sizeof(double),
-      PLL_ALIGNMENT_AVX);
+      CORAX_ALIGNMENT_AVX);
 
   if (!eigenvecs_padded || !precomp_left)
   {
-    if (eigenvecs_padded) pll_aligned_free(eigenvecs_padded);
-    if (precomp_left) pll_aligned_free(precomp_left);
+    if (eigenvecs_padded) corax_aligned_free(eigenvecs_padded);
+    if (precomp_left) corax_aligned_free(precomp_left);
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tt_inv_eigenvecs");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* add padding to eigenvecs matrix -> for efficient vectorization */
@@ -1451,9 +1451,9 @@ pll_core_update_sumtable_ti_avx(unsigned int         states,
   double *t_precomp = precomp_left;
   for (n = 0; n < maxstates; ++n)
   {
-    pll_state_t state = tipmap ? tipmap[n] : n;
+    corax_state_t state = tipmap ? tipmap[n] : n;
 
-    int ss = PLL_STATE_POPCNT(state) == 1 ? PLL_STATE_CTZ(state) : -1;
+    int ss = CORAX_STATE_POPCNT(state) == 1 ? CORAX_STATE_CTZ(state) : -1;
 
     for (i = 0; i < rate_cats; ++i)
     {
@@ -1510,7 +1510,7 @@ pll_core_update_sumtable_ti_avx(unsigned int         states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -1599,15 +1599,15 @@ pll_core_update_sumtable_ti_avx(unsigned int         states,
     }
   }
 
-  pll_aligned_free(eigenvecs_padded);
-  pll_aligned_free(precomp_left);
+  corax_aligned_free(eigenvecs_padded);
+  corax_aligned_free(precomp_left);
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_likelihood_derivatives_avx(unsigned int        states,
+CORAX_EXPORT int
+corax_core_likelihood_derivatives_avx(unsigned int        states,
                                     unsigned int        states_padded,
                                     unsigned int        rate_cats,
                                     unsigned int        ef_sites,
@@ -1642,13 +1642,13 @@ pll_core_likelihood_derivatives_avx(unsigned int        states,
 
   if (use_pinv)
   {
-    invar_lk = (double *)pll_aligned_alloc(rate_cats * states * sizeof(double),
-                                           PLL_ALIGNMENT_AVX);
+    invar_lk = (double *)corax_aligned_alloc(rate_cats * states * sizeof(double),
+                                           CORAX_ALIGNMENT_AVX);
 
     if (!invar_lk)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-      return PLL_FAILURE;
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      return CORAX_FAILURE;
     }
 
     /* pre-compute invariant site likelihoods*/
@@ -1664,13 +1664,13 @@ pll_core_likelihood_derivatives_avx(unsigned int        states,
   if (states == 4) { diagp_start = diagptable; }
   else
   {
-    t_diagp = (double *)pll_aligned_alloc(3 * span_padded * sizeof(double),
-                                          PLL_ALIGNMENT_AVX);
+    t_diagp = (double *)corax_aligned_alloc(3 * span_padded * sizeof(double),
+                                          CORAX_ALIGNMENT_AVX);
 
     if (!t_diagp)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-      return PLL_FAILURE;
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      return CORAX_FAILURE;
     }
 
     memset(t_diagp, 0, 3 * span_padded * sizeof(double));
@@ -1692,7 +1692,7 @@ pll_core_likelihood_derivatives_avx(unsigned int        states,
   }
 
   /* here we will temporary store per-site LH, 1st and 2nd derivatives */
-  double site_lk[16] __attribute__((aligned(PLL_ALIGNMENT_AVX)));
+  double site_lk[16] __attribute__((aligned(CORAX_ALIGNMENT_AVX)));
 
   /* vectors for accumulating 1st and 2nd derivatives */
   __m256d v_df   = _mm256_setzero_pd();
@@ -1879,8 +1879,8 @@ pll_core_likelihood_derivatives_avx(unsigned int        states,
   _mm256_store_pd(site_lk, v_ddf);
   *dd_f += site_lk[0] + site_lk[1] + site_lk[2] + site_lk[3];
 
-  if (t_diagp) pll_aligned_free(t_diagp);
-  if (invar_lk) pll_aligned_free(invar_lk);
+  if (t_diagp) corax_aligned_free(t_diagp);
+  if (invar_lk) corax_aligned_free(invar_lk);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

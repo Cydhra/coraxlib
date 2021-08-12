@@ -46,13 +46,13 @@ typedef int (*treeinfo_param_get_cb)(const pllmod_treeinfo_t *treeinfo,
 /* functions to optimize multiple partitions in parallel, using treeinfo struct
  */
 
-PLL_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
                                                   int    param_to_optimize,
                                                   double min_value,
                                                   double max_value,
                                                   double tolerance);
 
-PLL_EXPORT
+CORAX_EXPORT
 double
 pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
                                        int                   param_to_optimize,
@@ -77,7 +77,7 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
  *
  * @{
  */
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_rate,
@@ -85,7 +85,7 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             double             bfgs_factor,
                                             double             tolerance);
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_freq,
@@ -93,7 +93,7 @@ double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             double             bfgs_factor,
                                             double             tolerance);
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             min_rate,
                                               double             max_rate,
@@ -102,7 +102,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             bfgs_factor,
                                               double             tolerance);
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
                                            unsigned int       params_index,
                                            double             min_alpha,
@@ -112,7 +112,7 @@ double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
                                            double             bfgs_factor,
                                            double             tolerance);
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             min_scaler,
                                               double             max_scaler,
@@ -120,7 +120,7 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             max_brlen,
                                               double             lh_epsilon);
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
                                       double             min_brlen,
                                       double             max_brlen,
@@ -158,11 +158,11 @@ double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
  * that lestt trees are cutoff.
  *
  */
-PLL_EXPORT double pllmod_algo_spr_round(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double pllmod_algo_spr_round(pllmod_treeinfo_t *treeinfo,
                                         unsigned int       radius_min,
                                         unsigned int       radius_max,
                                         unsigned int       ntopol_keep,
-                                        pll_bool_t         thorough,
+                                        corax_bool_t         thorough,
                                         int                brlen_opt_method,
                                         double             bl_min,
                                         double             bl_max,

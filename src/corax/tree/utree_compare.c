@@ -3,7 +3,7 @@
 
 #define EPSILON 1e-12
 
-static void dealloc_graph_recursive(pll_unode_t *node)
+static void dealloc_graph_recursive(corax_unode_t *node)
 {
   if (node->label) free(node->label);
 
@@ -13,10 +13,10 @@ static void dealloc_graph_recursive(pll_unode_t *node)
     return;
   }
 
-  pll_unode_t *sibling = node->next;
+  corax_unode_t *sibling = node->next;
   while (node != sibling)
   {
-    pll_unode_t *cur_node = sibling;
+    corax_unode_t *cur_node = sibling;
     dealloc_graph_recursive(cur_node->back);
     sibling = sibling->next;
     free(cur_node);
@@ -26,7 +26,7 @@ static void dealloc_graph_recursive(pll_unode_t *node)
 }
 
 static int
-is_subsplit(pll_split_t child, pll_split_t parent, unsigned int split_len)
+is_subsplit(corax_split_t child, corax_split_t parent, unsigned int split_len)
 {
   unsigned int i;
   for (i = 0; i < split_len; ++i)
@@ -36,9 +36,9 @@ is_subsplit(pll_split_t child, pll_split_t parent, unsigned int split_len)
   return 1;
 }
 
-static void reverse_split(pll_split_t split, unsigned int tip_count)
+static void reverse_split(corax_split_t split, unsigned int tip_count)
 {
-  unsigned int split_size   = sizeof(pll_split_base_t) * 8;
+  unsigned int split_size   = sizeof(corax_split_base_t) * 8;
   unsigned int split_offset = tip_count % split_size;
   unsigned int split_len    = tip_count / split_size + (split_offset > 0);
   unsigned int i;
@@ -47,14 +47,14 @@ static void reverse_split(pll_split_t split, unsigned int tip_count)
 
   for (i = 0; i < split_len; ++i) split[i] = ~split[i];
 
-  pll_split_base_t mask = (1u << split_offset) - 1;
+  corax_split_base_t mask = (1u << split_offset) - 1;
   split[split_len - 1] &= mask;
 }
 
-static pll_split_t clone_split(const pll_split_t from, unsigned int split_len)
+static corax_split_t clone_split(const corax_split_t from, unsigned int split_len)
 {
-  pll_split_t to = (pll_split_t)calloc(split_len, sizeof(pll_split_base_t));
-  memcpy(to, from, sizeof(pll_split_base_t) * split_len);
+  corax_split_t to = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
+  memcpy(to, from, sizeof(corax_split_base_t) * split_len);
 
   return to;
 }
@@ -74,7 +74,7 @@ static int sort_by_weight(const void *a, const void *b)
 }
 
 static void mre(bitv_hashtable_t *  h,
-                pll_split_system_t *consensus,
+                corax_split_system_t *consensus,
                 unsigned int        split_len,
                 unsigned int        max_splits)
 {
@@ -111,7 +111,7 @@ static void mre(bitv_hashtable_t *  h,
     bitv_hash_entry_t *split_candidate = split_list[i];
     for (j = consensus->split_count; j > 0; --j)
     {
-      pll_split_t split_consolidated = consensus->splits[j - 1];
+      corax_split_t split_consolidated = consensus->splits[j - 1];
       if (!pllmod_utree_split_compatible(split_candidate->bit_vector,
                                          split_consolidated,
                                          split_len,
@@ -136,10 +136,10 @@ static void mre(bitv_hashtable_t *  h,
   return;
 }
 
-static int get_split_id(pll_split_t split, unsigned int split_len)
+static int get_split_id(corax_split_t split, unsigned int split_len)
 {
   unsigned int i, base_id, ctz;
-  unsigned int taxa_per_split = 8 * sizeof(pll_split_base_t);
+  unsigned int taxa_per_split = 8 * sizeof(corax_split_base_t);
   int          id             = -1;
   //  unsigned int n_bits = setbit_count(split, split_len);
   unsigned int n_bits =
@@ -147,7 +147,7 @@ static int get_split_id(pll_split_t split, unsigned int split_len)
 
   if (n_bits != 1)
   {
-    pll_set_error(PLL_ERROR_INVALID_SPLIT, "Invalid trivial split");
+    corax_set_error(CORAX_ERROR_INVALID_SPLIT, "Invalid trivial split");
     return -1;
   }
 
@@ -170,12 +170,12 @@ static int get_split_id(pll_split_t split, unsigned int split_len)
   return id;
 }
 
-static void build_tips_recurse(pll_unode_t *tree,
+static void build_tips_recurse(corax_unode_t *tree,
                                char *const *tip_labels,
                                unsigned int split_len)
 {
-  pll_consensus_data_t *data = (pll_consensus_data_t *)tree->data;
-  pll_unode_t *         next_root;
+  corax_consensus_data_t *data = (corax_consensus_data_t *)tree->data;
+  corax_unode_t *         next_root;
 
   next_root = tree->next;
   if (next_root == tree)
@@ -209,12 +209,12 @@ static void build_tips_recurse(pll_unode_t *tree,
   }
 }
 
-static pll_unode_t *find_splitnode_recurse(pll_split_t  split,
-                                           pll_unode_t *root,
+static corax_unode_t *find_splitnode_recurse(corax_split_t  split,
+                                           corax_unode_t *root,
                                            unsigned int split_len)
 {
-  pll_unode_t *         next_root, *ret_node;
-  pll_consensus_data_t *data = (pll_consensus_data_t *)root->data;
+  corax_unode_t *         next_root, *ret_node;
+  corax_consensus_data_t *data = (corax_consensus_data_t *)root->data;
 
   if (is_subsplit(split, data->split, split_len))
   {
@@ -235,15 +235,15 @@ static pll_unode_t *find_splitnode_recurse(pll_split_t  split,
   }
 }
 
-static void connect_consensus_node(pll_unode_t *parent,
-                                   pll_unode_t *child,
+static void connect_consensus_node(corax_unode_t *parent,
+                                   corax_unode_t *child,
                                    unsigned int split_len,
                                    int          auto_rearrange)
 {
-  pll_consensus_data_t *data_p, *data_c, *data_aux;
-  pll_unode_t *         new_node, *aux_node, *aux_node2;
-  data_p = (pll_consensus_data_t *)parent->data;
-  data_c = (pll_consensus_data_t *)child->data;
+  corax_consensus_data_t *data_p, *data_c, *data_aux;
+  corax_unode_t *         new_node, *aux_node, *aux_node2;
+  data_p = (corax_consensus_data_t *)parent->data;
+  data_c = (corax_consensus_data_t *)child->data;
 
   assert(is_subsplit(data_c->split, data_p->split, split_len));
   if (child->back)
@@ -260,7 +260,7 @@ static void connect_consensus_node(pll_unode_t *parent,
   }
   else
   {
-    new_node = (pll_unode_t *)malloc(sizeof(pll_unode_t));
+    new_node = (corax_unode_t *)malloc(sizeof(corax_unode_t));
   }
 
   if (auto_rearrange)
@@ -269,7 +269,7 @@ static void connect_consensus_node(pll_unode_t *parent,
     while (aux_node != parent)
     {
       aux_node2 = aux_node->next;
-      data_aux  = (pll_consensus_data_t *)aux_node->back->data;
+      data_aux  = (corax_consensus_data_t *)aux_node->back->data;
       if (is_subsplit(data_aux->split, data_c->split, split_len))
       { connect_consensus_node(child, aux_node->back, split_len, 0); }
       aux_node = aux_node2;
@@ -286,17 +286,17 @@ static void connect_consensus_node(pll_unode_t *parent,
   child->back    = new_node;
 }
 
-static pll_unode_t *create_consensus_node(pll_unode_t *parent,
-                                          pll_split_t  split,
+static corax_unode_t *create_consensus_node(corax_unode_t *parent,
+                                          corax_split_t  split,
                                           double       support,
                                           unsigned int split_len)
 {
-  pll_unode_t *         new_node = (pll_unode_t *)malloc(sizeof(pll_unode_t));
-  pll_consensus_data_t *data     = 0;
+  corax_unode_t *         new_node = (corax_unode_t *)malloc(sizeof(corax_unode_t));
+  corax_consensus_data_t *data     = 0;
 
   if (support > 0)
   {
-    data        = (pll_consensus_data_t *)malloc(sizeof(pll_consensus_data_t));
+    data        = (corax_consensus_data_t *)malloc(sizeof(corax_consensus_data_t));
     data->split = split;
     data->support = support;
   }
@@ -313,7 +313,7 @@ static pll_unode_t *create_consensus_node(pll_unode_t *parent,
   return new_node;
 }
 
-static void recursive_assign_indices(pll_unode_t * node,
+static void recursive_assign_indices(corax_unode_t * node,
                                      unsigned int *inner_clv_index,
                                      int *         inner_scaler_index,
                                      unsigned int *inner_node_index)
@@ -324,11 +324,11 @@ static void recursive_assign_indices(pll_unode_t * node,
   {
     node->clv_index     = node->node_index;
     node->pmatrix_index = node->node_index;
-    node->scaler_index  = PLL_SCALE_BUFFER_NONE;
+    node->scaler_index  = CORAX_SCALE_BUFFER_NONE;
     return;
   }
 
-  pll_unode_t *sibling = node->next;
+  corax_unode_t *sibling = node->next;
   while (sibling != node)
   {
     recursive_assign_indices(
@@ -357,23 +357,23 @@ static void recursive_assign_indices(pll_unode_t * node,
   *inner_node_index   = *inner_node_index + 3;
 }
 
-static void reset_template_indices(pll_unode_t *node, unsigned int tip_count)
+static void reset_template_indices(corax_unode_t *node, unsigned int tip_count)
 {
   unsigned int inner_clv_index    = tip_count;
   unsigned int inner_node_index   = tip_count;
   int          inner_scaler_index = 0;
 
-  if (PLL_UTREE_IS_TIP(node))
+  if (CORAX_UTREE_IS_TIP(node))
   {
     node = node->back;
-    assert(!PLL_UTREE_IS_TIP(node));
+    assert(!CORAX_UTREE_IS_TIP(node));
   }
 
   if (node->back)
     recursive_assign_indices(
         node->back, &inner_clv_index, &inner_scaler_index, &inner_node_index);
 
-  pll_unode_t *sibling = node->next;
+  corax_unode_t *sibling = node->next;
   while (sibling != node)
   {
     recursive_assign_indices(sibling->back,
@@ -403,23 +403,23 @@ static void reset_template_indices(pll_unode_t *node, unsigned int tip_count)
 
 static void consensus_data_destroy(void *data, int destroy_split)
 {
-  pll_consensus_data_t *cdata = (pll_consensus_data_t *)data;
+  corax_consensus_data_t *cdata = (corax_consensus_data_t *)data;
   if (destroy_split) free(cdata->split);
   free(cdata);
 }
 
-static void fill_consensus_recurse(pll_consensus_utree_t *consensus_tree,
-                                   pll_unode_t *          node,
+static void fill_consensus_recurse(corax_consensus_utree_t *consensus_tree,
+                                   corax_unode_t *          node,
                                    unsigned int *         cur_branch)
 {
   assert(consensus_tree);
   assert(cur_branch);
   assert(node);
 
-  pll_unode_t *child;
+  corax_unode_t *child;
   unsigned int max_degree = consensus_tree->tip_count;
 
-  if (PLL_UTREE_IS_TIP(node))
+  if (CORAX_UTREE_IS_TIP(node))
   {
     /* free tip data pointer */
     consensus_data_destroy(node->data, 1);
@@ -443,7 +443,7 @@ static void fill_consensus_recurse(pll_consensus_utree_t *consensus_tree,
   {
     memcpy(consensus_tree->branch_data + *cur_branch,
            node->data,
-           sizeof(pll_consensus_data_t));
+           sizeof(corax_consensus_data_t));
     consensus_data_destroy(node->data, 0);
 
     node->back->data = node->data = consensus_tree->branch_data + *cur_branch;
@@ -451,12 +451,12 @@ static void fill_consensus_recurse(pll_consensus_utree_t *consensus_tree,
   }
 }
 
-static void fill_consensus(pll_consensus_utree_t *consensus_tree)
+static void fill_consensus(corax_consensus_utree_t *consensus_tree)
 {
   assert(consensus_tree);
   assert(consensus_tree->tree);
 
-  pll_unode_t *root       = consensus_tree->tree;
+  corax_unode_t *root       = consensus_tree->tree;
   unsigned int cur_branch = 0;
 
   free(root->data);
@@ -464,7 +464,7 @@ static void fill_consensus(pll_consensus_utree_t *consensus_tree)
 
   unsigned int max_degree = consensus_tree->tip_count;
   fill_consensus_recurse(consensus_tree, root->back, &cur_branch);
-  pll_unode_t *child = root->next;
+  corax_unode_t *child = root->next;
   while (child != root)
   {
     /* prevent infinite loop */
@@ -483,23 +483,23 @@ static void fill_consensus(pll_consensus_utree_t *consensus_tree)
  * @param  t1 first tree
  * @param  t2 second tree
  *
- * @return PLL_SUCCESS if node indices are consistent,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if node indices are consistent,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_consistency_check(pll_utree_t *t1, pll_utree_t *t2)
+CORAX_EXPORT int pllmod_utree_consistency_check(corax_utree_t *t1, corax_utree_t *t2)
 {
   unsigned int  i;
   unsigned int  node_id;
-  int           retval = PLL_SUCCESS;
-  pll_unode_t **tipnodes;
+  int           retval = CORAX_SUCCESS;
+  corax_unode_t **tipnodes;
   char **       tipnames;
   unsigned int  tip_count;
 
   if (!t1 || !t2 || t1->tip_count != t2->tip_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
                   "Trees do not have the same number of tips\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   tipnodes  = t1->nodes;
@@ -508,9 +508,9 @@ PLL_EXPORT int pllmod_utree_consistency_check(pll_utree_t *t1, pll_utree_t *t2)
   tipnames = (char **)malloc(tip_count * sizeof(char *));
   if (!tipnames)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for tipnodes and tipnames\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* fill names table */
@@ -527,7 +527,7 @@ PLL_EXPORT int pllmod_utree_consistency_check(pll_utree_t *t1, pll_utree_t *t2)
     node_id = tipnodes[i]->node_index;
     if (strcmp(tipnames[node_id], tipnodes[i]->label))
     {
-      retval = PLL_FAILURE;
+      retval = CORAX_FAILURE;
       break;
     }
   }
@@ -543,23 +543,23 @@ PLL_EXPORT int pllmod_utree_consistency_check(pll_utree_t *t1, pll_utree_t *t2)
  * @param  t1 reference tree
  * @param  t2 second tree
  *
- * @return PLL_SUCCESS if the operation was applied correctly,
- *         PLL_FAILURE otherwise (check pll_errmsg for details)
+ * @return CORAX_SUCCESS if the operation was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-PLL_EXPORT int pllmod_utree_consistency_set(pll_utree_t *t1, pll_utree_t *t2)
+CORAX_EXPORT int pllmod_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t2)
 {
   unsigned int  i, j;
   unsigned int  node_id;
-  int           retval = PLL_SUCCESS, checkval;
-  pll_unode_t **tipnodes;
+  int           retval = CORAX_SUCCESS, checkval;
+  corax_unode_t **tipnodes;
   char **       tipnames;
   unsigned int  tip_count;
 
   if (!t1 || !t2 || t1->tip_count != t2->tip_count)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE,
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
                   "Trees do not have the same number of tips\n");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   tipnodes  = t1->nodes;
@@ -568,8 +568,8 @@ PLL_EXPORT int pllmod_utree_consistency_set(pll_utree_t *t1, pll_utree_t *t2)
   tipnames = (char **)malloc(tip_count * sizeof(char *));
   if (!tipnames)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for tipnames\n");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for tipnames\n");
+    return CORAX_FAILURE;
   }
 
   /* fill names table */
@@ -584,7 +584,7 @@ PLL_EXPORT int pllmod_utree_consistency_set(pll_utree_t *t1, pll_utree_t *t2)
   for (i = 0; i < tip_count; ++i)
   {
     // node_id = get_utree_node_id(tipnodes[i]);
-    pll_unode_t *tipnode = tipnodes[i];
+    corax_unode_t *tipnode = tipnodes[i];
     checkval             = 0;
     for (j = 0; j < tip_count; ++j)
     {
@@ -597,7 +597,7 @@ PLL_EXPORT int pllmod_utree_consistency_set(pll_utree_t *t1, pll_utree_t *t2)
     }
     if (!checkval)
     {
-      retval = PLL_FAILURE;
+      retval = CORAX_FAILURE;
       break;
     }
   }
@@ -606,18 +606,18 @@ PLL_EXPORT int pllmod_utree_consistency_set(pll_utree_t *t1, pll_utree_t *t2)
   return retval;
 }
 
-PLL_EXPORT unsigned int pllmod_utree_rf_distance(pll_unode_t *t1,
-                                                 pll_unode_t *t2,
+CORAX_EXPORT unsigned int pllmod_utree_rf_distance(corax_unode_t *t1,
+                                                 corax_unode_t *t2,
                                                  unsigned int tip_count)
 {
   unsigned int rf_distance;
 
-  /* reset pll_error */
-  pll_errno = 0;
+  /* reset corax_error */
+  corax_errno = 0;
 
   /* split both trees */
-  pll_split_t *s1 = pllmod_utree_split_create(t1, tip_count, NULL);
-  pll_split_t *s2 = pllmod_utree_split_create(t2, tip_count, NULL);
+  corax_split_t *s1 = pllmod_utree_split_create(t1, tip_count, NULL);
+  corax_split_t *s2 = pllmod_utree_split_create(t2, tip_count, NULL);
 
   /* compute distance */
   rf_distance = pllmod_utree_split_rf_distance(s1, s2, tip_count);
@@ -632,39 +632,39 @@ PLL_EXPORT unsigned int pllmod_utree_rf_distance(pll_unode_t *t1,
 
 /* Consensus */
 
-PLL_EXPORT pll_consensus_utree_t *
-           pllmod_utree_from_splits(const pll_split_system_t *split_system,
+CORAX_EXPORT corax_consensus_utree_t *
+           pllmod_utree_from_splits(const corax_split_system_t *split_system,
                                     unsigned int              tip_count,
                                     char *const *             tip_labels)
 {
-  const pll_split_t *    splits     = split_system->splits;
-  unsigned int           split_size = sizeof(pll_split_base_t) * 8;
+  const corax_split_t *    splits     = split_system->splits;
+  unsigned int           split_size = sizeof(corax_split_base_t) * 8;
   unsigned int           split_len  = bitv_length(tip_count);
   unsigned int           i;
-  pll_unode_t *          tree, *next_parent;
-  pll_consensus_utree_t *return_tree;
-  pll_split_t            rootsplit1, rootsplit2, next_split;
+  corax_unode_t *          tree, *next_parent;
+  corax_consensus_utree_t *return_tree;
+  corax_split_t            rootsplit1, rootsplit2, next_split;
   double *               support_values;
-  pll_split_t *          all_splits;
+  corax_split_t *          all_splits;
 
-  return_tree = (pll_consensus_utree_t *)malloc(sizeof(pll_consensus_utree_t));
+  return_tree = (corax_consensus_utree_t *)malloc(sizeof(corax_consensus_utree_t));
 
   if (!return_tree)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for consensus tree!");
     return NULL;
   }
 
   return_tree->tip_count    = tip_count;
   return_tree->branch_count = split_system->split_count;
-  return_tree->branch_data  = (pll_consensus_data_t *)malloc(
-      return_tree->branch_count * sizeof(pll_consensus_data_t));
+  return_tree->branch_data  = (corax_consensus_data_t *)malloc(
+      return_tree->branch_count * sizeof(corax_consensus_data_t));
 
   if (!return_tree->branch_data)
   {
     free(return_tree);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for consensus tree!");
     return NULL;
   }
@@ -672,7 +672,7 @@ PLL_EXPORT pll_consensus_utree_t *
   if (split_system->split_count == 0)
   {
     // build star tree
-    rootsplit1    = (pll_split_t)calloc(split_len, sizeof(pll_split_base_t));
+    rootsplit1    = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
     rootsplit1[0] = 1;
     rootsplit2    = clone_split(rootsplit1, split_len);
     reverse_split(rootsplit1, tip_count);
@@ -684,9 +684,9 @@ PLL_EXPORT pll_consensus_utree_t *
     for (i = 1; i < tip_count; ++i)
     {
       unsigned int split_id = i / split_size;
-      next_split = (pll_split_t)calloc(split_len, sizeof(pll_split_base_t));
+      next_split = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
       next_split[split_id] = (1 << (i % split_size));
-      pll_unode_t *next_n =
+      corax_unode_t *next_n =
           create_consensus_node(tree, next_split, 1.0, split_len);
       assert(next_n);
     }
@@ -695,18 +695,18 @@ PLL_EXPORT pll_consensus_utree_t *
   }
   else
   {
-    all_splits = (pll_split_t *)malloc((split_system->split_count + tip_count)
-                                       * sizeof(pll_split_t));
+    all_splits = (corax_split_t *)malloc((split_system->split_count + tip_count)
+                                       * sizeof(corax_split_t));
     support_values = (double *)malloc((split_system->split_count + tip_count)
                                       * sizeof(double));
-    memcpy(all_splits, splits, split_system->split_count * sizeof(pll_split_t));
+    memcpy(all_splits, splits, split_system->split_count * sizeof(corax_split_t));
 
     /* fill trivial splits */
     for (i = 0; i < tip_count; ++i)
     {
       support_values[split_system->split_count + i] = 1.0;
       all_splits[split_system->split_count + i] =
-          (pll_split_t)calloc(split_len, sizeof(pll_split_base_t));
+          (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
       {
         unsigned int split_id = i / split_size;
         all_splits[split_system->split_count + i][split_id] =
@@ -756,7 +756,7 @@ PLL_EXPORT pll_consensus_utree_t *
           next_parent = tree->back;
         else
         {
-          pll_set_error(PLL_ERROR_INVALID_SPLIT, "Splits are incompatible");
+          corax_set_error(CORAX_ERROR_INVALID_SPLIT, "Splits are incompatible");
           free(return_tree->branch_data);
           free(return_tree);
           return_tree = NULL;
@@ -792,28 +792,28 @@ PLL_EXPORT pll_consensus_utree_t *
   return return_tree;
 }
 
-PLL_EXPORT pll_split_system_t *pllmod_utree_split_consensus(
+CORAX_EXPORT corax_split_system_t *pllmod_utree_split_consensus(
     bitv_hashtable_t *splits_hash, unsigned int tip_count, double threshold)
 {
   unsigned int        i;
   unsigned int        max_splits = tip_count - 3;
   unsigned int        split_len  = bitv_length(tip_count);
-  pll_split_system_t *split_system;
+  corax_split_system_t *split_system;
   double              min_support = threshold;
   double              max_support = 1.0;
-  double              thr_support = PLL_MAX(min_support, .5);
+  double              thr_support = CORAX_MAX(min_support, .5);
   if (thr_support == max_support) thr_support -= EPSILON;
 
-  split_system = (pll_split_system_t *)calloc(1, sizeof(pll_split_system_t));
+  split_system = (corax_split_system_t *)calloc(1, sizeof(corax_split_system_t));
 
   if (!split_system)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for split system!");
     return NULL;
   }
 
-  split_system->splits = (pll_split_t *)calloc(max_splits, sizeof(pll_split_t));
+  split_system->splits = (corax_split_t *)calloc(max_splits, sizeof(corax_split_t));
   split_system->support     = (double *)calloc(max_splits, sizeof(double));
   split_system->split_count = 0;
   split_system->max_support = max_support;
@@ -823,7 +823,7 @@ PLL_EXPORT pll_split_system_t *pllmod_utree_split_consensus(
     free(split_system);
     if (split_system->splits) free(split_system->splits);
     if (split_system->support) free(split_system->support);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for split system!");
     return NULL;
   }
@@ -880,28 +880,28 @@ PLL_EXPORT pll_split_system_t *pllmod_utree_split_consensus(
  * @param  tree_count       number of trees
  * @return                  consensus unrooted tree structure
  */
-PLL_EXPORT pll_consensus_utree_t *
-           pllmod_utree_weight_consensus(pll_utree_t *const *trees,
+CORAX_EXPORT corax_consensus_utree_t *
+           pllmod_utree_weight_consensus(corax_utree_t *const *trees,
                                          const double *      weights,
                                          double              threshold,
                                          unsigned int        tree_count)
 {
 
-  const pll_utree_t *reference_tree =
+  const corax_utree_t *reference_tree =
       trees[0]; /* reference tree for consistency */
-  pll_consensus_utree_t *consensus_tree = NULL; /* final consensus tree */
-  pll_unode_t **         tipnodes;              /* tips from reference tree */
+  corax_consensus_utree_t *consensus_tree = NULL; /* final consensus tree */
+  corax_unode_t **         tipnodes;              /* tips from reference tree */
   bitv_hashtable_t *     splits_hash      = NULL;
   string_hashtable_t *   string_hashtable = NULL;
-  pll_split_t *          tree_splits;
+  corax_split_t *          tree_splits;
   unsigned int           i, j, tip_count = reference_tree->tip_count,
                      n_splits = tip_count - 3;
 
   /* validate threshold */
   if (threshold > 1 || threshold < 0)
   {
-    pll_set_error(
-        PLL_ERROR_INVALID_THRESHOLD,
+    corax_set_error(
+        CORAX_ERROR_INVALID_THRESHOLD,
         "Invalid consensus threshold (%f). Should be in range [0.0,1.0]",
         threshold);
     return NULL;
@@ -920,7 +920,7 @@ PLL_EXPORT pll_consensus_utree_t *
   }
   if (fabs(1.0 - sum_weights) > EPSILON)
   {
-    pll_set_error(PLL_ERROR_INVALID_TREE, "Invalid tree weights", threshold);
+    corax_set_error(CORAX_ERROR_INVALID_TREE, "Invalid tree weights", threshold);
     return NULL;
   }
 
@@ -938,11 +938,11 @@ PLL_EXPORT pll_consensus_utree_t *
   /* create hashtable */
   splits_hash = hash_init(tip_count * 10, tip_count);
 
-  pll_errno = 0;
+  corax_errno = 0;
 
   for (i = 0; i < tree_count; ++i)
   {
-    const pll_utree_t *current_tree = trees[i];
+    const corax_utree_t *current_tree = trees[i];
     if (current_tree->tip_count != tip_count)
     {
       /*TODO: error */
@@ -966,12 +966,12 @@ PLL_EXPORT pll_consensus_utree_t *
     pllmod_utree_split_destroy(tree_splits);
   }
 
-  if (pll_errno)
+  if (corax_errno)
   {
     /* cleanup and spread error */
-    char *aux_errmsg = (char *)malloc(strlen(pll_errmsg) + 1);
-    strcpy(aux_errmsg, pll_errmsg);
-    pll_set_error(pll_errno, "%s [tree #%u]", aux_errmsg, i);
+    char *aux_errmsg = (char *)malloc(strlen(corax_errmsg) + 1);
+    strcpy(aux_errmsg, corax_errmsg);
+    corax_set_error(corax_errno, "%s [tree #%u]", aux_errmsg, i);
     free(aux_errmsg);
     string_hash_destroy(string_hashtable);
     hash_destroy(splits_hash);
@@ -979,7 +979,7 @@ PLL_EXPORT pll_consensus_utree_t *
   }
 
   /* build final split system */
-  pll_split_system_t *split_system =
+  corax_split_system_t *split_system =
       pllmod_utree_split_consensus(splits_hash, tip_count, threshold);
 
   /* buld tree from splits */
@@ -1006,7 +1006,7 @@ PLL_EXPORT pll_consensus_utree_t *
  */
 #if 0
 
-static int cb_set_indices(pll_unode_t * node, void *data)
+static int cb_set_indices(corax_unode_t * node, void *data)
 {
   string_hashtable_t * string_hashtable = (string_hashtable_t *) data;
 
@@ -1023,7 +1023,7 @@ static int cb_set_indices(pll_unode_t * node, void *data)
 
 #define FCHUNK_LEN 2000
 
-static pll_split_t * read_splits(FILE * file,
+static corax_split_t * read_splits(FILE * file,
                                  int * n_chunks,
                                  unsigned int * tip_count,
                                  string_hashtable_t * string_hashtable)
@@ -1032,7 +1032,7 @@ static pll_split_t * read_splits(FILE * file,
   char * tree_str = (char *) malloc((size_t)line_size);
   char * tree_str_ptr = tree_str;
   char * read;
-  pll_split_t * splits;
+  corax_split_t * splits;
 
   while ((read = fgets(tree_str_ptr, line_size, file)) &&
          tree_str_ptr[strlen(tree_str_ptr) - 1] != '\n')
@@ -1050,7 +1050,7 @@ static pll_split_t * read_splits(FILE * file,
   }
   else
   {
-    splits = pll_utree_split_newick_string(tree_str,
+    splits = corax_utree_split_newick_string(tree_str,
                                              *tip_count,
                                              string_hashtable);
   }
@@ -1059,7 +1059,7 @@ static pll_split_t * read_splits(FILE * file,
   return splits;
 }
 
-static pll_utree_t * read_tree(FILE * file,
+static corax_utree_t * read_tree(FILE * file,
                                int * n_chunks,
                                unsigned int * tip_count,
                                string_hashtable_t * string_hashtable)
@@ -1068,8 +1068,8 @@ static pll_utree_t * read_tree(FILE * file,
   char * tree_str = (char *) malloc((size_t)line_size);
   char * tree_str_ptr = tree_str;
   char * read;
-  pll_utree_t * utree;
-  pll_unode_t * root;
+  corax_utree_t * utree;
+  corax_unode_t * root;
 
   while ((read = fgets(tree_str_ptr, line_size, file)) &&
          tree_str_ptr[strlen(tree_str_ptr) - 1] != '\n')
@@ -1087,7 +1087,7 @@ static pll_utree_t * read_tree(FILE * file,
   }
   else
   {
-    utree = pll_utree_parse_newick_string(tree_str);
+    utree = corax_utree_parse_newick_string(tree_str);
     if (!utree)
     {
       return NULL;
@@ -1097,16 +1097,16 @@ static pll_utree_t * read_tree(FILE * file,
 
     if (root && string_hashtable)
     {
-      if (!pll_utree_traverse_apply(root,
+      if (!corax_utree_traverse_apply(root,
                                        NULL,
                                        NULL,
                                        &cb_set_indices,
                                        (void *)string_hashtable))
       {
-        pll_set_error(
-          PLL_ERROR_INVALID_TREE,
+        corax_set_error(
+          CORAX_ERROR_INVALID_TREE,
           "Cannot match labels");
-        pll_utree_destroy(utree, NULL);
+        corax_utree_destroy(utree, NULL);
         utree = NULL;
       }
     }
@@ -1141,19 +1141,19 @@ static FILE *get_number_of_trees(unsigned int *tree_count,
   return f;
 }
 
-PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
+CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
                                                 const char * trees_filename,
                                                 double threshold,
                                                 unsigned int * _tree_count)
 {
   FILE * trees_file;
-  pll_utree_t * reference_tree = NULL; /* reference tree for consistency */
-  pll_consensus_utree_t * consensus_tree = NULL; /* final consensus tree */
-  pll_unode_t ** tipnodes;             /* tips from reference tree */
+  corax_utree_t * reference_tree = NULL; /* reference tree for consistency */
+  corax_consensus_utree_t * consensus_tree = NULL; /* final consensus tree */
+  corax_unode_t ** tipnodes;             /* tips from reference tree */
   bitv_hashtable_t * splits_hash = NULL;
   string_hashtable_t * string_hashtable = NULL;
   int  n_chunks = 1; /* chunks for reading newick trees */
-  pll_split_t * tree_splits;
+  corax_split_t * tree_splits;
   unsigned int i,
                tip_count,
                n_splits,
@@ -1164,8 +1164,8 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
   /* validate threshold */
   if (threshold > 1 || threshold < 0)
   {
-    pll_set_error(
-      PLL_ERROR_INVALID_THRESHOLD,
+    corax_set_error(
+      CORAX_ERROR_INVALID_THRESHOLD,
       "Invalid consensus threshold (%f). Should be in range [0.0,1.0]",
       threshold);
     return NULL;
@@ -1174,7 +1174,7 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
   /* open file */
   if (!(trees_file = get_number_of_trees(&tree_count, trees_filename)))
   {
-    pll_set_error(PLL_ERROR_FILE_OPEN, "Cannot open trees file" );
+    corax_set_error(CORAX_ERROR_FILE_OPEN, "Cannot open trees file" );
     return NULL;
   }
 
@@ -1188,7 +1188,7 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
 
   if(!reference_tree)
   {
-    assert(pll_errno);
+    assert(corax_errno);
     fclose(trees_file);
     return NULL;
   }
@@ -1208,7 +1208,7 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
   /* create hashtable */
   splits_hash = hash_init(tip_count * 10, tip_count);
 
-  pll_errno = 0;
+  corax_errno = 0;
   current_tree_index = 1;
   n_splits = tip_count - 3;
 
@@ -1241,21 +1241,21 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
   }
   fclose(trees_file);
 
-  if (pll_errno)
+  if (corax_errno)
   {
     /* cleanup and spread error */
-    char * aux_errmsg = (char *) malloc(strlen(pll_errmsg) + 1);
-    strcpy(aux_errmsg, pll_errmsg);
-    pll_set_error(pll_errno, "%s [tree #%u]", aux_errmsg, current_tree_index);
+    char * aux_errmsg = (char *) malloc(strlen(corax_errmsg) + 1);
+    strcpy(aux_errmsg, corax_errmsg);
+    corax_set_error(corax_errno, "%s [tree #%u]", aux_errmsg, current_tree_index);
     free(aux_errmsg);
     string_hash_destroy(string_hashtable);
     hash_destroy(splits_hash);
-    pll_utree_destroy(reference_tree, NULL);
+    corax_utree_destroy(reference_tree, NULL);
     return NULL;
   }
 
   /* build final split system */
-  pll_split_system_t * split_system = pllmod_utree_split_consensus(splits_hash,
+  corax_split_system_t * split_system = pllmod_utree_split_consensus(splits_hash,
                                                                    tip_count,
                                                                    threshold);
 
@@ -1267,15 +1267,15 @@ PLL_EXPORT pll_consensus_utree_t * pllmod_utree_consensus(
   /* cleanup */
   string_hash_destroy(string_hashtable);
   hash_destroy(splits_hash);
-  pll_utree_destroy(reference_tree, NULL);
+  corax_utree_destroy(reference_tree, NULL);
   pllmod_utree_split_system_destroy(split_system);
 
   return consensus_tree;
 }
 #endif
 
-PLL_EXPORT void
-pllmod_utree_split_system_destroy(pll_split_system_t *split_system)
+CORAX_EXPORT void
+pllmod_utree_split_system_destroy(corax_split_system_t *split_system)
 {
   unsigned int i;
 
@@ -1285,7 +1285,7 @@ pllmod_utree_split_system_destroy(pll_split_system_t *split_system)
   free(split_system);
 }
 
-PLL_EXPORT void pllmod_utree_consensus_destroy(pll_consensus_utree_t *tree)
+CORAX_EXPORT void pllmod_utree_consensus_destroy(corax_consensus_utree_t *tree)
 {
   unsigned int i;
 

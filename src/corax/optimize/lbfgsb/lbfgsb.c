@@ -227,7 +227,7 @@ int setulb (int *n, int *m, double *x, double *l, double *u, int *nbd,
   /* assert that the lower bounds are greater or equal than the LBFGS ERROR */
   int i;
   for (i = 0; i < *n; i++)
-    assert(!(nbd[i]==1 || nbd[i]==2) || l[i]>=PLL_LBFGSB_ERROR);
+    assert(!(nbd[i]==1 || nbd[i]==2) || l[i]>=CORAX_LBFGSB_ERROR);
 #endif
 
   /* -jlm-jn */
@@ -406,7 +406,7 @@ int mainlb (int *n, int *m, double *x, double *l, double *u, int *nbd,
   /* Function Body */
   if (*task == START)
   {
-    epsmch = PLL_LBFGSB_DBL_EPSILON;
+    epsmch = CORAX_LBFGSB_DBL_EPSILON;
     timer (&time1);
     /* Initialize counters and scalars when task='START'. */
     /* for the limited memory BFGS matrices: */

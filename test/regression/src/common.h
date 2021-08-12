@@ -23,7 +23,7 @@
 
 #include "corax/corax.h"
 
-extern const pll_state_t odd5_map[256];
+extern const corax_state_t odd5_map[256];
 
 /* parse attributes from the arguments */
 unsigned int get_attributes(int argc, char **argv);
@@ -31,26 +31,26 @@ unsigned int get_attributes(int argc, char **argv);
 /* skip current test */
 void         skip_test();
 
-pll_partition_t *parse_msa(const char * filename,
+corax_partition_t *parse_msa(const char * filename,
                            unsigned int states,
                            unsigned int rate_cats,
                            unsigned int rate_matrices,
-                           pll_utree_t *tree,
+                           corax_utree_t *tree,
                            unsigned int attributes);
 
-pll_partition_t *parse_msa_reduced(const char * filename,
+corax_partition_t *parse_msa_reduced(const char * filename,
                                    unsigned int states,
                                    unsigned int rate_cats,
                                    unsigned int rate_matrices,
-                                   pll_utree_t *tree,
+                                   corax_utree_t *tree,
                                    unsigned int attributes,
                                    int max_sites);
 
 /* callback function for traverse the utree */
-int              cb_full_traversal(pll_unode_t *node);
+int              cb_full_traversal(corax_unode_t *node);
 
 /* displays a tree */
-void show_tree (pll_unode_t * tree, int SHOW_ASCII_TREE);
+void show_tree (corax_unode_t * tree, int SHOW_ASCII_TREE);
 
 /* print error and exit */
 void  fatal(const char *format, ...) __attribute__((noreturn));

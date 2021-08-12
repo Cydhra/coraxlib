@@ -74,7 +74,7 @@
 #define PLLMOD_OPT_MAX_SUBST_RATE 1000.
 #define PLLMOD_OPT_MIN_FREQ 1.0e-3
 #define PLLMOD_OPT_MAX_FREQ 100.
-#define PLLMOD_OPT_MIN_ALPHA 0.0201 //+ PLL_LBFGSB_ERROR
+#define PLLMOD_OPT_MIN_ALPHA 0.0201 //+ CORAX_LBFGSB_ERROR
 #define PLLMOD_OPT_MAX_ALPHA 100.
 #define PLLMOD_OPT_MIN_PINV 0
 #define PLLMOD_OPT_MAX_PINV 0.99
@@ -116,8 +116,8 @@
  * high level optimization functions (L-BFGS-B + Brent). */
 typedef struct
 {
-  pll_partition_t *   partition;
-  pll_operation_t *   operations;
+  corax_partition_t *   partition;
+  corax_operation_t *   operations;
   double *            branch_lengths;
   unsigned int *      matrix_indices;
   int                 rooted;
@@ -141,11 +141,11 @@ typedef struct
 
   char   __padding__[4];
   double alpha_value;
-} pll_likelihood_info_t;
+} corax_likelihood_info_t;
 
 typedef struct
 {
-  pll_likelihood_info_t lk_params;
+  corax_likelihood_info_t lk_params;
   unsigned int          highest_freq_state;
   unsigned int          highest_weight_state;
   // const unsigned int * params_indices;     /* indices according to rate cats
@@ -157,14 +157,14 @@ typedef struct
   double       pgtol;
 
   double *sumtable;
-} pll_optimize_options_t;
+} corax_optimize_options_t;
 
 /******************************************************************************/
 
 /* functions in newtom.c */
 
 /* core Newton-Raphson optimization function (multiple variables) */
-PLL_EXPORT int pllmod_opt_minimize_newton_multi(
+CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
     unsigned int xnum,
     double       xmin,
     double *     xguess,
@@ -176,7 +176,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
     void(deriv_func)(void *, double *, double *, double *));
 
 /* core Newton-Raphson optimization function */
-PLL_EXPORT double pllmod_opt_minimize_newton(
+CORAX_EXPORT double pllmod_opt_minimize_newton(
     double       xmin,
     double       xguess,
     double       xmax,
@@ -187,7 +187,7 @@ PLL_EXPORT double pllmod_opt_minimize_newton(
 /* functions in bfgs.c */
 
 /* core L-BFGS-B optimization function */
-PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
+CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
                                              double *     xmin,
                                              double *     xmax,
                                              int *        bound,
@@ -198,7 +198,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
                                              double (*target_funk)(void *,
                                                                    double *));
 
-PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
+CORAX_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
     unsigned int  xnum,
     double **     x,
     double **     xmin,
@@ -214,7 +214,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
 /* functions in brent.c */
 
 /* core Brent optimization function */
-PLL_EXPORT double pllmod_opt_minimize_brent(double  xmin,
+CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
                                             double  xguess,
                                             double  xmax,
                                             double  xtol,
@@ -224,7 +224,7 @@ PLL_EXPORT double pllmod_opt_minimize_brent(double  xmin,
                                             double (*target_funk)(void *,
                                                                   double));
 
-PLL_EXPORT int pllmod_opt_minimize_brent_multi(
+CORAX_EXPORT int pllmod_opt_minimize_brent_multi(
     unsigned int xnum,
     int *        opt_mask,
     double *     xmin,
@@ -241,7 +241,7 @@ PLL_EXPORT int pllmod_opt_minimize_brent_multi(
 /* functions in em.c */
 
 /* core Expectation-Maximization (EM) function */
-PLL_EXPORT void
+CORAX_EXPORT void
 pllmod_opt_minimize_em(double *      w,
                        unsigned int  w_count,
                        double *      sitecat_lh,
@@ -252,15 +252,15 @@ pllmod_opt_minimize_em(double *      w,
 
 /* functions in opt_generic.c */
 
-PLL_EXPORT double
-pllmod_opt_optimize_onedim(pll_optimize_options_t *p, double min, double max);
+CORAX_EXPORT double
+pllmod_opt_optimize_onedim(corax_optimize_options_t *p, double min, double max);
 
-PLL_EXPORT double pllmod_opt_optimize_multidim(pll_optimize_options_t *p,
+CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *p,
                                                double *                umin,
                                                double *                umax);
 
-PLL_EXPORT double pllmod_opt_compute_lk(pll_partition_t *   partition,
-                                        pll_unode_t *       tree,
+CORAX_EXPORT double pllmod_opt_compute_lk(corax_partition_t *   partition,
+                                        corax_unode_t *       tree,
                                         const unsigned int *params_indices,
                                         int                 update_pmatrices,
                                         int                 update_partials);

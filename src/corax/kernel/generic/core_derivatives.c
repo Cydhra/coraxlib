@@ -22,8 +22,8 @@
 #include "corax/corax.h"
 #include <limits.h>
 
-PLL_EXPORT int
-pll_core_update_sumtable_repeats(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_repeats(unsigned int        states,
                                  unsigned int        sites,
                                  unsigned int        parent_sites,
                                  unsigned int        rate_cats,
@@ -59,37 +59,37 @@ pll_core_update_sumtable_repeats(unsigned int        states,
                               unsigned int        inv,
                               unsigned int        attrib) = 0x0;
   unsigned int use_bclv = (bclv_buffer && (parent_sites < (sites * 2) / 3));
-  core_update_sumtable  = pll_core_update_sumtable_repeats_generic;
+  core_update_sumtable  = corax_core_update_sumtable_repeats_generic;
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
-    core_update_sumtable = pll_core_update_sumtable_repeats_generic_avx;
+    core_update_sumtable = corax_core_update_sumtable_repeats_generic_avx;
     if (states == 4)
     {
       if (use_bclv)
-        core_update_sumtable = pll_core_update_sumtable_repeatsbclv_4x4_avx;
+        core_update_sumtable = corax_core_update_sumtable_repeatsbclv_4x4_avx;
       else
-        core_update_sumtable = pll_core_update_sumtable_repeats_4x4_avx;
+        core_update_sumtable = corax_core_update_sumtable_repeats_4x4_avx;
     }
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
-    core_update_sumtable = pll_core_update_sumtable_repeats_generic_sse;
+    core_update_sumtable = corax_core_update_sumtable_repeats_generic_sse;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
-    core_update_sumtable = pll_core_update_sumtable_repeats_generic_avx2;
+    core_update_sumtable = corax_core_update_sumtable_repeats_generic_avx2;
     if (states == 4)
     {
       // avx is good enough
       if (use_bclv)
-        core_update_sumtable = pll_core_update_sumtable_repeatsbclv_4x4_avx;
+        core_update_sumtable = corax_core_update_sumtable_repeatsbclv_4x4_avx;
       else
-        core_update_sumtable = pll_core_update_sumtable_repeats_4x4_avx;
+        core_update_sumtable = corax_core_update_sumtable_repeats_4x4_avx;
     }
   }
 #endif
@@ -111,11 +111,11 @@ pll_core_update_sumtable_repeats(unsigned int        states,
                               bclv_buffer,
                               inv,
                               attrib);
-  return PLL_FAILURE;
+  return CORAX_FAILURE;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_ti_4x4(unsigned int         sites,
+CORAX_EXPORT int
+corax_core_update_sumtable_ti_4x4(unsigned int         sites,
                                 unsigned int         rate_cats,
                                 const double *       parent_clv,
                                 const unsigned char *left_tipchars,
@@ -141,18 +141,18 @@ pll_core_update_sumtable_ti_4x4(unsigned int         sites,
 
   unsigned int  min_scaler;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -175,7 +175,7 @@ pll_core_update_sumtable_ti_4x4(unsigned int         sites,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -210,11 +210,11 @@ pll_core_update_sumtable_ti_4x4(unsigned int         sites,
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_sumtable_repeats_generic(unsigned int        states,
+CORAX_EXPORT int
+corax_core_update_sumtable_repeats_generic(unsigned int        states,
                                          unsigned int        sites,
                                          unsigned int        parent_sites,
                                          unsigned int        rate_cats,
@@ -245,18 +245,18 @@ pll_core_update_sumtable_repeats_generic(unsigned int        states,
   unsigned int  span_padded   = states_padded * rate_cats;
   unsigned int  min_scaler;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -264,8 +264,8 @@ pll_core_update_sumtable_repeats_generic(unsigned int        states,
   /* build sumtable */
   for (n = 0; n < sites; n++)
   {
-    unsigned int  pid    = PLL_GET_ID(parent_site_id, n);
-    unsigned int  cid    = PLL_GET_ID(child_site_id, n);
+    unsigned int  pid    = CORAX_GET_ID(parent_site_id, n);
+    unsigned int  cid    = CORAX_GET_ID(child_site_id, n);
     const double *t_clvp = &clvp[pid * span_padded];
     const double *t_clvc = &clvc[cid * span_padded];
     if (per_rate_scaling)
@@ -285,7 +285,7 @@ pll_core_update_sumtable_repeats_generic(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -318,9 +318,9 @@ pll_core_update_sumtable_repeats_generic(unsigned int        states,
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
-PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
+CORAX_EXPORT int corax_core_update_sumtable_ii(unsigned int        states,
                                            unsigned int        sites,
                                            unsigned int        rate_cats,
                                            const double *      parent_clv,
@@ -347,9 +347,9 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
-    return pll_core_update_sumtable_ii_sse(states,
+    return corax_core_update_sumtable_ii_sse(states,
                                            sites,
                                            rate_cats,
                                            parent_clv,
@@ -364,9 +364,9 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
-    return pll_core_update_sumtable_ii_avx(states,
+    return corax_core_update_sumtable_ii_avx(states,
                                            sites,
                                            rate_cats,
                                            parent_clv,
@@ -381,9 +381,9 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
-    return pll_core_update_sumtable_ii_avx2(states,
+    return corax_core_update_sumtable_ii_avx2(states,
                                             sites,
                                             rate_cats,
                                             parent_clv,
@@ -400,18 +400,18 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
 
   unsigned int  min_scaler;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -436,7 +436,7 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -469,10 +469,10 @@ PLL_EXPORT int pll_core_update_sumtable_ii(unsigned int        states,
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
+CORAX_EXPORT int corax_core_update_sumtable_ti(unsigned int         states,
                                            unsigned int         sites,
                                            unsigned int         rate_cats,
                                            const double *       parent_clv,
@@ -481,13 +481,13 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
                                            double *const *      eigenvecs,
                                            double *const *      inv_eigenvecs,
                                            double *const *      freqs,
-                                           const pll_state_t *  tipmap,
+                                           const corax_state_t *  tipmap,
                                            unsigned int         tipmap_size,
                                            double *             sumtable,
                                            unsigned int         attrib)
 {
   unsigned int i, j, k, n;
-  pll_state_t  tipstate;
+  corax_state_t  tipstate;
   double       lefterm  = 0;
   double       righterm = 0;
 
@@ -500,9 +500,9 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
-    return pll_core_update_sumtable_ti_sse(states,
+    return corax_core_update_sumtable_ti_sse(states,
                                            sites,
                                            rate_cats,
                                            parent_clv,
@@ -517,9 +517,9 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
-    return pll_core_update_sumtable_ti_avx(states,
+    return corax_core_update_sumtable_ti_avx(states,
                                            sites,
                                            rate_cats,
                                            parent_clv,
@@ -535,9 +535,9 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
-    return pll_core_update_sumtable_ti_avx2(states,
+    return corax_core_update_sumtable_ti_avx2(states,
                                             sites,
                                             rate_cats,
                                             parent_clv,
@@ -556,7 +556,7 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
   /* non-vectorized version, special case for 4 states */
   if (states == 4)
   {
-    return pll_core_update_sumtable_ti_4x4(sites,
+    return corax_core_update_sumtable_ti_4x4(sites,
                                            rate_cats,
                                            parent_clv,
                                            left_tipchars,
@@ -570,18 +570,18 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
 
   unsigned int  min_scaler;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling)
   {
     rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
 
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -604,7 +604,7 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - min_scaler, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - min_scaler, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
 
@@ -638,7 +638,7 @@ PLL_EXPORT int pll_core_update_sumtable_ti(unsigned int         states,
 
   if (rate_scalings) free(rate_scalings);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static void core_site_likelihood_derivatives(unsigned int   states,
@@ -694,8 +694,8 @@ static void core_site_likelihood_derivatives(unsigned int   states,
   }
 }
 
-PLL_EXPORT int
-pll_core_likelihood_derivatives(unsigned int        states,
+CORAX_EXPORT int
+corax_core_likelihood_derivatives(unsigned int        states,
                                 unsigned int        sites,
                                 unsigned int        rate_cats,
                                 const double *      rate_weights,
@@ -734,7 +734,7 @@ pll_core_likelihood_derivatives(unsigned int        states,
 
   /* For Stamatakis correction, the likelihood derivatives are computed in
      the usual way for the additional per-state sites. */
-  if ((attrib & PLL_ATTRIB_AB_MASK) == PLL_ATTRIB_AB_STAMATAKIS)
+  if ((attrib & CORAX_ATTRIB_AB_MASK) == CORAX_ATTRIB_AB_STAMATAKIS)
   {
     ef_sites = sites + states;
   }
@@ -746,12 +746,12 @@ pll_core_likelihood_derivatives(unsigned int        states,
   *d_f  = 0.0;
   *dd_f = 0.0;
 
-  diagptable = (double *)pll_aligned_alloc(
-      rate_cats * states * 4 * sizeof(double), PLL_ALIGNMENT_AVX);
+  diagptable = (double *)corax_aligned_alloc(
+      rate_cats * states * 4 * sizeof(double), CORAX_ALIGNMENT_AVX);
   if (!diagptable)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
+    return CORAX_FAILURE;
   }
 
   /* pre-compute the derivatives of the P matrix for all discrete GAMMA rates */
@@ -773,18 +773,18 @@ pll_core_likelihood_derivatives(unsigned int        states,
 
 // SSE3 vectorization in missing as of now
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
     states_padded = (states + 1) & 0xFFFFFFFE;
   }
 #endif
 
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
     states_padded = (states + 3) & 0xFFFFFFFC;
 
-    pll_core_likelihood_derivatives_avx2(states,
+    corax_core_likelihood_derivatives_avx2(states,
                                          states_padded,
                                          rate_cats,
                                          ef_sites,
@@ -801,11 +801,11 @@ pll_core_likelihood_derivatives(unsigned int        states,
   else
 #endif
 #ifdef HAVE_AVX
-      if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+      if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
     states_padded = (states + 3) & 0xFFFFFFFC;
 
-    pll_core_likelihood_derivatives_avx(states,
+    corax_core_likelihood_derivatives_avx(states,
                                         states_padded,
                                         rate_cats,
                                         ef_sites,
@@ -849,14 +849,14 @@ pll_core_likelihood_derivatives(unsigned int        states,
   }
 
   /* account for ascertainment bias correction */
-  if (attrib & PLL_ATTRIB_AB_MASK)
+  if (attrib & CORAX_ATTRIB_AB_MASK)
   {
     double       asc_Lk[3] = {0.0, 0.0, 0.0};
     unsigned int sum_w_inv = 0;
     double       asc_scaling;
-    int          asc_bias_type = attrib & PLL_ATTRIB_AB_MASK;
+    int          asc_bias_type = attrib & CORAX_ATTRIB_AB_MASK;
 
-    if (asc_bias_type != PLL_ATTRIB_AB_STAMATAKIS)
+    if (asc_bias_type != CORAX_ATTRIB_AB_STAMATAKIS)
     {
       /* check that no additional sites have been evaluated */
       assert(ef_sites == sites);
@@ -880,7 +880,7 @@ pll_core_likelihood_derivatives(unsigned int        states,
         /* apply scaling */
         scale_factors = (parent_scaler) ? parent_scaler[parent_sites + n] : 0;
         scale_factors += (child_scaler) ? child_scaler[child_ids + n] : 0;
-        asc_scaling = pow(PLL_SCALE_THRESHOLD, (double)scale_factors);
+        asc_scaling = pow(CORAX_SCALE_THRESHOLD, (double)scale_factors);
 
         /* sum over likelihood and 1st and 2nd derivative / apply scaling */
         asc_Lk[0] += site_lk[0] * asc_scaling;
@@ -894,7 +894,7 @@ pll_core_likelihood_derivatives(unsigned int        states,
       {
       /* NOTE: since we compute derivatives of -logL, the signs below are
        * flipped compared to RAxML ("+" for LEWIS and "-" for FELSENSTEIN) */
-      case PLL_ATTRIB_AB_LEWIS:
+      case CORAX_ATTRIB_AB_LEWIS:
       {
         // TODO: pattern_weight_sum should be stored somewhere!
         unsigned int pattern_weight_sum = 0;
@@ -907,7 +907,7 @@ pll_core_likelihood_derivatives(unsigned int        states,
                     / ((asc_Lk[0] - 1.0) * (asc_Lk[0] - 1.0)));
       }
       break;
-      case PLL_ATTRIB_AB_FELSENSTEIN:
+      case CORAX_ATTRIB_AB_FELSENSTEIN:
         /* derivatives of log(sum Li(s) over states 's') */
         *d_f -= sum_w_inv * (asc_Lk[1] / asc_Lk[0]);
         *dd_f -= sum_w_inv
@@ -915,14 +915,14 @@ pll_core_likelihood_derivatives(unsigned int        states,
                     / (asc_Lk[0] * asc_Lk[0]));
         break;
       default:
-        pll_set_error(PLL_ERROR_AB_INVALIDMETHOD,
+        corax_set_error(CORAX_ERROR_AB_INVALIDMETHOD,
                       "Illegal ascertainment bias algorithm");
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
     }
   }
 
-  pll_aligned_free(diagptable);
+  corax_aligned_free(diagptable);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

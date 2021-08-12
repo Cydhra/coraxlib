@@ -25,7 +25,7 @@
 
 // clang-format off
 
-const pll_state_t pll_map_bin[256] =
+const corax_state_t corax_map_bin[256] =
  {
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -45,7 +45,7 @@ const pll_state_t pll_map_bin[256] =
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   };
 
-const pll_state_t pll_map_nt[256] =
+const corax_state_t corax_map_nt[256] =
  {
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -65,7 +65,7 @@ const pll_state_t pll_map_nt[256] =
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  };
 
-const pll_state_t pll_map_aa[256] =
+const corax_state_t corax_map_aa[256] =
  {
          0,       0,       0,       0,       0,       0,       0,       0,
          0,       0,       0,       0,       0,       0,       0,       0,
@@ -107,7 +107,7 @@ const pll_state_t pll_map_aa[256] =
  * 16  = A/C = M  | 32  = A/G = R | 64   = A/T = W | 128 = C/G = S
  * 256 = C/T = Y  | 512 = G/T = K | 1023 = -/- = N                  */
 
-const pll_state_t pll_map_gt10[256] =
+const corax_state_t corax_map_gt10[256] =
  {
    0,  0,   0,   0,  0,  0,  0,    0,    0,   0,  0,   0,  0,    0,    0,    0,
    0,  0,   0,   0,  0,  0,  0,    0,    0,   0,  0,   0,  0,    0,    0,    0,
@@ -141,7 +141,7 @@ const pll_state_t pll_map_gt10[256] =
   aa data, binary, etc
 */
 
-const unsigned int pll_map_phylip[256] =
+const unsigned int corax_map_phylip[256] =
   {
     /*
     0=stripped, 1=legal, 2=fatal, 3=silently stripped
@@ -167,7 +167,7 @@ const unsigned int pll_map_phylip[256] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  /* E */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   /* F */
   };
-const unsigned int pll_map_fasta[256] =
+const unsigned int corax_map_fasta[256] =
   {
     /*
     0=stripped, 1=legal, 2=fatal, 3=silently stripped
@@ -202,7 +202,7 @@ const unsigned int pll_map_fasta[256] =
  *    3=ignored: tab (9), newline (10 and 13), vt (11), formfeed (12), space(32)
  *    1=legal: all remaining
  * */
-const unsigned int pll_map_generic[256] =
+const unsigned int corax_map_generic[256] =
   {
 /*  0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F        */
     2,  2,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  2,  2,  /* 0 */
@@ -225,7 +225,7 @@ const unsigned int pll_map_generic[256] =
 
 /* GTR protein substitution rate parameters (values above main diagonal) */
 
-const double pll_aa_rates_dayhoff[190] =
+const double corax_aa_rates_dayhoff[190] =
  {
     27.00,   98.00,  120.00,   36.00,   89.00,  198.00,  240.00,   23.00,   65.00,   41.00,
     26.00,   72.00,   18.00,  250.00,  409.00,  371.00,    0.00,   24.00,  208.00,   32.00,
@@ -248,7 +248,7 @@ const double pll_aa_rates_dayhoff[190] =
    550.00,   75.00,   34.00,   30.00,    0.00,   42.00,  157.00,   61.00,    0.00,   28.00
  };
 
-const double pll_aa_rates_lg[190] =
+const double corax_aa_rates_lg[190] =
  {
    0.4250930, 0.2768180, 0.3951440, 2.4890840, 0.9698940, 1.0385450, 2.0660400, 0.3588580, 0.1498300, 0.3953370,
    0.5365180, 1.1240350, 0.2537010, 1.1776510, 4.7271820, 2.1395010, 0.1807170, 0.2189590, 2.5478700, 0.7518780,
@@ -271,7 +271,7 @@ const double pll_aa_rates_lg[190] =
    6.4722790, 0.2488620, 0.4005470, 0.0983690, 0.1408250, 0.2458410, 2.1881580, 3.1518150, 0.1895100, 0.2493130
  };
 
-const double pll_aa_rates_dcmut[190] =
+const double corax_aa_rates_dcmut[190] =
  {
    0.267828, 0.984474, 1.199805, 0.360016, 0.887753, 1.961167,  2.386111, 0.228116, 0.653416, 0.406431,
    0.258635, 0.717840, 0.183641, 2.485920, 4.051870, 3.680365,  0.000000, 0.244139, 2.059564, 0.327059,
@@ -294,7 +294,7 @@ const double pll_aa_rates_dcmut[190] =
    5.436674, 0.740819, 0.336289, 0.303836, 0.000000, 0.417839,  1.561997, 0.608070, 0.000000, 0.279379
  };
 
-const double pll_aa_rates_jtt[190] =
+const double corax_aa_rates_jtt[190] =
  {
     58.00,  54.00,  81.00,  56.00,  57.00, 105.00, 179.00,  27.00,  36.00,  30.00,
     35.00,  54.00,  15.00, 194.00, 378.00, 475.00,   9.00,  11.00, 298.00,  45.00,
@@ -317,7 +317,7 @@ const double pll_aa_rates_jtt[190] =
    477.00,  35.00,  63.00,  38.00,  12.00,  21.00, 112.00,  71.00,  25.00,  16.00
  };
 
-const double pll_aa_rates_mtrev[190] =
+const double corax_aa_rates_mtrev[190] =
  {
     23.18,  26.95,  17.67,  59.93,    1.90,   9.77, 120.71,  13.90,  96.49,  25.46,
      8.36, 141.88,   6.37,  54.31,  387.86, 480.72,   1.90,   6.48, 195.06,  13.24,
@@ -340,7 +340,7 @@ const double pll_aa_rates_mtrev[190] =
    597.21,  38.58,  64.92,   1.90,    9.99,  38.73, 204.54,  26.25,   5.37,   1.90
  };
 
-const double pll_aa_rates_wag[190] =
+const double corax_aa_rates_wag[190] =
  {
    0.5515710, 0.5098480, 0.7389980, 1.0270400, 0.9085980, 1.5828500, 1.4167200, 0.3169540, 0.1933350, 0.3979150,
    0.9062650, 0.8934960, 0.2104940, 1.4385500, 3.3707900, 2.1211100, 0.1131330, 0.2407350, 2.0060100, 0.6353460,
@@ -363,7 +363,7 @@ const double pll_aa_rates_wag[190] =
    4.3780200, 0.5237420, 0.7869930, 0.2327390, 0.1108640, 0.2911480, 1.3882300, 2.4853900, 0.3653690, 0.3147300
  };
 
-const double pll_aa_rates_rtrev[190] =
+const double corax_aa_rates_rtrev[190] =
  {
     34.00,   51.00,   10.00,  439.00,   32.00,   81.00,  135.00,   30.00,    1.00,   45.00,
     38.00,  235.00,    1.00,   97.00,  460.00,  258.00,    5.00,   55.00,  197.00,   35.00,
@@ -386,7 +386,7 @@ const double pll_aa_rates_rtrev[190] =
    671.00,   14.00,   31.00,   39.00,    1.00,   34.00,  196.00,  176.00,   26.00,   59.00
  };
 
-const double pll_aa_rates_cprev[190] =
+const double corax_aa_rates_cprev[190] =
  {
     105.00,  227.00,  175.00,  669.00,  157.00,  499.00,  665.00,   66.00,  145.00,  197.00,
     236.00,  185.00,   68.00,  490.00, 2440.00, 1340.00,   14.00,   56.00,  968.00,  357.00,
@@ -409,7 +409,7 @@ const double pll_aa_rates_cprev[190] =
    2151.00,   73.00,  522.00,  167.00,   29.00,   71.00,  760.00,  346.00,   10.00,  119.00
  };
 
-const double pll_aa_rates_vt[190] =
+const double corax_aa_rates_vt[190] =
  {
    1.2412691067876198, 1.2184237953498958, 1.3759368509441177, 2.4731223087544874, 2.2155167805137470,
    2.3379911207495061, 3.3386555146457697, 0.9615841926910841, 0.8908203061925510, 1.0778497408764076,
@@ -451,7 +451,7 @@ const double pll_aa_rates_vt[190] =
    0.8564314184691215, 3.4242218450865543, 4.5377235790405388, 0.5658969249032649, 1.0000000000000000
  };
 
-const double pll_aa_rates_blosum62[190] =
+const double corax_aa_rates_blosum62[190] =
  {
    0.735790389698, 0.485391055466, 0.543161820899, 1.459995310470, 1.199705704602,
    1.170949042800, 1.955883574960, 0.716241444998, 0.605899003687, 0.800016530518,
@@ -494,7 +494,7 @@ const double pll_aa_rates_blosum62[190] =
  };
 
 /* WARNING: replaced 0.0 -> 1e-6 to avoid numerical issues */
-const double pll_aa_rates_mtmam[190] =
+const double corax_aa_rates_mtmam[190] =
  {
     32.00,    2.00,   11.00,   1e-6,     1e-6,    1e-6,   78.00,    8.00,   75.00,   21.00,
      1e-6,   76.00,    1e-6,   53.00,  342.00,  681.00,    5.00,    1e-6,  398.00,    4.00,
@@ -521,7 +521,7 @@ const double pll_aa_rates_mtmam[190] =
  * WARNING:
  *    This matrix is different in PhyML and PAML/PLL
  */
-const double pll_aa_rates_mtart[190] =
+const double corax_aa_rates_mtart[190] =
  {
      0.20,    0.20,    1.00,  254.00,    0.20,    0.20,  200.00,    0.20,   26.00,    4.00,
      0.20,  121.00,   13.00,   49.00,  673.00,  244.00,    0.20,    1.00,  340.00,    0.20,
@@ -544,7 +544,7 @@ const double pll_aa_rates_mtart[190] =
    660.00,    2.00,   30.00,   61.00,    0.20,   46.00,  544.00,   38.00,    0.20,    2.00
  };
 
-const double pll_aa_rates_mtzoa[190] =
+const double corax_aa_rates_mtzoa[190] =
  {
      3.30,    1.70,   16.10,  272.50,    7.30,   17.10,  289.30,    2.30,   33.20,   15.60,
      0.20,  136.50,   26.50,   61.80,  644.90,  378.10,    3.10,    2.10,  321.90,   33.60,
@@ -567,7 +567,7 @@ const double pll_aa_rates_mtzoa[190] =
    666.30,   10.30,   29.70,   49.50,    3.60,   29.00,  396.40,   79.80,   13.70,   15.60
  };
 
-const double pll_aa_rates_pmb[190] =
+const double corax_aa_rates_pmb[190] =
  {
    0.674995699, 0.589645178, 0.462499504, 1.065445546, 1.111766964,
    1.046334652, 1.587964372, 0.580830874, 0.464590585, 0.804404505,
@@ -609,7 +609,7 @@ const double pll_aa_rates_pmb[190] =
    0.523549536, 1.899650790, 2.996248013, 0.429570747, 0.716795463
  };
 
-const double pll_aa_rates_hivb[190] =
+const double corax_aa_rates_hivb[190] =
  {
     0.30750700,  0.00500000,  1.45504000,  0.12375800,  0.05511280,
     1.48135000,  2.13536000,  0.08476130,  0.00500000,  0.21525600,
@@ -651,7 +651,7 @@ const double pll_aa_rates_hivb[190] =
     0.10565200,  0.70922600,  1.28022000,  0.00500000,  0.04105930
  };
 
-const double pll_aa_rates_hivw[190] =
+const double corax_aa_rates_hivw[190] =
  {
     0.0744808,  0.6175090,  4.4352100,  0.1676530,  0.0050000,
     5.5632500,  1.8685000,  0.0050000,  0.0050000,  0.1602400,
@@ -693,7 +693,7 @@ const double pll_aa_rates_hivw[190] =
     0.4906080,  0.0050000,  0.0050000,  0.0050000,  1.3548200
  };
 
-const double pll_aa_rates_jttdcmut[190] =
+const double corax_aa_rates_jttdcmut[190] =
  {
    0.531678, 0.557967, 0.827445, 0.574478, 0.556725, 1.066681, 1.740159, 0.219970, 0.361684, 0.310007,
    0.369437, 0.469395, 0.138293, 1.959599, 3.887095, 4.582565, 0.084329, 0.139492, 2.924161, 0.451095,
@@ -717,7 +717,7 @@ const double pll_aa_rates_jttdcmut[190] =
  };
 
 /* Full precision values from: ftp://ftp.sanger.ac.uk/pub/1000genomes/lsq/FLU/Flu_All_it2.txt_PAML.txt */
-const double pll_aa_rates_flu[190] =
+const double corax_aa_rates_flu[190] =
  {
    0.138658764751059,     0.0533665787145181,    0.584852305649886,     0.0264470951166826,    0.353753981649393,
    1.4842345032161,       1.13231312248046,      0.214757862168721,     0.149926734229061,     0.0231169515264061,
@@ -759,7 +759,7 @@ const double pll_aa_rates_flu[190] =
    0.124898020409882,     0.654109108255219,     0.42775543040588,      0.256900461407996,     0.167581646770807
  };
 
-const double pll_aa_rates_stmtrev[190] =
+const double corax_aa_rates_stmtrev[190] =
  {
    0.1159435373,  0.2458816714,  0.9578712472,  0.2327281954,  0.3309250853,
    0.6946680829,  2.8076062202,  0.2275494971,  0.0627691644,  0.0305818840,
@@ -802,7 +802,7 @@ const double pll_aa_rates_stmtrev[190] =
 };
 
 
-const double pll_aa_rates_den[190] =
+const double corax_aa_rates_den[190] =
  {
    0.411369210, 0.272108441, 0.537979882, 1.927407726, 1.000822747,
    1.064958047, 1.726700741, 0.341369311, 0.160754676, 0.385451233,
@@ -845,7 +845,7 @@ const double pll_aa_rates_den[190] =
  };
 
 /* TODO: Check why with the uncommented rates (Phy-LG) the lnL is largely different! */
-const double pll_aa_rates_lg4m[4][190] = {
+const double corax_aa_rates_lg4m[4][190] = {
     /*Q_fnBL6.txt.Const.all.R0.train [] =*/ {
         0.26934280, 0.25461130, 0.23682090, 2.50654400, 0.35907970, 0.30467340,
         1.69201300, 0.25197360, 1.08521900, 0.67635210, 0.17915450, 1.63681500,
@@ -979,7 +979,7 @@ const double pll_aa_rates_lg4m[4][190] = {
         0.37020460, 5.71631100, 0.49859530, 0.73765430, 0.37350210, 0.23183280,
         0.31346020, 3.32982800, 5.16510800, 0.32659360, 0.86074460 } };
 
-const double pll_aa_rates_lg4x[4][190] =
+const double corax_aa_rates_lg4x[4][190] =
   {{
       0.295719, 0.067388, 0.253712, 1.029289, 0.107964, 0.514644, 10.868848, 0.380498, 0.084223, 0.086976,
       0.188789, 0.286389, 0.155567, 1.671061, 2.132922, 0.529591, 0.115551, 0.102453, 0.916683, 0.448317,
@@ -1076,18 +1076,18 @@ const double pll_aa_rates_lg4x[4][190] =
  *    tools such as PhyML which use the original published frequencies.
  *
  *    Therefore, from now on we will set the original frequencies here,
- *    and re-normalize them later on in pll_set_frequencies() function.
+ *    and re-normalize them later on in corax_set_frequencies() function.
  *    (cf. https://github.com/amkozlov/raxml-ng/issues/46)
  *
  * IMPORTANT:
  *    The new solution could lead to slight likelihood score differences compared
  *    to earlier libpll and RAxML/ExaML/RAxML-NG versions. Furthermore, if frequencies
- *    are set directly (i.e. without calling pll_set_frequencies()), it is user's
+ *    are set directly (i.e. without calling corax_set_frequencies()), it is user's
  *    responsibility to perform normalization as needed.
  *
  *    (Alexey Kozlov  10.10.2018)
  */
-const double pll_aa_freqs_dayhoff[20] =
+const double corax_aa_freqs_dayhoff[20] =
  {
     0.087127, 0.040904, 0.040432, 0.046872, 0.033474,
     0.038255, 0.049530, 0.088612, 0.033618, 0.036886,
@@ -1095,7 +1095,7 @@ const double pll_aa_freqs_dayhoff[20] =
     0.069577, 0.058542, 0.010494, 0.029916, 0.064718
  };
 
-const double pll_aa_freqs_lg[20] =
+const double corax_aa_freqs_lg[20] =
  {
     0.079066, 0.055941, 0.041977, 0.053052, 0.012937,
     0.040767, 0.071586, 0.057337, 0.022355, 0.062157,
@@ -1103,7 +1103,7 @@ const double pll_aa_freqs_lg[20] =
     0.061197, 0.053287, 0.012066, 0.034155, 0.069147
  };
 
-const double pll_aa_freqs_dcmut[20] =
+const double corax_aa_freqs_dcmut[20] =
  {
    0.087127, 0.040904, 0.040432, 0.046872, 0.033474,
    0.038255, 0.049530, 0.088612, 0.033619, 0.036886,
@@ -1111,7 +1111,7 @@ const double pll_aa_freqs_dcmut[20] =
    0.069577, 0.058542, 0.010494, 0.029916, 0.064718
  };
 
-const double pll_aa_freqs_jtt[20] =
+const double corax_aa_freqs_jtt[20] =
  {
    0.076748, 0.051691, 0.042645, 0.051544, 0.019803,
    0.040752, 0.061830, 0.073152, 0.022944, 0.053761,
@@ -1119,7 +1119,7 @@ const double pll_aa_freqs_jtt[20] =
    0.068765, 0.058565, 0.014261, 0.032102, 0.066005
  };
 
-const double pll_aa_freqs_mtrev[20] =
+const double corax_aa_freqs_mtrev[20] =
  {
    0.072, 0.019, 0.039, 0.019, 0.006,
    0.025, 0.024, 0.056, 0.028, 0.088,
@@ -1127,7 +1127,7 @@ const double pll_aa_freqs_mtrev[20] =
    0.072, 0.086, 0.029, 0.033, 0.043
  };
 
-const double pll_aa_freqs_wag[20] =
+const double corax_aa_freqs_wag[20] =
  {
    0.0866279, 0.043972,  0.0390894, 0.0570451, 0.0193078,
    0.0367281, 0.0580589, 0.0832518, 0.0244313, 0.048466,
@@ -1135,7 +1135,7 @@ const double pll_aa_freqs_wag[20] =
    0.0695179, 0.0610127, 0.0143859, 0.0352742, 0.0708956
  };
 
-const double pll_aa_freqs_rtrev[20] =
+const double corax_aa_freqs_rtrev[20] =
 {
   0.0646, 0.0453, 0.0376, 0.0422, 0.0114,
   0.0606, 0.0607, 0.0639, 0.0273, 0.0679,
@@ -1143,7 +1143,7 @@ const double pll_aa_freqs_rtrev[20] =
   0.0488, 0.0622, 0.0251, 0.0318, 0.0619
 };
 
-const double pll_aa_freqs_cprev[20] =
+const double corax_aa_freqs_cprev[20] =
  {
    0.0755, 0.0621, 0.0410, 0.0371, 0.0091,
    0.0382, 0.0495, 0.0838, 0.0246, 0.0806,
@@ -1151,7 +1151,7 @@ const double pll_aa_freqs_cprev[20] =
    0.0622, 0.0543, 0.0181, 0.0307, 0.0660
  };
 
-const double pll_aa_freqs_vt[20] =
+const double corax_aa_freqs_vt[20] =
 {
   0.0770764620135024, 0.0500819370772208, 0.0462377395993731, 0.0537929860758246, 0.0144533387583345,
   0.0408923608974345, 0.0633579339160905, 0.0655672355884439, 0.0218802687005936, 0.0591969699027449,
@@ -1159,7 +1159,7 @@ const double pll_aa_freqs_vt[20] =
   0.0707295165111524, 0.0567759161524817, 0.0127019797647213, 0.0323746050281867, 0.0669190817443274
 };
 
-const double pll_aa_freqs_blosum62[20] =
+const double corax_aa_freqs_blosum62[20] =
  {
    0.074, 0.052, 0.045, 0.054, 0.025,
    0.034, 0.054, 0.074, 0.026, 0.068,
@@ -1167,7 +1167,7 @@ const double pll_aa_freqs_blosum62[20] =
    0.057, 0.051, 0.013, 0.032, 0.073
  };
 
-const double pll_aa_freqs_mtmam[20] =
+const double corax_aa_freqs_mtmam[20] =
  {
    0.0692, 0.0184, 0.0400, 0.0186, 0.0065,
    0.0238, 0.0236, 0.0557, 0.0277, 0.0905,
@@ -1175,7 +1175,7 @@ const double pll_aa_freqs_mtmam[20] =
    0.0725, 0.0870, 0.0293, 0.0340, 0.0428
  };
 
-const double pll_aa_freqs_mtart[20] =
+const double corax_aa_freqs_mtart[20] =
 {
   0.054116, 0.018227, 0.039903, 0.020160, 0.009709,
   0.018781, 0.024289, 0.068183, 0.024518, 0.092638,
@@ -1183,7 +1183,7 @@ const double pll_aa_freqs_mtart[20] =
   0.091030, 0.049194, 0.029786, 0.039443, 0.057701
 };
 
-const double pll_aa_freqs_mtzoa[20] =
+const double corax_aa_freqs_mtzoa[20] =
  {
    0.068880, 0.021037, 0.030390, 0.020696, 0.009966,
    0.018623, 0.024989, 0.071968, 0.026814, 0.085072,
@@ -1191,7 +1191,7 @@ const double pll_aa_freqs_mtzoa[20] =
    0.080535, 0.056386, 0.027998, 0.037404, 0.066082
  };
 
-const double pll_aa_freqs_pmb[20] =
+const double corax_aa_freqs_pmb[20] =
  {
    0.076, 0.054, 0.038, 0.045, 0.028,
    0.034, 0.053, 0.078, 0.030, 0.060,
@@ -1199,7 +1199,7 @@ const double pll_aa_freqs_pmb[20] =
    0.068, 0.056, 0.016, 0.036, 0.071
  };
 
-const double pll_aa_freqs_hivb[20] =
+const double corax_aa_freqs_hivb[20] =
  {
    0.060490222, 0.066039665, 0.044127815, 0.042109048, 0.020075899,
    0.053606488, 0.071567447, 0.072308239, 0.022293943, 0.069730629,
@@ -1207,7 +1207,7 @@ const double pll_aa_freqs_hivb[20] =
    0.050604330, 0.053636813, 0.033011601, 0.028350243, 0.061625237
  };
 
-const double pll_aa_freqs_hivw[20] =
+const double corax_aa_freqs_hivw[20] =
  {
    0.0377494, 0.057321,  0.0891129, 0.0342034, 0.0240105,
    0.0437824, 0.0618606, 0.0838496, 0.0156076, 0.0983641,
@@ -1215,7 +1215,7 @@ const double pll_aa_freqs_hivw[20] =
    0.0550846, 0.0813774, 0.019597,  0.0205847, 0.0515639
  };
 
-const double pll_aa_freqs_jttdcmut[20] =
+const double corax_aa_freqs_jttdcmut[20] =
  {
    0.076862, 0.051057, 0.042546, 0.051269, 0.020279,
    0.041061, 0.061820, 0.074714, 0.022983, 0.052569,
@@ -1223,7 +1223,7 @@ const double pll_aa_freqs_jttdcmut[20] =
    0.068225, 0.058518, 0.014336, 0.032303, 0.066373
  };
 
-const double pll_aa_freqs_flu[20] =
+const double corax_aa_freqs_flu[20] =
  {
    0.0470718, 0.0509102, 0.0742143, 0.0478596, 0.0250216,
    0.0333036, 0.0545874, 0.0763734, 0.0199642, 0.0671336,
@@ -1231,7 +1231,7 @@ const double pll_aa_freqs_flu[20] =
    0.0884091, 0.0743386, 0.0185237, 0.0314741, 0.0632292
  };
 
-const double pll_aa_freqs_stmtrev[20] =
+const double corax_aa_freqs_stmtrev[20] =
  {
    0.0461811000, 0.0534080000, 0.0361971000, 0.0233326000, 0.0234170000,
    0.0390397000, 0.0341284001, 0.0389164000, 0.0164640000, 0.0891534000,
@@ -1239,7 +1239,7 @@ const double pll_aa_freqs_stmtrev[20] =
    0.0771077000, 0.0418603001, 0.0200784000, 0.0305429000, 0.0643851996
  };
 
-const double pll_aa_freqs_den[20] =
+const double corax_aa_freqs_den[20] =
  {
    0.069840800, 0.052736500, 0.038674100, 0.043424100, 0.018496600,
    0.034230100, 0.062599300, 0.079547000, 0.020697900, 0.059992700,
@@ -1247,7 +1247,7 @@ const double pll_aa_freqs_den[20] =
    0.062871400, 0.070696500, 0.026500600, 0.024012700, 0.069446000
  };
 
-const double pll_aa_freqs_lg4m[4][20] =
+const double corax_aa_freqs_lg4m[4][20] =
   {
    {0.082276,0.055172,0.043853,0.053484,0.018957,
     0.028152,0.046679,0.157817,0.033297,0.028284,
@@ -1267,7 +1267,7 @@ const double pll_aa_freqs_lg4m[4][20] =
     0.053667,0.049486,0.004409,0.012924,0.031963}
   };
 
-const double pll_aa_freqs_lg4x[4][20] =
+const double corax_aa_freqs_lg4x[4][20] =
    {
    {0.147383 , 0.017579 , 0.058208 , 0.017707 , 0.026331 ,
     0.041582 , 0.017494 , 0.027859 , 0.011849 , 0.076971 ,

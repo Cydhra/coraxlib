@@ -46,12 +46,12 @@ static double       test_branch_lengths[NUM_BRANCH_LENGTHS] = {
     0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0};
 
 static unsigned int     traversal_size, matrix_count, ops_count;
-static pll_unode_t **   travbuffer;
+static corax_unode_t **   travbuffer;
 static unsigned int *   matrix_indices;
 static double *         branch_lengths;
-static pll_operation_t *operations;
+static corax_operation_t *operations;
 
-void print_travbuffer(pll_unode_t **travbuffer, unsigned int len)
+void print_travbuffer(corax_unode_t **travbuffer, unsigned int len)
 {
   unsigned int i;
   for (i = 0; i < len; ++i)
@@ -59,7 +59,7 @@ void print_travbuffer(pll_unode_t **travbuffer, unsigned int len)
   printf("\n");
 }
 
-void print_operations(pll_operation_t *operations, unsigned int len)
+void print_operations(corax_operation_t *operations, unsigned int len)
 {
   unsigned int i;
   for (i = 0; i < len; ++i)
@@ -72,8 +72,8 @@ void print_operations(pll_operation_t *operations, unsigned int len)
   printf("\n");
 }
 
-static double eval(pll_partition_t *partition,
-                   pll_unode_t *    node,
+static double eval(corax_partition_t *partition,
+                   corax_unode_t *    node,
                    double           alpha,
                    double           old_lnl)
 {
@@ -82,16 +82,16 @@ static double eval(pll_partition_t *partition,
   double       d_f, dd_f;
   double *     sumtable;
 
-  pll_set_subst_params(partition, 0, subst_params);
-  pll_set_frequencies(partition, 0, frequencies);
-  pll_compute_gamma_cats(
-      alpha, partition->rate_cats, categories, PLL_GAMMA_RATES_MEAN);
-  pll_set_category_rates(partition, categories);
+  corax_set_subst_params(partition, 0, subst_params);
+  corax_set_frequencies(partition, 0, frequencies);
+  corax_compute_gamma_cats(
+      alpha, partition->rate_cats, categories, CORAX_GAMMA_RATES_MEAN);
+  corax_set_category_rates(partition, categories);
 
-  pll_update_prob_matrices(
+  corax_update_prob_matrices(
       partition, params_indices, matrix_indices, branch_lengths, matrix_count);
-  pll_update_clvs(partition, operations, ops_count);
-  logl = pll_compute_edge_loglikelihood(partition,
+  corax_update_clvs(partition, operations, ops_count);
+  logl = corax_compute_edge_loglikelihood(partition,
                                         node->clv_index,
                                         node->scaler_index,
                                         node->back->clv_index,
@@ -107,12 +107,12 @@ static double eval(pll_partition_t *partition,
 
   printf("Log-L: %f\n", logl);
 
-  sumtable = (double *)pll_aligned_alloc(
+  sumtable = (double *)corax_aligned_alloc(
       (partition->sites + partition->states) * partition->rate_cats
           * partition->states_padded * sizeof(double),
       partition->alignment);
 
-  pll_update_sumtable(partition,
+  corax_update_sumtable(partition,
                       node->clv_index,
                       node->back->clv_index,
                       node->scaler_index,
@@ -129,7 +129,7 @@ static double eval(pll_partition_t *partition,
   for (i = 0; i < NUM_BRANCH_LENGTHS; ++i)
   {
     double branch_length = test_branch_lengths[i];
-    if (!pll_compute_likelihood_derivatives(partition,
+    if (!corax_compute_likelihood_derivatives(partition,
                                             node->scaler_index,
                                             node->back->scaler_index,
                                             branch_length,
@@ -143,9 +143,9 @@ static double eval(pll_partition_t *partition,
     }
 
     /* update logLikelihood */
-    pll_update_prob_matrices(
+    corax_update_prob_matrices(
         partition, params_indices, &(node->pmatrix_index), &branch_length, 1);
-    upbl_logl = pll_compute_edge_loglikelihood(partition,
+    upbl_logl = corax_compute_edge_loglikelihood(partition,
                                                node->clv_index,
                                                node->scaler_index,
                                                node->back->clv_index,
@@ -162,7 +162,7 @@ static double eval(pll_partition_t *partition,
     }
     printf("\n");
   }
-  pll_aligned_free(sumtable);
+  corax_aligned_free(sumtable);
 
   return logl;
 }
@@ -170,9 +170,9 @@ static double eval(pll_partition_t *partition,
 int main(int argc, char *argv[])
 {
   unsigned int     attributes;
-  pll_partition_t *partition;
-  pll_utree_t *    tree;
-  pll_unode_t *    root;
+  corax_partition_t *partition;
+  corax_utree_t *    tree;
+  corax_unode_t *    root;
   unsigned int     taxa_count, nodes_count, inner_nodes_count, branch_count;
   double           alpha     = 0.5;
   unsigned int     rate_cats = 4;
@@ -182,9 +182,9 @@ int main(int argc, char *argv[])
 
   /* check attributes */
   attributes = get_attributes(argc, argv);
-  attributes |= PLL_ATTRIB_AB_FLAG;
+  attributes |= CORAX_ATTRIB_AB_FLAG;
 
-  tree = pll_utree_parse_newick(TRE_FILENAME);
+  tree = corax_utree_parse_newick(TRE_FILENAME);
 
   taxa_count        = tree->tip_count;
   root              = tree->vroot;
@@ -198,19 +198,19 @@ int main(int argc, char *argv[])
   assert(branch_count == 2 * taxa_count - 3);
   assert(tree->binary);
 
-  retval = pll_utree_check_integrity(tree);
+  retval = corax_utree_check_integrity(tree);
   if (!retval)
   {
-    printf("ERROR: pll_utree validation failed: %s\n", pll_errmsg);
+    printf("ERROR: corax_utree validation failed: %s\n", corax_errmsg);
     exit(-1);
   }
 
   /* build fixed structures */
-  travbuffer     = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer     = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(unsigned int));
   operations =
-      (pll_operation_t *)malloc(inner_nodes_count * sizeof(pll_operation_t));
+      (corax_operation_t *)malloc(inner_nodes_count * sizeof(corax_operation_t));
 
   partition = parse_msa(MSA_FILENAME, STATES, rate_cats, 1, tree, attributes);
   printf("Read %s: %u sites\n", MSA_FILENAME, partition->sites);
@@ -219,21 +219,21 @@ int main(int argc, char *argv[])
   {
     root = root->next;
 
-    pll_set_asc_bias_type(partition, 0);
+    corax_set_asc_bias_type(partition, 0);
 
-    retval = pll_utree_traverse(root,
-                                PLL_TREE_TRAVERSE_POSTORDER,
+    retval = corax_utree_traverse(root,
+                                CORAX_TREE_TRAVERSE_POSTORDER,
                                 cb_full_traversal,
                                 travbuffer,
                                 &traversal_size);
 
     if (!retval)
     {
-      printf("ERROR: pll_utree traversal failed: %s\n", pll_errmsg);
+      printf("ERROR: corax_utree traversal failed: %s\n", corax_errmsg);
       exit(-1);
     }
 
-    pll_utree_create_operations(travbuffer,
+    corax_utree_create_operations(travbuffer,
                                 traversal_size,
                                 branch_lengths,
                                 matrix_indices,
@@ -249,12 +249,12 @@ int main(int argc, char *argv[])
     /* test 2: ascertainment bias correction */
     printf("\nTEST 2: ASC BIAS LEWIS\n");
 
-    pll_set_asc_bias_type(partition, PLL_ATTRIB_AB_LEWIS);
+    corax_set_asc_bias_type(partition, CORAX_ATTRIB_AB_LEWIS);
 
     lnl_test[1] = eval(partition, root, alpha, lnl_test[1]);
 
     /* attempt to update invariant sites proportion. This should fail */
-    if (pll_update_invariant_sites_proportion(partition, 0, 0.5))
+    if (corax_update_invariant_sites_proportion(partition, 0, 0.5))
     {
       printf("Error: Setting P-inv with ASC BIAS should fail");
       return 1;
@@ -262,15 +262,15 @@ int main(int argc, char *argv[])
 
     /* test 2: ascertainment bias correction */
     printf("\nTEST 2: ASC BIAS FELSENSTEIN\n");
-    pll_set_asc_bias_type(partition, PLL_ATTRIB_AB_FELSENSTEIN);
-    pll_set_asc_state_weights(partition, invar_weights);
+    corax_set_asc_bias_type(partition, CORAX_ATTRIB_AB_FELSENSTEIN);
+    corax_set_asc_state_weights(partition, invar_weights);
 
     lnl_test[2] = eval(partition, root, alpha, lnl_test[2]);
 
     /* test 2: ascertainment bias correction */
     printf("\nTEST 2: ASC BIAS STAMATAKIS\n");
-    pll_set_asc_bias_type(partition, PLL_ATTRIB_AB_STAMATAKIS);
-    pll_set_asc_state_weights(partition, invar_weights);
+    corax_set_asc_bias_type(partition, CORAX_ATTRIB_AB_STAMATAKIS);
+    corax_set_asc_state_weights(partition, invar_weights);
 
     lnl_test[3] = eval(partition, root, alpha, lnl_test[3]);
   }
@@ -279,9 +279,9 @@ int main(int argc, char *argv[])
   free(branch_lengths);
   free(operations);
   free(matrix_indices);
-  pll_partition_destroy(partition);
+  corax_partition_destroy(partition);
 
-  pll_utree_destroy(tree, NULL);
+  corax_utree_destroy(tree, NULL);
 
   return 0;
 }

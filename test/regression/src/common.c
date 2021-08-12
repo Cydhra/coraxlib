@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-const pll_state_t odd5_map[256] = {
+const corax_state_t odd5_map[256] = {
     0, 0,    0,    0,    0,    0,    0, 0, 0, 0, 0,    0, 0, 0,    0, 0,
     0, 0,    0,    0,    0,    0,    0, 0, 0, 0, 0,    0, 0, 0,    0, 0,
     0, 0,    0,    0,    0,    0,    0, 0, 0, 0, 0x1f, 0, 0, 0x1f, 0, 0,
@@ -26,34 +26,34 @@ const pll_state_t odd5_map[256] = {
 unsigned int get_attributes(int argc, char **argv)
 {
   int          i;
-  unsigned int attributes = PLL_ATTRIB_ARCH_CPU;
+  unsigned int attributes = CORAX_ATTRIB_ARCH_CPU;
 
   for (i = 1; i < argc; ++i)
   {
     if (!strcmp(argv[i], "tv"))
     {
       /* tipvector */
-      attributes |= PLL_ATTRIB_PATTERN_TIP;
+      attributes |= CORAX_ATTRIB_PATTERN_TIP;
     }
     else if (!strcmp(argv[i], "sr"))
     {
       /* avx vectorization */
-      attributes |= PLL_ATTRIB_SITE_REPEATS;
+      attributes |= CORAX_ATTRIB_SITE_REPEATS;
     }
     else if (!strcmp(argv[i], "avx"))
     {
       /* avx vectorization */
-      attributes |= PLL_ATTRIB_ARCH_AVX;
+      attributes |= CORAX_ATTRIB_ARCH_AVX;
     }
     else if (!strcmp(argv[i], "sse"))
     {
       /* sse3 vectorization */
-      attributes |= PLL_ATTRIB_ARCH_SSE;
+      attributes |= CORAX_ATTRIB_ARCH_SSE;
     }
     else if (!strcmp(argv[i], "avx2"))
     {
       /* avx2 vectorization */
-      attributes |= PLL_ATTRIB_ARCH_AVX2;
+      attributes |= CORAX_ATTRIB_ARCH_AVX2;
     }
     else
     {
@@ -73,33 +73,33 @@ void skip_test()
 /* note: There is no exhaustive error checking in this function.
          It is intended to use with the test datasets that were
          validated in advance. */
-pll_partition_t *parse_msa(const char * filename,
+corax_partition_t *parse_msa(const char * filename,
                            unsigned int states,
                            unsigned int rate_cats,
                            unsigned int rate_matrices,
-                           pll_utree_t *tree,
+                           corax_utree_t *tree,
                            unsigned int attributes)
 {
   return parse_msa_reduced(
       filename, states, rate_cats, rate_matrices, tree, attributes, -1);
 }
 
-pll_partition_t *parse_msa_reduced(const char * filename,
+corax_partition_t *parse_msa_reduced(const char * filename,
                                    unsigned int states,
                                    unsigned int rate_cats,
                                    unsigned int rate_matrices,
-                                   pll_utree_t *tree,
+                                   corax_utree_t *tree,
                                    unsigned int attributes,
                                    int max_sites)
 {
   unsigned int     i;
   unsigned int     taxa_count = tree->tip_count;
-  pll_partition_t *partition;
+  corax_partition_t *partition;
   long             hdrlen, seqlen, seqno;
   char *           seq = NULL, *hdr = NULL;
 
   /* open FASTA file */
-  pll_fasta_t *fp = pll_fasta_open(filename, pll_map_fasta);
+  corax_fasta_t *fp = corax_fasta_open(filename, corax_map_fasta);
   if (!fp)
   {
     printf("Error opening file %s", filename);
@@ -112,7 +112,7 @@ pll_partition_t *parse_msa_reduced(const char * filename,
 
   /* read FASTA sequences and make sure they are all of the same length */
   int sites = -1;
-  for (i = 0; pll_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
+  for (i = 0; corax_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
   {
     if (sites == -1) sites = seqlen;
 
@@ -120,17 +120,17 @@ pll_partition_t *parse_msa_reduced(const char * filename,
     seqdata[i] = seq;
   }
 
-  if (pll_errno != PLL_ERROR_FILE_EOF)
+  if (corax_errno != CORAX_ERROR_FILE_EOF)
   {
     printf("Error while reading file %s", filename);
     free(headers);
     free(seqdata);
-    pll_fasta_close(fp);
+    corax_fasta_close(fp);
     return NULL;
   }
 
   /* close FASTA file */
-  pll_fasta_close(fp);
+  corax_fasta_close(fp);
 
   if (sites == -1)
   {
@@ -142,7 +142,7 @@ pll_partition_t *parse_msa_reduced(const char * filename,
 
   if (max_sites != -1) sites = max_sites;
 
-  partition = pll_partition_create(taxa_count,     /* tip nodes */
+  partition = corax_partition_create(taxa_count,     /* tip nodes */
                                    taxa_count - 2, /* inner nodes */
                                    states,
                                    (unsigned int)sites,
@@ -190,8 +190,8 @@ pll_partition_t *parse_msa_reduced(const char * filename,
 
     unsigned int tip_clv_index = *((unsigned int *)(found->data));
 
-    const pll_state_t *map = states == 4 ? pll_map_nt : pll_map_aa;
-    pll_set_tip_states(partition, tip_clv_index, map, seqdata[i]);
+    const corax_state_t *map = states == 4 ? corax_map_nt : corax_map_aa;
+    corax_set_tip_states(partition, tip_clv_index, map, seqdata[i]);
 
     free(headers[i]);
     free(seqdata[i]);
@@ -206,20 +206,20 @@ pll_partition_t *parse_msa_reduced(const char * filename,
   return partition;
 }
 
-int cb_full_traversal(pll_unode_t *node) { return 1; }
+int cb_full_traversal(corax_unode_t *node) { return 1; }
 
-void show_tree (pll_unode_t * tree, int SHOW_ASCII_TREE)
+void show_tree (corax_unode_t * tree, int SHOW_ASCII_TREE)
 {
   if(SHOW_ASCII_TREE)
   {
     printf ("\n");
-    pll_utree_show_ascii (
+    corax_utree_show_ascii (
         tree,
-        PLL_UTREE_SHOW_LABEL |
-        PLL_UTREE_SHOW_BRANCH_LENGTH |
-        PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_PMATRIX_INDEX
-            | PLL_UTREE_SHOW_SCALER_INDEX);
-    char * newick = pll_utree_export_newick (tree, NULL);
+        CORAX_UTREE_SHOW_LABEL |
+        CORAX_UTREE_SHOW_BRANCH_LENGTH |
+        CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_PMATRIX_INDEX
+            | CORAX_UTREE_SHOW_SCALER_INDEX);
+    char * newick = corax_utree_export_newick (tree, NULL);
     printf ("%s\n\n", newick);
     free (newick);
   }

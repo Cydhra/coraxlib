@@ -21,7 +21,7 @@
 
 #include "corax/corax.h"
 
-PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
+CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
                                        unsigned int        states,
                                        unsigned int        rate_cats,
                                        const double *      rates,
@@ -47,11 +47,11 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
   double *pmat;
 
 #ifdef HAVE_SSE3
-  if (attrib & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
     if (states == 4)
     {
-      return pll_core_update_pmatrix_4x4_sse(pmatrix,
+      return corax_core_update_pmatrix_4x4_sse(pmatrix,
                                              rate_cats,
                                              rates,
                                              branch_lengths,
@@ -65,7 +65,7 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
     }
     else if (states == 20)
     {
-      return pll_core_update_pmatrix_20x20_sse(pmatrix,
+      return corax_core_update_pmatrix_20x20_sse(pmatrix,
                                                rate_cats,
                                                rates,
                                                branch_lengths,
@@ -83,11 +83,11 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
     if (states == 4)
     {
-      return pll_core_update_pmatrix_4x4_avx(pmatrix,
+      return corax_core_update_pmatrix_4x4_avx(pmatrix,
                                              rate_cats,
                                              rates,
                                              branch_lengths,
@@ -101,7 +101,7 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
     }
     if (states == 20)
     {
-      return pll_core_update_pmatrix_20x20_avx(pmatrix,
+      return corax_core_update_pmatrix_20x20_avx(pmatrix,
                                                rate_cats,
                                                rates,
                                                branch_lengths,
@@ -119,12 +119,12 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
     if (states == 4)
     {
       /* use AVX version here since FMA doesn't make much sense */
-      return pll_core_update_pmatrix_4x4_avx(pmatrix,
+      return corax_core_update_pmatrix_4x4_avx(pmatrix,
                                              rate_cats,
                                              rates,
                                              branch_lengths,
@@ -138,7 +138,7 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
     }
     if (states == 20)
     {
-      return pll_core_update_pmatrix_20x20_avx2(pmatrix,
+      return corax_core_update_pmatrix_20x20_avx2(pmatrix,
                                                 rate_cats,
                                                 rates,
                                                 branch_lengths,
@@ -164,8 +164,8 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
     if (expd) free(expd);
     if (temp) free(temp);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < count; ++i)
@@ -191,7 +191,7 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
          * for this by adding an identity matrix I in the very end */
 
         /* exponentiate eigenvalues */
-        if (pinvar > PLL_MISC_EPSILON)
+        if (pinvar > CORAX_MISC_EPSILON)
         {
           for (j = 0; j < states; ++j)
             expd[j] =
@@ -237,5 +237,5 @@ PLL_EXPORT int pll_core_update_pmatrix(double **           pmatrix,
 
   free(expd);
   free(temp);
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

@@ -34,7 +34,7 @@ bitv_hashtable_t *hash_init(unsigned int n, unsigned int bit_count)
   bitv_hashtable_t *h = (bitv_hashtable_t *)malloc(sizeof(bitv_hashtable_t));
   if (!h)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for hashtable\n");
     return NULL;
   }
@@ -65,7 +65,7 @@ bitv_hashtable_t *hash_init(unsigned int n, unsigned int bit_count)
   if (!h->table)
   {
     free(h);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for hashtable entries\n");
     return NULL;
   }
@@ -114,7 +114,7 @@ bitv_hash_entry_t *entry_init(double support)
 {
   bitv_hash_entry_t *e = (bitv_hash_entry_t *)malloc(sizeof(bitv_hash_entry_t));
 
-  e->bit_vector  = (pll_split_t)NULL;
+  e->bit_vector  = (corax_split_t)NULL;
   e->tree_vector = (unsigned int *)NULL;
   e->support     = support;
   e->bip_number  = 0;
@@ -123,7 +123,7 @@ bitv_hash_entry_t *entry_init(double support)
   return e;
 }
 
-hash_key_t hash_get_key(pll_split_t s, int len)
+hash_key_t hash_get_key(corax_split_t s, int len)
 {
   hash_key_t h = 0;
   int        i;
@@ -144,7 +144,7 @@ hash_key_t hash_get_key(pll_split_t s, int len)
 
 /* this function only increments support for existing splits,
  * but never adds new splits to the hashtable */
-bitv_hash_entry_t *hash_update(pll_split_t       bit_vector,
+bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
                                bitv_hashtable_t *h,
                                hash_key_t        key,
                                double            support,
@@ -180,10 +180,10 @@ bitv_hash_entry_t *hash_update(pll_split_t       bit_vector,
     } while (e != (bitv_hash_entry_t *)NULL);
   }
 
-  return PLL_FAILURE;
+  return CORAX_FAILURE;
 }
 
-bitv_hash_entry_t *hash_insert(pll_split_t       bit_vector,
+bitv_hash_entry_t *hash_insert(corax_split_t       bit_vector,
                                bitv_hashtable_t *h,
                                unsigned int      bip_number,
                                hash_key_t        key,
@@ -207,8 +207,8 @@ bitv_hash_entry_t *hash_insert(pll_split_t       bit_vector,
   e->key        = key;
   e->bip_number = bip_number;
 
-  e->bit_vector = (pll_split_t)calloc(h->bitv_len, sizeof(pll_split_base_t));
-  memcpy(e->bit_vector, bit_vector, sizeof(pll_split_base_t) * h->bitv_len);
+  e->bit_vector = (corax_split_t)calloc(h->bitv_len, sizeof(corax_split_base_t));
+  memcpy(e->bit_vector, bit_vector, sizeof(corax_split_base_t) * h->bitv_len);
 
   e->next            = h->table[position];
   h->table[position] = e;
@@ -245,9 +245,9 @@ void hash_print(bitv_hashtable_t *h)
   }
 }
 
-void bitv_normalize(pll_split_t bitv, unsigned int bit_count)
+void bitv_normalize(corax_split_t bitv, unsigned int bit_count)
 {
-  unsigned int split_size   = sizeof(pll_split_base_t) * 8;
+  unsigned int split_size   = sizeof(corax_split_base_t) * 8;
   unsigned int split_offset = bit_count % split_size;
   unsigned int split_len    = bitv_length(bit_count);
   unsigned int i;
@@ -266,17 +266,17 @@ void bitv_normalize(pll_split_t bitv, unsigned int bit_count)
   }
 }
 
-int bitv_is_normalized(const pll_split_t bitv) { return bitv[0] & 1; }
+int bitv_is_normalized(const corax_split_t bitv) { return bitv[0] & 1; }
 
 inline unsigned int bitv_length(unsigned int bit_count)
 {
-  unsigned int split_size   = sizeof(pll_split_base_t) * 8;
+  unsigned int split_size   = sizeof(corax_split_base_t) * 8;
   unsigned int split_offset = bit_count % split_size;
 
   return bit_count / split_size + (split_offset > 0);
 }
 
-int bitv_compare(pll_split_t v1, pll_split_t v2, unsigned int bitv_len)
+int bitv_compare(corax_split_t v1, corax_split_t v2, unsigned int bitv_len)
 {
   for (unsigned int i = 0; i < bitv_len; ++i)
   {
@@ -285,7 +285,7 @@ int bitv_compare(pll_split_t v1, pll_split_t v2, unsigned int bitv_len)
   return 0;
 }
 
-inline unsigned int bitv_popcount(const pll_split_t bitv,
+inline unsigned int bitv_popcount(const corax_split_t bitv,
                                   unsigned int      bit_count,
                                   unsigned int      bitv_len)
 {
@@ -295,17 +295,17 @@ inline unsigned int bitv_popcount(const pll_split_t bitv,
   if (!bitv_len) bitv_len = bitv_length(bit_count);
 
   for (i = 0; i < bitv_len; ++i)
-  { setb += (unsigned int)PLL_POPCNT32(bitv[i]); }
+  { setb += (unsigned int)CORAX_POPCNT32(bitv[i]); }
   return setb;
 }
 
-inline unsigned int bitv_lightside(const pll_split_t bitv,
+inline unsigned int bitv_lightside(const corax_split_t bitv,
                                    unsigned int      bit_count,
                                    unsigned int      bitv_len)
 {
   unsigned int setb = bitv_popcount(bitv, bit_count, bitv_len);
 
-  return PLL_MIN(setb, bit_count - setb);
+  return CORAX_MIN(setb, bit_count - setb);
 }
 
 /* string */
@@ -393,7 +393,7 @@ int string_hash_insert(const char *s, string_hashtable_t *h, int node_number)
 
   for (; p != NULL; p = p->next)
   {
-    if (strcmp(s, p->word) == 0) return PLL_FAILURE;
+    if (strcmp(s, p->word) == 0) return CORAX_FAILURE;
   }
 
   p = (string_hash_entry_t *)malloc(sizeof(string_hash_entry_t));
@@ -408,7 +408,7 @@ int string_hash_insert(const char *s, string_hashtable_t *h, int node_number)
   h->table[position] = p;
   ++h->entry_count;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int string_hash_lookup(char *s, string_hashtable_t *h)

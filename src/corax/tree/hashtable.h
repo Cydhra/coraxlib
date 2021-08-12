@@ -36,15 +36,15 @@ void hash_destroy(bitv_hashtable_t *h);
 
 bitv_hash_entry_t *entry_init(double support);
 
-hash_key_t hash_get_key(pll_split_t s, int len);
+hash_key_t hash_get_key(corax_split_t s, int len);
 
-bitv_hash_entry_t *hash_update(pll_split_t       bit_vector,
+bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
                                bitv_hashtable_t *h,
                                hash_key_t        key,
                                double            support,
                                unsigned int      position);
 
-bitv_hash_entry_t *hash_insert(pll_split_t       bit_vector,
+bitv_hash_entry_t *hash_insert(corax_split_t       bit_vector,
                                bitv_hashtable_t *h,
                                unsigned int      bip_number,
                                hash_key_t        key,
@@ -59,19 +59,19 @@ void hash_print(bitv_hashtable_t *h);
 
 /* bitvector utilities */
 
-void bitv_normalize(pll_split_t bitv, unsigned int bit_count);
+void bitv_normalize(corax_split_t bitv, unsigned int bit_count);
 
-int bitv_is_normalized(const pll_split_t bitv);
+int bitv_is_normalized(const corax_split_t bitv);
 
 unsigned int bitv_length(unsigned int bit_count);
 
-int bitv_compare(pll_split_t v1, pll_split_t v2, unsigned int bitv_len);
+int bitv_compare(corax_split_t v1, corax_split_t v2, unsigned int bitv_len);
 
-unsigned int bitv_popcount(const pll_split_t bitv,
+unsigned int bitv_popcount(const corax_split_t bitv,
                            unsigned int      bit_count,
                            unsigned int      bitv_len);
 
-unsigned int bitv_lightside(const pll_split_t bitv,
+unsigned int bitv_lightside(const corax_split_t bitv,
                             unsigned int      bit_count,
                             unsigned int      bitv_len);
 

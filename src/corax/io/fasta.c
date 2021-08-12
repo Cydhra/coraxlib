@@ -36,14 +36,14 @@ static char *xstrchrnul(char *s, int c)
   return (char *)s + strlen(s);
 }
 
-PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
+CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
                                        const unsigned int *map)
 {
   int          i;
-  pll_fasta_t *fd = (pll_fasta_t *)malloc(sizeof(pll_fasta_t));
+  corax_fasta_t *fd = (corax_fasta_t *)malloc(sizeof(corax_fasta_t));
   if (!fd)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
@@ -59,7 +59,7 @@ PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
   fd->fp = fopen(filename, "r");
   if (!(fd->fp))
   {
-    pll_set_error(PLL_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
+    corax_set_error(CORAX_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
     free(fd);
     return NULL;
   }
@@ -67,7 +67,7 @@ PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
   /* get filesize */
   if (fseek(fd->fp, 0, SEEK_END))
   {
-    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
+    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -81,9 +81,9 @@ PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
   for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   fd->line[0] = 0;
-  if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+  if (!fgets(fd->line, CORAX_LINEALLOC, fd->fp))
   {
-    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to read file (%s)", filename);
+    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to read file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -93,7 +93,7 @@ PLL_EXPORT pll_fasta_t *pll_fasta_open(const char *        filename,
   return fd;
 }
 
-PLL_EXPORT int pll_fasta_rewind(pll_fasta_t *fd)
+CORAX_EXPORT int corax_fasta_rewind(corax_fasta_t *fd)
 {
   int i;
 
@@ -104,23 +104,23 @@ PLL_EXPORT int pll_fasta_rewind(pll_fasta_t *fd)
   for (i = 0; i < 256; i++) fd->stripped[i] = 0;
 
   fd->line[0] = 0;
-  if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+  if (!fgets(fd->line, CORAX_LINEALLOC, fd->fp))
   {
-    pll_set_error(PLL_ERROR_FILE_SEEK, "Unable to rewind and cache data");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to rewind and cache data");
+    return CORAX_FAILURE;
   }
   fd->lineno = 1;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pll_fasta_close(pll_fasta_t *fd)
+CORAX_EXPORT void corax_fasta_close(corax_fasta_t *fd)
 {
   fclose(fd->fp);
   free(fd);
 }
 
-PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
+CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
                                  char **      head,
                                  long *       head_len,
                                  char **      seq,
@@ -138,16 +138,16 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
   *head = (char *)malloc((size_t)(head_alloc));
   if (!(*head))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   *seq = (char *)malloc((size_t)(seq_alloc));
   if (!(*seq))
   {
     free(*head);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* read line and increase line number */
@@ -158,11 +158,11 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
 
     if (fd->line[0] != '>')
     {
-      pll_set_error(PLL_ERROR_FASTA_INVALIDHEADER,
+      corax_set_error(CORAX_ERROR_FASTA_INVALIDHEADER,
                     "Illegal header line in query fasta file");
       free(*head);
       free(*seq);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     long headerlen;
@@ -179,10 +179,10 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
       mem        = realloc(*head, (size_t)(head_alloc));
       if (!mem)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         free(*head);
         free(*seq);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       *head = (char *)mem;
     }
@@ -193,7 +193,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
     /* get next line */
 
     fd->line[0] = 0;
-    if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+    if (!fgets(fd->line, CORAX_LINEALLOC, fd->fp))
     { /* do nothing */
     }
     fd->lineno++;
@@ -227,11 +227,11 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
             mem = realloc(*seq, (size_t)(seq_alloc));
             if (!mem)
             {
-              pll_set_error(PLL_ERROR_MEM_ALLOC,
+              corax_set_error(CORAX_ERROR_MEM_ALLOC,
                             "Unable to allocate enough memory.");
               free(*head);
               free(*seq);
-              return PLL_FAILURE;
+              return CORAX_FAILURE;
             }
             *seq = (char *)mem;
           }
@@ -244,7 +244,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
           /* fatal character */
           if (c >= 32)
           {
-            pll_set_error(PLL_ERROR_FASTA_ILLEGALCHAR,
+            corax_set_error(CORAX_ERROR_FASTA_ILLEGALCHAR,
                           "illegal character '%c' "
                           "on line %ld in the fasta file",
                           c,
@@ -252,14 +252,14 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
           }
           else
           {
-            pll_set_error(PLL_ERROR_FASTA_UNPRINTABLECHAR,
+            corax_set_error(CORAX_ERROR_FASTA_UNPRINTABLECHAR,
                           "illegal unprintable character "
                           "%#.2x (hexadecimal) on line %ld "
                           "in the fasta file",
                           c,
                           fd->lineno);
           }
-          return PLL_FAILURE;
+          return CORAX_FAILURE;
 
         case 3:
           /* silently stripped chars */
@@ -268,7 +268,7 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
       }
 
       fd->line[0] = 0;
-      if (!fgets(fd->line, PLL_LINEALLOC, fd->fp))
+      if (!fgets(fd->line, CORAX_LINEALLOC, fd->fp))
       { /* do nothing */
       }
       fd->lineno++;
@@ -282,10 +282,10 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
       mem = realloc(*seq, (size_t)seq_alloc);
       if (!mem)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         free(*head);
         free(*seq);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       *seq = (char *)mem;
     }
@@ -294,23 +294,23 @@ PLL_EXPORT int pll_fasta_getnext(pll_fasta_t *fd,
     fd->no++;
     *seqno = fd->no;
 
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   }
 
-  pll_set_error(PLL_ERROR_FILE_EOF, "End of file\n");
+  corax_set_error(CORAX_ERROR_FILE_EOF, "End of file\n");
   free(*head);
   free(*seq);
-  return PLL_FAILURE;
+  return CORAX_FAILURE;
 }
 
-PLL_EXPORT long pll_fasta_getfilesize(const pll_fasta_t *fd)
+CORAX_EXPORT long corax_fasta_getfilesize(const corax_fasta_t *fd)
 {
   return fd->filesize;
 }
 
-PLL_EXPORT long pll_fasta_getfilepos(pll_fasta_t *fd) { return ftell(fd->fp); }
+CORAX_EXPORT long corax_fasta_getfilepos(corax_fasta_t *fd) { return ftell(fd->fp); }
 
-PLL_EXPORT pll_msa_t *pll_fasta_load(const char *fname)
+CORAX_EXPORT corax_msa_t *corax_fasta_load(const char *fname)
 {
   int i;
 
@@ -324,25 +324,25 @@ PLL_EXPORT pll_msa_t *pll_fasta_load(const char *fname)
   long   alloc_chunk = 0;
   size_t alloc_size  = 0;
 
-  pll_fasta_t *fp = pll_fasta_open(fname, pll_map_generic);
+  corax_fasta_t *fp = corax_fasta_open(fname, corax_map_generic);
   if (!fp)
   {
-    assert(pll_errno);
+    assert(corax_errno);
     return NULL;
   }
 
-  pll_msa_t *msa = (pll_msa_t *)calloc(1, sizeof(pll_msa_t));
+  corax_msa_t *msa = (corax_msa_t *)calloc(1, sizeof(corax_msa_t));
   if (!msa)
   {
-    pll_fasta_close(fp);
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    corax_fasta_close(fp);
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
   }
 
   /* read FASTA sequences and make sure they are all of the same length */
   msa->length = -1;
   msa->count  = 0;
-  for (i = 0; pll_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
+  for (i = 0; corax_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
   {
     if (msa->length == -1)
     {
@@ -355,9 +355,9 @@ PLL_EXPORT pll_msa_t *pll_fasta_load(const char *fname)
     else if (msa->length != seqlen)
     {
       msa->count = i;
-      pll_msa_destroy(msa);
-      pll_fasta_close(fp);
-      pll_set_error(PLL_ERROR_FASTA_NONALIGNED,
+      corax_msa_destroy(msa);
+      corax_fasta_close(fp);
+      corax_set_error(CORAX_ERROR_FASTA_NONALIGNED,
                     "FASTA file does not contain equal size sequences: "
                     "sequence %d has length of %ld (expected: %d)",
                     i,
@@ -387,16 +387,16 @@ PLL_EXPORT pll_msa_t *pll_fasta_load(const char *fname)
   msa->sequence = (char **)realloc(msa->sequence, alloc_size);
 
   /* close FASTA file */
-  pll_fasta_close(fp);
+  corax_fasta_close(fp);
 
   /* did we stop reading the file because we reached EOF? */
-  if (pll_errno != PLL_ERROR_FILE_EOF)
+  if (corax_errno != CORAX_ERROR_FILE_EOF)
   {
-    pll_msa_destroy(msa);
+    corax_msa_destroy(msa);
     return NULL;
   }
 
-  pll_errno = 0;
+  corax_errno = 0;
 
   return msa;
 }

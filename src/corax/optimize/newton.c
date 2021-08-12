@@ -35,7 +35,7 @@ newton_wrapper_func(void *params, double *proposal, double *df, double *ddf)
  *
  * @return            the parameter value that minimizes the function in [x1,x2]
  */
-PLL_EXPORT double pllmod_opt_minimize_newton(
+CORAX_EXPORT double pllmod_opt_minimize_newton(
     double       xmin,
     double       xguess,
     double       xmax,
@@ -63,7 +63,7 @@ PLL_EXPORT double pllmod_opt_minimize_newton(
   if (retval)
     return xres;
   else
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 }
 
 /**
@@ -87,9 +87,9 @@ PLL_EXPORT double pllmod_opt_minimize_newton(
  * @param  params     custom parameters required by the derivative function
  * @param  deriv_func derivative function
  *
- * @return            PLL_FAILURE on error, PLL_SUCCESS otherwise
+ * @return            CORAX_FAILURE on error, CORAX_SUCCESS otherwise
  */
-PLL_EXPORT int pllmod_opt_minimize_newton_multi(
+CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
     unsigned int xnum,
     double       xmin,
     double *     xguess,
@@ -115,7 +115,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
   double *x             = xguess;
 
   /* reset errno */
-  pll_errno = 0;
+  corax_errno = 0;
 
   if (!converged)
   {
@@ -125,7 +125,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
 
   for (i = 0; i < xnum; i++)
   {
-    x[i] = PLL_MAX(PLL_MIN(x[i], xmax), xmin);
+    x[i] = CORAX_MAX(CORAX_MIN(x[i], xmax), xmin);
 
     xl[i] = xmin;
     xh[i] = xmax;
@@ -135,7 +135,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
   {
     if (iter++ > max_iters)
     {
-      pll_set_error(PLLMOD_OPT_ERROR_NEWTON_LIMIT,
+      corax_set_error(PLLMOD_OPT_ERROR_NEWTON_LIMIT,
                     "Exceeded maximum number of iterations");
       error_flag = 1;
       break;
@@ -160,7 +160,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
             x[i],
             f[i],
             df[i]);
-        pll_set_error(PLLMOD_OPT_ERROR_NEWTON_DERIV,
+        corax_set_error(PLLMOD_OPT_ERROR_NEWTON_DERIV,
                       "Wrong likelihood derivatives");
         error_flag = 1;
         break;
@@ -186,7 +186,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
         dx = -1 * f[i] / fabs(df[i]);
       }
 
-      dx = PLL_MAX(PLL_MIN(dx, dxmax), -dxmax);
+      dx = CORAX_MAX(CORAX_MIN(dx, dxmax), -dxmax);
 
       if (x[i] + dx < xl[i]) dx = xl[i] - x[i];
       if (x[i] + dx > xh[i]) dx = xh[i] - x[i];
@@ -207,7 +207,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
 
       x[i] += dx;
 
-      x[i] = PLL_MAX(PLL_MIN(x[i], xmax), xmin);
+      x[i] = CORAX_MAX(CORAX_MIN(x[i], xmax), xmin);
 
       all_converged &= converged[i];
     }
@@ -220,7 +220,7 @@ PLL_EXPORT int pllmod_opt_minimize_newton_multi(
   if (int_converged) free(int_converged);
 
   if (all_converged && !error_flag)
-    return PLL_SUCCESS;
+    return CORAX_SUCCESS;
   else
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 }

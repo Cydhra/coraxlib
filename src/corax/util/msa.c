@@ -32,7 +32,7 @@
 
 #include "msa.h"
 
-PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition)
+CORAX_EXPORT double *pllmod_msa_empirical_frequencies(corax_partition_t *partition)
 {
   unsigned int        i, j, k, n;
   unsigned int        states        = partition->states;
@@ -40,18 +40,18 @@ PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition)
   unsigned int        sites         = partition->sites;
   unsigned int        rate_cats     = partition->rate_cats;
   unsigned int        tips          = partition->tips;
-  const pll_state_t * tipmap        = partition->tipmap;
+  const corax_state_t * tipmap        = partition->tipmap;
   const unsigned int *w             = partition->pattern_weights;
   double *            frequencies;
 
   if ((frequencies = (double *)calloc((size_t)states, sizeof(double))) == NULL)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for empirical frequencies");
     return NULL;
   }
 
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
     if (states == 4)
     {
@@ -61,7 +61,7 @@ PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition)
         for (n = 0; n < sites; ++n)
         {
           unsigned int state    = (unsigned int)tipchars[n];
-          double       sum_site = 1.0 * PLL_POPCNT32(state);
+          double       sum_site = 1.0 * CORAX_POPCNT32(state);
           for (k = 0; k < states; ++k)
           {
             if (state & 1) frequencies[k] += w[n] / sum_site;
@@ -77,8 +77,8 @@ PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition)
         const unsigned char *tipchars = partition->tipchars[i];
         for (n = 0; n < sites; ++n)
         {
-          pll_state_t state    = tipmap[(int)tipchars[n]];
-          double      sum_site = 1.0 * PLL_STATE_POPCNT(state);
+          corax_state_t state    = tipmap[(int)tipchars[n]];
+          double      sum_site = 1.0 * CORAX_STATE_POPCNT(state);
           for (k = 0; k < states; ++k)
           {
             if (state & 1) frequencies[k] += w[n] / sum_site;
@@ -93,7 +93,7 @@ PLL_EXPORT double *pllmod_msa_empirical_frequencies(pll_partition_t *partition)
     for (i = 0; i < tips; ++i)
     {
       unsigned int *site_to_id = 0;
-      if ((partition->attributes & PLL_ATTRIB_SITE_REPEATS)
+      if ((partition->attributes & CORAX_ATTRIB_SITE_REPEATS)
           && partition->repeats->pernode_ids[i])
       {
         site_to_id = partition->repeats->pernode_site_id[i];
@@ -134,13 +134,13 @@ void compute_pair_rates(unsigned int        states,
                         unsigned long       sites,
                         unsigned char **    tipchars,
                         const unsigned int *w,
-                        const pll_state_t * tipmap,
+                        const corax_state_t * tipmap,
                         size_t *            state_freq,
                         size_t *            pair_rates)
 {
   unsigned int  i, j, k;
   unsigned long n;
-  pll_state_t   undef_state = (pll_state_t)(pow(2, states)) - 1;
+  corax_state_t   undef_state = (corax_state_t)(pow(2, states)) - 1;
 
   for (n = 0; n < sites; ++n)
   {
@@ -148,7 +148,7 @@ void compute_pair_rates(unsigned int        states,
     for (i = 0; i < tips; ++i)
     {
       const unsigned int c     = (unsigned int)tipchars[i][n];
-      pll_state_t        state = tipmap ? tipmap[c] : c;
+      corax_state_t        state = tipmap ? tipmap[c] : c;
       if (state == undef_state) continue;
       for (k = 0; k < states; ++k)
       {
@@ -168,7 +168,7 @@ void compute_pair_rates(unsigned int        states,
   }
 }
 
-PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition)
+CORAX_EXPORT double *pllmod_msa_empirical_subst_rates(corax_partition_t *partition)
 {
   unsigned int        i, j, k, n;
   unsigned int        states        = partition->states;
@@ -176,7 +176,7 @@ PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition)
   unsigned int        sites         = partition->sites;
   unsigned int        tips          = partition->tips;
   unsigned int        rate_cats     = partition->rate_cats;
-  const pll_state_t * tipmap        = partition->tipmap;
+  const corax_state_t * tipmap        = partition->tipmap;
   const unsigned int *w             = partition->pattern_weights;
   unsigned char **    tipchars      = partition->tipchars;
 
@@ -188,7 +188,7 @@ PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition)
 
   if (!(subst_rates && pair_rates && state_freq))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for empirical subst rates");
     if (subst_rates) free(subst_rates);
     if (pair_rates) free(pair_rates);
@@ -196,7 +196,7 @@ PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition)
     return NULL;
   }
 
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
     compute_pair_rates(
         states, tips, sites, tipchars, w, tipmap, state_freq, pair_rates);
@@ -257,8 +257,8 @@ PLL_EXPORT double *pllmod_msa_empirical_subst_rates(pll_partition_t *partition)
   return subst_rates;
 }
 
-PLL_EXPORT double
-pllmod_msa_empirical_invariant_sites(pll_partition_t *partition)
+CORAX_EXPORT double
+pllmod_msa_empirical_invariant_sites(corax_partition_t *partition)
 {
   unsigned int        n;
   unsigned int        n_inv = 0;
@@ -266,10 +266,10 @@ pllmod_msa_empirical_invariant_sites(pll_partition_t *partition)
   const unsigned int *w     = partition->pattern_weights;
 
   /* reset errno */
-  pll_errno = 0;
+  corax_errno = 0;
 
   if (!partition->invariant)
-    if (!pll_update_invariant_sites(partition)) return (double)-INFINITY;
+    if (!corax_update_invariant_sites(partition)) return (double)-INFINITY;
 
   const int *invariant = partition->invariant;
 
@@ -291,7 +291,7 @@ static int find_duplicate_strings_htable(char **const    strings,
                                          unsigned long **duplicates,
                                          unsigned long * duplicate_count)
 {
-  if (!strings) return PLL_FAILURE;
+  if (!strings) return CORAX_FAILURE;
 
   unsigned long *data =
       (unsigned long *)malloc(string_count * sizeof(unsigned long));
@@ -303,9 +303,9 @@ static int find_duplicate_strings_htable(char **const    strings,
   {
     if (data) free(data);
     if (tmpdup) free(tmpdup);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for duplicates array");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   hcreate(string_count);
@@ -350,7 +350,7 @@ static int find_duplicate_strings_htable(char **const    strings,
     *duplicates = NULL;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /* Find duplicates using custom hash function optimized for long low-variance
@@ -361,7 +361,7 @@ static int find_duplicate_strings(char **const    strings,
                                   unsigned long **duplicates,
                                   unsigned long * duplicate_count)
 {
-  if (!strings) return PLL_FAILURE;
+  if (!strings) return CORAX_FAILURE;
 
   unsigned long *tmpdup =
       (unsigned long *)malloc(string_count * 2 * sizeof(unsigned long));
@@ -377,9 +377,9 @@ static int find_duplicate_strings(char **const    strings,
     if (hash) free(hash);
     if (tmpdup) free(tmpdup);
     if (dupflag) free(dupflag);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for duplicates array");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   *duplicate_count = 0;
@@ -427,9 +427,9 @@ static int find_duplicate_strings(char **const    strings,
 
     if (!(*duplicates))
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for duplicates array");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
   else
@@ -438,25 +438,25 @@ static int find_duplicate_strings(char **const    strings,
     *duplicates = NULL;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const pll_msa_t *  msa,
-                                                 const pll_state_t *tipmap)
+CORAX_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const corax_msa_t *  msa,
+                                                 const corax_state_t *tipmap)
 {
   unsigned long i, j;
 
   if (!msa)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "MSA structure is NULL");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return CORAX_FAILURE;
   }
 
   if (!tipmap)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Character-to-state mapping (charmap) is NULL");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   pllmod_msa_errors_t *errs =
@@ -464,12 +464,12 @@ PLL_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const pll_msa_t *  msa,
 
   if (!errs)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for MSA error structure");
     return NULL;
   }
 
-  errs->status = PLL_SUCCESS;
+  errs->status = CORAX_SUCCESS;
 
   const unsigned long msa_count  = (unsigned long)msa->count;
   const unsigned long msa_length = (unsigned long)msa->length;
@@ -479,13 +479,13 @@ PLL_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const pll_msa_t *  msa,
     for (j = 0; j < msa_length; ++j)
     {
       const int         c     = (int)seqchars[j];
-      const pll_state_t state = tipmap[c];
+      const corax_state_t state = tipmap[c];
 
       if (!state)
       {
         if (!errs->invalid_chars)
         {
-          errs->status = PLL_FAILURE;
+          errs->status = CORAX_FAILURE;
           errs->invalid_chars =
               (char *)calloc(PLLMOD_MSA_MAX_ERRORS, sizeof(char));
           errs->invalid_char_seq = (unsigned long *)calloc(
@@ -505,7 +505,7 @@ PLL_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const pll_msa_t *  msa,
   return errs;
 }
 
-PLL_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs)
+CORAX_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs)
 {
   if (!errs) return;
 
@@ -521,7 +521,7 @@ PLL_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs)
  *
  *  @param msa Multiple Sequence Alignment
  *  @param states Number of states (e.g., DNA=4, AA=20 etc.)
- *  @param charmap Mapping from chars to states (e.g., pll_map_nt for DNA)
+ *  @param charmap Mapping from chars to states (e.g., corax_map_nt for DNA)
  *  @param weights Alignment site weights, NULL=equal weights
  *  @param stats_mask Statistics to be computed, any combination of:
  *      PLLMOD_MSA_STATS_DUP_TAXA   duplicate taxon names
@@ -534,24 +534,24 @@ PLL_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs)
  *      PLLMOD_MSA_STATS_FREQS      state frequencies (NB: gaps are ignored!)
  *      PLLMOD_MSA_STATS_ALL        all of the above
  * */
-PLL_EXPORT pllmod_msa_stats_t *
-           pllmod_msa_compute_stats(const pll_msa_t *   msa,
+CORAX_EXPORT pllmod_msa_stats_t *
+           pllmod_msa_compute_stats(const corax_msa_t *   msa,
                                     unsigned int        states,
-                                    const pll_state_t * tipmap,
+                                    const corax_state_t * tipmap,
                                     const unsigned int *weights,
                                     unsigned long       stats_mask)
 {
   if (!msa)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "MSA structure is NULL");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return CORAX_FAILURE;
   }
 
   if (!tipmap)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Character-to-state mapping (charmap) is NULL");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   pllmod_msa_stats_t *stats =
@@ -559,7 +559,7 @@ PLL_EXPORT pllmod_msa_stats_t *
 
   if (!stats)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for MSA statistics");
     return NULL;
   }
@@ -575,10 +575,10 @@ PLL_EXPORT pllmod_msa_stats_t *
   size_t *       pair_rates      = NULL;
   size_t *       col_state_freq  = NULL;
 
-  pll_state_t * inv_state  = NULL;
+  corax_state_t * inv_state  = NULL;
   unsigned long inv_weight = 0;
 
-  pll_state_t gap_state = 0;
+  corax_state_t gap_state = 0;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -601,7 +601,7 @@ PLL_EXPORT pllmod_msa_stats_t *
                                                &stats->dup_taxa_pairs_count);
     if (!retval)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Error finding duplicated taxa");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Error finding duplicated taxa");
       goto error_exit;
     }
   }
@@ -616,7 +616,7 @@ PLL_EXPORT pllmod_msa_stats_t *
                                         &stats->dup_seqs_pairs_count);
     if (!retval)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC, "Error finding duplicated sequences");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Error finding duplicated sequences");
       goto error_exit;
     }
   }
@@ -624,14 +624,14 @@ PLL_EXPORT pllmod_msa_stats_t *
   /* compute empirical substitution rates */
   if (stats_mask & PLLMOD_MSA_STATS_SUBST_RATES)
   {
-    size_t n_subst_rates = pll_subst_rate_count(states);
+    size_t n_subst_rates = corax_subst_rate_count(states);
     stats->subst_rates   = (double *)calloc(n_subst_rates, sizeof(double));
     pair_rates           = (size_t *)calloc(states * states, sizeof(size_t));
     col_state_freq       = (size_t *)calloc(states, sizeof(size_t));
 
     if (!pair_rates || !stats->subst_rates || !col_state_freq)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for MSA statistics");
       goto error_exit;
     }
@@ -678,7 +678,7 @@ PLL_EXPORT pllmod_msa_stats_t *
 
     if (!stats->freqs)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for empirical frequencies");
       goto error_exit;
     }
@@ -696,12 +696,12 @@ PLL_EXPORT pllmod_msa_stats_t *
 
   if (stats_mask & (PLLMOD_MSA_STATS_INV_COLS | PLLMOD_MSA_STATS_INV_PROP))
   {
-    inv_state = (pll_state_t *)calloc(msa_length, sizeof(pll_state_t));
+    inv_state = (corax_state_t *)calloc(msa_length, sizeof(corax_state_t));
     stats->inv_cols =
         (unsigned long *)calloc(msa_length, sizeof(unsigned long));
     if (!inv_state || !stats->inv_cols)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for computing invariant sites");
       goto error_exit;
     }
@@ -716,7 +716,7 @@ PLL_EXPORT pllmod_msa_stats_t *
       || ((stats_mask & PLLMOD_MSA_STATS_GAP_COLS) && !col_gap_weight)
       || ((stats_mask & PLLMOD_MSA_STATS_GAP_SEQS) && !seq_gap_weight))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for MSA statistics");
     goto error_exit;
   }
@@ -726,8 +726,8 @@ PLL_EXPORT pllmod_msa_stats_t *
     const char *seqchars = msa->sequence[i];
     for (j = 0; j < msa_length; ++j)
     {
-      const pll_state_t  state       = tipmap[(int)seqchars[j]];
-      const unsigned int site_states = PLL_STATE_POPCNT(state);
+      const corax_state_t  state       = tipmap[(int)seqchars[j]];
+      const unsigned int site_states = CORAX_STATE_POPCNT(state);
       const int          is_gap      = state == gap_state ? 1 : 0;
       const unsigned int w           = weights ? weights[j] : 1;
 
@@ -737,12 +737,12 @@ PLL_EXPORT pllmod_msa_stats_t *
         {
           /* most likely sequence was already encoded and the original character
              is unknown at this point */
-          pll_set_error(
-              PLL_ERROR_MSA_MAP_INVALID, "Unknown state in sequence %d", i + 1);
+          corax_set_error(
+              CORAX_ERROR_MSA_MAP_INVALID, "Unknown state in sequence %d", i + 1);
         }
         else
         {
-          pll_set_error(PLL_ERROR_MSA_MAP_INVALID,
+          corax_set_error(CORAX_ERROR_MSA_MAP_INVALID,
                         "Unknown state %c at sequence %d position %d",
                         seqchars[j],
                         i + 1,
@@ -776,7 +776,7 @@ PLL_EXPORT pllmod_msa_stats_t *
       if (stats_mask & (PLLMOD_MSA_STATS_INV_COLS | PLLMOD_MSA_STATS_INV_PROP))
       {
         inv_state[j] &= state;
-        if (i == msa_count - 1 && PLL_STATE_POPCNT(inv_state[j]) == 1)
+        if (i == msa_count - 1 && CORAX_STATE_POPCNT(inv_state[j]) == 1)
         {
           inv_weight += w;
           stats->inv_cols[stats->inv_cols_count++] = j;
@@ -832,7 +832,7 @@ PLL_EXPORT pllmod_msa_stats_t *
 
       if (!stats->gap_cols)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC,
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
                       "Cannot allocate memory for gap columns");
         goto error_exit;
       }
@@ -858,7 +858,7 @@ PLL_EXPORT pllmod_msa_stats_t *
 
       if (!stats->gap_seqs)
       {
-        pll_set_error(PLL_ERROR_MEM_ALLOC,
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
                       "Cannot allocate memory for gap sequences");
         goto error_exit;
       }
@@ -887,7 +887,7 @@ error_exit:
   return NULL;
 }
 
-PLL_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats)
+CORAX_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats)
 {
   if (stats->dup_taxa_pairs) free(stats->dup_taxa_pairs);
 
@@ -917,7 +917,7 @@ PLL_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats)
  * @param inplace create new MSA structure for the filtered alignment (0)
  *                or re-use the original one (1)
  */
-PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
+CORAX_EXPORT corax_msa_t *pllmod_msa_filter(corax_msa_t *    msa,
                                         unsigned long *remove_seqs,
                                         unsigned long  remove_seqs_count,
                                         unsigned long *remove_cols,
@@ -926,20 +926,20 @@ PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
 {
   if (!msa)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
     return NULL;
   }
 
   if (remove_seqs_count && !remove_seqs)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "List of sequences to remove (remove_seqs) is NULL");
     return NULL;
   }
 
   if (remove_cols_count && !remove_cols)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "List of columns to remove (remove_seqs) is NULL");
     return NULL;
   }
@@ -951,7 +951,7 @@ PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
 
   unsigned char *seqflag = NULL;
   unsigned char *colflag = NULL;
-  pll_msa_t *    new_msa = NULL;
+  corax_msa_t *    new_msa = NULL;
 
   if (remove_seqs_count)
   {
@@ -962,7 +962,7 @@ PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
         seqflag[remove_seqs[i]] = 1;
       else
       {
-        pll_set_error(PLL_ERROR_INVALID_PARAM,
+        corax_set_error(CORAX_ERROR_INVALID_PARAM,
                       "Invalid sequence number in remove list: %lu",
                       remove_seqs[i]);
         goto error_exit;
@@ -979,7 +979,7 @@ PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
         colflag[remove_cols[i]] = 1;
       else
       {
-        pll_set_error(PLL_ERROR_INVALID_PARAM,
+        corax_set_error(CORAX_ERROR_INVALID_PARAM,
                       "Invalid column number in remove list: %lu",
                       remove_cols[i]);
         goto error_exit;
@@ -994,7 +994,7 @@ PLL_EXPORT pll_msa_t *pllmod_msa_filter(pll_msa_t *    msa,
     new_msa = msa;
   else
   {
-    new_msa           = (pll_msa_t *)calloc(1, sizeof(pll_msa_t));
+    new_msa           = (corax_msa_t *)calloc(1, sizeof(corax_msa_t));
     new_msa->count    = (int)new_count;
     new_msa->length   = (int)new_length;
     new_msa->label    = (char **)calloc(new_count, sizeof(char *));
@@ -1083,7 +1083,7 @@ error_exit:
 
     free(new_msa);
   }
-  pll_set_error(PLL_ERROR_MEM_ALLOC,
+  corax_set_error(CORAX_ERROR_MEM_ALLOC,
                 "Cannot allocate memory needed for MSA filtering");
   return NULL;
 }
@@ -1100,24 +1100,24 @@ error_exit:
  *
  *  Example:
  *
- *  pll_msa_t msa;
+ *  corax_msa_t msa;
  *  msa.length = 5;
  *  // further init of msa ...
  *  unsigned int part_site = {1, 1, 2, 2, 1};
- *  pll_msa_t ** part_msa = pllmod_msa_split(msa, part_site, 2);
+ *  corax_msa_t ** part_msa = pllmod_msa_split(msa, part_site, 2);
  *  // now part_msa contains 2 MSA objects:
  *  // part_msa[0] = 1st, 2nd and 5th columns of msa
  *  // part_msa[1] = 3rd and 4th columns of msa
  */
-PLL_EXPORT pll_msa_t **pllmod_msa_split(const pll_msa_t *   msa,
+CORAX_EXPORT corax_msa_t **pllmod_msa_split(const corax_msa_t *   msa,
                                         const unsigned int *site_part,
                                         unsigned int        part_count)
 {
   unsigned int  p;
   unsigned long i, j;
 
-  pll_msa_t **part_msa_list =
-      (pll_msa_t **)calloc(part_count, sizeof(pll_msa_t *));
+  corax_msa_t **part_msa_list =
+      (corax_msa_t **)calloc(part_count, sizeof(corax_msa_t *));
   unsigned int *part_len =
       (unsigned int *)calloc(part_count, sizeof(unsigned int));
 
@@ -1133,8 +1133,8 @@ PLL_EXPORT pll_msa_t **pllmod_msa_split(const pll_msa_t *   msa,
         part_len[p]++;
       else
       {
-        pll_set_error(
-            PLL_ERROR_INVALID_INDEX, "Partition index out of bounds: %u", p);
+        corax_set_error(
+            CORAX_ERROR_INVALID_INDEX, "Partition index out of bounds: %u", p);
         goto error_exit;
       }
     }
@@ -1142,7 +1142,7 @@ PLL_EXPORT pll_msa_t **pllmod_msa_split(const pll_msa_t *   msa,
 
   for (p = 0; p < part_count; ++p)
   {
-    part_msa_list[p] = (pll_msa_t *)calloc(1, sizeof(pll_msa_t));
+    part_msa_list[p] = (corax_msa_t *)calloc(1, sizeof(corax_msa_t));
     if (!part_msa_list[p]) goto malloc_error;
 
     part_msa_list[p]->count  = msa->count;
@@ -1179,7 +1179,7 @@ PLL_EXPORT pll_msa_t **pllmod_msa_split(const pll_msa_t *   msa,
   return part_msa_list;
 
 malloc_error:
-  pll_set_error(PLL_ERROR_MEM_ALLOC,
+  corax_set_error(CORAX_ERROR_MEM_ALLOC,
                 "Cannot allocate memory needed for MSA splitting");
 error_exit:
   if (part_len) free(part_len);

@@ -21,12 +21,12 @@
 
 #include "corax/corax.h"
 
-PLL_EXPORT int pll_set_parsimony_sequence(pll_parsimony_t *  pars,
+CORAX_EXPORT int corax_set_parsimony_sequence(corax_parsimony_t *  pars,
                                           unsigned int       tip_index,
-                                          const pll_state_t *map,
+                                          const corax_state_t *map,
                                           const char *       sequence)
 {
-  pll_state_t  c;
+  corax_state_t  c;
   unsigned int i, j;
 
   unsigned int states   = pars->states;
@@ -44,11 +44,11 @@ PLL_EXPORT int pll_set_parsimony_sequence(pll_parsimony_t *  pars,
   {
     if ((c = map[(int)sequence[i]]) == 0)
     {
-      pll_set_error(PLL_ERROR_TIPDATA_ILLEGALSTATE,
+      corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
                     "Illegal state code in tip \"%c\"",
                     sequence[i]);
-      printf("%s\n", pll_errmsg);
-      return PLL_FAILURE;
+      printf("%s\n", corax_errmsg);
+      return CORAX_FAILURE;
     }
 
     for (j = 0; j < states; ++j)
@@ -63,10 +63,10 @@ PLL_EXPORT int pll_set_parsimony_sequence(pll_parsimony_t *  pars,
     tipstate += states;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pll_parsimony_destroy(pll_parsimony_t *parsimony)
+CORAX_EXPORT void corax_parsimony_destroy(corax_parsimony_t *parsimony)
 {
   unsigned int i;
   unsigned int nodes_count = 0;
@@ -79,7 +79,7 @@ PLL_EXPORT void pll_parsimony_destroy(pll_parsimony_t *parsimony)
   if (parsimony->packedvector)
   {
     for (i = 0; i < nodes_count; ++i)
-      pll_aligned_free(parsimony->packedvector[i]);
+      corax_aligned_free(parsimony->packedvector[i]);
     free(parsimony->packedvector);
   }
 
@@ -113,7 +113,7 @@ PLL_EXPORT void pll_parsimony_destroy(pll_parsimony_t *parsimony)
   free(parsimony);
 }
 
-PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
+CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
                                                  unsigned int  states,
                                                  unsigned int  sites,
                                                  const double *score_matrix,
@@ -123,11 +123,11 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
   unsigned int i;
 
   /* create parsimony instance */
-  pll_parsimony_t *pars = (pll_parsimony_t *)calloc(1, sizeof(pll_parsimony_t));
+  corax_parsimony_t *pars = (corax_parsimony_t *)calloc(1, sizeof(corax_parsimony_t));
   if (!pars)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* store passed parameters */
@@ -141,8 +141,8 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
   pars->score_matrix = (double *)calloc(states * states, sizeof(double));
   if (!pars->score_matrix)
   {
-    pll_parsimony_destroy(pars);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_parsimony_destroy(pars);
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for scoring matrix.");
     return NULL;
   }
@@ -152,8 +152,8 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
   pars->sbuffer = (double **)calloc(score_buffers + tips, sizeof(double *));
   if (!pars->sbuffer)
   {
-    pll_parsimony_destroy(pars);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_parsimony_destroy(pars);
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for score buffers.");
     return NULL;
   }
@@ -162,8 +162,8 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
     pars->sbuffer[i] = (double *)calloc(sites * states, sizeof(double *));
     if (!pars->sbuffer[i])
     {
-      pll_parsimony_destroy(pars);
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_parsimony_destroy(pars);
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Unable to allocate enough memory for score buffers.");
       return NULL;
     }
@@ -174,8 +174,8 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
       (unsigned int **)calloc(tips + ancestral_buffers, sizeof(unsigned int *));
   if (!pars->anc_states)
   {
-    pll_parsimony_destroy(pars);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_parsimony_destroy(pars);
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for score buffers.");
     return NULL;
   }
@@ -184,8 +184,8 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
     pars->anc_states[i] = (unsigned int *)calloc(sites, sizeof(unsigned int));
     if (!pars->anc_states[i])
     {
-      pll_parsimony_destroy(pars);
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_parsimony_destroy(pars);
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Unable to allocate enough memory for score buffers.");
       return NULL;
     }
@@ -194,12 +194,12 @@ PLL_EXPORT pll_parsimony_t *pll_parsimony_create(unsigned int  tips,
   return pars;
 }
 
-PLL_EXPORT double pll_parsimony_build(pll_parsimony_t *         pars,
-                                      const pll_pars_buildop_t *operations,
+CORAX_EXPORT double corax_parsimony_build(corax_parsimony_t *         pars,
+                                      const corax_pars_buildop_t *operations,
                                       unsigned int              count)
 {
   unsigned int              i, j, k, n;
-  const pll_pars_buildop_t *op;
+  const corax_pars_buildop_t *op;
 
   unsigned int sites  = pars->sites;
   unsigned int states = pars->states;
@@ -272,10 +272,10 @@ PLL_EXPORT double pll_parsimony_build(pll_parsimony_t *         pars,
      postorder traversal */
   op = &(operations[count - 1]);
 
-  return pll_parsimony_score(pars, op->parent_score_index);
+  return corax_parsimony_score(pars, op->parent_score_index);
 }
 
-PLL_EXPORT double pll_parsimony_score(pll_parsimony_t *pars,
+CORAX_EXPORT double corax_parsimony_score(corax_parsimony_t *pars,
                                       unsigned int     score_buffer_index)
 {
   unsigned int i, j, k;
@@ -297,9 +297,9 @@ PLL_EXPORT double pll_parsimony_score(pll_parsimony_t *pars,
   return sum;
 }
 
-PLL_EXPORT void pll_parsimony_reconstruct(pll_parsimony_t *       pars,
-                                          const pll_state_t *     map,
-                                          const pll_pars_recop_t *operations,
+CORAX_EXPORT void corax_parsimony_reconstruct(corax_parsimony_t *       pars,
+                                          const corax_state_t *     map,
+                                          const corax_pars_recop_t *operations,
                                           unsigned int            count)
 {
   unsigned int i, j, n;
@@ -313,12 +313,12 @@ PLL_EXPORT void pll_parsimony_reconstruct(pll_parsimony_t *       pars,
 
   unsigned int states = pars->states;
 
-  const pll_pars_recop_t *op;
+  const corax_pars_recop_t *op;
 
   for (i = 0; i < 256; ++i) revmap[i] = 0;
   for (i = 0; i < 256; ++i)
   {
-    if (PLL_STATE_POPCNT(map[i]) == 1) { revmap[PLL_STATE_CTZ(map[i])] = i; }
+    if (CORAX_STATE_POPCNT(map[i]) == 1) { revmap[CORAX_STATE_CTZ(map[i])] = i; }
   }
 
   /* start from root of given subtree */
@@ -361,7 +361,7 @@ PLL_EXPORT void pll_parsimony_reconstruct(pll_parsimony_t *       pars,
 
       double parent_val =
           parent_score_buffer[n * states
-                              + PLL_STATE_CTZ(map[parent_ancestral_buffer[n]])];
+                              + CORAX_STATE_CTZ(map[parent_ancestral_buffer[n]])];
 
       if (score_buffer[n * states + minindex] + 1 > parent_val)
         ancestral_buffer[n] = parent_ancestral_buffer[n];

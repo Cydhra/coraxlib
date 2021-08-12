@@ -5,41 +5,41 @@
 
 #define PLLMOD_TREE_ERROR_POLYPHYL_OUTGROUP 3970 // B + {10...}
 
-PLL_EXPORT void pll_utree_set_length(pll_unode_t *edge, double length);
+CORAX_EXPORT void corax_utree_set_length(corax_unode_t *edge, double length);
 
-PLL_EXPORT void pll_utree_set_length_recursive(pll_utree_t *tree,
+CORAX_EXPORT void corax_utree_set_length_recursive(corax_utree_t *tree,
                                                double       length,
                                                int          missing_only);
 
-PLL_EXPORT void pll_utree_scale_branches(pll_utree_t *tree,
+CORAX_EXPORT void corax_utree_scale_branches(corax_utree_t *tree,
                                          double       branch_length_scaler);
 
-PLL_EXPORT void pll_utree_scale_branches_all(pll_unode_t *root,
+CORAX_EXPORT void corax_utree_scale_branches_all(corax_unode_t *root,
                                              double       branch_length_scaler);
 
-PLL_EXPORT void pll_utree_scale_subtree_branches(pll_unode_t *root,
+CORAX_EXPORT void corax_utree_scale_subtree_branches(corax_unode_t *root,
                                                  double branch_length_scaler);
 
-PLL_EXPORT int pll_utree_collapse_branches(pll_utree_t *tree, double min_brlen);
+CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree, double min_brlen);
 
-PLL_EXPORT pll_unode_t *pll_utree_unroot_inplace(pll_unode_t *root);
+CORAX_EXPORT corax_unode_t *corax_utree_unroot_inplace(corax_unode_t *root);
 
-PLL_EXPORT int pll_utree_root_inplace(pll_utree_t *tree);
+CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree);
 
-PLL_EXPORT int pll_utree_outgroup_root(pll_utree_t * tree,
+CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
                                        unsigned int *outgroup_tip_ids,
                                        unsigned int  outgroup_size,
                                        int           add_root_node);
 
-PLL_EXPORT int pllmod_utree_draw_support(pll_utree_t * ref_tree,
+CORAX_EXPORT int pllmod_utree_draw_support(corax_utree_t * ref_tree,
                                          const double *support,
-                                         pll_unode_t **node_map,
+                                         corax_unode_t **node_map,
                                          char *(*cb_serialize)(double));
 
-PLL_EXPORT pll_unode_t * pllmod_utree_serialize(pll_unode_t * tree,
+CORAX_EXPORT corax_unode_t * pllmod_utree_serialize(corax_unode_t * tree,
                                                 unsigned int tip_count);
 
-PLL_EXPORT pll_utree_t * pllmod_utree_expand(pll_unode_t * serialized_tree,
+CORAX_EXPORT corax_utree_t * pllmod_utree_expand(corax_unode_t * serialized_tree,
                                              unsigned int tip_count);
 
 #endif /* CORAX_TREE_UTREE_OPS_H_ */

@@ -2,23 +2,23 @@
 
 #include "corax/corax.h"
 
-__thread int  pll_errno;
-__thread char pll_errmsg[200] = {0};
+__thread int  corax_errno;
+__thread char corax_errmsg[200] = {0};
 
 /**
- * @brief Set pll error (pll_errno and pll_errmsg)
+ * @brief Set pll error (corax_errno and corax_errmsg)
  *
  * @param[in] errno the error code
  * @param[in] errmsg_fmt formatted error message
  */
 __attribute__((format(printf, 2, 3))) void
-pll_set_error(int _errno, const char *errmsg_fmt, ...)
+corax_set_error(int _errno, const char *errmsg_fmt, ...)
 {
-  pll_errno = _errno;
+  corax_errno = _errno;
 
   va_list args;
   va_start(args, errmsg_fmt);
-  vsnprintf(pll_errmsg, PLL_ERRMSG_LEN, errmsg_fmt, args);
+  vsnprintf(corax_errmsg, CORAX_ERRMSG_LEN, errmsg_fmt, args);
   va_end(args);
 }
 
@@ -26,10 +26,10 @@ pll_set_error(int _errno, const char *errmsg_fmt, ...)
  * Reset pll error and messages.
  *
  * Call this function within operations whose error status depends on
- * `pll_errno` such that no error leaks in from previous operations.
+ * `corax_errno` such that no error leaks in from previous operations.
  */
-void pll_reset_error()
+void corax_reset_error()
 {
-  pll_errno = 0;
-  strcpy(pll_errmsg, "");
+  corax_errno = 0;
+  strcpy(corax_errmsg, "");
 }

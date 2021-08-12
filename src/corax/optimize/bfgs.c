@@ -20,7 +20,7 @@ static inline int d_equals(double a, double b) { return (fabs(a - b) < 1e-10); }
  * @param  x[in,out]   first guess and result of the minimization process
  * @param  xmin        lower bound for each of the variables
  * @param  xmax        upper bound for each of the variables
- * @param  bound       bound type (PLL_LBFGSB_BOUND_[NONE|LOWER|UPPER|BOTH]
+ * @param  bound       bound type (CORAX_LBFGSB_BOUND_[NONE|LOWER|UPPER|BOTH]
  * @param  n           number of variables
  * @param  factr       convergence tolerance for L-BFGS-B relative to machine
  * epsilon
@@ -38,7 +38,7 @@ static inline int d_equals(double a, double b) { return (fabs(a - b) < 1e-10); }
  *
  * @return             the minimal score found
  */
-PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
+CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
                                              double *     xmin,
                                              double *     xmax,
                                              int *        bound,
@@ -72,7 +72,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
   max_corrections = 5;
 
   /* reset errno */
-  pll_errno = 0;
+  corax_errno = 0;
 
   g = (double *)calloc((size_t)n, sizeof(double));
 
@@ -87,7 +87,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
 
   if (!(wa && iwa && g))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for l-bfgs-b variables");
     if (g) free(g);
     if (iwa) free(iwa);
@@ -134,8 +134,8 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
       for (i = 0; i < n; i++)
       {
         temp = x[i];
-        h    = PLL_LBFGSB_ERROR * fabs(temp);
-        if (h < 1e-12) h = PLL_LBFGSB_ERROR;
+        h    = CORAX_LBFGSB_ERROR * fabs(temp);
+        if (h < 1e-12) h = CORAX_LBFGSB_ERROR;
 
         x[i]           = temp + h;
         h              = x[i] - temp;
@@ -162,9 +162,9 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
   {
     score = (double)-INFINITY;
     /* set errno only if it was not set by some inner function */
-    if (!pll_errno)
+    if (!corax_errno)
     {
-      pll_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 
@@ -232,12 +232,12 @@ static int init_bfgs_opt(struct bfgs_multi_opt *opt,
 
   if (!opt->g || !opt->iwa || !opt->wa)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for l-bfgs-b variables");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static void destroy_bfgs_opt(struct bfgs_multi_opt *opt)
@@ -273,7 +273,7 @@ static int setulb_multi(struct bfgs_multi_opt *opt)
                 opt->dsave);
 }
 
-PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
+CORAX_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
     unsigned int  xnum,
     double **     x,
     double **     xmin,
@@ -300,7 +300,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
 
   if (!lh_old || !lh_new || !converged || !skip || !opts)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate memory for l-bfgs-b variables");
     goto cleanup;
   }
@@ -317,7 +317,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
     opts[p] = (struct bfgs_multi_opt *)calloc(1, sizeof(struct bfgs_multi_opt));
     if (!opts[p])
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for l-bfgs-b variables");
       goto cleanup;
     }
@@ -328,7 +328,7 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
   }
 
   /* reset errno */
-  pll_errno = 0;
+  corax_errno = 0;
 
   int continue_opt = 1;
   while (continue_opt)
@@ -388,8 +388,8 @@ PLL_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
           if (skip[p]) continue;
 
           opts[p]->temp = x[p][i];
-          opts[p]->h    = PLL_LBFGSB_ERROR * fabs(opts[p]->temp);
-          if (opts[p]->h < 1e-12) opts[p]->h = PLL_LBFGSB_ERROR;
+          opts[p]->h    = CORAX_LBFGSB_ERROR * fabs(opts[p]->temp);
+          if (opts[p]->h < 1e-12) opts[p]->h = CORAX_LBFGSB_ERROR;
 
           x[p][i]    = opts[p]->temp + opts[p]->h;
           opts[p]->h = x[p][i] - opts[p]->temp;
@@ -433,9 +433,9 @@ cleanup:
   {
     score = (double)-INFINITY;
     /* set errno only if it was not set by some inner function */
-    if (!pll_errno)
+    if (!corax_errno)
     {
-      pll_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 

@@ -21,11 +21,11 @@
 
 #include "corax/corax.h"
 
-__thread pll_hardware_t pll_hardware = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+__thread corax_hardware_t corax_hardware = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-static void dealloc_partition_data(pll_partition_t *partition);
+static void dealloc_partition_data(corax_partition_t *partition);
 
-static void dealloc_partition_data(pll_partition_t *partition)
+static void dealloc_partition_data(corax_partition_t *partition)
 {
   unsigned int i;
 
@@ -45,10 +45,10 @@ static void dealloc_partition_data(pll_partition_t *partition)
 
   if (partition->tipchars)
     for (i = 0; i < partition->tips; ++i)
-      pll_aligned_free(partition->tipchars[i]);
+      corax_aligned_free(partition->tipchars[i]);
   free(partition->tipchars);
 
-  if (partition->ttlookup) pll_aligned_free(partition->ttlookup);
+  if (partition->ttlookup) corax_aligned_free(partition->ttlookup);
 
   if (partition->charmap) free(partition->charmap);
 
@@ -57,49 +57,49 @@ static void dealloc_partition_data(pll_partition_t *partition)
   if (partition->clv)
   {
     unsigned int start =
-        (partition->attributes & PLL_ATTRIB_PATTERN_TIP) ? partition->tips : 0;
+        (partition->attributes & CORAX_ATTRIB_PATTERN_TIP) ? partition->tips : 0;
     for (i = start; i < partition->clv_buffers + partition->tips; ++i)
-      pll_aligned_free(partition->clv[i]);
+      corax_aligned_free(partition->clv[i]);
   }
   free(partition->clv);
 
   if (partition->pmatrix)
   {
     // for (i = 0; i < partition->prob_matrices; ++i)
-    pll_aligned_free(partition->pmatrix[0]);
+    corax_aligned_free(partition->pmatrix[0]);
   }
   free(partition->pmatrix);
 
   if (partition->subst_params)
     for (i = 0; i < partition->rate_matrices; ++i)
-      pll_aligned_free(partition->subst_params[i]);
+      corax_aligned_free(partition->subst_params[i]);
   free(partition->subst_params);
 
   if (partition->eigenvecs)
     for (i = 0; i < partition->rate_matrices; ++i)
-      pll_aligned_free(partition->eigenvecs[i]);
+      corax_aligned_free(partition->eigenvecs[i]);
   free(partition->eigenvecs);
 
   if (partition->inv_eigenvecs)
     for (i = 0; i < partition->rate_matrices; ++i)
-      pll_aligned_free(partition->inv_eigenvecs[i]);
+      corax_aligned_free(partition->inv_eigenvecs[i]);
   free(partition->inv_eigenvecs);
 
   if (partition->eigenvals)
     for (i = 0; i < partition->rate_matrices; ++i)
-      pll_aligned_free(partition->eigenvals[i]);
+      corax_aligned_free(partition->eigenvals[i]);
   free(partition->eigenvals);
 
   if (partition->frequencies)
     for (i = 0; i < partition->rate_matrices; ++i)
-      pll_aligned_free(partition->frequencies[i]);
+      corax_aligned_free(partition->frequencies[i]);
   free(partition->frequencies);
 
   if (partition->pattern_weights) free(partition->pattern_weights);
 
   if (partition->repeats)
   {
-    pll_repeats_t *repeats = partition->repeats;
+    corax_repeats_t *repeats = partition->repeats;
     for (i = 0; i < partition->nodes; ++i)
     {
       free(repeats->pernode_site_id[i]);
@@ -121,7 +121,7 @@ static void dealloc_partition_data(pll_partition_t *partition)
   free(partition);
 }
 
-PLL_EXPORT void *pll_aligned_alloc(size_t size, size_t alignment)
+CORAX_EXPORT void *corax_aligned_alloc(size_t size, size_t alignment)
 {
   void *mem;
 
@@ -134,7 +134,7 @@ PLL_EXPORT void *pll_aligned_alloc(size_t size, size_t alignment)
   return mem;
 }
 
-PLL_EXPORT void pll_aligned_free(void *ptr)
+CORAX_EXPORT void corax_aligned_free(void *ptr)
 {
 #if (defined(__WIN32__) || defined(__WIN64__))
   _aligned_free(ptr);
@@ -143,20 +143,20 @@ PLL_EXPORT void pll_aligned_free(void *ptr)
 #endif
 }
 
-static int update_charmap(pll_partition_t *partition, const pll_state_t *map)
+static int update_charmap(corax_partition_t *partition, const corax_state_t *map)
 {
   unsigned int i, j, k;
   unsigned int new_states_count = 0;
-  pll_state_t  mapcopy[PLL_ASCII_SIZE];
+  corax_state_t  mapcopy[CORAX_ASCII_SIZE];
 
-  memcpy(mapcopy, map, PLL_ASCII_SIZE * sizeof(pll_state_t));
+  memcpy(mapcopy, map, CORAX_ASCII_SIZE * sizeof(corax_state_t));
 
   /* find maximum value in charmap table */
   k = 0;
   while (partition->tipmap[k]) ++k;
 
   /* compute the number of new states in the map */
-  for (i = 0; i < PLL_ASCII_SIZE; ++i)
+  for (i = 0; i < CORAX_ASCII_SIZE; ++i)
   {
     if (mapcopy[i])
     {
@@ -178,19 +178,19 @@ static int update_charmap(pll_partition_t *partition, const pll_state_t *map)
   }
 
   /* erase old charmap */
-  memset(partition->charmap, 0, PLL_ASCII_SIZE * sizeof(unsigned char));
+  memset(partition->charmap, 0, CORAX_ASCII_SIZE * sizeof(unsigned char));
 
   /* using this map we will have more than 256 states, so return an error */
-  if (new_states_count + k >= PLL_ASCII_SIZE)
+  if (new_states_count + k >= CORAX_ASCII_SIZE)
   {
-    pll_set_error(
-        PLL_ERROR_MSA_MAP_INVALID,
-        "Cannot specify 256 or more states with PLL_ATTRIB_PATTERN_TIP.");
-    return PLL_FAILURE;
+    corax_set_error(
+        CORAX_ERROR_MSA_MAP_INVALID,
+        "Cannot specify 256 or more states with CORAX_ATTRIB_PATTERN_TIP.");
+    return CORAX_FAILURE;
   }
 
   /* traverse the new map */
-  for (i = 0; i < PLL_ASCII_SIZE; ++i)
+  for (i = 0; i < CORAX_ASCII_SIZE; ++i)
   {
     if (mapcopy[i])
     {
@@ -216,7 +216,7 @@ static int update_charmap(pll_partition_t *partition, const pll_state_t *map)
       partition->charmap[i] = (unsigned char)code;
 
       /* find all characters with the same state in the map */
-      for (j = i + 1; j < PLL_ASCII_SIZE; ++j)
+      for (j = i + 1; j < CORAX_ASCII_SIZE; ++j)
       {
         if (mapcopy[i] == mapcopy[j])
         {
@@ -252,23 +252,23 @@ static int update_charmap(pll_partition_t *partition, const pll_state_t *map)
 
     /* for AVX we do not need to reallocate ttlookup as it has fixed size */
     if ((partition->states == 4)
-        && (partition->attributes & PLL_ATTRIB_ARCH_AVX)
-        && PLL_STAT(avx_present))
-      return PLL_SUCCESS;
+        && (partition->attributes & CORAX_ATTRIB_ARCH_AVX)
+        && CORAX_STAT(avx_present))
+      return CORAX_SUCCESS;
 
     free(partition->ttlookup);
     partition->ttlookup =
-        pll_aligned_alloc(alloc_size * sizeof(double), partition->alignment);
+        corax_aligned_alloc(alloc_size * sizeof(double), partition->alignment);
     if (!partition->ttlookup)
     {
-      pll_set_error(
-          PLL_ERROR_MEM_ALLOC,
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
           "Cannot allocate space for storing precomputed tip-tip CLVs.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 /* create a bijective mapping from states to the range <1,maxstates> where
@@ -278,12 +278,12 @@ static int update_charmap(pll_partition_t *partition, const pll_state_t *map)
    the precomputated CLV for a charmapped pair i and j, at index:
 
    (i << ceil(log(maxstate)) + j) << log(states) << log(rates) */
-static int create_charmap(pll_partition_t *  partition,
-                          const pll_state_t *usermap)
+static int create_charmap(corax_partition_t *  partition,
+                          const corax_state_t *usermap)
 {
   unsigned int i, j, k = 0;
-  pll_state_t  m = 0;
-  pll_state_t  map[PLL_ASCII_SIZE];
+  corax_state_t  m = 0;
+  corax_state_t  map[CORAX_ASCII_SIZE];
 
   /* If ascertainment bias correction attribute is set, CLVs will be allocated
      with additional sites for each state */
@@ -291,28 +291,28 @@ static int create_charmap(pll_partition_t *  partition,
                                  ? partition->sites + partition->states
                                  : partition->sites;
 
-  // memcpy(map, partition->map, PLL_ASCII_SIZE * sizeof(unsigned int));
-  memcpy(map, usermap, PLL_ASCII_SIZE * sizeof(pll_state_t));
+  // memcpy(map, partition->map, CORAX_ASCII_SIZE * sizeof(unsigned int));
+  memcpy(map, usermap, CORAX_ASCII_SIZE * sizeof(corax_state_t));
 
   if (!(partition->charmap =
-            (unsigned char *)calloc(PLL_ASCII_SIZE, sizeof(unsigned char))))
+            (unsigned char *)calloc(CORAX_ASCII_SIZE, sizeof(unsigned char))))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate charmap for tip-tip precomputation.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   if (!(partition->tipmap =
-            (pll_state_t *)calloc(PLL_ASCII_SIZE, sizeof(pll_state_t))))
+            (corax_state_t *)calloc(CORAX_ASCII_SIZE, sizeof(corax_state_t))))
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate tipmap for tip-tip precomputation.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* create charmap (remapped table of ASCII characters to range 0,|states|)
      and tipmap which is a (1,|states|) -> state */
-  for (i = 0; i < PLL_ASCII_SIZE; ++i)
+  for (i = 0; i < CORAX_ASCII_SIZE; ++i)
   {
     if (map[i])
     {
@@ -320,7 +320,7 @@ static int create_charmap(pll_partition_t *  partition,
 
       partition->charmap[i] = (unsigned char)k;
       partition->tipmap[k]  = map[i];
-      for (j = i + 1; j < PLL_ASCII_SIZE; ++j)
+      for (j = i + 1; j < CORAX_ASCII_SIZE; ++j)
       {
         if (map[i] == map[j])
         {
@@ -349,29 +349,29 @@ static int create_charmap(pll_partition_t *  partition,
 
   /* dedicated 4x4 function  - if AVX is not used we can allocate less space
      in case not all 16 possible ambiguities are present */
-  if ((partition->states == 4) && (partition->attributes & PLL_ATTRIB_ARCH_AVX)
-      && PLL_STAT(avx_present))
+  if ((partition->states == 4) && (partition->attributes & CORAX_ATTRIB_ARCH_AVX)
+      && CORAX_STAT(avx_present))
   {
-    partition->ttlookup = pll_aligned_alloc(
+    partition->ttlookup = corax_aligned_alloc(
         1024 * partition->rate_cats * sizeof(double), partition->alignment);
     if (!partition->ttlookup)
     {
-      pll_set_error(
-          PLL_ERROR_MEM_ALLOC,
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
           "Cannot allocate space for storing precomputed tip-tip CLVs.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
   else
   {
     partition->ttlookup =
-        pll_aligned_alloc(alloc_size * sizeof(double), partition->alignment);
+        corax_aligned_alloc(alloc_size * sizeof(double), partition->alignment);
     if (!partition->ttlookup)
     {
-      pll_set_error(
-          PLL_ERROR_MEM_ALLOC,
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
           "Cannot allocate space for storing precomputed tip-tip CLVs.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
 
@@ -380,9 +380,9 @@ static int create_charmap(pll_partition_t *  partition,
       (unsigned char **)calloc(partition->tips, sizeof(unsigned char *));
   if (!partition->tipchars)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate space for storing tip characters.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   for (i = 0; i < partition->tips; ++i)
@@ -391,16 +391,16 @@ static int create_charmap(pll_partition_t *  partition,
         (unsigned char *)malloc(sites_alloc * sizeof(unsigned char));
     if (!partition->tipchars[i])
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for storing tip characters.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
+CORAX_EXPORT corax_partition_t *corax_partition_create(unsigned int tips,
                                                  unsigned int clv_buffers,
                                                  unsigned int states,
                                                  unsigned int sites,
@@ -414,50 +414,50 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   unsigned int sites_alloc;
 
   /* make sure that multiple ARCH were not specified */
-  if (PLL_POPCNT32(attributes & PLL_ATTRIB_ARCH_MASK) > 1)
+  if (CORAX_POPCNT32(attributes & CORAX_ATTRIB_ARCH_MASK) > 1)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Multiple architecture flags specified.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* disable repeats if there are to few sites */
-  if (sites < 16 && (attributes & PLL_ATTRIB_SITE_REPEATS))
+  if (sites < 16 && (attributes & CORAX_ATTRIB_SITE_REPEATS))
   {
-    attributes &= ~PLL_ATTRIB_SITE_REPEATS;
+    attributes &= ~CORAX_ATTRIB_SITE_REPEATS;
   }
 
   /* allocate partition */
-  pll_partition_t *partition =
-      (pll_partition_t *)malloc(sizeof(pll_partition_t));
+  corax_partition_t *partition =
+      (corax_partition_t *)malloc(sizeof(corax_partition_t));
   if (!partition)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Cannot allocate memory for partition.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for partition.");
+    return CORAX_FAILURE;
   }
 
   /* extract architecture and set vectorization parameters */
-  partition->alignment     = PLL_ALIGNMENT_CPU;
+  partition->alignment     = CORAX_ALIGNMENT_CPU;
   partition->attributes    = attributes;
   partition->states_padded = states;
 #ifdef HAVE_SSE3
-  if (attributes & PLL_ATTRIB_ARCH_SSE && PLL_STAT(sse3_present))
+  if (attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
-    partition->alignment     = PLL_ALIGNMENT_SSE;
+    partition->alignment     = CORAX_ALIGNMENT_SSE;
     partition->states_padded = (states + 1) & 0xFFFFFFFE;
   }
 #endif
 #ifdef HAVE_AVX
-  if (attributes & PLL_ATTRIB_ARCH_AVX && PLL_STAT(avx_present))
+  if (attributes & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
-    partition->alignment     = PLL_ALIGNMENT_AVX;
+    partition->alignment     = CORAX_ALIGNMENT_AVX;
     partition->states_padded = (states + 3) & 0xFFFFFFFC;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attributes & PLL_ATTRIB_ARCH_AVX2 && PLL_STAT(avx2_present))
+  if (attributes & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
-    partition->alignment     = PLL_ALIGNMENT_AVX;
+    partition->alignment     = CORAX_ALIGNMENT_AVX;
     partition->states_padded = (states + 3) & 0xFFFFFFFC;
   }
 #endif
@@ -503,7 +503,7 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   /* If ascertainment bias correction attribute is set, CLVs will be allocated
      with additional sites for each state */
   partition->asc_bias_alloc =
-      (partition->attributes & (PLL_ATTRIB_AB_MASK | PLL_ATTRIB_AB_FLAG)) > 0;
+      (partition->attributes & (CORAX_ATTRIB_AB_MASK | CORAX_ATTRIB_AB_FLAG)) > 0;
   partition->asc_additional_sites = (partition->asc_bias_alloc ? states : 0);
   sites_alloc = (unsigned int)partition->asc_additional_sites + sites;
 
@@ -515,41 +515,41 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->eigen_decomp_valid)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
   /* clv */
   partition->clv = (double **)calloc(partition->nodes, sizeof(double *));
   if (!partition->clv)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for CLVs.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* if site repeats are enabled, we allocate CLVs dynamically */
-  if (!pll_repeats_enabled(partition))
+  if (!corax_repeats_enabled(partition))
   {
     /* if tip pattern precomputation is enabled, then do not allocate CLV space
        for the tip nodes */
     unsigned int start =
-        (partition->attributes & PLL_ATTRIB_PATTERN_TIP) ? partition->tips : 0;
+        (partition->attributes & CORAX_ATTRIB_PATTERN_TIP) ? partition->tips : 0;
 
     for (i = start; i < partition->tips + partition->clv_buffers; ++i)
     {
-      partition->clv[i] = pll_aligned_alloc(sites_alloc * states_padded
+      partition->clv[i] = corax_aligned_alloc(sites_alloc * states_padded
                                                 * rate_cats * sizeof(double),
                                             partition->alignment);
       if (!partition->clv[i])
       {
         dealloc_partition_data(partition);
-        pll_errno = PLL_ERROR_MEM_ALLOC;
-        pll_set_error(PLL_ERROR_MEM_ALLOC,
+        corax_errno = CORAX_ERROR_MEM_ALLOC;
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
                       "Unable to allocate enough memory for CLVs.");
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
       /* zero-out CLV vectors to avoid valgrind warnings when using odd number
          of states with vectorized code */
@@ -564,10 +564,10 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->pmatrix)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for p-matrix.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* allocate transition probability matrices in contiguous space, in order
@@ -577,17 +577,17 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   size_t displacement =
       (states_padded - states) * (states_padded) * sizeof(double);
   partition->pmatrix[0] =
-      pll_aligned_alloc(partition->prob_matrices * states * states_padded
+      corax_aligned_alloc(partition->prob_matrices * states * states_padded
                                 * rate_cats * sizeof(double)
                             + displacement,
                         partition->alignment);
   if (!partition->pmatrix[0])
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for p-matrix.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 1; i < partition->prob_matrices; ++i)
     partition->pmatrix[i] =
@@ -607,22 +607,22 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->eigenvecs)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for eigenvectors.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
-    partition->eigenvecs[i] = pll_aligned_alloc(
+    partition->eigenvecs[i] = corax_aligned_alloc(
         states * states_padded * sizeof(double), partition->alignment);
     if (!partition->eigenvecs[i])
     {
       dealloc_partition_data(partition);
-      pll_errno = PLL_ERROR_MEM_ALLOC;
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_errno = CORAX_ERROR_MEM_ALLOC;
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Unable to allocate enough memory for eigenvectors.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     memset(partition->eigenvecs[i], 0, states * states_padded * sizeof(double));
     /* TODO: don't forget to add code for SSE/AVX */
@@ -634,22 +634,22 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->inv_eigenvecs)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for inverse eigenvectors.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
-    partition->inv_eigenvecs[i] = pll_aligned_alloc(
+    partition->inv_eigenvecs[i] = corax_aligned_alloc(
         states * states_padded * sizeof(double), partition->alignment);
     if (!partition->inv_eigenvecs[i])
     {
       dealloc_partition_data(partition);
-      pll_set_error(
-          PLL_ERROR_MEM_ALLOC,
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
           "Unable to allocate enough memory for inverse eigenvectors.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     memset(partition->inv_eigenvecs[i],
            0,
@@ -663,21 +663,21 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->eigenvals)
   {
     dealloc_partition_data(partition);
-    pll_errno = PLL_ERROR_MEM_ALLOC;
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_errno = CORAX_ERROR_MEM_ALLOC;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for eigenvalues.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
     partition->eigenvals[i] =
-        pll_aligned_alloc(states_padded * sizeof(double), partition->alignment);
+        corax_aligned_alloc(states_padded * sizeof(double), partition->alignment);
     if (!partition->eigenvals[i])
     {
       dealloc_partition_data(partition);
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Unable to allocate enough memory for eigenvalues.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     memset(partition->eigenvals[i], 0, states_padded * sizeof(double));
     /* TODO: don't forget to add code for SSE/AVX */
@@ -689,23 +689,23 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->subst_params)
   {
     dealloc_partition_data(partition);
-    pll_set_error(
-        PLL_ERROR_MEM_ALLOC,
+    corax_set_error(
+        CORAX_ERROR_MEM_ALLOC,
         "Unable to allocate enough memory for substitution parameters.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
     partition->subst_params[i] =
-        pll_aligned_alloc(((states * states - states) / 2) * sizeof(double),
+        corax_aligned_alloc(((states * states - states) / 2) * sizeof(double),
                           partition->alignment);
     if (!partition->subst_params[i])
     {
       dealloc_partition_data(partition);
-      pll_set_error(
-          PLL_ERROR_MEM_ALLOC,
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
           "Unable to allocate enough memory for substitution parameters.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     /* TODO: don't forget to add code for SSE/AVX */
   }
@@ -716,20 +716,20 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->frequencies)
   {
     dealloc_partition_data(partition);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for frequencies.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
     partition->frequencies[i] =
-        pll_aligned_alloc(states_padded * sizeof(double), partition->alignment);
+        corax_aligned_alloc(states_padded * sizeof(double), partition->alignment);
     if (!partition->frequencies[i])
     {
       dealloc_partition_data(partition);
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Unable to allocate enough memory for frequencies.");
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
     /* TODO: don't forget to add code for SSE/AVX */
     memset(partition->frequencies[i], 0, states_padded * sizeof(double));
@@ -740,9 +740,9 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->rates)
   {
     dealloc_partition_data(partition);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for heterogeneity rates.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* rate weights */
@@ -757,9 +757,9 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   else
   {
     dealloc_partition_data(partition);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for rate weights.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* proportion of invariant sites */
@@ -768,10 +768,10 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->prop_invar)
   {
     dealloc_partition_data(partition);
-    pll_set_error(
-        PLL_ERROR_MEM_ALLOC,
+    corax_set_error(
+        CORAX_ERROR_MEM_ALLOC,
         "Unable to allocate enough memory for invar sites proportion.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* site weights */
@@ -780,9 +780,9 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->pattern_weights)
   {
     dealloc_partition_data(partition);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for site pattern weights.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   for (i = 0; i < partition->sites; ++i) partition->pattern_weights[i] = 1;
   /* additional positions if asc_bias is set are initialized to zero */
@@ -794,16 +794,16 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
   if (!partition->scale_buffer)
   {
     dealloc_partition_data(partition);
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Unable to allocate enough memory for scale buffers.");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
   /* if we use site repeats, we allocate scales dynamically (later) */
-  if (!pll_repeats_enabled(partition))
+  if (!corax_repeats_enabled(partition))
   {
     for (i = 0; i < partition->scale_buffers; ++i)
     {
-      size_t scaler_size = (attributes & PLL_ATTRIB_RATE_SCALERS)
+      size_t scaler_size = (attributes & CORAX_ATTRIB_RATE_SCALERS)
                                ? sites_alloc * rate_cats
                                : sites_alloc;
       partition->scale_buffer[i] =
@@ -811,35 +811,35 @@ PLL_EXPORT pll_partition_t *pll_partition_create(unsigned int tips,
       if (!partition->scale_buffer[i])
       {
         dealloc_partition_data(partition);
-        pll_set_error(PLL_ERROR_MEM_ALLOC,
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
                       "Unable to allocate enough memory for scale buffers.");
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
     }
   }
 
-  if (pll_repeats_enabled(partition))
+  if (corax_repeats_enabled(partition))
   {
-    if (PLL_FAILURE == pll_repeats_initialize(partition))
+    if (CORAX_FAILURE == corax_repeats_initialize(partition))
     {
       dealloc_partition_data(partition);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
   }
   return partition;
 }
 
-PLL_EXPORT void pll_partition_destroy(pll_partition_t *partition)
+CORAX_EXPORT void corax_partition_destroy(corax_partition_t *partition)
 {
   dealloc_partition_data(partition);
 }
 
-static int set_tipchars_4x4(pll_partition_t *  partition,
+static int set_tipchars_4x4(corax_partition_t *  partition,
                             unsigned int       tip_index,
-                            const pll_state_t *map,
+                            const corax_state_t *map,
                             const char *       sequence)
 {
-  pll_state_t  c;
+  corax_state_t  c;
   unsigned int i;
 
   /* iterate through sites */
@@ -847,10 +847,10 @@ static int set_tipchars_4x4(pll_partition_t *  partition,
   {
     if ((c = map[(int)sequence[i]]) == 0)
     {
-      pll_set_error(PLL_ERROR_TIPDATA_ILLEGALSTATE,
+      corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
                     "Illegal state code in tip \"%c\"",
                     sequence[i]);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     /* store states as the remapped characters from charmap */
@@ -869,15 +869,15 @@ static int set_tipchars_4x4(pll_partition_t *  partition,
 
   /* tipmap is never used in the 4x4 case except create and update_charmap */
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int set_tipchars(pll_partition_t *  partition,
+static int set_tipchars(corax_partition_t *  partition,
                         unsigned int       tip_index,
-                        const pll_state_t *map,
+                        const corax_state_t *map,
                         const char *       sequence)
 {
-  pll_state_t    c;
+  corax_state_t    c;
   unsigned int   i;
   unsigned char *tipchars = partition->tipchars[tip_index];
 
@@ -886,10 +886,10 @@ static int set_tipchars(pll_partition_t *  partition,
   {
     if ((c = map[(int)sequence[i]]) == 0)
     {
-      pll_set_error(PLL_ERROR_TIPDATA_ILLEGALSTATE,
+      corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
                     "Illegal state code in tip \"%c\"",
                     sequence[i]);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     /* store states as the remapped characters from charmap */
@@ -908,29 +908,29 @@ static int set_tipchars(pll_partition_t *  partition,
        tipchars order is 1,16,13,... (i.e., not sequential)  */
     for (i = 0; i < partition->maxstates; ++i)
     {
-      pll_state_t state = partition->tipmap[i];
-      if (PLL_STATE_POPCNT(state) == 1)
+      corax_state_t state = partition->tipmap[i];
+      if (CORAX_STATE_POPCNT(state) == 1)
       {
-        unsigned int pos = PLL_STATE_CTZ(state);
+        unsigned int pos = CORAX_STATE_CTZ(state);
         assert(pos < partition->states);
         tipchars[pos] = i;
       }
     }
   }
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-static int set_tipclv(pll_partition_t *  partition,
+static int set_tipclv(corax_partition_t *  partition,
                       unsigned int       tip_index,
-                      const pll_state_t *map,
+                      const corax_state_t *map,
                       const char *       sequence)
 {
-  pll_state_t  c;
+  corax_state_t  c;
   unsigned int i, j;
   double *     tipclv = partition->clv[tip_index];
 
-  pll_repeats_t *repeats     = partition->repeats;
-  int            use_repeats = pll_repeats_enabled(partition);
+  corax_repeats_t *repeats     = partition->repeats;
+  int            use_repeats = corax_repeats_enabled(partition);
   unsigned int   ids =
       use_repeats ? repeats->pernode_ids[tip_index] : partition->sites;
   /* iterate through sites */
@@ -940,10 +940,10 @@ static int set_tipclv(pll_partition_t *  partition,
         use_repeats ? repeats->pernode_id_site[tip_index][i] : i;
     if ((c = map[(int)sequence[index]]) == 0)
     {
-      pll_set_error(PLL_ERROR_TIPDATA_ILLEGALSTATE,
+      corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
                     "Illegal state code in tip \"%c\"",
                     sequence[index]);
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
     }
 
     /* decompose basecall into the encoded residues and set the appropriate
@@ -984,23 +984,23 @@ static int set_tipclv(pll_partition_t *  partition,
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int pll_set_tip_states(pll_partition_t *  partition,
+CORAX_EXPORT int corax_set_tip_states(corax_partition_t *  partition,
                                   unsigned int       tip_index,
-                                  const pll_state_t *map,
+                                  const corax_state_t *map,
                                   const char *       sequence)
 {
   int rc;
 
-  if (pll_repeats_enabled(partition))
+  if (corax_repeats_enabled(partition))
   {
-    if (PLL_FAILURE
-        == pll_update_repeats_tips(partition, tip_index, map, sequence))
-      return PLL_FAILURE;
+    if (CORAX_FAILURE
+        == corax_update_repeats_tips(partition, tip_index, map, sequence))
+      return CORAX_FAILURE;
   }
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
     /* create (or update) character map for tip-tip precomputations */
     if (partition->tipchars) { update_charmap(partition, map); }
@@ -1009,7 +1009,7 @@ PLL_EXPORT int pll_set_tip_states(pll_partition_t *  partition,
       if (!create_charmap(partition, map))
       {
         dealloc_partition_data(partition);
-        return PLL_FAILURE;
+        return CORAX_FAILURE;
       }
     }
 
@@ -1025,18 +1025,18 @@ PLL_EXPORT int pll_set_tip_states(pll_partition_t *  partition,
 }
 
 // TODO: <DOC> We should account for padding before calling this function
-PLL_EXPORT int pll_set_tip_clv(pll_partition_t *partition,
+CORAX_EXPORT int corax_set_tip_clv(corax_partition_t *partition,
                                unsigned int     tip_index,
                                const double *   clv,
                                int              padding)
 {
   unsigned int i, j, k;
 
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+  if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)
   {
-    pll_set_error(PLL_ERROR_TIPDATA_ILLEGALFUNCTION,
-                  "Cannot use pll_set_tip_clv with PLL_ATTRIB_PATTERN_TIP.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALFUNCTION,
+                  "Cannot use corax_set_tip_clv with CORAX_ATTRIB_PATTERN_TIP.");
+    return CORAX_FAILURE;
   }
 
   double *tipclv = partition->clv[tip_index];
@@ -1067,10 +1067,10 @@ PLL_EXPORT int pll_set_tip_clv(pll_partition_t *partition,
     }
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pll_set_pattern_weights(pll_partition_t *   partition,
+CORAX_EXPORT void corax_set_pattern_weights(corax_partition_t *   partition,
                                         const unsigned int *pattern_weights)
 {
   unsigned int i;
@@ -1084,21 +1084,21 @@ PLL_EXPORT void pll_set_pattern_weights(pll_partition_t *   partition,
     partition->pattern_weight_sum += pattern_weights[i];
 }
 
-PLL_EXPORT int pll_set_asc_bias_type(pll_partition_t *partition,
+CORAX_EXPORT int corax_set_asc_bias_type(corax_partition_t *partition,
                                      int              asc_bias_type)
 {
   unsigned int i;
   int          prop_invar    = 0;
-  int          asc_bias_attr = asc_bias_type & PLL_ATTRIB_AB_MASK;
+  int          asc_bias_attr = asc_bias_type & CORAX_ATTRIB_AB_MASK;
 
   /* If the partition was created **without** ascertainment bias correction,
      CLVs do not have space allocated for the invariant states, and setting
      ascertaiment bias will likely produce a segfault later. */
   if (!partition->asc_bias_alloc)
   {
-    pll_set_error(PLL_ERROR_AB_NOSUPPORT,
+    corax_set_error(CORAX_ERROR_AB_NOSUPPORT,
                   "Partition was not created with ascertainment bias support");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* check that there is no proportion of invariant sites */
@@ -1106,31 +1106,31 @@ PLL_EXPORT int pll_set_asc_bias_type(pll_partition_t *partition,
     prop_invar |= (partition->prop_invar[i] > 0);
   if (asc_bias_type != 0 && prop_invar)
   {
-    pll_set_error(
-        PLL_ERROR_INVAR_INCOMPAT,
+    corax_set_error(
+        CORAX_ERROR_INVAR_INCOMPAT,
         "Invariant sites are not compatible with asc bias correction");
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* check that asc_bias_type is either 0 or a valid type */
   if (asc_bias_attr != asc_bias_type)
   {
-    pll_set_error(PLL_ERROR_AB_INVALIDMETHOD,
+    corax_set_error(CORAX_ERROR_AB_INVALIDMETHOD,
                   "Illegal ascertainment bias algorithm \"%d\"",
                   asc_bias_type);
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
   }
 
   /* reset current ascertainment bias type (if any) */
-  partition->attributes &= (unsigned int)~PLL_ATTRIB_AB_MASK;
+  partition->attributes &= (unsigned int)~CORAX_ATTRIB_AB_MASK;
 
   /* set new ascertainment bias type */
   partition->attributes |= (unsigned int)asc_bias_attr;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT void pll_set_asc_state_weights(pll_partition_t *   partition,
+CORAX_EXPORT void corax_set_asc_state_weights(corax_partition_t *   partition,
                                           const unsigned int *state_weights)
 {
   assert(partition->asc_bias_alloc);
@@ -1139,7 +1139,7 @@ PLL_EXPORT void pll_set_asc_state_weights(pll_partition_t *   partition,
          sizeof(unsigned int) * partition->states);
 }
 
-PLL_EXPORT void pll_fill_parent_scaler(unsigned int        scaler_size,
+CORAX_EXPORT void corax_fill_parent_scaler(unsigned int        scaler_size,
                                        unsigned int *      parent_scaler,
                                        const unsigned int *left_scaler,
                                        const unsigned int *right_scaler)

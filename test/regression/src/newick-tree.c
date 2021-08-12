@@ -27,7 +27,7 @@ const char *newick_file_list[TREEFILE_COUNT] = {
     "testdata/medium.tree",
     "testdata/ribosomal_l5_pf00673.tree"};
 
-char *newick_print_cb(const pll_unode_t *node)
+char *newick_print_cb(const corax_unode_t *node)
 {
   char * newick;
   size_t size_alloced = asprintf(&newick,
@@ -42,7 +42,7 @@ char *newick_print_cb(const pll_unode_t *node)
   return newick;
 }
 
-int test_tree(pll_utree_t *tree)
+int test_tree(corax_utree_t *tree)
 {
   int   res;
   char *out_newick;
@@ -55,92 +55,92 @@ int test_tree(pll_utree_t *tree)
          tree->inner_count,
          tree->edge_count);
 
-  res = pll_utree_check_integrity(tree);
+  res = corax_utree_check_integrity(tree);
   if (!res)
   {
-    printf("ERROR in tree validation: %s\n", pll_errmsg);
-    return PLL_FAILURE;
+    printf("ERROR in tree validation: %s\n", corax_errmsg);
+    return CORAX_FAILURE;
   }
 
-  pll_utree_show_ascii(tree->vroot,
-                       PLL_UTREE_SHOW_LABEL | PLL_UTREE_SHOW_BRANCH_LENGTH
-                           | PLL_UTREE_SHOW_CLV_INDEX);
+  corax_utree_show_ascii(tree->vroot,
+                       CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_BRANCH_LENGTH
+                           | CORAX_UTREE_SHOW_CLV_INDEX);
 
-  out_newick = pll_utree_export_newick(tree->vroot, NULL);
+  out_newick = corax_utree_export_newick(tree->vroot, NULL);
   printf("Newick export (default): %s\n", out_newick);
   free(out_newick);
 
-  out_newick = pll_utree_export_newick(tree->vroot, newick_print_cb);
+  out_newick = corax_utree_export_newick(tree->vroot, newick_print_cb);
   printf("Newick export (custom): %s\n", out_newick);
   free(out_newick);
 
-  out_newick = pll_utree_export_newick_rooted(tree->vroot, 6.13);
+  out_newick = corax_utree_export_newick_rooted(tree->vroot, 6.13);
   printf("Newick export (rooted): %s\n", out_newick);
   free(out_newick);
 
-  pll_utree_destroy(tree, NULL);
+  corax_utree_destroy(tree, NULL);
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 int test_newick_string(const char *newick)
 {
-  pll_utree_t *tree = pll_utree_parse_newick_string(newick);
+  corax_utree_t *tree = corax_utree_parse_newick_string(newick);
 
-  if (!tree && pll_errno == PLL_ERROR_INVALID_TREE)
+  if (!tree && corax_errno == CORAX_ERROR_INVALID_TREE)
   {
-    pll_errno = 0;
+    corax_errno = 0;
 
     // tree must be rooted -> parse as rooted tree
-    tree = pll_utree_parse_newick_string_rooted(newick);
-    if (!tree || !pll_utree_is_rooted(tree))
+    tree = corax_utree_parse_newick_string_rooted(newick);
+    if (!tree || !corax_utree_is_rooted(tree))
     {
-      printf("ERROR parsing newick string as ROOTED tree: %s\n", pll_errmsg);
-      return PLL_FAILURE;
+      printf("ERROR parsing newick string as ROOTED tree: %s\n", corax_errmsg);
+      return CORAX_FAILURE;
     }
-    pll_utree_destroy(tree, NULL);
+    corax_utree_destroy(tree, NULL);
 
     printf("NOTE: tree was automatically unrooted!\n");
-    tree = pll_utree_parse_newick_string_unroot(newick);
+    tree = corax_utree_parse_newick_string_unroot(newick);
   }
 
   if (!tree)
   {
-    printf("ERROR parsing tree string: %s\n", pll_errmsg);
+    printf("ERROR parsing tree string: %s\n", corax_errmsg);
     exit(1);
   }
 
-  assert(!pll_utree_is_rooted(tree));
+  assert(!corax_utree_is_rooted(tree));
 
   return test_tree(tree);
 }
 
 int test_newick_file(const char *fname)
 {
-  pll_utree_t *tree = pll_utree_parse_newick(fname);
+  corax_utree_t *tree = corax_utree_parse_newick(fname);
 
-  if (!tree && pll_errno == PLL_ERROR_INVALID_TREE)
+  if (!tree && corax_errno == CORAX_ERROR_INVALID_TREE)
   {
-    pll_errno = 0;
+    corax_errno = 0;
 
     // tree must be rooted -> parse as rooted tree
-    tree = pll_utree_parse_newick_rooted(fname);
-    if (!tree || !pll_utree_is_rooted(tree))
+    tree = corax_utree_parse_newick_rooted(fname);
+    if (!tree || !corax_utree_is_rooted(tree))
     {
-      printf("ERROR parsing newick file as ROOTED tree: %s\n", pll_errmsg);
-      return PLL_FAILURE;
+      printf("ERROR parsing newick file as ROOTED tree: %s\n", corax_errmsg);
+      return CORAX_FAILURE;
     }
-    pll_utree_destroy(tree, NULL);
+    corax_utree_destroy(tree, NULL);
 
     printf("NOTE: tree was automatically unrooted!\n");
-    tree = pll_utree_parse_newick_unroot(fname);
+    tree = corax_utree_parse_newick_unroot(fname);
   }
 
-  assert(!pll_utree_is_rooted(tree));
+  assert(!corax_utree_is_rooted(tree));
 
   if (!tree)
   {
-    printf("ERROR parsing tree file: %s\n", pll_errmsg);
+    printf("ERROR parsing tree file: %s\n", corax_errmsg);
     exit(1);
   }
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
   unsigned int i;
   unsigned int attributes = get_attributes(argc, argv);
 
-  if (attributes != PLL_ATTRIB_ARCH_CPU) skip_test();
+  if (attributes != CORAX_ATTRIB_ARCH_CPU) skip_test();
 
   for (i = 0; i < TREE_COUNT; ++i)
   {

@@ -121,10 +121,10 @@ static int treeinfo_get_alpha(const pllmod_treeinfo_t *treeinfo,
                               double *                 param_vals,
                               unsigned int             param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   param_vals[0] = treeinfo->alphas[part_num];
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_set_alpha(pllmod_treeinfo_t *treeinfo,
@@ -132,20 +132,20 @@ static int treeinfo_set_alpha(pllmod_treeinfo_t *treeinfo,
                               const double *     param_vals,
                               unsigned int       param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   treeinfo->alphas[part_num] = param_vals[0];
 
-  pll_partition_t *partition = treeinfo->partitions[part_num];
+  corax_partition_t *partition = treeinfo->partitions[part_num];
 
   /* update rate categories */
-  if (!pll_compute_gamma_cats(treeinfo->alphas[part_num],
+  if (!corax_compute_gamma_cats(treeinfo->alphas[part_num],
                               partition->rate_cats,
                               partition->rates,
                               treeinfo->gamma_mode[part_num]))
-    return PLL_FAILURE;
+    return CORAX_FAILURE;
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_get_pinv(const pllmod_treeinfo_t *treeinfo,
@@ -153,11 +153,11 @@ static int treeinfo_get_pinv(const pllmod_treeinfo_t *treeinfo,
                              double *                 param_vals,
                              unsigned int             param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
-  pll_partition_t *partition = treeinfo->partitions[part_num];
+  corax_partition_t *partition = treeinfo->partitions[part_num];
   param_vals[0] = partition->prop_invar[treeinfo->param_indices[part_num][0]];
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_set_pinv(pllmod_treeinfo_t *treeinfo,
@@ -165,20 +165,20 @@ static int treeinfo_set_pinv(pllmod_treeinfo_t *treeinfo,
                              const double *     param_vals,
                              unsigned int       param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   unsigned int     k;
-  pll_partition_t *partition = treeinfo->partitions[part_num];
+  corax_partition_t *partition = treeinfo->partitions[part_num];
 
   /* update proportion of invariant sites */
   for (k = 0; k < partition->rate_cats; ++k)
   {
-    if (!pll_update_invariant_sites_proportion(
+    if (!corax_update_invariant_sites_proportion(
             partition, treeinfo->param_indices[part_num][k], param_vals[0]))
-      return PLL_FAILURE;
+      return CORAX_FAILURE;
   }
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_get_brlen_scaler(const pllmod_treeinfo_t *treeinfo,
@@ -186,10 +186,10 @@ static int treeinfo_get_brlen_scaler(const pllmod_treeinfo_t *treeinfo,
                                      double *                 param_vals,
                                      unsigned int             param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   param_vals[0] = treeinfo->brlen_scalers[part_num];
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static int treeinfo_set_brlen_scaler(pllmod_treeinfo_t *treeinfo,
@@ -197,11 +197,11 @@ static int treeinfo_set_brlen_scaler(pllmod_treeinfo_t *treeinfo,
                                      const double *     param_vals,
                                      unsigned int       param_count)
 {
-  if (part_num >= treeinfo->partition_count) return PLL_FAILURE;
+  if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   treeinfo->brlen_scalers[part_num] = param_vals[0];
 
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }
 
 static void fix_brlen_scalers(pllmod_treeinfo_t *treeinfo,
@@ -226,7 +226,7 @@ static void fix_brlen_scalers(pllmod_treeinfo_t *treeinfo,
     treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
                                  treeinfo->brlen_scalers,
                                  treeinfo->partition_count,
-                                 PLL_REDUCE_MAX);
+                                 CORAX_REDUCE_MAX);
   }
 
   /* skip remote partitions and those without rates/weight optimization */
@@ -262,29 +262,29 @@ static void fix_brlen_scalers(pllmod_treeinfo_t *treeinfo,
   }
 }
 
-static pll_bool_t
+static corax_bool_t
 fix_brlen_minmax(pllmod_treeinfo_t *treeinfo, double blmin, double blmax)
 {
-  pll_bool_t brlen_fixed = PLL_FALSE;
+  corax_bool_t brlen_fixed = CORAX_FALSE;
   for (unsigned int i = 0; i < treeinfo->subnode_count; ++i)
   {
-    pll_unode_t *snode = treeinfo->subnodes[i];
+    corax_unode_t *snode = treeinfo->subnodes[i];
     if (snode->length < blmin)
     {
       pllmod_treeinfo_set_branch_length(treeinfo, snode, blmin);
-      brlen_fixed = PLL_TRUE;
+      brlen_fixed = CORAX_TRUE;
     }
     else if (snode->length > blmax)
     {
       pllmod_treeinfo_set_branch_length(treeinfo, snode, blmax);
-      brlen_fixed = PLL_TRUE;
+      brlen_fixed = CORAX_TRUE;
     }
   }
 
   return brlen_fixed;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double
 pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
                                        int                   param_to_optimize,
@@ -314,7 +314,7 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
     {
       if (treeinfo->params_to_optimize[i] & param_to_optimize)
       {
-        pll_partition_t *partition = treeinfo->partitions[i];
+        corax_partition_t *partition = treeinfo->partitions[i];
 
         /* remote partition -> skip */
         if (!partition)
@@ -354,9 +354,9 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
     free(param_vals);
     free(opt_mask);
 
-    if (ret != PLL_SUCCESS)
+    if (ret != CORAX_SUCCESS)
     {
-      assert(pll_errno);
+      assert(corax_errno);
       return -INFINITY;
     }
   }
@@ -366,7 +366,7 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
   return -1 * cur_logl;
 }
 
-PLL_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
                                                   int    param_to_optimize,
                                                   double min_value,
                                                   double max_value,
@@ -374,7 +374,7 @@ PLL_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
 {
   if (__builtin_popcount(param_to_optimize) > 1)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Multi-parameter optimization is not supported by the "
                   "pllmod_algo_opt_onedim_treeinfo() function!");
     return -INFINITY;
@@ -398,7 +398,7 @@ PLL_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
     params_setter = treeinfo_set_brlen_scaler;
     break;
   default:
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Unsupported parameter: %d",
                   param_to_optimize);
     return -INFINITY;
@@ -415,7 +415,7 @@ PLL_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
                                                 tolerance);
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             min_scaler,
                                               double             max_scaler,
@@ -428,12 +428,12 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
   double *     old_scalers = NULL;
   double *     old_brlen   = NULL;
 
-  if (treeinfo->brlen_linkage != PLL_BRLEN_SCALED)
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_SCALED)
   {
-    pll_set_error(PLL_ERROR_INVALID_PARAM,
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
                   "Branch length scaler optimization works only in "
                   "scaled branch length mode.");
-    return (double)PLL_FAILURE;
+    return (double)CORAX_FAILURE;
   }
 
   old_loglh = pllmod_treeinfo_compute_loglh(treeinfo, 0);
@@ -467,7 +467,7 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
 
   /* check that all branch lengths are within bounds after normalization,
    * and correct them as needed */
-  pll_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
+  corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
 
   if (brlen_fixed)
   {
@@ -485,7 +485,7 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
       /* restore branch lengths */
       for (i = 0; i < treeinfo->subnode_count; ++i)
       {
-        pll_unode_t *snode = treeinfo->subnodes[i];
+        corax_unode_t *snode = treeinfo->subnodes[i];
         if (snode->node_index < snode->back->node_index)
         {
           pllmod_treeinfo_set_branch_length(
@@ -503,7 +503,7 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
   return -1 * loglh;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_rate,
@@ -552,7 +552,7 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
     if (treeinfo->partitions[i])
     {
       unsigned int subst_params =
-          pll_subst_rate_count(treeinfo->partitions[i]->states);
+          corax_subst_rate_count(treeinfo->partitions[i]->states);
       int *        symmetries       = treeinfo->subst_matrix_symmetries[i];
       unsigned int part_free_params = 0;
 
@@ -582,7 +582,7 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
   {
     double tmp = (double)max_free_params;
     treeinfo->parallel_reduce_cb(
-        treeinfo->parallel_context, &tmp, 1, PLL_REDUCE_MAX);
+        treeinfo->parallel_context, &tmp, 1, CORAX_REDUCE_MAX);
     max_free_params = (unsigned int)tmp;
   }
 
@@ -613,10 +613,10 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
       continue;
     }
 
-    pll_partition_t *partition    = treeinfo->partitions[i];
+    corax_partition_t *partition    = treeinfo->partitions[i];
     double *         subst_rates  = partition->subst_params[params_index];
     unsigned int     states       = partition->states;
-    unsigned int     subst_params = pll_subst_rate_count(states);
+    unsigned int     subst_params = corax_subst_rate_count(states);
     int *            symmetries   = treeinfo->subst_matrix_symmetries[i];
 
     x[part]  = (double *)malloc(sizeof(double) * (subst_free_params[part]));
@@ -695,7 +695,7 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
   return cur_logl;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_freq,
@@ -738,7 +738,7 @@ double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
   {
     double tmp = (double)max_free_params;
     treeinfo->parallel_reduce_cb(
-        treeinfo->parallel_context, &tmp, 1, PLL_REDUCE_MAX);
+        treeinfo->parallel_context, &tmp, 1, CORAX_REDUCE_MAX);
     max_free_params = (unsigned int)tmp;
   }
 
@@ -783,7 +783,7 @@ double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
       continue;
     }
 
-    pll_partition_t *partition   = treeinfo->partitions[i];
+    corax_partition_t *partition   = treeinfo->partitions[i];
     double *         frequencies = partition->frequencies[params_index];
     unsigned int     states      = partition->states;
     unsigned int     cur_index;
@@ -870,7 +870,7 @@ double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
   return cur_logl;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
                                            unsigned int       params_index,
                                            double             min_alpha,
@@ -952,7 +952,7 @@ double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
       continue;
     }
 
-    pll_partition_t *partition = treeinfo->partitions[i];
+    corax_partition_t *partition = treeinfo->partitions[i];
 
     /* init alpha & p-inv */
     x[part]               = xd + part * 2;
@@ -1004,7 +1004,7 @@ static void scales_rates_and_branches(pllmod_treeinfo_t *treeinfo,
   assert(part_num < treeinfo->partition_count);
   assert(rate_scaler > 0.);
 
-  pll_partition_t *partition    = treeinfo->partitions[part_num];
+  corax_partition_t *partition    = treeinfo->partitions[part_num];
   double *         rates        = partition->rates;
   unsigned int     rate_cats    = partition->rate_cats;
   double           brlen_scaler = 1.0 / rate_scaler;
@@ -1015,7 +1015,7 @@ static void scales_rates_and_branches(pllmod_treeinfo_t *treeinfo,
   /* scale branch lengths such that likelihood is conserved */
   if (treeinfo->partition_count == 1)
     pllmod_treeinfo_scale_branches_all(treeinfo, brlen_scaler);
-  else if (treeinfo->brlen_linkage == PLL_BRLEN_UNLINKED)
+  else if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
     pllmod_treeinfo_scale_branches_partition(treeinfo, part_num, brlen_scaler);
   else
   {
@@ -1038,7 +1038,7 @@ fix_free_rates(pllmod_treeinfo_t *treeinfo, double min_rate, double max_rate)
         || !(treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_FREE_RATES))
       continue;
 
-    pll_partition_t *partition    = treeinfo->partitions[i];
+    corax_partition_t *partition    = treeinfo->partitions[i];
     double *         rates        = partition->rates;
     unsigned int     rate_cats    = partition->rate_cats;
     double           lowest_rate  = rates[0];
@@ -1080,7 +1080,7 @@ static void renormalize_free_rates(pllmod_treeinfo_t *treeinfo)
              & (PLLMOD_OPT_PARAM_FREE_RATES | PLLMOD_OPT_PARAM_RATE_WEIGHTS)))
       continue;
 
-    pll_partition_t *partition = treeinfo->partitions[i];
+    corax_partition_t *partition = treeinfo->partitions[i];
     double *         rates     = partition->rates;
     double *         weights   = partition->rate_weights;
     unsigned int     rate_cats = partition->rate_cats;
@@ -1095,7 +1095,7 @@ static void renormalize_free_rates(pllmod_treeinfo_t *treeinfo)
   }
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             min_rate,
                                               double             max_rate,
@@ -1148,7 +1148,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
   {
     double tmp = (double)max_free_params;
     treeinfo->parallel_reduce_cb(
-        treeinfo->parallel_context, &tmp, 1, PLL_REDUCE_MAX);
+        treeinfo->parallel_context, &tmp, 1, CORAX_REDUCE_MAX);
     max_free_params = (unsigned int)tmp;
   }
 
@@ -1168,7 +1168,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
 
   /* save old state for rollback: rates+weights+brlens+BL scalers */
   old_rates = old_weights = old_brlens = old_scalers = NULL;
-  if (treeinfo->brlen_linkage != PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED)
   {
     old_rates = (double *) calloc(local_part_count * max_free_params, sizeof(double));
     old_weights = (double *) calloc(local_part_count * max_free_params, sizeof(double));
@@ -1241,7 +1241,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
     {
       if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_RATE_WEIGHTS)
       {
-        pll_partition_t *partition = treeinfo->partitions[i];
+        corax_partition_t *partition = treeinfo->partitions[i];
 
         /* remote partition -> skip */
         if (!partition)
@@ -1290,7 +1290,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
     {
       if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_FREE_RATES)
       {
-        pll_partition_t *partition = treeinfo->partitions[i];
+        corax_partition_t *partition = treeinfo->partitions[i];
 
         /* remote partition -> skip */
         if (!partition)
@@ -1346,15 +1346,15 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
   cur_logl = pllmod_treeinfo_compute_loglh(treeinfo, 0);
 
   /* normalize scalers and scale the branches accordingly */
-  if (treeinfo->brlen_linkage == PLL_BRLEN_SCALED
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_SCALED
       && treeinfo->partition_count > 1)
     pllmod_treeinfo_normalize_brlen_scalers(treeinfo);
 
-  if (treeinfo->brlen_linkage != PLL_BRLEN_UNLINKED)
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED)
   {
     /* check that all branch lengths are within bounds after normalization,
      * and correct them as needed */
-    pll_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
+    corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
 
     if (brlen_fixed)
     {
@@ -1446,7 +1446,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
   return -1 * cur_logl;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
                                       double             min_brlen,
                                       double             max_brlen,

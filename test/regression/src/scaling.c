@@ -61,40 +61,40 @@ static double subst_params_odd[10] = {1.452176,
                                       1.745312,
                                       1.000000};
 
-static pll_utree_t *    tree;
-static pll_unode_t *    root;
-static pll_partition_t *part_noscale_nt, *part_sitescale_nt, *part_ratescale_nt;
-static pll_partition_t *part_noscale_aa, *part_sitescale_aa, *part_ratescale_aa;
-static pll_partition_t *part_noscale_odd, *part_sitescale_odd,
+static corax_utree_t *    tree;
+static corax_unode_t *    root;
+static corax_partition_t *part_noscale_nt, *part_sitescale_nt, *part_ratescale_nt;
+static corax_partition_t *part_noscale_aa, *part_sitescale_aa, *part_ratescale_aa;
+static corax_partition_t *part_noscale_odd, *part_sitescale_odd,
     *part_ratescale_odd;
 static unsigned int     traversal_size, matrix_count, ops_count;
-static pll_unode_t **   travbuffer;
+static corax_unode_t **   travbuffer;
 static unsigned int *   matrix_indices;
 static double *         branch_lengths;
-static pll_operation_t *operations;
+static corax_operation_t *operations;
 static double *         persite_lnl;
 static double *         sumtable;
 
-unsigned int scaler_idx(const pll_partition_t *p, unsigned int clv_idx)
+unsigned int scaler_idx(const corax_partition_t *p, unsigned int clv_idx)
 {
   return (p->scale_buffers > 0 && clv_idx >= p->tips) ? clv_idx - p->tips
-                                                      : PLL_SCALE_BUFFER_NONE;
+                                                      : CORAX_SCALE_BUFFER_NONE;
 }
 
-void show_scaler(const pll_partition_t *p, unsigned int clv_idx)
+void show_scaler(const corax_partition_t *p, unsigned int clv_idx)
 {
   unsigned int *site_id = 0;
-  if (pll_repeats_enabled(p) && p->repeats->pernode_ids[clv_idx])
+  if (corax_repeats_enabled(p) && p->repeats->pernode_ids[clv_idx])
     site_id = p->repeats->pernode_site_id[clv_idx];
   unsigned int scaler = scaler_idx(p, clv_idx);
-  if (scaler != PLL_SCALE_BUFFER_NONE)
+  if (scaler != CORAX_SCALE_BUFFER_NONE)
   {
     unsigned int s, i, j;
     printf("scaler %u: [ ", scaler);
     for (s = 0; s < p->sites; ++s)
     {
       i = site_id ? site_id[s] : s;
-      if (p->attributes & PLL_ATTRIB_RATE_SCALERS)
+      if (p->attributes & CORAX_ATTRIB_RATE_SCALERS)
       {
         unsigned int *scalev     = p->scale_buffer[scaler] + i * p->rate_cats;
         unsigned int  min_scaler = 1e6;
@@ -117,7 +117,7 @@ void show_scaler(const pll_partition_t *p, unsigned int clv_idx)
   }
 }
 
-void show_clv(const pll_partition_t *p, unsigned int clv_idx, unsigned int site)
+void show_clv(const corax_partition_t *p, unsigned int clv_idx, unsigned int site)
 {
   unsigned int i;
   unsigned int clv_span = p->states * p->rate_cats;
@@ -127,12 +127,12 @@ void show_clv(const pll_partition_t *p, unsigned int clv_idx, unsigned int site)
   printf("]\n");
 }
 
-pll_partition_t *init_partition(unsigned int attrs, int datatype)
+corax_partition_t *init_partition(unsigned int attrs, int datatype)
 {
   unsigned int i, j;
 
   unsigned int       states      = 0;
-  const pll_state_t *map         = NULL;
+  const corax_state_t *map         = NULL;
   const char *       alphabet    = NULL;
   const double *     base_freqs  = NULL;
   const double *     subst_rates = NULL;
@@ -141,17 +141,17 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
   {
   case DATATYPE_NT:
     states      = N_STATES_NT;
-    map         = pll_map_nt;
+    map         = corax_map_nt;
     alphabet    = nt_alphabet;
     base_freqs  = base_freqs_nt;
     subst_rates = subst_params_nt;
     break;
   case DATATYPE_AA:
     states      = N_STATES_AA;
-    map         = pll_map_aa;
+    map         = corax_map_aa;
     alphabet    = aa_alphabet;
-    base_freqs  = pll_aa_freqs_lg;
-    subst_rates = pll_aa_rates_lg;
+    base_freqs  = corax_aa_freqs_lg;
+    subst_rates = corax_aa_rates_lg;
     break;
   case DATATYPE_ODD:
     states      = N_STATES_ODD;
@@ -164,7 +164,7 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
     assert(0);
   }
 
-  pll_partition_t *p = pll_partition_create(tree->tip_count,
+  corax_partition_t *p = corax_partition_create(tree->tip_count,
                                             tree->inner_count,
                                             states,
                                             N_SITES,
@@ -174,7 +174,7 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
                                             tree->inner_count,
                                             attrs);
 
-  if (!p) fatal("ERROR creating partition: %s\n", pll_errmsg);
+  if (!p) fatal("ERROR creating partition: %s\n", corax_errmsg);
 
   size_t len = strlen(alphabet);
   char * seq = (char *)calloc(N_SITES + 1, sizeof(char));
@@ -185,13 +185,13 @@ pll_partition_t *init_partition(unsigned int attrs, int datatype)
       seq[j] = (i < 1500) ? alphabet[j % len] : alphabet[(i + j) % len];
     }
 
-    pll_set_tip_states(p, tree->nodes[i]->clv_index, map, seq);
+    corax_set_tip_states(p, tree->nodes[i]->clv_index, map, seq);
   }
 
   free(seq);
 
-  pll_set_frequencies(p, 0, base_freqs);
-  pll_set_subst_params(p, 0, subst_rates);
+  corax_set_frequencies(p, 0, base_freqs);
+  corax_set_subst_params(p, 0, subst_rates);
 
   return p;
 }
@@ -200,32 +200,32 @@ void init(unsigned int attrs)
 {
   unsigned int i;
 
-  tree = pll_utree_parse_newick(TREEFILE);
+  tree = corax_utree_parse_newick(TREEFILE);
 
-  if (!tree) fatal("ERROR reading tree file: %s\n", pll_errmsg);
+  if (!tree) fatal("ERROR reading tree file: %s\n", corax_errmsg);
 
   part_sitescale_nt = init_partition(attrs, DATATYPE_NT);
   part_ratescale_nt =
-      init_partition(attrs | PLL_ATTRIB_RATE_SCALERS, DATATYPE_NT);
+      init_partition(attrs | CORAX_ATTRIB_RATE_SCALERS, DATATYPE_NT);
 
   part_sitescale_aa = init_partition(attrs, DATATYPE_AA);
   part_ratescale_aa =
-      init_partition(attrs | PLL_ATTRIB_RATE_SCALERS, DATATYPE_AA);
+      init_partition(attrs | CORAX_ATTRIB_RATE_SCALERS, DATATYPE_AA);
 
   part_sitescale_odd = init_partition(attrs, DATATYPE_ODD);
   part_ratescale_odd =
-      init_partition(attrs | PLL_ATTRIB_RATE_SCALERS, DATATYPE_ODD);
+      init_partition(attrs | CORAX_ATTRIB_RATE_SCALERS, DATATYPE_ODD);
 
   /* build fixed structures */
   unsigned int nodes_count  = tree->inner_count + tree->tip_count;
   unsigned int branch_count = nodes_count - 1;
-  travbuffer     = (pll_unode_t **)malloc(nodes_count * sizeof(pll_unode_t *));
+  travbuffer     = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
   branch_lengths = (double *)malloc(branch_count * sizeof(double));
   matrix_indices = (unsigned int *)malloc(branch_count * sizeof(unsigned int));
   operations =
-      (pll_operation_t *)malloc(tree->inner_count * sizeof(pll_operation_t));
+      (corax_operation_t *)malloc(tree->inner_count * sizeof(corax_operation_t));
   persite_lnl = (double *)malloc(part_sitescale_aa->sites * sizeof(double));
-  sumtable    = (double *)pll_aligned_alloc(
+  sumtable    = (double *)corax_aligned_alloc(
       part_sitescale_aa->sites * part_sitescale_aa->rate_cats
           * part_sitescale_aa->states_padded * sizeof(double),
       part_sitescale_aa->alignment);
@@ -233,13 +233,13 @@ void init(unsigned int attrs)
   root = tree->nodes[tree->tip_count + tree->inner_count - 1];
 
   /* get full traversal */
-  pll_utree_traverse(root,
-                     PLL_TREE_TRAVERSE_POSTORDER,
+  corax_utree_traverse(root,
+                     CORAX_TREE_TRAVERSE_POSTORDER,
                      cb_full_traversal,
                      travbuffer,
                      &traversal_size);
 
-  pll_utree_create_operations(travbuffer,
+  corax_utree_create_operations(travbuffer,
                               traversal_size,
                               branch_lengths,
                               matrix_indices,
@@ -251,13 +251,13 @@ void init(unsigned int attrs)
     branch_lengths[i] = (i % 2 == 0) ? 1.0 : 1e-6;
 }
 
-void comp_derivatives(pll_partition_t *partition,
-                      pll_unode_t *    r,
+void comp_derivatives(corax_partition_t *partition,
+                      corax_unode_t *    r,
                       double           brlen,
                       double *         d1,
                       double *         d2)
 {
-  if (!pll_update_sumtable(partition,
+  if (!corax_update_sumtable(partition,
                            r->clv_index,
                            r->back->clv_index,
                            r->scaler_index,
@@ -265,10 +265,10 @@ void comp_derivatives(pll_partition_t *partition,
                            params_indices,
                            sumtable))
   {
-    fatal("ERROR computing sumtable: %s\n", pll_errmsg);
+    fatal("ERROR computing sumtable: %s\n", corax_errmsg);
   }
 
-  if (!pll_compute_likelihood_derivatives(partition,
+  if (!corax_compute_likelihood_derivatives(partition,
                                           r->scaler_index,
                                           r->back->scaler_index,
                                           brlen,
@@ -277,21 +277,21 @@ void comp_derivatives(pll_partition_t *partition,
                                           d1,
                                           d2))
   {
-    fatal("ERROR computing derivatives: %s\n", pll_errmsg);
+    fatal("ERROR computing derivatives: %s\n", corax_errmsg);
   }
 }
 
-int eval(pll_partition_t *partition, double alpha, double pinv)
+int eval(corax_partition_t *partition, double alpha, double pinv)
 {
   double       rate_cats[N_CAT_GAMMA];
   unsigned int i;
   double       d_f, dd_f;
 
-  pll_compute_gamma_cats(alpha, n_cat_gamma, rate_cats, PLL_GAMMA_RATES_MEAN);
-  pll_set_category_rates(partition, rate_cats);
+  corax_compute_gamma_cats(alpha, n_cat_gamma, rate_cats, CORAX_GAMMA_RATES_MEAN);
+  corax_set_category_rates(partition, rate_cats);
 
   for (i = 0; i < partition->rate_matrices; ++i)
-    pll_update_invariant_sites_proportion(partition, i, pinv);
+    corax_update_invariant_sites_proportion(partition, i, pinv);
 
   printf("datatype = ");
   if (partition->states == 4)
@@ -302,7 +302,7 @@ int eval(pll_partition_t *partition, double alpha, double pinv)
     printf("ODD");
 
   printf(", scaling = ");
-  if (partition->attributes & PLL_ATTRIB_RATE_SCALERS)
+  if (partition->attributes & CORAX_ATTRIB_RATE_SCALERS)
     printf("per-rate");
   else if (partition->scale_buffers > 0)
     printf("per-site");
@@ -314,21 +314,21 @@ int eval(pll_partition_t *partition, double alpha, double pinv)
   printf("]\n");
 
   printf("recompute P-matrices: %d\n", matrix_count);
-  pll_update_prob_matrices(
+  corax_update_prob_matrices(
       partition, params_indices, matrix_indices, branch_lengths, matrix_count);
 
   printf("recompute CLVs: %d\n", ops_count);
-  pll_update_clvs(partition, operations, ops_count);
+  corax_update_clvs(partition, operations, ops_count);
 
   show_scaler(partition, root->back->clv_index);
   //  show_clv(partition, root->back->clv_index, 53);
-  //  pll_show_pmatrix(partition, root->pmatrix_index, 9);
-  //  pll_show_pmatrix(partition, root->pmatrix_index-1, 9);
+  //  corax_show_pmatrix(partition, root->pmatrix_index, 9);
+  //  corax_show_pmatrix(partition, root->pmatrix_index-1, 9);
 
   // test derivatives
   comp_derivatives(partition, root, 1.0, &d_f, &dd_f);
 
-  double ii_loglh = pll_compute_edge_loglikelihood(partition,
+  double ii_loglh = corax_compute_edge_loglikelihood(partition,
                                                    root->clv_index,
                                                    root->scaler_index,
                                                    root->back->clv_index,
@@ -348,12 +348,12 @@ int eval(pll_partition_t *partition, double alpha, double pinv)
          d_f,
          dd_f);
 
-  pll_unode_t *new_root = root->next->next;
-  pll_unode_t *tip      = new_root->back;
+  corax_unode_t *new_root = root->next->next;
+  corax_unode_t *tip      = new_root->back;
   assert(tip->clv_index < tree->tip_count);
 
   // change root CLV orientation
-  pll_operation_t op;
+  corax_operation_t op;
   op.parent_clv_index    = new_root->clv_index;
   op.child1_clv_index    = new_root->next->back->clv_index;
   op.child2_clv_index    = new_root->next->next->back->clv_index;
@@ -363,12 +363,12 @@ int eval(pll_partition_t *partition, double alpha, double pinv)
   op.child1_scaler_index = scaler_idx(partition, op.child1_clv_index);
   op.child2_scaler_index = scaler_idx(partition, op.child2_clv_index);
 
-  pll_update_clvs(partition, &op, 1);
+  corax_update_clvs(partition, &op, 1);
 
   // test derivatives
   comp_derivatives(partition, new_root, 1.0, &d_f, &dd_f);
 
-  double ti_loglh = pll_compute_edge_loglikelihood(partition,
+  double ti_loglh = corax_compute_edge_loglikelihood(partition,
                                                    new_root->clv_index,
                                                    new_root->scaler_index,
                                                    tip->clv_index,
@@ -401,16 +401,16 @@ void cleanup()
   free(matrix_indices);
   free(persite_lnl);
   free(sumtable);
-  pll_partition_destroy(part_noscale_nt);
-  pll_partition_destroy(part_sitescale_nt);
-  pll_partition_destroy(part_ratescale_nt);
-  pll_partition_destroy(part_noscale_aa);
-  pll_partition_destroy(part_sitescale_aa);
-  pll_partition_destroy(part_ratescale_aa);
-  pll_partition_destroy(part_noscale_odd);
-  pll_partition_destroy(part_sitescale_odd);
-  pll_partition_destroy(part_ratescale_odd);
-  pll_utree_destroy(tree, NULL);
+  corax_partition_destroy(part_noscale_nt);
+  corax_partition_destroy(part_sitescale_nt);
+  corax_partition_destroy(part_ratescale_nt);
+  corax_partition_destroy(part_noscale_aa);
+  corax_partition_destroy(part_sitescale_aa);
+  corax_partition_destroy(part_ratescale_aa);
+  corax_partition_destroy(part_noscale_odd);
+  corax_partition_destroy(part_sitescale_odd);
+  corax_partition_destroy(part_ratescale_odd);
+  corax_utree_destroy(tree, NULL);
 }
 
 int main(int argc, char *argv[])

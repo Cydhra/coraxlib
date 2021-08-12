@@ -30,9 +30,9 @@
  * randomly and reconstructs the tree out of the splits
  */
 /* static functions */
-static void shuffle(pll_split_t *array, size_t n);
-static void print_newick_recurse(pll_unode_t * node);
-static void print_newick(pll_unode_t * tree);
+static void shuffle(corax_split_t *array, size_t n);
+static void print_newick_recurse(corax_unode_t * node);
+static void print_newick(corax_unode_t * tree);
 
 static const unsigned int n_iters = 10;
 int main (int argc, char * argv[])
@@ -41,32 +41,32 @@ int main (int argc, char * argv[])
   char **labels;
 
   /* tree properties */
-  pll_unode_t * tree = NULL;
+  corax_unode_t * tree = NULL;
   unsigned int tip_count;
   unsigned int attributes = get_attributes(argc, argv);
 
-  if (attributes != PLL_ATTRIB_ARCH_CPU)
+  if (attributes != CORAX_ATTRIB_ARCH_CPU)
   {
     skip_test();
   }
 
   /* parse the input trees */
-  pll_utree_t * parsed_tree = pll_utree_parse_newick (TREEFILE);
+  corax_utree_t * parsed_tree = corax_utree_parse_newick (TREEFILE);
   tip_count = parsed_tree->tip_count;
   tree = parsed_tree->nodes[2*tip_count - 3];
   if (!tree)
   {
-    fatal("Error %d: %s", pll_errno, pll_errmsg);
+    fatal("Error %d: %s", corax_errno, corax_errmsg);
   }
 
-  pll_unode_t ** tipnodes = parsed_tree->nodes;
+  corax_unode_t ** tipnodes = parsed_tree->nodes;
 
   labels = (char **) malloc(tip_count * sizeof(char *));
   for (i=0; i<tip_count; ++i)
     labels[tipnodes[i]->node_index] = tipnodes[i]->label;
 
   unsigned int n_splits = tip_count - 3;
-  pll_split_t * splits = pllmod_utree_split_create(tree,
+  corax_split_t * splits = pllmod_utree_split_create(tree,
                                                    tip_count,
                                                    NULL);
 
@@ -74,24 +74,24 @@ int main (int argc, char * argv[])
   {
     shuffle(splits, n_splits);
 
-    pll_split_system_t split_system;
+    corax_split_system_t split_system;
     split_system.splits = splits;
     split_system.support = 0;
     split_system.split_count = n_splits;
     split_system.max_support = 1.0;
 
-    pll_consensus_utree_t * constree = pllmod_utree_from_splits(&split_system,
+    corax_consensus_utree_t * constree = pllmod_utree_from_splits(&split_system,
                                                                 tip_count,
                                                                 labels);
 
-    pll_utree_t * consensus = pll_utree_wraptree(constree->tree, tip_count);
+    corax_utree_t * consensus = corax_utree_wraptree(constree->tree, tip_count);
     if (!pllmod_utree_consistency_set(consensus, parsed_tree))
        fatal("Cannot set trees consistent!");
 
-    pll_utree_show_ascii(constree->tree, PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_LABEL);
+    corax_utree_show_ascii(constree->tree, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_LABEL);
     print_newick(constree->tree);
 
-    pll_split_t * splits2 = pllmod_utree_split_create(constree->tree,
+    corax_split_t * splits2 = pllmod_utree_split_create(constree->tree,
                                                       tip_count,
                                                       NULL);
 
@@ -121,7 +121,7 @@ int main (int argc, char * argv[])
 
   /* clean */
   free(labels);
-  pll_utree_destroy (parsed_tree, NULL);
+  corax_utree_destroy (parsed_tree, NULL);
   pllmod_utree_split_destroy(splits);
 
   return (0);
@@ -131,10 +131,10 @@ int main (int argc, char * argv[])
 /******************************************************************************/
 /******************************************************************************/
 
-static void shuffle(pll_split_t *array, size_t n)
+static void shuffle(corax_split_t *array, size_t n)
 {
   unsigned int i, j;
-  pll_split_t t;
+  corax_split_t t;
   for (i = 0; i < n - 1; i++)
   {
     j = i + (unsigned int) RAND / (RAND_MAX / (n - i) + 1);
@@ -144,10 +144,10 @@ static void shuffle(pll_split_t *array, size_t n)
   }
 }
 
-static void print_newick_recurse(pll_unode_t * node)
+static void print_newick_recurse(corax_unode_t * node)
 {
-  pll_unode_t * child;
-  if (PLL_UTREE_IS_TIP(node))
+  corax_unode_t * child;
+  if (CORAX_UTREE_IS_TIP(node))
   {
     printf("%s", node->label);
     return;
@@ -167,11 +167,11 @@ static void print_newick_recurse(pll_unode_t * node)
   printf(")");
 }
 
-static void print_newick(pll_unode_t * tree)
+static void print_newick(corax_unode_t * tree)
 {
   printf("(");
   print_newick_recurse(tree->back);
-  pll_unode_t * child = tree->next;
+  corax_unode_t * child = tree->next;
   while(child != tree)
   {
     printf(",");

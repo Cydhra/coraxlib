@@ -44,20 +44,20 @@ int main (int argc, char * argv[])
    char * seq[MAX_TAXA], *header[MAX_TAXA];
    long seq_len, header_len, seqno;
    long n_sites = 0;
-   pll_fasta_t * fp;
+   corax_fasta_t * fp;
    unsigned int params_indices[4] = {0, 0, 0, 0};
    unsigned int attributes = get_attributes(argc, argv);
 
-   fp = pll_fasta_open ("testdata/small.fas", pll_map_fasta);
+   fp = corax_fasta_open ("testdata/small.fas", corax_map_fasta);
    if (!fp)
    {
-     printf (" ERROR opening file (%d): %s\n", pll_errno, pll_errmsg);
-     exit (PLL_FAILURE);
+     printf (" ERROR opening file (%d): %s\n", corax_errno, corax_errmsg);
+     exit (CORAX_FAILURE);
    }
 
    /* first read for getting number of taxa and headers */
    i = 0;
-   while (pll_fasta_getnext (fp, &header[i], &header_len, &seq[i], &seq_len, &seqno))
+   while (corax_fasta_getnext (fp, &header[i], &header_len, &seq[i], &seq_len, &seqno))
    {
      if (!n_sites)
        n_sites = seq_len;
@@ -66,51 +66,51 @@ int main (int argc, char * argv[])
        printf (
            " ERROR: Mismatching sequence length for sequence %d (%ld, and it should be %d)\n",
            i, seq_len - 1, N_SITES);
-       exit (PLL_FAILURE);
+       exit (CORAX_FAILURE);
      }
 
      printf ("Header of sequence %d(%ld) %s (%ld sites)\n", i, seqno, header[i],
              seq_len);
      ++i;
    }
-   pll_fasta_close (fp);
+   corax_fasta_close (fp);
    n_taxa = i;
 
-   if (pll_errno != PLL_ERROR_FILE_EOF)
+   if (corax_errno != CORAX_ERROR_FILE_EOF)
    {
-     printf (" ERROR at the end (%d): %s\n", pll_errno, pll_errmsg);
-     exit (PLL_FAILURE);
+     printf (" ERROR at the end (%d): %s\n", corax_errno, corax_errmsg);
+     exit (CORAX_FAILURE);
    }
 
    unsigned int score;
 
-   pll_utree_t * pars_tree = pll_utree_create_parsimony(n_taxa,
+   corax_utree_t * pars_tree = corax_utree_create_parsimony(n_taxa,
                                                       n_sites,
                                                       header,
                                                       seq,
                                                       NULL,  /* site weights */
-                                                      pll_map_nt,
+                                                      corax_map_nt,
                                                       N_STATES,
                                                       attributes,
                                                       RAND_SEED,   /* seed */
                                                       &score);
 
-   pll_unode_t * tree = pars_tree->nodes[2*n_taxa - 3];
+   corax_unode_t * tree = pars_tree->nodes[2*n_taxa - 3];
 
    if(!tree)
-    fatal("Error creating parsimony [%d]: %s\n", pll_errno, pll_errmsg);
+    fatal("Error creating parsimony [%d]: %s\n", corax_errno, corax_errmsg);
 
    printf("Parsimony score: %u\n", score);
 
-   pll_utree_show_ascii(tree, PLL_UTREE_SHOW_CLV_INDEX | PLL_UTREE_SHOW_LABEL | PLL_UTREE_SHOW_PMATRIX_INDEX);
+   corax_utree_show_ascii(tree, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
     unsigned int tip_nodes_count, inner_nodes_count, nodes_count, branch_count;
     unsigned int matrix_count, ops_count;
     unsigned int * matrix_indices;
     double * branch_lengths;
-    pll_partition_t * partition;
-    pll_operation_t * operations;
-    pll_unode_t ** travbuffer;
+    corax_partition_t * partition;
+    corax_operation_t * operations;
+    corax_unode_t ** travbuffer;
 
     tip_nodes_count = n_taxa;
     inner_nodes_count = n_taxa - 2;
@@ -120,7 +120,7 @@ int main (int argc, char * argv[])
 
     printf("SCALE BUFFERS = %d\n", inner_nodes_count);
   /* create the PLL partition instance */
-    partition = pll_partition_create (tip_nodes_count,
+    partition = corax_partition_create (tip_nodes_count,
                                       inner_nodes_count,
                                       N_STATES,
                                       (unsigned int) n_sites,
@@ -134,48 +134,48 @@ int main (int argc, char * argv[])
     /* assign tip sequences and free memory */
     for (i=0; i<n_taxa; ++i)
     {
-      pll_set_tip_states (partition, i, pll_map_nt, seq[i]);
+      corax_set_tip_states (partition, i, corax_map_nt, seq[i]);
       free(header[i]);
       free(seq[i]);
     }
 
     /* initialize base frequencies */
     double frequencies[4] = {0.25,0.25,0.25,0.25};
-    pll_set_frequencies (partition, 0, frequencies);
+    corax_set_frequencies (partition, 0, frequencies);
 
     /* initialize substitution rates */
     double subst_params[6] = {1,1,1,1,1,1};
-    pll_set_subst_params (partition, 0,  subst_params);
+    corax_set_subst_params (partition, 0,  subst_params);
 
     /* compute the discretized category rates from a gamma distribution
        with alpha shape 1 and store them in rate_cats  */
     double rate_cats[N_CAT_GAMMA] = { 0 };
-    pll_compute_gamma_cats (1, N_CAT_GAMMA, rate_cats, PLL_GAMMA_RATES_MEAN);
-    pll_set_category_rates (partition, rate_cats);
+    corax_compute_gamma_cats (1, N_CAT_GAMMA, rate_cats, CORAX_GAMMA_RATES_MEAN);
+    corax_set_category_rates (partition, rate_cats);
 
-    travbuffer = (pll_unode_t **) malloc (nodes_count * sizeof(pll_unode_t *));
+    travbuffer = (corax_unode_t **) malloc (nodes_count * sizeof(corax_unode_t *));
 
     branch_lengths = (double *) malloc (branch_count * sizeof(double));
     matrix_indices = (unsigned int *) malloc (
         branch_count * sizeof(unsigned int));
-    operations = (pll_operation_t *) malloc (
-        inner_nodes_count * sizeof(pll_operation_t));
+    operations = (corax_operation_t *) malloc (
+        inner_nodes_count * sizeof(corax_operation_t));
 
     /* perform a postorder traversal of the unrooted tree */
     unsigned int traversal_size;
-    if (!pll_utree_traverse (tree,
-                             PLL_TREE_TRAVERSE_POSTORDER,
+    if (!corax_utree_traverse (tree,
+                             CORAX_TREE_TRAVERSE_POSTORDER,
                              cb_full_traversal,
                              travbuffer,
                              &traversal_size))
-      fatal ("Function pll_utree_traverse() requires inner nodes as parameters");
+      fatal ("Function corax_utree_traverse() requires inner nodes as parameters");
 
     printf("\nTRAVBUFFER: ");
        for (i=0; i<nodes_count; ++i)
          printf("%d/%d/%d  XX ", travbuffer[i]->clv_index, travbuffer[i]->scaler_index, travbuffer[i]->pmatrix_index);
        printf("\n");
 
-    pll_utree_create_operations (travbuffer, traversal_size, branch_lengths,
+    corax_utree_create_operations (travbuffer, traversal_size, branch_lengths,
                                    matrix_indices, operations, &matrix_count,
                                    &ops_count);
 
@@ -193,15 +193,15 @@ int main (int argc, char * argv[])
     printf ("Operations: %d\n", ops_count);
     printf ("Probability Matrices: %d\n", matrix_count);
 
-    pll_update_prob_matrices (partition,
+    corax_update_prob_matrices (partition,
                               params_indices,
                               matrix_indices,
                               branch_lengths,
                               matrix_count);
 
-    pll_update_clvs (partition, operations, ops_count);
+    corax_update_clvs (partition, operations, ops_count);
 
-    double logl = pll_compute_edge_loglikelihood (partition,
+    double logl = corax_compute_edge_loglikelihood (partition,
                                                   tree->clv_index,
                                                   tree->scaler_index,
                                                   tree->back->clv_index,
@@ -217,7 +217,7 @@ int main (int argc, char * argv[])
    free (matrix_indices);
    free (operations);
 
-   pll_partition_destroy (partition);
-   pll_utree_destroy(pars_tree, NULL);
-   return PLL_SUCCESS;
+   corax_partition_destroy (partition);
+   corax_utree_destroy(pars_tree, NULL);
+   return CORAX_SUCCESS;
 }

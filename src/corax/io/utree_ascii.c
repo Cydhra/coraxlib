@@ -2,19 +2,19 @@
 
 static int indent_space = 4;
 
-static void print_node_info(const pll_unode_t *node, int options)
+static void print_node_info(const corax_unode_t *node, int options)
 {
-  if (options & PLL_UTREE_SHOW_LABEL) printf(" %s", node->label);
-  if (options & PLL_UTREE_SHOW_BRANCH_LENGTH) printf(" %f", node->length);
-  if (options & PLL_UTREE_SHOW_CLV_INDEX) printf(" %u", node->clv_index);
-  if (options & PLL_UTREE_SHOW_SCALER_INDEX) printf(" %d", node->scaler_index);
-  if (options & PLL_UTREE_SHOW_PMATRIX_INDEX)
+  if (options & CORAX_UTREE_SHOW_LABEL) printf(" %s", node->label);
+  if (options & CORAX_UTREE_SHOW_BRANCH_LENGTH) printf(" %f", node->length);
+  if (options & CORAX_UTREE_SHOW_CLV_INDEX) printf(" %u", node->clv_index);
+  if (options & CORAX_UTREE_SHOW_SCALER_INDEX) printf(" %d", node->scaler_index);
+  if (options & CORAX_UTREE_SHOW_PMATRIX_INDEX)
     printf(" %u", node->pmatrix_index);
-  if (options & PLL_UTREE_SHOW_DATA) printf(" %p", node->data);
+  if (options & CORAX_UTREE_SHOW_DATA) printf(" %p", node->data);
   printf("\n");
 }
 
-static void print_tree_recurse(pll_unode_t *node,
+static void print_tree_recurse(corax_unode_t *node,
                                int          indent_level,
                                int *        active_node_order,
                                int          options)
@@ -55,7 +55,7 @@ static void print_tree_recurse(pll_unode_t *node,
 
   if (node->next)
   {
-    pll_unode_t *snode = node->next;
+    corax_unode_t *snode = node->next;
     do
     {
       active_node_order[indent_level] = snode->next == node ? 2 : 1;
@@ -66,24 +66,24 @@ static void print_tree_recurse(pll_unode_t *node,
   }
 }
 
-static unsigned int tree_indent_level(const pll_unode_t *node,
+static unsigned int tree_indent_level(const corax_unode_t *node,
                                       unsigned int       indent)
 {
   if (!node->next) return indent + 1;
 
   unsigned int ind   = 0;
-  pll_unode_t *snode = node->next;
+  corax_unode_t *snode = node->next;
   do
   {
     unsigned int sind = tree_indent_level(snode->back, indent + 1);
-    ind               = PLL_MAX(ind, sind);
+    ind               = CORAX_MAX(ind, sind);
     snode             = snode->next;
   } while (snode && snode != node);
 
   return ind;
 }
 
-PLL_EXPORT void pll_utree_show_ascii(const pll_unode_t *root, int options)
+CORAX_EXPORT void corax_utree_show_ascii(const corax_unode_t *root, int options)
 {
   unsigned int a, b;
 
@@ -96,13 +96,13 @@ PLL_EXPORT void pll_utree_show_ascii(const pll_unode_t *root, int options)
   int *active_node_order = (int *)malloc((max_indent_level + 1) * sizeof(int));
   if (!active_node_order)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return;
   }
   active_node_order[0] = 1;
   active_node_order[1] = 1;
 
-  const pll_unode_t *node = root;
+  const corax_unode_t *node = root;
   do
   {
     active_node_order[0] = node->next == root ? 2 : 1;

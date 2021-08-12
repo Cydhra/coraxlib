@@ -3,15 +3,15 @@
 
 #include "corax/corax_common.h"
 
-typedef unsigned int      pll_split_base_t;
-typedef pll_split_base_t *pll_split_t;
+typedef unsigned int      corax_split_base_t;
+typedef corax_split_base_t *corax_split_t;
 
 typedef unsigned int hash_key_t;
 
 typedef struct bitv_hash_entry
 {
   hash_key_t    key;
-  pll_split_t   bit_vector;
+  corax_split_t   bit_vector;
   unsigned int *tree_vector;
   unsigned int  tip_count;
   double        support;
@@ -45,72 +45,72 @@ typedef struct
   unsigned int          entry_count;
 } string_hashtable_t;
 
-PLL_EXPORT pll_split_t *
-           pllmod_utree_split_create(const pll_unode_t *tree,
+CORAX_EXPORT corax_split_t *
+           pllmod_utree_split_create(const corax_unode_t *tree,
                                      unsigned int       tip_count,
-                                     pll_unode_t **     split_to_node_map);
+                                     corax_unode_t **     split_to_node_map);
 
-PLL_EXPORT pll_split_t
+CORAX_EXPORT corax_split_t
 pllmod_utree_split_from_tips(unsigned int *subtree_tip_ids,
                              unsigned int  subtree_size,
                              unsigned int  tip_count);
 
-PLL_EXPORT void pllmod_utree_split_normalize_and_sort(pll_split_t *s,
+CORAX_EXPORT void pllmod_utree_split_normalize_and_sort(corax_split_t *s,
                                                       unsigned int tip_count,
                                                       unsigned int n_splits,
                                                       int          keep_first);
 
-PLL_EXPORT void pllmod_utree_split_show(pll_split_t  split,
+CORAX_EXPORT void pllmod_utree_split_show(corax_split_t  split,
                                         unsigned int tip_count);
 
-PLL_EXPORT void pllmod_utree_split_destroy(pll_split_t *split_list);
+CORAX_EXPORT void pllmod_utree_split_destroy(corax_split_t *split_list);
 
-PLL_EXPORT unsigned int pllmod_utree_split_lightside(pll_split_t  split,
+CORAX_EXPORT unsigned int pllmod_utree_split_lightside(corax_split_t  split,
                                                      unsigned int tip_count);
 
-PLL_EXPORT unsigned int pllmod_utree_split_hamming_distance(
-    pll_split_t s1, pll_split_t s2, unsigned int tip_count);
+CORAX_EXPORT unsigned int pllmod_utree_split_hamming_distance(
+    corax_split_t s1, corax_split_t s2, unsigned int tip_count);
 
-PLL_EXPORT int pllmod_utree_split_compatible(const pll_split_t s1,
-                                             const pll_split_t s2,
+CORAX_EXPORT int pllmod_utree_split_compatible(const corax_split_t s1,
+                                             const corax_split_t s2,
                                              unsigned int      split_len,
                                              unsigned int      tip_count);
 
-PLL_EXPORT int pllmod_utree_split_find(pll_split_t *split_list,
-                                       pll_split_t  split,
+CORAX_EXPORT int pllmod_utree_split_find(corax_split_t *split_list,
+                                       corax_split_t  split,
                                        unsigned int tip_count);
 
-PLL_EXPORT unsigned int pllmod_utree_split_rf_distance(pll_split_t *s1,
-                                                       pll_split_t *s2,
+CORAX_EXPORT unsigned int pllmod_utree_split_rf_distance(corax_split_t *s1,
+                                                       corax_split_t *s2,
                                                        unsigned int tip_count);
 // TODO: implement Newick->splits parser
 #if 0
-PLL_EXPORT pll_split_t * pll_utree_split_newick_string(char * s,
+CORAX_EXPORT corax_split_t * corax_utree_split_newick_string(char * s,
                                                        unsigned int tip_count,
                                                        string_hashtable_t * names_hash);
 #endif
 
 /* split hashtable */
 
-PLL_EXPORT
+CORAX_EXPORT
 bitv_hashtable_t *pllmod_utree_split_hashtable_create(unsigned int tip_count,
                                                       unsigned int slot_count);
 
-PLL_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_insert_single(
-    bitv_hashtable_t *splits_hash, pll_split_t split, double support);
+CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_insert_single(
+    bitv_hashtable_t *splits_hash, corax_split_t split, double support);
 
-PLL_EXPORT bitv_hashtable_t *
+CORAX_EXPORT bitv_hashtable_t *
            pllmod_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
-                                               pll_split_t *     splits,
+                                               corax_split_t *     splits,
                                                unsigned int      tip_count,
                                                unsigned int      split_count,
                                                const double *    support,
                                                int               update_only);
 
-PLL_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_lookup(
-    bitv_hashtable_t *splits_hash, pll_split_t split, unsigned int tip_count);
+CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_lookup(
+    bitv_hashtable_t *splits_hash, corax_split_t split, unsigned int tip_count);
 
-PLL_EXPORT
+CORAX_EXPORT
 void pllmod_utree_split_hashtable_destroy(bitv_hashtable_t *hash);
 
 #endif /* CORAX_TREE_UTREE_SPLIT_H_ */

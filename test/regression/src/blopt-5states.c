@@ -24,7 +24,7 @@
 #define RATE_CATS 4
 
 /* odd map with 5 states (a,b,c,d,e) */
-const pll_state_t odd_map[256] =
+const corax_state_t odd_map[256] =
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1f, 0, 0, 0x1f, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1f, 0, 0x01, 0x02, 0x04,
@@ -40,8 +40,8 @@ const pll_state_t odd_map[256] =
 int main(int argc, char * argv[])
 {
   unsigned int i;
-  pll_partition_t * partition;
-  pll_operation_t * operations;
+  corax_partition_t * partition;
+  corax_operation_t * operations;
   double rates[RATE_CATS];
   double alpha = 0.841;
   double logl;
@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
   unsigned int params_indices[4] = {0, 0, 0, 0};
   unsigned int attributes = get_attributes(argc, argv);
 
-  partition = pll_partition_create(3,         /* Tip CLVs */
+  partition = corax_partition_create(3,         /* Tip CLVs */
                                    1,         /* Inner CLVs */
                                    5,         /* States */
                                    4,         /* Sequence length */
@@ -67,60 +67,60 @@ int main(int argc, char * argv[])
   double subst_params[10] = {1.452176, 0.937951, 0.462880, 0.617729, 1.745312, 0.937951, 0.462880, 0.617729, 1.745312, 1.000000};
 
 
-  pll_compute_gamma_cats(alpha, RATE_CATS, rates, PLL_GAMMA_RATES_MEAN);
+  corax_compute_gamma_cats(alpha, RATE_CATS, rates, CORAX_GAMMA_RATES_MEAN);
 
   /* set */
-  pll_set_frequencies(partition, 0, frequencies);
-  pll_set_subst_params(partition, 0, subst_params);
-  pll_set_category_rates(partition, rates);
+  corax_set_frequencies(partition, 0, frequencies);
+  corax_set_subst_params(partition, 0, subst_params);
+  corax_set_category_rates(partition, rates);
 
-  pll_set_tip_states (partition, 0, odd_map, "DABC");
-  pll_set_tip_states (partition, 1, odd_map, "DAEC");
-  pll_set_tip_states (partition, 2, odd_map, "DEEC");
+  corax_set_tip_states (partition, 0, odd_map, "DABC");
+  corax_set_tip_states (partition, 1, odd_map, "DAEC");
+  corax_set_tip_states (partition, 2, odd_map, "DEEC");
 
-  pll_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 3);
+  corax_update_prob_matrices(partition, params_indices, matrix_indices, branch_lengths, 3);
 
   for (i = 0; i < 3; ++i)
   {
     printf ("P-matrix for branch length %f\n", branch_lengths[i]);
-    pll_show_pmatrix(partition, i, 4);
+    corax_show_pmatrix(partition, i, 4);
     printf ("\n");
   }
 
   printf("Update ops\n");
-  operations = (pll_operation_t *)malloc(1 * sizeof(pll_operation_t));
+  operations = (corax_operation_t *)malloc(1 * sizeof(corax_operation_t));
 
   operations[0].parent_clv_index    = 3;
   operations[0].child1_clv_index    = 0;
   operations[0].child2_clv_index    = 1;
   operations[0].child1_matrix_index = 0;
   operations[0].child2_matrix_index = 1;
-  operations[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  operations[0].child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+  operations[0].parent_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child1_scaler_index = CORAX_SCALE_BUFFER_NONE;
+  operations[0].child2_scaler_index = CORAX_SCALE_BUFFER_NONE;
 
   printf("Update partials\n");
-  pll_update_clvs(partition, operations, 1);
+  corax_update_clvs(partition, operations, 1);
 
-//  pll_show_clv(partition, 0, PLL_SCALE_BUFFER_NONE, 3);
-//  pll_show_clv(partition, 1, PLL_SCALE_BUFFER_NONE, 3);
-//  pll_show_clv(partition, 2, PLL_SCALE_BUFFER_NONE, 3);
+//  corax_show_clv(partition, 0, CORAX_SCALE_BUFFER_NONE, 3);
+//  corax_show_clv(partition, 1, CORAX_SCALE_BUFFER_NONE, 3);
+//  corax_show_clv(partition, 2, CORAX_SCALE_BUFFER_NONE, 3);
 //  for (i=0;i<2;++i)
 //    printf("%p %f\n", partition->clv[3]+i, partition->clv[3][i]);
-//  pll_show_clv(partition, 3, PLL_SCALE_BUFFER_NONE, 3);
+//  corax_show_clv(partition, 3, CORAX_SCALE_BUFFER_NONE, 3);
 
   printf("Compute lnL\n");
-  logl = pll_compute_edge_loglikelihood(partition,
-                                               3,PLL_SCALE_BUFFER_NONE, /* parent clv/scaler */
-                                               2,PLL_SCALE_BUFFER_NONE, /* child clv/scaler  */
+  logl = corax_compute_edge_loglikelihood(partition,
+                                               3,CORAX_SCALE_BUFFER_NONE, /* parent clv/scaler */
+                                               2,CORAX_SCALE_BUFFER_NONE, /* child clv/scaler  */
                                                2,   /* P-matrix          */
                                                params_indices,
                                                NULL);
 
   printf("Initial Log-L: %.10f\n", logl);
 
-  pll_unode_t * tree = (pll_unode_t *) malloc (6 * sizeof(pll_unode_t));
-  for (i=0; i<6; ++i) tree[i].scaler_index = PLL_SCALE_BUFFER_NONE;
+  corax_unode_t * tree = (corax_unode_t *) malloc (6 * sizeof(corax_unode_t));
+  for (i=0; i<6; ++i) tree[i].scaler_index = CORAX_SCALE_BUFFER_NONE;
   tree[0].next = tree[1].next = tree[2].next = NULL;
   tree[3].next = tree + 4; tree[4].next = tree + 5; tree[5].next = tree + 3;
   tree[0].back = tree + 3; tree[3].back = tree;
@@ -139,7 +139,7 @@ int main(int argc, char * argv[])
   tree[2].label = strdup("TIP 3");
   tree[3].label = tree[4].label = tree[5].label = NULL;
 
-  newick = pll_utree_export_newick(tree, NULL);
+  newick = corax_utree_export_newick(tree, NULL);
   printf("Tree (reference): %s\n", newick);
   free(newick);
 
@@ -153,9 +153,9 @@ int main(int argc, char * argv[])
                                      1,    /* radius       */
                                      1);   /* keep update  */
 
-   logl = pll_compute_edge_loglikelihood(partition,
-                                         3,PLL_SCALE_BUFFER_NONE, /* parent clv/scaler */
-                                         2,PLL_SCALE_BUFFER_NONE, /* child clv/scaler  */
+   logl = corax_compute_edge_loglikelihood(partition,
+                                         3,CORAX_SCALE_BUFFER_NONE, /* parent clv/scaler */
+                                         2,CORAX_SCALE_BUFFER_NONE, /* child clv/scaler  */
                                          2,   /* P-matrix          */
                                          params_indices,
                                          NULL);  /* freqs index       */
@@ -164,7 +164,7 @@ int main(int argc, char * argv[])
    printf("-Log-L returned by BL-opt:       %.10f\n", test_logl);
    printf(" Log-L recomputed after BL-opt: %.10f\n", logl);
 
-   newick = pll_utree_export_newick(tree, NULL);
+   newick = corax_utree_export_newick(tree, NULL);
    printf("Tree (optimized): %s\n", newick);
    free(newick);
 
@@ -174,7 +174,7 @@ int main(int argc, char * argv[])
   free(tree[1].label);
   free(tree[2].label);
   free(tree);
-  pll_partition_destroy(partition);
+  corax_partition_destroy(partition);
 
   return (0);
 }

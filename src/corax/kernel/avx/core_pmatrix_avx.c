@@ -39,8 +39,8 @@
   ymm6 = _mm256_add_pd(ymm5, ymm8);                                            \
   x    = _mm256_add_pd(ymm6, ymm9); /* row x */
 
-PLL_EXPORT int
-pll_core_update_pmatrix_4x4_avx(double **           pmatrix,
+CORAX_EXPORT int
+corax_core_update_pmatrix_4x4_avx(double **           pmatrix,
                                 unsigned int        rate_cats,
                                 const double *      rates,
                                 const double *      branch_lengths,
@@ -61,12 +61,12 @@ pll_core_update_pmatrix_4x4_avx(double **           pmatrix,
   double *evals;
   double *pmat;
 
-  expd = (double *)pll_aligned_alloc(4 * sizeof(double), PLL_ALIGNMENT_AVX);
+  expd = (double *)corax_aligned_alloc(4 * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   if (!expd)
   {
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   __m256d xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8, xmm9;
@@ -110,7 +110,7 @@ pll_core_update_pmatrix_4x4_avx(double **           pmatrix,
         /* multiply product with  branch length */
         xmm2 = _mm256_mul_pd(xmm4, xmm3);
 
-        if (pinvar > PLL_MISC_EPSILON)
+        if (pinvar > CORAX_MISC_EPSILON)
         {
           xmm1 = _mm256_set1_pd(1.0 - pinvar);
           xmm2 = _mm256_div_pd(xmm2, xmm1);
@@ -274,12 +274,12 @@ pll_core_update_pmatrix_4x4_avx(double **           pmatrix,
     }
   }
 
-  pll_aligned_free(expd);
-  return PLL_SUCCESS;
+  corax_aligned_free(expd);
+  return CORAX_SUCCESS;
 }
 
-PLL_EXPORT int
-pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
+CORAX_EXPORT int
+corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
                                   unsigned int        rate_cats,
                                   const double *      rates,
                                   const double *      branch_lengths,
@@ -303,8 +303,8 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
   double * temp;
   double **tran_evecs;
 
-  expd = (double *)pll_aligned_alloc(20 * sizeof(double), PLL_ALIGNMENT_AVX);
-  temp = (double *)pll_aligned_alloc(400 * sizeof(double), PLL_ALIGNMENT_AVX);
+  expd = (double *)corax_aligned_alloc(20 * sizeof(double), CORAX_ALIGNMENT_AVX);
+  temp = (double *)corax_aligned_alloc(400 * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   /* transposed eigen vectors */
   transposed = (int *)calloc((size_t)rate_cats, sizeof(int));
@@ -312,13 +312,13 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
 
   if (!expd || !temp || !transposed || !tran_evecs)
   {
-    if (expd) pll_aligned_free(expd);
-    if (temp) pll_aligned_free(temp);
+    if (expd) corax_aligned_free(expd);
+    if (temp) corax_aligned_free(temp);
     if (transposed) free(transposed);
     if (tran_evecs) free(tran_evecs);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-    return PLL_FAILURE;
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+    return CORAX_FAILURE;
   }
 
   /* transpose eigenvectors */
@@ -332,18 +332,18 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
       /* allocate space for transposed eigenvectors and check that
          allocation succeeds */
       double *tran =
-          (double *)pll_aligned_alloc(400 * sizeof(double), PLL_ALIGNMENT_AVX);
+          (double *)corax_aligned_alloc(400 * sizeof(double), CORAX_ALIGNMENT_AVX);
       if (!tran)
       {
-        pll_aligned_free(expd);
-        pll_aligned_free(temp);
+        corax_aligned_free(expd);
+        corax_aligned_free(temp);
         free(transposed);
         for (i = 0; i < n; ++i)
-          if (tran_evecs[i]) pll_aligned_free(tran_evecs[i]);
+          if (tran_evecs[i]) corax_aligned_free(tran_evecs[i]);
         free(tran_evecs);
 
-        pll_set_error(PLL_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
-        return PLL_FAILURE;
+        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        return CORAX_FAILURE;
       }
 
       /* transpose eigen vectors */
@@ -405,7 +405,7 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
       /* exponentiate eigenvalues */
       xmm2 = _mm256_set1_pd(rates[n]);
 
-      if (pinvar > PLL_MISC_EPSILON) xmm6 = _mm256_set1_pd(1.0 - pinvar);
+      if (pinvar > CORAX_MISC_EPSILON) xmm6 = _mm256_set1_pd(1.0 - pinvar);
 
       for (k = 0; k < 5; ++k)
       {
@@ -417,7 +417,7 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
         /* scalar multiplication with branch lengths */
         xmm5 = _mm256_mul_pd(xmm4, xmm3);
 
-        if (pinvar > PLL_MISC_EPSILON) { xmm5 = _mm256_div_pd(xmm5, xmm6); }
+        if (pinvar > CORAX_MISC_EPSILON) { xmm5 = _mm256_div_pd(xmm5, xmm6); }
 
         _mm256_store_pd(expd + k * 4, xmm5);
       }
@@ -517,12 +517,12 @@ pll_core_update_pmatrix_20x20_avx(double **           pmatrix,
     }
   }
 
-  pll_aligned_free(expd);
-  pll_aligned_free(temp);
+  corax_aligned_free(expd);
+  corax_aligned_free(temp);
 
   for (i = 0; i < rate_cats; ++i)
-    if (tran_evecs[i]) pll_aligned_free(tran_evecs[i]);
+    if (tran_evecs[i]) corax_aligned_free(tran_evecs[i]);
 
   free(tran_evecs);
-  return PLL_SUCCESS;
+  return CORAX_SUCCESS;
 }

@@ -25,12 +25,12 @@
 #define PLLMOD_TREE_ERROR_SPR_INVALID_NODE 3104 // B + {01...}
 #define PLLMOD_TREE_ERROR_SPR_MASK 3168         // B + {11...}
 
-typedef struct pll_utree_edge
+typedef struct corax_utree_edge
 {
-  pll_unode_t *parent;
-  pll_unode_t *child;
+  corax_unode_t *parent;
+  corax_unode_t *child;
   double       length;
-} pll_utree_edge_t;
+} corax_utree_edge_t;
 
 typedef struct
 {
@@ -42,8 +42,8 @@ typedef struct
   {
     struct
     {
-      pll_unode_t *prune_edge;
-      pll_unode_t *regraft_edge;
+      corax_unode_t *prune_edge;
+      corax_unode_t *regraft_edge;
       double       prune_bl;       //! length of the pruned branch
       double       prune_left_bl;  //! length of the removed branch when pruning
       double       prune_right_bl; //! length of the removed branch when pruning
@@ -51,7 +51,7 @@ typedef struct
     } SPR;
     struct
     {
-      pll_unode_t *edge;
+      corax_unode_t *edge;
       double       left_left_bl;
       double       left_right_bl;
       double       right_left_bl;
@@ -61,8 +61,8 @@ typedef struct
     } NNI;
     struct
     {
-      pll_unode_t *    bisect_edge;
-      pll_utree_edge_t reconn_edge;
+      corax_unode_t *    bisect_edge;
+      corax_utree_edge_t reconn_edge;
       double           bisect_left_bl;
       double           bisect_right_bl;
       double           reconn_parent_left_bl;
@@ -71,42 +71,42 @@ typedef struct
       double           reconn_child_right_bl;
     } TBR;
   };
-} pll_tree_rollback_t;
+} corax_tree_rollback_t;
 
-PLL_EXPORT int pllmod_utree_connect_nodes(pll_unode_t *parent,
-                                          pll_unode_t *child,
+CORAX_EXPORT int pllmod_utree_connect_nodes(corax_unode_t *parent,
+                                          corax_unode_t *child,
                                           double       length);
 
-PLL_EXPORT int pllmod_utree_bisect(pll_unode_t * edge,
-                                   pll_unode_t **parent_subtree,
-                                   pll_unode_t **child_subtree);
+CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
+                                   corax_unode_t **parent_subtree,
+                                   corax_unode_t **child_subtree);
 
-PLL_EXPORT pll_utree_edge_t pllmod_utree_reconnect(pll_utree_edge_t *edge,
-                                                   pll_unode_t *pruned_edge);
+CORAX_EXPORT corax_utree_edge_t pllmod_utree_reconnect(corax_utree_edge_t *edge,
+                                                   corax_unode_t *pruned_edge);
 
-PLL_EXPORT pll_unode_t *pllmod_utree_prune(pll_unode_t *edge);
+CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge);
 
-PLL_EXPORT int pllmod_utree_regraft(pll_unode_t *edge, pll_unode_t *tree);
+CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree);
 
-PLL_EXPORT int pllmod_utree_interchange(pll_unode_t *edge1, pll_unode_t *edge2);
+CORAX_EXPORT int pllmod_utree_interchange(corax_unode_t *edge1, corax_unode_t *edge2);
 
-PLL_EXPORT int pllmod_utree_tbr(pll_unode_t *        b_edge,
-                                pll_utree_edge_t *   r_edge,
-                                pll_tree_rollback_t *rollback_info);
+CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
+                                corax_utree_edge_t *   r_edge,
+                                corax_tree_rollback_t *rollback_info);
 
-PLL_EXPORT int pllmod_utree_spr(pll_unode_t *        p_edge,
-                                pll_unode_t *        r_edge,
-                                pll_tree_rollback_t *rollback_info);
+CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
+                                corax_unode_t *        r_edge,
+                                corax_tree_rollback_t *rollback_info);
 
-PLL_EXPORT int pllmod_utree_spr_safe(pll_unode_t *   p,
-                                     pll_unode_t *   r,
-                                     pll_tree_rollback_t *rollback_info);
+CORAX_EXPORT int pllmod_utree_spr_safe(corax_unode_t *   p,
+                                     corax_unode_t *   r,
+                                     corax_tree_rollback_t *rollback_info);
 
-/* type = {PLL_NNI_NEXT, PLL_NNI_NEXTNEXT} */
-PLL_EXPORT int pllmod_utree_nni(pll_unode_t *        edge,
+/* type = {CORAX_NNI_NEXT, CORAX_NNI_NEXTNEXT} */
+CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
                                 int                  type,
-                                pll_tree_rollback_t *rollback_info);
+                                corax_tree_rollback_t *rollback_info);
 
-PLL_EXPORT int pllmod_tree_rollback(pll_tree_rollback_t *rollback_info);
+CORAX_EXPORT int pllmod_tree_rollback(corax_tree_rollback_t *rollback_info);
 
 #endif /* CORAX_TREE_UTREE_MOVES_H_ */

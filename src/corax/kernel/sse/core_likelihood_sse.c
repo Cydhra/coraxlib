@@ -22,8 +22,8 @@
 #include "corax/corax.h"
 #include <limits.h>
 
-PLL_EXPORT double
-pll_core_root_loglikelihood_sse(unsigned int        states,
+CORAX_EXPORT double
+corax_core_root_loglikelihood_sse(unsigned int        states,
                                 unsigned int        sites,
                                 unsigned int        rate_cats,
                                 const double *      clv,
@@ -93,7 +93,7 @@ pll_core_root_loglikelihood_sse(unsigned int        states,
 
     /* compute site log-likelihood and scale if necessary */
     term = log(term);
-    if (scaler && scaler[i]) term += scaler[i] * log(PLL_SCALE_THRESHOLD);
+    if (scaler && scaler[i]) term += scaler[i] * log(CORAX_SCALE_THRESHOLD);
 
     term *= pattern_weights[i];
 
@@ -105,8 +105,8 @@ pll_core_root_loglikelihood_sse(unsigned int        states,
   return logl;
 }
 
-PLL_EXPORT double
-pll_core_root_loglikelihood_repeats_sse(unsigned int        states,
+CORAX_EXPORT double
+corax_core_root_loglikelihood_repeats_sse(unsigned int        states,
                                         unsigned int        sites,
                                         unsigned int        rate_cats,
                                         const double *      clv,
@@ -136,7 +136,7 @@ pll_core_root_loglikelihood_repeats_sse(unsigned int        states,
 
   for (i = 0; i < sites; ++i)
   {
-    unsigned int  id   = PLL_GET_ID(site_id, i);
+    unsigned int  id   = CORAX_GET_ID(site_id, i);
     const double *clvp = &clv[id * span];
     term               = 0;
     for (j = 0; j < rate_cats; ++j)
@@ -180,7 +180,7 @@ pll_core_root_loglikelihood_repeats_sse(unsigned int        states,
 
     /* compute site log-likelihood and scale if necessary */
     term = log(term);
-    if (scaler && scaler[id]) term += scaler[id] * log(PLL_SCALE_THRESHOLD);
+    if (scaler && scaler[id]) term += scaler[id] * log(CORAX_SCALE_THRESHOLD);
 
     term *= pattern_weights[i];
 
@@ -192,8 +192,8 @@ pll_core_root_loglikelihood_repeats_sse(unsigned int        states,
   return logl;
 }
 
-PLL_EXPORT double
-pll_core_root_loglikelihood_4x4_sse(unsigned int        sites,
+CORAX_EXPORT double
+corax_core_root_loglikelihood_4x4_sse(unsigned int        sites,
                                     unsigned int        rate_cats,
                                     const double *      clv,
                                     const unsigned int *scaler,
@@ -258,7 +258,7 @@ pll_core_root_loglikelihood_4x4_sse(unsigned int        sites,
 
     /* compute site log-likelihood and scale if necessary */
     term = log(term);
-    if (scaler && scaler[i]) term += scaler[i] * log(PLL_SCALE_THRESHOLD);
+    if (scaler && scaler[i]) term += scaler[i] * log(CORAX_SCALE_THRESHOLD);
 
     term *= pattern_weights[i];
 
@@ -270,14 +270,14 @@ pll_core_root_loglikelihood_4x4_sse(unsigned int        sites,
   return logl;
 }
 
-PLL_EXPORT
-double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
+CORAX_EXPORT
+double corax_core_edge_loglikelihood_ti_sse(unsigned int         states,
                                           unsigned int         sites,
                                           unsigned int         rate_cats,
                                           const double *       parent_clv,
                                           const unsigned int * parent_scaler,
                                           const unsigned char *tipchars,
-                                          const pll_state_t *  tipmap,
+                                          const corax_state_t *  tipmap,
                                           const double *       pmatrix,
                                           double *const *      frequencies,
                                           const double *       rate_weights,
@@ -299,7 +299,7 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
   double terma, terma_r, terminv;
   double site_lk, inv_site_lk;
 
-  pll_state_t  cstate;
+  corax_state_t  cstate;
   unsigned int states_padded = (states + 1) & 0xFFFFFFFE;
 
   __m128d xmm0, xmm1, xmm2, xmm3, xmm4, xmm5;
@@ -311,16 +311,16 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
   /* scaling stuff */
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling || invar_proportion)
   {
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -330,7 +330,7 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
@@ -359,7 +359,7 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -464,14 +464,14 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
         /* IMPORTANT: undoing the scaling for non-variant likelihood term only!
          */
         unsigned int capped_scalings =
-            PLL_MIN(site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
         double scale_factor = scale_minlh[capped_scalings - 1];
         site_lk             = log(terma * scale_factor + terminv);
       }
       else
       {
         site_lk = log(terma);
-        site_lk += site_scalings * log(PLL_SCALE_THRESHOLD);
+        site_lk += site_scalings * log(CORAX_SCALE_THRESHOLD);
       }
     }
     else
@@ -492,8 +492,8 @@ double pll_core_edge_loglikelihood_ti_sse(unsigned int         states,
   return logl;
 }
 
-PLL_EXPORT
-double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
+CORAX_EXPORT
+double corax_core_edge_loglikelihood_ii_sse(unsigned int        states,
                                           unsigned int        sites,
                                           unsigned int        rate_cats,
                                           const double *      parent_clv,
@@ -531,16 +531,16 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
   /* scaling stuff */
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling || invar_proportion)
   {
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -550,7 +550,7 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
@@ -579,7 +579,7 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -678,14 +678,14 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
         /* IMPORTANT: undoing the scaling for non-variant likelihood term only!
          */
         unsigned int capped_scalings =
-            PLL_MIN(site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
         double scale_factor = scale_minlh[capped_scalings - 1];
         site_lk             = log(terma * scale_factor + terminv);
       }
       else
       {
         site_lk = log(terma);
-        site_lk += site_scalings * log(PLL_SCALE_THRESHOLD);
+        site_lk += site_scalings * log(CORAX_SCALE_THRESHOLD);
       }
     }
     else
@@ -706,8 +706,8 @@ double pll_core_edge_loglikelihood_ii_sse(unsigned int        states,
   return logl;
 }
 
-PLL_EXPORT
-double pll_core_edge_loglikelihood_repeats_generic_sse(
+CORAX_EXPORT
+double corax_core_edge_loglikelihood_repeats_generic_sse(
     unsigned int        states,
     unsigned int        sites,
     const unsigned int  child_sites,
@@ -749,16 +749,16 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
   /* scaling stuff */
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling || invar_proportion)
   {
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -768,7 +768,7 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
@@ -776,8 +776,8 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
 
   for (n = 0; n < sites; ++n)
   {
-    unsigned int  pid  = PLL_GET_ID(parent_site_id, n);
-    unsigned int  cid  = PLL_GET_ID(child_site_id, n);
+    unsigned int  pid  = CORAX_GET_ID(parent_site_id, n);
+    unsigned int  cid  = CORAX_GET_ID(child_site_id, n);
     const double *clvp = &parent_clv[pid * span];
     const double *clvc = &child_clv[cid * span];
     pmat               = pmatrix;
@@ -801,7 +801,7 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -900,14 +900,14 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
         /* IMPORTANT: undoing the scaling for non-variant likelihood term only!
          */
         unsigned int capped_scalings =
-            PLL_MIN(site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
         double scale_factor = scale_minlh[capped_scalings - 1];
         site_lk             = log(terma * scale_factor + terminv);
       }
       else
       {
         site_lk = log(terma);
-        site_lk += site_scalings * log(PLL_SCALE_THRESHOLD);
+        site_lk += site_scalings * log(CORAX_SCALE_THRESHOLD);
       }
     }
     else
@@ -928,9 +928,9 @@ double pll_core_edge_loglikelihood_repeats_generic_sse(
   return logl;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double
-pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
+corax_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
                                        unsigned int        rate_cats,
                                        const double *      parent_clv,
                                        const unsigned int *parent_scaler,
@@ -965,16 +965,16 @@ pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
 
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling || invar_proportion)
   {
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -984,7 +984,7 @@ pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
@@ -1013,7 +1013,7 @@ pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -1144,14 +1144,14 @@ pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
         /* IMPORTANT: undoing the scaling for non-variant likelihood term only!
          */
         unsigned int capped_scalings =
-            PLL_MIN(site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
         double scale_factor = scale_minlh[capped_scalings - 1];
         site_lk             = log(terma * scale_factor + terminv);
       }
       else
       {
         site_lk = log(terma);
-        site_lk += site_scalings * log(PLL_SCALE_THRESHOLD);
+        site_lk += site_scalings * log(CORAX_SCALE_THRESHOLD);
       }
     }
     else
@@ -1172,9 +1172,9 @@ pll_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
   return logl;
 }
 
-PLL_EXPORT
+CORAX_EXPORT
 double
-pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
+corax_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
                                        unsigned int         rate_cats,
                                        const double *       parent_clv,
                                        const unsigned int * parent_scaler,
@@ -1209,16 +1209,16 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
 
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
-  int           per_rate_scaling = (attrib & PLL_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
 
   /* powers of scale threshold for undoing the scaling */
-  double scale_minlh[PLL_SCALE_RATE_MAXDIFF];
+  double scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
   if (per_rate_scaling || invar_proportion)
   {
     double scale_factor = 1.0;
-    for (i = 0; i < PLL_SCALE_RATE_MAXDIFF; ++i)
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
     {
-      scale_factor *= PLL_SCALE_THRESHOLD;
+      scale_factor *= CORAX_SCALE_THRESHOLD;
       scale_minlh[i] = scale_factor;
     }
   }
@@ -1228,7 +1228,7 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
 
     if (!rate_scalings)
     {
-      pll_set_error(PLL_ERROR_MEM_ALLOC,
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
@@ -1237,7 +1237,7 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
   /* precompute a lookup table of four values per entry (one for each state),
      for all 16 states (including ambiguities) and for each rate category. */
   double *lookup =
-      pll_aligned_alloc(64 * rate_cats * sizeof(double), PLL_ALIGNMENT_SSE);
+      corax_aligned_alloc(64 * rate_cats * sizeof(double), CORAX_ALIGNMENT_SSE);
   if (!lookup)
   {
     /* TODO: in the highly unlikely event that allocation fails, we should
@@ -1245,7 +1245,7 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
        available at commit e.g.  a4fc873fdc65741e402cdc1c59919375143d97d1 */
     if (rate_scalings) free(rate_scalings);
 
-    pll_set_error(PLL_ERROR_MEM_ALLOC,
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
                   "Cannot allocate space for precomputation.");
     return -INFINITY;
   }
@@ -1356,7 +1356,7 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
       for (i = 0; i < rate_cats; ++i)
       {
         rate_scalings[i] =
-            PLL_MIN(rate_scalings[i] - site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -1424,14 +1424,14 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
         /* IMPORTANT: undoing the scaling for non-variant likelihood term only!
          */
         unsigned int capped_scalings =
-            PLL_MIN(site_scalings, PLL_SCALE_RATE_MAXDIFF);
+            CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
         double scale_factor = scale_minlh[capped_scalings - 1];
         site_lk             = log(terma * scale_factor + terminv);
       }
       else
       {
         site_lk = log(terma);
-        site_lk += site_scalings * log(PLL_SCALE_THRESHOLD);
+        site_lk += site_scalings * log(CORAX_SCALE_THRESHOLD);
       }
     }
     else
@@ -1447,7 +1447,7 @@ pll_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
     logl += site_lk;
   }
 
-  pll_aligned_free(lookup);
+  corax_aligned_free(lookup);
   if (rate_scalings) free(rate_scalings);
 
   return logl;
