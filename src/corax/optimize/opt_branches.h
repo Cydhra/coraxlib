@@ -15,7 +15,7 @@ typedef struct
   double              branch_length_max;
   double              tolerance;
   int                 max_newton_iters;
-  int                 opt_method; /* see PLLMOD_OPT_BLO_* constants above */
+  int                 opt_method; /* see CORAX_OPT_BLO_* constants above */
 } corax_newton_tree_params_t;
 
 typedef struct
@@ -34,13 +34,13 @@ typedef struct
   double            branch_length_max;
   double            tolerance;
   int               max_newton_iters;
-  int               opt_method; /* see PLLMOD_OPT_BLO_* constants above */
+  int               opt_method; /* see CORAX_OPT_BLO_* constants above */
   int               brlen_linkage;
   void *            parallel_context;
   void (*parallel_reduce_cb)(void *, double *, size_t, int);
 } corax_newton_tree_params_multi_t;
 
-CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
+CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
                                            double  proposal,
                                            double *df,
                                            double *ddf);
@@ -48,7 +48,7 @@ CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
 /* high level optimization functions */
 
 CORAX_EXPORT double
-pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
+corax_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
                                              corax_unode_t *       tree,
                                              const unsigned int *params_indices,
                                              double branch_length_min,
@@ -58,7 +58,7 @@ pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
                                              int    keep_update);
 
 CORAX_EXPORT double
-pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
+corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
                                          corax_unode_t *       tree,
                                          const unsigned int *params_indices,
                                          double              branch_length_min,
@@ -68,7 +68,7 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
                                          int                 radius,
                                          int                 keep_update);
 
-CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
+CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
     corax_partition_t **partitions,
     size_t            partition_count,
     corax_unode_t *     tree,

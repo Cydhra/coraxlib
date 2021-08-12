@@ -38,7 +38,7 @@ static inline int d_equals(double a, double b) { return (fabs(a - b) < 1e-10); }
  *
  * @return             the minimal score found
  */
-CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
+CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
                                              double *     xmin,
                                              double *     xmax,
                                              int *        bound,
@@ -164,12 +164,12 @@ CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
     /* set errno only if it was not set by some inner function */
     if (!corax_errno)
     {
-      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(CORAX_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 
   return score;
-} /* pllmod_opt_minimize_lbfgsb */
+} /* corax_opt_minimize_lbfgsb */
 
 struct bfgs_multi_opt
 {
@@ -273,7 +273,7 @@ static int setulb_multi(struct bfgs_multi_opt *opt)
                 opt->dsave);
 }
 
-CORAX_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
+CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
     unsigned int  xnum,
     double **     x,
     double **     xmin,
@@ -435,9 +435,9 @@ cleanup:
     /* set errno only if it was not set by some inner function */
     if (!corax_errno)
     {
-      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(CORAX_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 
   return score;
-} /* pllmod_opt_minimize_lbfgsb */
+} /* corax_opt_minimize_lbfgsb */

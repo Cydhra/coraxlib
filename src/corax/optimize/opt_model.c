@@ -40,7 +40,7 @@ static void fill_weights(double *      weights,
                          double *      ub,
                          unsigned int  n_weights);
 
-CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
                                               corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
@@ -61,7 +61,7 @@ CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
   unsigned int states      = partition->states;
   unsigned int cur_index;
 
-  const double factor = bfgs_factor > 0. ? bfgs_factor : PLLMOD_ALGO_BFGS_FACTR;
+  const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
   x  = (double *)malloc(sizeof(double) * (states - 1));
   lb = (double *)malloc(sizeof(double) * (states - 1));
@@ -72,7 +72,7 @@ CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
   opt_params.fixed_freq_state = states;
   for (i = 0; i < states; ++i)
   {
-    if (frequencies[i] > PLLMOD_OPT_MIN_FREQ)
+    if (frequencies[i] > CORAX_OPT_MIN_FREQ)
     {
       opt_params.fixed_freq_state = i;
       break;
@@ -88,14 +88,14 @@ CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
     if (i != opt_params.fixed_freq_state)
     {
       x[cur_index]  = frequencies[i] / frequencies[opt_params.fixed_freq_state];
-      lb[cur_index] = PLLMOD_OPT_MIN_FREQ;
-      ub[cur_index] = PLLMOD_OPT_MAX_FREQ;
-      bt[cur_index] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+      lb[cur_index] = CORAX_OPT_MIN_FREQ;
+      ub[cur_index] = CORAX_OPT_MAX_FREQ;
+      bt[cur_index] = CORAX_OPT_LBFGSB_BOUND_BOTH;
       cur_index++;
     }
   }
 
-  cur_logl = pllmod_opt_minimize_lbfgsb(x,
+  cur_logl = corax_opt_minimize_lbfgsb(x,
                                         lb,
                                         ub,
                                         bt,
@@ -116,7 +116,7 @@ CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
                                               corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
@@ -136,7 +136,7 @@ CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
   unsigned int subst_params = (states * (states - 1)) / 2;
   unsigned int subst_free_params;
 
-  const double factor = bfgs_factor > 0. ? bfgs_factor : PLLMOD_ALGO_BFGS_FACTR;
+  const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
   if (!symmetries) { subst_free_params = subst_params - 1; }
   else
@@ -169,7 +169,7 @@ CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
   k = 0;
   for (i = 0; i < subst_free_params; ++i)
   {
-    bt[i] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+    bt[i] = CORAX_OPT_LBFGSB_BOUND_BOTH;
     lb[i] = min_rate;
     ub[i] = max_rate;
 
@@ -209,7 +209,7 @@ CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
     }
   }
 
-  cur_logl = pllmod_opt_minimize_lbfgsb(x,
+  cur_logl = corax_opt_minimize_lbfgsb(x,
                                         lb,
                                         ub,
                                         bt,
@@ -227,7 +227,7 @@ CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
                                         corax_unode_t *    tree,
                                         unsigned int *   params_indices,
                                         double           min_alpha,
@@ -245,7 +245,7 @@ CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
   opt_params.params_indices = params_indices;
   opt_params.gamma_mode     = CORAX_GAMMA_RATES_MEAN; // for now
 
-  xres = pllmod_opt_minimize_brent(min_alpha,
+  xres = corax_opt_minimize_brent(min_alpha,
                                    *alpha,
                                    max_alpha,
                                    tolerance,
@@ -260,7 +260,7 @@ CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
                                        corax_unode_t *    tree,
                                        unsigned int *   params_indices,
                                        double           min_pinv,
@@ -277,7 +277,7 @@ CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
   opt_params.params_indices = params_indices;
   start_pinv                = partition->prop_invar[params_indices[0]];
 
-  xres = pllmod_opt_minimize_brent(min_pinv,
+  xres = corax_opt_minimize_brent(min_pinv,
                                    start_pinv,
                                    max_pinv,
                                    tolerance,
@@ -291,7 +291,7 @@ CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
                                              corax_unode_t *    tree,
                                              unsigned int *   params_indices,
                                              double           min_alpha,
@@ -306,7 +306,7 @@ CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
   double x[2], lb[2], ub[2];
   int    bt[2];
 
-  const double factor = bfgs_factor > 0. ? bfgs_factor : PLLMOD_ALGO_BFGS_FACTR;
+  const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
   struct default_params opt_params;
   opt_params.partition      = partition;
@@ -316,19 +316,19 @@ CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
 
   /* init alpha */
   x[0]  = *alpha;
-  lb[0] = min_alpha > 0. ? min_alpha : PLLMOD_OPT_MIN_ALPHA;
-  ub[0] = max_alpha > 0. ? max_alpha : PLLMOD_OPT_MAX_ALPHA;
-  bt[0] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+  lb[0] = min_alpha > 0. ? min_alpha : CORAX_OPT_MIN_ALPHA;
+  ub[0] = max_alpha > 0. ? max_alpha : CORAX_OPT_MAX_ALPHA;
+  bt[0] = CORAX_OPT_LBFGSB_BOUND_BOTH;
 
   /* init p-inv */
   x[1]  = partition->prop_invar[params_indices[0]];
-  lb[1] = min_pinv > PLLMOD_ALGO_LBFGSB_ERROR
+  lb[1] = min_pinv > CORAX_ALGO_LBFGSB_ERROR
               ? min_pinv
-              : PLLMOD_OPT_MIN_PINV + PLLMOD_ALGO_LBFGSB_ERROR;
-  ub[1] = max_pinv > 0. ? max_pinv : PLLMOD_OPT_MAX_PINV;
-  bt[1] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+              : CORAX_OPT_MIN_PINV + CORAX_ALGO_LBFGSB_ERROR;
+  ub[1] = max_pinv > 0. ? max_pinv : CORAX_OPT_MAX_PINV;
+  bt[1] = CORAX_OPT_LBFGSB_BOUND_BOTH;
 
-  cur_logl = pllmod_opt_minimize_lbfgsb(x,
+  cur_logl = corax_opt_minimize_lbfgsb(x,
                                         lb,
                                         ub,
                                         bt,
@@ -344,7 +344,7 @@ CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
                                                corax_unode_t *    root,
                                                unsigned int *   params_indices,
                                                double *         scaler,
@@ -366,7 +366,7 @@ CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
   opt_params.params_indices = params_indices;
   opt_params.old_scaler     = *scaler;
 
-  xres = pllmod_opt_minimize_brent(min_scaler,
+  xres = corax_opt_minimize_brent(min_scaler,
                                    *scaler,
                                    max_scaler,
                                    tolerance,
@@ -384,7 +384,7 @@ CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
   return cur_logl;
 }
 
-CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
                                                 corax_unode_t *    tree,
                                                 unsigned int *   params_indices,
                                                 double           min_rate,
@@ -409,7 +409,7 @@ CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
   opt_params.tree           = tree;
   opt_params.params_indices = params_indices;
 
-  const double factor = bfgs_factor > 0. ? bfgs_factor : PLLMOD_ALGO_BFGS_FACTR;
+  const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
   x  = (double *)malloc(sizeof(double) * (rate_cats));
   lb = (double *)malloc(sizeof(double) * (rate_cats));
@@ -429,7 +429,7 @@ CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
         weights, &(opt_params.fixed_weight_state), x, bt, lb, ub, rate_cats);
 
     cur_logl = 1
-               * pllmod_opt_minimize_lbfgsb(x,
+               * corax_opt_minimize_lbfgsb(x,
                                             lb,
                                             ub,
                                             bt,
@@ -443,7 +443,7 @@ CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
 
     fill_rates(rates, x, bt, lb, ub, min_rate, max_rate, rate_cats);
 
-    cur_logl = pllmod_opt_minimize_lbfgsb(x,
+    cur_logl = corax_opt_minimize_lbfgsb(x,
                                           lb,
                                           ub,
                                           bt,
@@ -471,7 +471,7 @@ CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
 
     /* update pmatrices and partials according to the new branches */
     cur_logl = -1
-               * pllmod_opt_compute_lk(partition,
+               * corax_opt_compute_lk(partition,
                                        tree,
                                        params_indices,
                                        1,  /* update pmatrices */
@@ -503,7 +503,7 @@ static void fill_rates(double *     rates,
 
   for (i = 0; i < n_rates; ++i)
   {
-    bt[i] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+    bt[i] = CORAX_OPT_LBFGSB_BOUND_BOTH;
     lb[i] = min_rate;
     ub[i] = max_rate;
 
@@ -529,7 +529,7 @@ static void fill_weights(double *      weights,
   *fixed_weight_index = n_weights;
   for (i = 0; i < n_weights; ++i)
   {
-    if (weights[i] > PLLMOD_OPT_MIN_FREQ)
+    if (weights[i] > CORAX_OPT_MIN_FREQ)
     {
       *fixed_weight_index = i;
       break;
@@ -543,11 +543,11 @@ static void fill_weights(double *      weights,
   {
     if (i != *fixed_weight_index)
     {
-      bt[cur_index] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+      bt[cur_index] = CORAX_OPT_LBFGSB_BOUND_BOTH;
 
       double r      = weights[i] / weights[*fixed_weight_index];
-      lb[cur_index] = PLLMOD_ALGO_MIN_WEIGHT_RATIO;
-      ub[cur_index] = PLLMOD_ALGO_MAX_WEIGHT_RATIO;
+      lb[cur_index] = CORAX_ALGO_MIN_WEIGHT_RATIO;
+      ub[cur_index] = CORAX_ALGO_MAX_WEIGHT_RATIO;
       if (r < lb[cur_index])
         x[cur_index] = lb[cur_index];
       else if (r > ub[cur_index])

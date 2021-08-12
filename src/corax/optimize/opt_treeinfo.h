@@ -33,12 +33,12 @@ typedef struct cutoff_info
   int    lh_dec_count;
 } cutoff_info_t;
 
-typedef int (*treeinfo_param_set_cb)(pllmod_treeinfo_t *treeinfo,
+typedef int (*treeinfo_param_set_cb)(corax_treeinfo_t *treeinfo,
                                      unsigned int       part_num,
                                      const double *     param_vals,
                                      unsigned int       param_count);
 
-typedef int (*treeinfo_param_get_cb)(const pllmod_treeinfo_t *treeinfo,
+typedef int (*treeinfo_param_get_cb)(const corax_treeinfo_t *treeinfo,
                                      unsigned int             part_num,
                                      double *                 param_vals,
                                      unsigned int             param_count);
@@ -46,7 +46,7 @@ typedef int (*treeinfo_param_get_cb)(const pllmod_treeinfo_t *treeinfo,
 /* functions to optimize multiple partitions in parallel, using treeinfo struct
  */
 
-CORAX_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double corax_algo_opt_onedim_treeinfo(corax_treeinfo_t *treeinfo,
                                                   int    param_to_optimize,
                                                   double min_value,
                                                   double max_value,
@@ -54,7 +54,7 @@ CORAX_EXPORT double pllmod_algo_opt_onedim_treeinfo(pllmod_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double
-pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
+corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
                                        int                   param_to_optimize,
                                        treeinfo_param_get_cb params_getter,
                                        treeinfo_param_set_cb params_setter,
@@ -73,12 +73,12 @@ pllmod_algo_opt_onedim_treeinfo_custom(pllmod_treeinfo_t *   treeinfo,
  * @param tolerance This controls the pgtol threshold. If the largest entry of
  * the projected gradient is larger than this value, optimization will stop.
  *
- * @ingroup pllmod_treeinfo_t
+ * @ingroup corax_treeinfo_t
  *
  * @{
  */
 CORAX_EXPORT
-double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_rate,
                                             double             max_rate,
@@ -86,7 +86,7 @@ double pllmod_algo_opt_subst_rates_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             double             tolerance);
 
 CORAX_EXPORT
-double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
                                             unsigned int       params_index,
                                             double             min_freq,
                                             double             max_freq,
@@ -94,7 +94,7 @@ double pllmod_algo_opt_frequencies_treeinfo(pllmod_treeinfo_t *treeinfo,
                                             double             tolerance);
 
 CORAX_EXPORT
-double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
                                               double             min_rate,
                                               double             max_rate,
                                               double             min_brlen,
@@ -103,7 +103,7 @@ double pllmod_algo_opt_rates_weights_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             tolerance);
 
 CORAX_EXPORT
-double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
                                            unsigned int       params_index,
                                            double             min_alpha,
                                            double             max_alpha,
@@ -113,7 +113,7 @@ double pllmod_algo_opt_alpha_pinv_treeinfo(pllmod_treeinfo_t *treeinfo,
                                            double             tolerance);
 
 CORAX_EXPORT
-double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
                                               double             min_scaler,
                                               double             max_scaler,
                                               double             min_brlen,
@@ -121,7 +121,7 @@ double pllmod_algo_opt_brlen_scalers_treeinfo(pllmod_treeinfo_t *treeinfo,
                                               double             lh_epsilon);
 
 CORAX_EXPORT
-double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
+double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
                                       double             min_brlen,
                                       double             max_brlen,
                                       double             lh_epsilon,
@@ -137,13 +137,13 @@ double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
  *
  * @param brlen_opt_method The optimization method to use when optimizing branch
  * lengths. Options are:
- * - PLLMOD_OPT_BLO_NEWTON_FAST: Standard.
- * - PLLMOD_OPT_BLO_NEWTON_SAFE: Adds a per branch likelihood check.
- * - PLLMOD_OPT_BLO_NEWTON_FALLBACK: Starts fast, but fallsback to safe.
- * - PLLMOD_OPT_BLO_NEWTON_GLOBAL: Newton, but with addtional searches to find
+ * - CORAX_OPT_BLO_NEWTON_FAST: Standard.
+ * - CORAX_OPT_BLO_NEWTON_SAFE: Adds a per branch likelihood check.
+ * - CORAX_OPT_BLO_NEWTON_FALLBACK: Starts fast, but fallsback to safe.
+ * - CORAX_OPT_BLO_NEWTON_GLOBAL: Newton, but with addtional searches to find
  *   more optima
- * - PLLMOD_OPT_BLO_NEWTON_OLDFAST
- * - PLLMOD_OPT_BLO_NEWTON_OLDSAFE
+ * - CORAX_OPT_BLO_NEWTON_OLDFAST
+ * - CORAX_OPT_BLO_NEWTON_OLDSAFE
  *
  * @param smoothings: Number of iterations for branch length optimization. Will
  * operate if negative. I don't know what happens in this case.
@@ -158,7 +158,7 @@ double pllmod_algo_opt_brlen_treeinfo(pllmod_treeinfo_t *treeinfo,
  * that lestt trees are cutoff.
  *
  */
-CORAX_EXPORT double pllmod_algo_spr_round(pllmod_treeinfo_t *treeinfo,
+CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
                                         unsigned int       radius_min,
                                         unsigned int       radius_max,
                                         unsigned int       ntopol_keep,

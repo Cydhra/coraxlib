@@ -264,7 +264,7 @@ CORAX_EXPORT corax_unode_t *corax_utree_unroot_inplace(corax_unode_t *root)
     return root;
 }
 
-CORAX_EXPORT int pllmod_utree_root_inplace(corax_utree_t *tree)
+CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree)
 {
   if (!tree)
   {
@@ -308,8 +308,8 @@ CORAX_EXPORT int pllmod_utree_root_inplace(corax_utree_t *tree)
   root_right->node_index                             = ++last_node_index;
   root_right->pmatrix_index                          = ++last_pmatrix_index;
 
-  pllmod_utree_connect_nodes(root, root_left, root_brlen);
-  pllmod_utree_connect_nodes(root_right, root_back, root_brlen);
+  corax_utree_connect_nodes(root, root_left, root_brlen);
+  corax_utree_connect_nodes(root_right, root_back, root_brlen);
 
   tree->vroot = root_left;
   tree->inner_count++;
@@ -369,7 +369,7 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
       return CORAX_FAILURE;
     }
 
-    tree_splits = pllmod_utree_split_create(
+    tree_splits = corax_utree_split_create(
         tree->vroot, tree->tip_count, split_to_node_map);
 
     if (!tree_splits)
@@ -380,15 +380,15 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
     }
 
     // create outgroup split
-    corax_split_t outgroup_split = pllmod_utree_split_from_tips(
+    corax_split_t outgroup_split = corax_utree_split_from_tips(
         outgroup_tip_ids, outgroup_size, tip_count);
 
     // check if this split is in the tree
     int root_idx =
-        pllmod_utree_split_find(tree_splits, outgroup_split, tip_count);
+        corax_utree_split_find(tree_splits, outgroup_split, tip_count);
     if (root_idx >= 0) new_root = split_to_node_map[root_idx];
 
-    pllmod_utree_split_destroy(tree_splits);
+    corax_utree_split_destroy(tree_splits);
     free(split_to_node_map);
     free(outgroup_split);
   }
@@ -398,19 +398,19 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
   {
     tree->vroot = new_root;
     if (add_root_node)
-      return pllmod_utree_root_inplace(tree);
+      return corax_utree_root_inplace(tree);
     else
       return CORAX_SUCCESS;
   }
   else
   {
-    corax_set_error(PLLMOD_TREE_ERROR_POLYPHYL_OUTGROUP,
+    corax_set_error(CORAX_TREE_ERROR_POLYPHYL_OUTGROUP,
                   "Outgroup is not monophyletic!");
     return CORAX_FAILURE;
   }
 }
 
-CORAX_EXPORT int pllmod_utree_draw_support(corax_utree_t * ref_tree,
+CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
                                          const double *support,
                                          corax_unode_t **node_map,
                                          char *(*cb_serialize)(double))
@@ -471,7 +471,7 @@ static int cb_serialize(corax_unode_t * tree,
 }
 
 //TODO: serialize/expand using a compressed format instead of corax_unode_t
-CORAX_EXPORT corax_unode_t * pllmod_utree_serialize(corax_unode_t * tree,
+CORAX_EXPORT corax_unode_t * corax_utree_serialize(corax_unode_t * tree,
                                                 unsigned int tip_count)
 {
   unsigned int node_count;
@@ -510,7 +510,7 @@ CORAX_EXPORT corax_unode_t * pllmod_utree_serialize(corax_unode_t * tree,
   return serialized_tree;
 }
 
-CORAX_EXPORT corax_utree_t * pllmod_utree_expand(corax_unode_t * serialized_tree,
+CORAX_EXPORT corax_utree_t * corax_utree_expand(corax_unode_t * serialized_tree,
                                              unsigned int tip_count)
 {
   unsigned int i, node_count, next_node_index;

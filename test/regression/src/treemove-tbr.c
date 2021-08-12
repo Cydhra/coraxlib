@@ -308,7 +308,7 @@ int main (int argc, char * argv[])
           reconnect.child->back->label);
   reconnect.length = 0.555;
 
-  if (!pllmod_utree_tbr (bisect_edge, &reconnect, 0))
+  if (!corax_utree_tbr (bisect_edge, &reconnect, 0))
     fatal ("TBR move cannot be applied");
 
   tree = reconnect.parent;
@@ -337,7 +337,7 @@ int main (int argc, char * argv[])
                                &ops_count);
   show_tree (reconnect.child, SHOW_ASCII_TREE);
 
-  logl = pllmod_opt_compute_lk(partition,
+  logl = corax_opt_compute_lk(partition,
                           tree,
                           params_indices,
                           1,

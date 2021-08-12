@@ -101,7 +101,7 @@ int binary_update_header(FILE *bin_file, corax_block_header_t *header)
     return CORAX_FAILURE;
   }
 
-  if (header && (header->attributes & PLLMOD_BIN_ATTRIB_UPDATE_MAP))
+  if (header && (header->attributes & CORAX_BIN_ATTRIB_UPDATE_MAP))
   {
     /* update map */
     assert(next_block < bin_header.max_blocks);
@@ -136,11 +136,11 @@ long int binary_get_offset(FILE *bin_file, int block_id)
 {
   corax_block_map_t *map;
   unsigned int     i, n_blocks;
-  long int         offset = PLLMOD_BIN_INVALID_OFFSET;
+  long int         offset = CORAX_BIN_INVALID_OFFSET;
 
-  map = pllmod_binary_get_map(bin_file, &n_blocks);
+  map = corax_binary_get_map(bin_file, &n_blocks);
 
-  if (!map) return PLLMOD_BIN_INVALID_OFFSET;
+  if (!map) return CORAX_BIN_INVALID_OFFSET;
 
   /* search id */
   for (i = 0; i < n_blocks; ++i)
@@ -242,7 +242,7 @@ int binary_partition_body_apply(FILE *           bin_file,
              bin_file);
   }
 
-  if (attributes & PLLMOD_BIN_ATTRIB_PARTITION_DUMP_CLV)
+  if (attributes & CORAX_BIN_ATTRIB_PARTITION_DUMP_CLV)
   {
     unsigned int first_clv_index = 0;
 
@@ -311,7 +311,7 @@ int binary_partition_body_apply(FILE *           bin_file,
                bin_file);
   }
 
-  if (attributes & PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT)
+  if (attributes & CORAX_BIN_ATTRIB_PARTITION_DUMP_WGT)
   {
     /* dump pattern weights */
     bin_func(partition->pattern_weights,
@@ -357,7 +357,7 @@ int binary_repeats_apply(FILE *           bin_file,
                 nodes,
                 bin_file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
+    corax_set_error(CORAX_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
     return CORAX_FAILURE;
   }
   if (!bin_func(partition->repeats->pernode_allocated_clvs,
@@ -365,7 +365,7 @@ int binary_repeats_apply(FILE *           bin_file,
                 nodes,
                 bin_file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
+    corax_set_error(CORAX_BIN_ERROR_LOADSTORE, "Error loading/storing repeats");
     return CORAX_FAILURE;
   }
   return CORAX_SUCCESS;
@@ -381,12 +381,12 @@ int binary_clv_apply(FILE *           bin_file,
   CORAX_UNUSED(attributes);
   if (clv_index > (partition->tips + partition->clv_buffers))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_INVALID_INDEX, "Invalid CLV index");
+    corax_set_error(CORAX_BIN_ERROR_INVALID_INDEX, "Invalid CLV index");
     return CORAX_FAILURE;
   }
   if (!bin_func(partition->clv[clv_index], sizeof(double), clv_size, bin_file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Error loading/storing CLV");
+    corax_set_error(CORAX_BIN_ERROR_LOADSTORE, "Error loading/storing CLV");
     return CORAX_FAILURE;
   }
   if ((partition->attributes & CORAX_ATTRIB_SITE_REPEATS)
@@ -400,7 +400,7 @@ int binary_clv_apply(FILE *           bin_file,
                   uncompressed_sites,
                   bin_file))
     {
-      corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
+      corax_set_error(CORAX_BIN_ERROR_LOADSTORE,
                     "Error loading/storing CLV (site_id)");
       return CORAX_FAILURE;
     }
@@ -409,7 +409,7 @@ int binary_clv_apply(FILE *           bin_file,
                   compressed_sites,
                   bin_file))
     {
-      corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE,
+      corax_set_error(CORAX_BIN_ERROR_LOADSTORE,
                     "Error loading/storing CLV (id_site)");
       return CORAX_FAILURE;
     }
@@ -447,11 +447,11 @@ int binary_node_apply(FILE *       bin_file,
 
 void file_io_error(FILE *bin_file, long int setp, const char *msg)
 {
-  assert(setp >= PLLMOD_BIN_INVALID_OFFSET);
+  assert(setp >= CORAX_BIN_INVALID_OFFSET);
 
   /* if offset is valid, we apply it */
-  if (setp != PLLMOD_BIN_INVALID_OFFSET) fseek(bin_file, setp, SEEK_SET);
+  if (setp != CORAX_BIN_INVALID_OFFSET) fseek(bin_file, setp, SEEK_SET);
 
   /* update error data */
-  corax_set_error(PLLMOD_BIN_ERROR_LOADSTORE, "Binary file I/O error: %s", msg);
+  corax_set_error(CORAX_BIN_ERROR_LOADSTORE, "Binary file I/O error: %s", msg);
 }

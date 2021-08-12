@@ -37,7 +37,7 @@ const char *skip_datatype(const char *full_model_name)
  * @brief Returns 1 if built-in MULTISTATE model with a given name exists and 0
  * otherwise
  */
-CORAX_EXPORT int pllmod_util_model_exists_mult(const char *model_name)
+CORAX_EXPORT int corax_util_model_exists_mult(const char *model_name)
 {
   return strncasecmp("MULTI", model_name, 4) == 0 ? 1 : 0;
 }
@@ -45,7 +45,7 @@ CORAX_EXPORT int pllmod_util_model_exists_mult(const char *model_name)
 /**
  * @brief Parses model string (MULTIxx) and returns the number of state (xx)
  */
-CORAX_EXPORT unsigned int pllmod_util_model_numstates_mult(const char *model_name)
+CORAX_EXPORT unsigned int corax_util_model_numstates_mult(const char *model_name)
 {
   unsigned int states;
   if (sscanf(model_name, "MULTI%u", &states) == 1)
@@ -63,9 +63,9 @@ CORAX_EXPORT unsigned int pllmod_util_model_numstates_mult(const char *model_nam
  * @return array of 256 bit-encoded state identifiers (corax_state_t) indexed by
  * ASCII code
  */
-CORAX_EXPORT corax_state_t *pllmod_util_model_charmap_mult(unsigned int states)
+CORAX_EXPORT corax_state_t *corax_util_model_charmap_mult(unsigned int states)
 {
-  return pllmod_util_charmap_create(
+  return corax_util_charmap_create(
       states, mult_statechars, mult_gapchars, 0 /* case_sensitive */
   );
 }
@@ -73,19 +73,19 @@ CORAX_EXPORT corax_state_t *pllmod_util_model_charmap_mult(unsigned int states)
 /**
  * @brief Returns properties of the specified MULTISTATE evolution model
  *
- * See pllmod_model_t definition for details
+ * See corax_model_t definition for details
  *
  * @param model_name name of the MULTISTATE model
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-CORAX_EXPORT pllmod_subst_model_t *
-           pllmod_util_model_info_mult(const char *model_name)
+CORAX_EXPORT corax_subst_model_t *
+           corax_util_model_info_mult(const char *model_name)
 {
-  unsigned int states = pllmod_util_model_numstates_mult(model_name);
+  unsigned int states = corax_util_model_numstates_mult(model_name);
   if (!states)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
                   "Unknown number of states in a MULTISTATE model: %s",
                   model_name);
     return NULL;
@@ -95,7 +95,7 @@ CORAX_EXPORT pllmod_subst_model_t *
   if (states > maxstates)
   {
     corax_set_error(
-        PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+        CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
         "The specified number of states (%u) exceeds the allowed maximum (%u)",
         states,
         maxstates);
@@ -105,27 +105,27 @@ CORAX_EXPORT pllmod_subst_model_t *
   const char *subst_model_name = skip_datatype(model_name);
   if (strcasecmp("GTR", subst_model_name) == 0)
   {
-    return pllmod_util_model_create_custom(
+    return corax_util_model_create_custom(
         model_name, states, NULL, NULL, NULL, NULL);
   }
   else if (strcasecmp("MK", subst_model_name) == 0
            || strcasecmp("JC", subst_model_name) == 0)
   {
-    return pllmod_util_model_create_custom(model_name,
+    return corax_util_model_create_custom(model_name,
                                            states,
-                                           pllmod_util_get_equal_rates(states),
-                                           pllmod_util_get_equal_freqs(states),
+                                           corax_util_get_equal_rates(states),
+                                           corax_util_get_equal_freqs(states),
                                            NULL,
                                            NULL);
   }
   else if (strncasecmp("USER", subst_model_name, 4) == 0)
   {
-    return pllmod_util_model_create_custom(
+    return corax_util_model_create_custom(
         model_name, states, NULL, NULL, subst_model_name + 4, NULL);
   }
   else
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
                   "MULTISTATE model not found: %s",
                   subst_model_name);
     return NULL;

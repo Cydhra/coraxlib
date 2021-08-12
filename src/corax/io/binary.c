@@ -41,12 +41,12 @@ static int          cb_full_traversal(corax_unode_t *node);
  *
  *  @param[in] filename file to write to
  *  @param[out] header file header
- *  @param access_type PLLMOD_BIN_ACCESS_[SEQUENTIAL|RANDOM]
+ *  @param access_type CORAX_BIN_ACCESS_[SEQUENTIAL|RANDOM]
  *  @param n_blocks actual or maximum number of blocks if access is random
  *
  *  @return pointer to the file
  */
-CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
+CORAX_EXPORT FILE *corax_binary_create(const char *         filename,
                                       corax_binary_header_t *header,
                                       unsigned int         access_type,
                                       unsigned int         n_blocks)
@@ -56,14 +56,14 @@ CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
   memset(header, 0, sizeof(corax_binary_header_t));
   header->access_type = access_type;
   header->max_blocks  = n_blocks;
-  header->map_offset  = (access_type == PLLMOD_BIN_ACCESS_RANDOM)
+  header->map_offset  = (access_type == CORAX_BIN_ACCESS_RANDOM)
                            ? n_blocks * sizeof(corax_block_map_t)
                            : 0;
   header->n_blocks = 0;
 
-  if (access_type == PLLMOD_BIN_ACCESS_RANDOM && n_blocks <= 0)
+  if (access_type == CORAX_BIN_ACCESS_RANDOM && n_blocks <= 0)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_INVALID_SIZE,
+    corax_set_error(CORAX_BIN_ERROR_INVALID_SIZE,
                   "Number of blocks for random access must be greater than 0");
     return NULL;
   }
@@ -78,14 +78,14 @@ CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
 
   if (!bin_fwrite(header, sizeof(corax_binary_header_t), 1, file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Error writing header to file");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Error writing header to file");
     fclose(file);
     return NULL;
   }
 
   if (fseek(file, header->map_offset, SEEK_CUR) == -1)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO,
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO,
                   "Error seeking through file during creation");
     fclose(file);
     return NULL;
@@ -102,7 +102,7 @@ CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
  *
  *  @return pointer to the file
  */
-CORAX_EXPORT FILE *pllmod_binary_open(const char *         filename,
+CORAX_EXPORT FILE *corax_binary_open(const char *         filename,
                                     corax_binary_header_t *header)
 {
   FILE *file;
@@ -117,7 +117,7 @@ CORAX_EXPORT FILE *pllmod_binary_open(const char *         filename,
 
   if (!bin_fread(header, sizeof(corax_binary_header_t), 1, file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Error reading header from file");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Error reading header from file");
     fclose(file);
     return NULL;
   }
@@ -135,7 +135,7 @@ CORAX_EXPORT FILE *pllmod_binary_open(const char *         filename,
  *
  *  @return pointer to the file
  */
-FILE *pllmod_binary_append_open(const char *         filename,
+FILE *corax_binary_append_open(const char *         filename,
                                 corax_binary_header_t *header)
 {
   FILE *file;
@@ -151,7 +151,7 @@ FILE *pllmod_binary_append_open(const char *         filename,
 
   if (!bin_fread(header, sizeof(corax_binary_header_t), 1, file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Error reading header from file");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Error reading header from file");
     fclose(file);
     return NULL;
   }
@@ -181,7 +181,7 @@ FILE *pllmod_binary_append_open(const char *         filename,
  *
  *  @return true, if OK
  */
-CORAX_EXPORT int pllmod_binary_close(FILE *bin_file) { return fclose(bin_file); }
+CORAX_EXPORT int corax_binary_close(FILE *bin_file) { return fclose(bin_file); }
 
 /**
  *  Save a partition to the binary file
@@ -195,7 +195,7 @@ CORAX_EXPORT int pllmod_binary_close(FILE *bin_file) { return fclose(bin_file); 
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
 
-CORAX_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_partition_dump(FILE *           bin_file,
                                             int              block_id,
                                             corax_partition_t *partition,
                                             unsigned int     attributes)
@@ -208,7 +208,7 @@ CORAX_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
 
   /* fill block header */
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_PARTITION;
+  block_header.type       = CORAX_BIN_BLOCK_PARTITION;
   block_header.attributes = attributes;
   block_header.block_len  = 0; // partition_len;
   block_header.alignment  = 0;
@@ -256,19 +256,19 @@ CORAX_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
  *  @param[in] block_id id of the block for random access
  *  @param[in,out] partition if NULL, creates a new partition
  *  @param[in,out] attributes the loaded attributes. If
- *                 PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON passed here,
+ *                 CORAX_BIN_ATTRIB_PARTITION_LOAD_SKELETON passed here,
  *                 only pointers to the CLVs, tipchars and scalers are
  *                 allocated instead ofthe full memory. Pointers will
  *                 be initialized with NULL
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return pointer to the updated (or new) partition
  */
 
 CORAX_EXPORT corax_partition_t *
-           pllmod_binary_partition_load(FILE *           bin_file,
+           corax_binary_partition_load(FILE *           bin_file,
                                         int              block_id,
                                         corax_partition_t *partition,
                                         unsigned int *   attributes,
@@ -276,22 +276,22 @@ CORAX_EXPORT corax_partition_t *
 {
   corax_block_header_t block_header;
   corax_partition_t *  local_partition;
-  assert(offset >= 0 || offset == PLLMOD_BIN_ACCESS_SEEK);
+  assert(offset >= 0 || offset == CORAX_BIN_ACCESS_SEEK);
   unsigned int sites_alloc;
   unsigned int i;
 
   const int load_skeleton =
-      *attributes & PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
+      *attributes & CORAX_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
 
   if (offset != 0)
   {
-    if (offset == PLLMOD_BIN_ACCESS_SEEK)
+    if (offset == CORAX_BIN_ACCESS_SEEK)
     {
       /* find offset */
       offset = binary_get_offset(bin_file, block_id);
-      if (offset == PLLMOD_BIN_INVALID_OFFSET)
+      if (offset == CORAX_BIN_INVALID_OFFSET)
       {
-        corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO,
+        corax_set_error(CORAX_BIN_ERROR_BINARY_IO,
                       "Cannot retrieve offset for block %d",
                       block_id);
         return NULL;
@@ -305,12 +305,12 @@ CORAX_EXPORT corax_partition_t *
   if (!binary_block_header_apply(bin_file, &block_header, &bin_fread))
     return NULL;
 
-  if (block_header.type != PLLMOD_BIN_BLOCK_PARTITION)
+  if (block_header.type != CORAX_BIN_BLOCK_PARTITION)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_MISMATCH,
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_MISMATCH,
                   "Block type is %d and should be %d",
                   block_header.type,
-                  PLLMOD_BIN_BLOCK_PARTITION);
+                  CORAX_BIN_BLOCK_PARTITION);
     return NULL;
   }
 
@@ -497,7 +497,7 @@ CORAX_EXPORT corax_partition_t *
  *  @return CORAX_SUCCESS if the data was correctly saved
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_repeats_dump(FILE *           bin_file,
                                           int              block_id,
                                           corax_partition_t *partition,
                                           unsigned int     attributes)
@@ -512,7 +512,7 @@ CORAX_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
   size_t nodes = partition->tips + partition->clv_buffers;
   /* fill block header */
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_REPEATS;
+  block_header.type       = CORAX_BIN_BLOCK_REPEATS;
   block_header.attributes = attributes;
   block_header.block_len  = nodes * sizeof(unsigned int);
   block_header.alignment  = 0;
@@ -539,13 +539,13 @@ CORAX_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
  *  @param[out] attributes the loaded attributes
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return CORAX_SUCCESS if the data was correctly loaded
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
 
-CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_repeats_load(FILE *           bin_file,
                                           int              block_id,
                                           corax_partition_t *partition,
                                           unsigned int *   attributes,
@@ -556,18 +556,18 @@ CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
   int                retval;
   corax_block_header_t block_header;
   assert(partition);
-  assert(offset >= 0 || offset == PLLMOD_BIN_ACCESS_SEEK);
+  assert(offset >= 0 || offset == CORAX_BIN_ACCESS_SEEK);
   assert(partition->repeats);
 
   if (offset != 0)
   {
-    if (offset == PLLMOD_BIN_ACCESS_SEEK)
+    if (offset == CORAX_BIN_ACCESS_SEEK)
     {
       /* find offset */
       offset = binary_get_offset(bin_file, block_id);
-      if (offset == PLLMOD_BIN_INVALID_OFFSET)
+      if (offset == CORAX_BIN_INVALID_OFFSET)
       {
-        corax_set_error(PLLMOD_BIN_ERROR_MISSING_BLOCK,
+        corax_set_error(CORAX_BIN_ERROR_MISSING_BLOCK,
                       "Cannot retrieve offset for block %d",
                       block_id);
         return CORAX_FAILURE;
@@ -581,19 +581,19 @@ CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
   if (!binary_block_header_apply(bin_file, &block_header, &bin_fread))
     return CORAX_FAILURE;
 
-  if (block_header.type != PLLMOD_BIN_BLOCK_REPEATS)
+  if (block_header.type != CORAX_BIN_BLOCK_REPEATS)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_MISMATCH,
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_MISMATCH,
                   "Block type is %d and should be %d",
                   block_header.type,
-                  PLLMOD_BIN_BLOCK_REPEATS);
+                  CORAX_BIN_BLOCK_REPEATS);
     return CORAX_FAILURE;
   }
 
   size_t nodes = partition->tips + partition->clv_buffers;
   if (block_header.block_len != (nodes * sizeof(unsigned int)))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_LENGTH, "Wrong block length");
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_LENGTH, "Wrong block length");
     return CORAX_FAILURE;
   }
   *attributes = block_header.attributes;
@@ -614,7 +614,7 @@ CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
  *  @return CORAX_SUCCESS if the data was correctly saved
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_pernoderepeats_dump(FILE *           bin_file,
                                                  int              block_id,
                                                  corax_partition_t *partition,
                                                  unsigned int     clv_index,
@@ -632,7 +632,7 @@ CORAX_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
       sites_alloc * partition->states_padded * partition->rate_cats;
   /* fill block header */
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_CLV;
+  block_header.type       = CORAX_BIN_BLOCK_CLV;
   block_header.attributes = attributes;
   block_header.block_len  = clv_size * sizeof(double);
   block_header.alignment  = 0;
@@ -661,13 +661,13 @@ CORAX_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
  *  @param[out] attributes the loaded attributes
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return CORAX_SUCCESS if the data was correctly loaded
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
 
-CORAX_EXPORT int pllmod_binary_pernoderepeats_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_pernoderepeats_load(FILE *           bin_file,
                                                  int              block_id,
                                                  corax_partition_t *partition,
                                                  unsigned int     clv_index,
@@ -690,7 +690,7 @@ CORAX_EXPORT int pllmod_binary_pernoderepeats_load(FILE *           bin_file,
  *  @return CORAX_SUCCESS if the data was correctly saved
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_clv_dump(FILE *           bin_file,
                                       int              block_id,
                                       corax_partition_t *partition,
                                       unsigned int     clv_index,
@@ -701,7 +701,7 @@ CORAX_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
   size_t             clv_size = corax_get_clv_size(partition, clv_index);
   /* fill block header */
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_CLV;
+  block_header.type       = CORAX_BIN_BLOCK_CLV;
   block_header.attributes = attributes;
   block_header.block_len  = clv_size * sizeof(double);
   block_header.alignment  = 0;
@@ -739,13 +739,13 @@ CORAX_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
  *  @param[out] attributes the loaded attributes
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return CORAX_SUCCESS if the data was correctly loaded
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
 
-CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_clv_load(FILE *           bin_file,
                                       int              block_id,
                                       corax_partition_t *partition,
                                       unsigned int     clv_index,
@@ -756,18 +756,18 @@ CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
   corax_block_header_t block_header;
 
   assert(partition);
-  assert(offset >= 0 || offset == PLLMOD_BIN_ACCESS_SEEK);
+  assert(offset >= 0 || offset == CORAX_BIN_ACCESS_SEEK);
 
   size_t clv_size = corax_get_clv_size(partition, clv_index);
   if (offset != 0)
   {
-    if (offset == PLLMOD_BIN_ACCESS_SEEK)
+    if (offset == CORAX_BIN_ACCESS_SEEK)
     {
       /* find offset */
       offset = binary_get_offset(bin_file, block_id);
-      if (offset == PLLMOD_BIN_INVALID_OFFSET)
+      if (offset == CORAX_BIN_INVALID_OFFSET)
       {
-        corax_set_error(PLLMOD_BIN_ERROR_MISSING_BLOCK,
+        corax_set_error(CORAX_BIN_ERROR_MISSING_BLOCK,
                       "Cannot retrieve offset for block %d",
                       block_id);
         return CORAX_FAILURE;
@@ -782,12 +782,12 @@ CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
   if (!binary_block_header_apply(bin_file, &block_header, &bin_fread))
     return CORAX_FAILURE;
 
-  if (block_header.type != PLLMOD_BIN_BLOCK_CLV)
+  if (block_header.type != CORAX_BIN_BLOCK_CLV)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_MISMATCH,
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_MISMATCH,
                   "Block type is %d and should be %d",
                   block_header.type,
-                  PLLMOD_BIN_BLOCK_CLV);
+                  CORAX_BIN_BLOCK_CLV);
     return CORAX_FAILURE;
   }
 
@@ -810,7 +810,7 @@ CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
 
   if (block_header.block_len != block_len)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_LENGTH, "Wrong block length");
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_LENGTH, "Wrong block length");
     return CORAX_FAILURE;
   }
 
@@ -834,7 +834,7 @@ CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
  *  @return CORAX_SUCCESS if the data was correctly saved
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
+CORAX_EXPORT int corax_binary_utree_dump(FILE *       bin_file,
                                         int          block_id,
                                         corax_unode_t *tree,
                                         unsigned int tip_count,
@@ -854,7 +854,7 @@ CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
 
   if (!tree->next)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Tree should not be a tip node");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Tree should not be a tip node");
     return CORAX_FAILURE;
   }
 
@@ -866,14 +866,14 @@ CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
                           travbuffer,
                           &trav_size))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Error traversing utree");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Error traversing utree");
     return CORAX_FAILURE;
   }
 
   assert(trav_size == n_nodes);
 
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_TREE;
+  block_header.type       = CORAX_BIN_BLOCK_TREE;
   block_header.attributes = attributes;
   block_header.block_len  = n_utrees * sizeof(corax_unode_t);
   block_header.alignment  = 0;
@@ -927,11 +927,11 @@ CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
  *  @param[out] attributes the block attributes
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return pointer to the updated (or new) partition
  */
-CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
+CORAX_EXPORT corax_unode_t *corax_binary_utree_load(FILE *        bin_file,
                                                  int           block_id,
                                                  unsigned int *attributes,
                                                  long int      offset)
@@ -944,17 +944,17 @@ CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
   unsigned int       tree_stack_top;
   int                retval;
 
-  assert(offset >= 0 || offset == PLLMOD_BIN_ACCESS_SEEK);
+  assert(offset >= 0 || offset == CORAX_BIN_ACCESS_SEEK);
 
   if (offset != 0)
   {
-    if (offset == PLLMOD_BIN_ACCESS_SEEK)
+    if (offset == CORAX_BIN_ACCESS_SEEK)
     {
       /* find offset */
       offset = binary_get_offset(bin_file, block_id);
-      if (offset == PLLMOD_BIN_INVALID_OFFSET)
+      if (offset == CORAX_BIN_INVALID_OFFSET)
       {
-        corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO,
+        corax_set_error(CORAX_BIN_ERROR_BINARY_IO,
                       "Cannot retrieve offset for block %d",
                       block_id);
         return NULL;
@@ -972,12 +972,12 @@ CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
     return NULL;
   }
 
-  if (block_header.type != PLLMOD_BIN_BLOCK_TREE)
+  if (block_header.type != CORAX_BIN_BLOCK_TREE)
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BLOCK_MISMATCH,
+    corax_set_error(CORAX_BIN_ERROR_BLOCK_MISMATCH,
                   "Block type is %d and should be %d",
                   block_header.type,
-                  PLLMOD_BIN_BLOCK_TREE);
+                  CORAX_BIN_BLOCK_TREE);
     return NULL;
   }
 
@@ -1070,7 +1070,7 @@ CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
  *  @return CORAX_SUCCESS if the data was correctly saved
  *          CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
+CORAX_EXPORT int corax_binary_custom_dump(FILE *       bin_file,
                                          int          block_id,
                                          void *       data,
                                          size_t       size,
@@ -1082,7 +1082,7 @@ CORAX_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
 
   /* dump header */
   block_header.block_id   = block_id;
-  block_header.type       = PLLMOD_BIN_BLOCK_CUSTOM;
+  block_header.type       = CORAX_BIN_BLOCK_CUSTOM;
   block_header.attributes = attributes;
   block_header.block_len  = size;
   block_header.alignment  = 0;
@@ -1100,7 +1100,7 @@ CORAX_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
   return retval;
 }
 
-CORAX_EXPORT corax_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
+CORAX_EXPORT corax_block_map_t *corax_binary_get_map(FILE *        bin_file,
                                                   unsigned int *n_blocks)
 {
   corax_binary_header_t bin_header;
@@ -1137,11 +1137,11 @@ CORAX_EXPORT corax_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
  *  @param[out] attributes the block attributes
  *  @param offset offset to the data block, if known
  *                0, if access is sequential
- *                PLLMOD_BIN_ACCESS_SEEK, for searching in the file header
+ *                CORAX_BIN_ACCESS_SEEK, for searching in the file header
  *
  *  @return pointer to the loaded data
  */
-CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
+CORAX_EXPORT void *corax_binary_custom_load(FILE *        bin_file,
                                            int           block_id,
                                            size_t *      size,
                                            unsigned int *type,
@@ -1152,17 +1152,17 @@ CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
   unsigned int       alignment;
   void *             data;
 
-  assert(offset >= 0 || offset == PLLMOD_BIN_ACCESS_SEEK);
+  assert(offset >= 0 || offset == CORAX_BIN_ACCESS_SEEK);
 
   if (offset != 0)
   {
-    if (offset == PLLMOD_BIN_ACCESS_SEEK)
+    if (offset == CORAX_BIN_ACCESS_SEEK)
     {
       /* find offset */
       offset = binary_get_offset(bin_file, block_id);
-      if (offset == PLLMOD_BIN_INVALID_OFFSET)
+      if (offset == CORAX_BIN_INVALID_OFFSET)
       {
-        corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO,
+        corax_set_error(CORAX_BIN_ERROR_BINARY_IO,
                       "Cannot retrieve offset for block %d",
                       block_id);
         return NULL;
@@ -1182,7 +1182,7 @@ CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
   *attributes = block_header.attributes;
 
   /* read data */
-  if (*attributes & PLLMOD_BIN_ATTRIB_ALIGNED)
+  if (*attributes & CORAX_BIN_ATTRIB_ALIGNED)
   {
     unsigned int cur_alignment = get_current_alignment(*attributes);
 
@@ -1203,7 +1203,7 @@ CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
 
   if (!bin_fread(data, *size, 1, bin_file))
   {
-    corax_set_error(PLLMOD_BIN_ERROR_BINARY_IO, "Error reading data.");
+    corax_set_error(CORAX_BIN_ERROR_BINARY_IO, "Error reading data.");
     free(data);
     return CORAX_FAILURE;
   }
@@ -1224,7 +1224,7 @@ static int cb_full_traversal(corax_unode_t *node)
  *     1. Memory alignment could be different when saving and loading the binary
  *        file. Data will be saved without modifying the alignment, but we need
  *        to check if it is the correct one when loading.
- *     2. Binary file should be created using pllmod_binary_create. This will
+ *     2. Binary file should be created using corax_binary_create. This will
  * place the header at the beginning of the file. When a block is added, the
  *        header is updated.
  *     3. Random access binary files require some space allocated at the

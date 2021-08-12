@@ -110,7 +110,7 @@ static int gt16_sym_rate_dna4[] = {
     4                                            /* TC */
 };
 
-static const pllmod_subst_model_t gt_model_list[] = {
+static const corax_subst_model_t gt_model_list[] = {
     /*  name    states  model rates         model freqs   rate symmetries
        freq. sym.           */
     {"GTJC-SM", 10, gt_rates_equal_sm, gt_freqs_equal, NULL, NULL, 0},
@@ -122,7 +122,7 @@ static const pllmod_subst_model_t gt_model_list[] = {
     {"GPGTR4", 16, NULL, NULL, gt16_sym_rate_dna4, NULL, 0}};
 
 const int GT_MODELS_COUNT =
-    sizeof(gt_model_list) / sizeof(pllmod_subst_model_t);
+    sizeof(gt_model_list) / sizeof(corax_subst_model_t);
 
 static int get_model_index(const char *model_name)
 {
@@ -137,7 +137,7 @@ static int get_model_index(const char *model_name)
 /**
  * @brief Returns number of available built-in protein evolution models
  */
-CORAX_EXPORT unsigned int pllmod_util_model_count_genotype()
+CORAX_EXPORT unsigned int corax_util_model_count_genotype()
 {
   return GT_MODELS_COUNT;
 }
@@ -145,7 +145,7 @@ CORAX_EXPORT unsigned int pllmod_util_model_count_genotype()
 /**
  * @brief Returns list of available built-in protein evolution models (names)
  */
-CORAX_EXPORT char **pllmod_util_model_names_genotype()
+CORAX_EXPORT char **corax_util_model_names_genotype()
 {
   char **names = calloc(GT_MODELS_COUNT, sizeof(char *));
 
@@ -164,12 +164,12 @@ CORAX_EXPORT char **pllmod_util_model_names_genotype()
  * @brief Returns 1 if built-in genotype models with a given name exists and 0
  * otherwise
  */
-CORAX_EXPORT int pllmod_util_model_exists_genotype(const char *model_name)
+CORAX_EXPORT int corax_util_model_exists_genotype(const char *model_name)
 {
   return get_model_index(model_name) >= 0 ? 1 : 0;
 }
 
-CORAX_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name)
+CORAX_EXPORT int corax_util_model_exists_genotype10(const char *model_name)
 {
   int idx = get_model_index(model_name);
   if (idx >= 0)
@@ -178,7 +178,7 @@ CORAX_EXPORT int pllmod_util_model_exists_genotype10(const char *model_name)
     return 0;
 }
 
-CORAX_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name)
+CORAX_EXPORT int corax_util_model_exists_genotype16(const char *model_name)
 {
   int idx = get_model_index(model_name);
   if (idx >= 0)
@@ -190,23 +190,23 @@ CORAX_EXPORT int pllmod_util_model_exists_genotype16(const char *model_name)
 /**
  * @brief Returns properties of the specified AA evolution model
  *
- * See pllmod_subst_model_t definition for details
+ * See corax_subst_model_t definition for details
  *
  * @param model_name name of the AA model
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-CORAX_EXPORT pllmod_subst_model_t *
-           pllmod_util_model_info_genotype(const char *model_name)
+CORAX_EXPORT corax_subst_model_t *
+           corax_util_model_info_genotype(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
   {
-    return pllmod_util_model_clone(&gt_model_list[model_index]);
+    return corax_util_model_clone(&gt_model_list[model_index]);
   }
   else
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
                   "Genotype model not found: %s",
                   model_name);
     return NULL;
@@ -224,7 +224,7 @@ CORAX_EXPORT pllmod_subst_model_t *
  * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg for
  * details)
  */
-CORAX_EXPORT int pllmod_util_model_set_genotype(corax_partition_t *partition,
+CORAX_EXPORT int corax_util_model_set_genotype(corax_partition_t *partition,
                                               const char *     model_name,
                                               int              model_freqs)
 {
@@ -240,7 +240,7 @@ CORAX_EXPORT int pllmod_util_model_set_genotype(corax_partition_t *partition,
   }
   else
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_UNKNOWN,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
                   "Genotype model not found: %s",
                   model_name);
     return CORAX_FAILURE;

@@ -302,9 +302,9 @@ int main (int argc, char * argv[])
   const char * bin_fname = "test.bin";
 
   printf("** create binary file\n");
-  bin_file = pllmod_binary_create(bin_fname,
+  bin_file = corax_binary_create(bin_fname,
                                &bin_header,
-                               PLLMOD_BIN_ACCESS_RANDOM,
+                               CORAX_BIN_ACCESS_RANDOM,
                                2 + old_partition->tips
                                + old_partition->clv_buffers
                                + old_partition->scale_buffers);
@@ -318,10 +318,10 @@ int main (int argc, char * argv[])
 
   /* We save the structures in an arbitrary order */
 
-  /* IMPORTANT! Attribute PLLMOD_BIN_ATTRIB_UPDATE_MAP must be set! */
-  const unsigned int dump_attr = PLLMOD_BIN_ATTRIB_UPDATE_MAP | PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
+  /* IMPORTANT! Attribute CORAX_BIN_ATTRIB_UPDATE_MAP must be set! */
+  const unsigned int dump_attr = CORAX_BIN_ATTRIB_UPDATE_MAP | CORAX_BIN_ATTRIB_PARTITION_DUMP_WGT;
 
-  if (!pllmod_binary_partition_dump(bin_file,
+  if (!corax_binary_partition_dump(bin_file,
                             BLOCK_ID_PARTITION,
                             old_partition,
                             dump_attr))
@@ -330,11 +330,11 @@ int main (int argc, char * argv[])
   }
 
   /* dump tree */
-  if (!pllmod_binary_utree_dump(bin_file,
+  if (!corax_binary_utree_dump(bin_file,
                        BLOCK_ID_TREE,
                        tree,
                        tip_nodes_count,
-                       PLLMOD_BIN_ATTRIB_UPDATE_MAP))
+                       CORAX_BIN_ATTRIB_UPDATE_MAP))
   {
     printf("Error dumping tree\n");
   }
@@ -346,7 +346,7 @@ int main (int argc, char * argv[])
   {
     for (tip_index = 0; tip_index < old_partition->tips; tip_index++)
     {
-      if(!pllmod_binary_custom_dump(bin_file,
+      if(!corax_binary_custom_dump(bin_file,
                                     block_id++,
                                     old_partition->tipchars[tip_index],
                                     old_partition->sites * sizeof(unsigned char),
@@ -363,7 +363,7 @@ int main (int argc, char * argv[])
         clv_index < old_partition->tips + old_partition->clv_buffers;
         clv_index++)
   {
-    if(!pllmod_binary_clv_dump( bin_file,
+    if(!corax_binary_clv_dump( bin_file,
                                 block_id++,
                                 old_partition,
                                 clv_index,
@@ -377,7 +377,7 @@ int main (int argc, char * argv[])
   // dump the scalers
   for (size_t scaler_index = 0; scaler_index < old_partition->scale_buffers; scaler_index++)
   {
-    if(!pllmod_binary_custom_dump(bin_file,
+    if(!corax_binary_custom_dump(bin_file,
                                   block_id++,
                                   old_partition->scale_buffer[scaler_index],
                                   get_sites_number_scaler(old_partition, scaler_index)  * sizeof(unsigned int), 
@@ -393,7 +393,7 @@ int main (int argc, char * argv[])
 
   printf("** close binary file\n");
 
-  pllmod_binary_close(bin_file);
+  corax_binary_close(bin_file);
 
   // corax_utree_show_ascii(tree, (1<<5)-1);
 
@@ -411,20 +411,20 @@ int main (int argc, char * argv[])
   /* reload */
   printf("** reload data\n");
   corax_binary_header_t input_header;
-  unsigned int bin_attributes = PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
+  unsigned int bin_attributes = CORAX_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
   corax_block_map_t * block_map;
   unsigned int n_blocks;
 
-  bin_file = pllmod_binary_open(bin_fname, &input_header);
+  bin_file = corax_binary_open(bin_fname, &input_header);
 
-  block_map = pllmod_binary_get_map(bin_file, &n_blocks);
+  block_map = corax_binary_get_map(bin_file, &n_blocks);
 
   printf("There are %d blocks in the map\n", n_blocks);
   int partition_offset = get_offset(n_blocks, block_map, BLOCK_ID_PARTITION);
 
   /* For the offset we can use the actual offset (from the block_map),
-     or PLLMOD_BIN_ACCESS_SEEK */
-  partition = pllmod_binary_partition_load(bin_file,
+     or CORAX_BIN_ACCESS_SEEK */
+  partition = corax_binary_partition_load(bin_file,
                                         BLOCK_ID_PARTITION,
                                         NULL, /* in order to create a new partition */
                                         &bin_attributes,
@@ -491,7 +491,7 @@ int main (int argc, char * argv[])
     {
       size_t size;
       unsigned int type, attribs;
-      unsigned char* ptr = (unsigned char*) pllmod_binary_custom_load(
+      unsigned char* ptr = (unsigned char*) corax_binary_custom_load(
                                               bin_file,
                                               0,
                                               &size,
@@ -541,7 +541,7 @@ int main (int argc, char * argv[])
       exit(1);
     }
 
-    int err = pllmod_binary_clv_load(bin_file,
+    int err = corax_binary_clv_load(bin_file,
                                       0,
                                       partition,
                                       clv_index,
@@ -570,7 +570,7 @@ int main (int argc, char * argv[])
   {
     size_t size;
     unsigned int type, attribs;
-    unsigned int* ptr = (unsigned int*) pllmod_binary_custom_load(
+    unsigned int* ptr = (unsigned int*) corax_binary_custom_load(
                                             bin_file,
                                             0,
                                             &size,
@@ -611,14 +611,14 @@ int main (int argc, char * argv[])
      fatal("Error: Saved and loaded logL do not agree!!\n");
 
   /* new we try with ACCESS_SEEK instead of the value taken from the map */
-  tree = pllmod_binary_utree_load(bin_file,
+  tree = corax_binary_utree_load(bin_file,
                                BLOCK_ID_TREE,
                                &bin_attributes,
-                               PLLMOD_BIN_ACCESS_SEEK);
+                               CORAX_BIN_ACCESS_SEEK);
   if (!tree)
     fatal("Error loading tree!\n");
 
-  pllmod_binary_close(bin_file);
+  corax_binary_close(bin_file);
 
   if (!corax_utree_traverse(tree,
                           CORAX_TREE_TRAVERSE_POSTORDER,

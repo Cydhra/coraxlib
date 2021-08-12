@@ -23,19 +23,19 @@
 
 #include "corax/corax_common.h"
 
-#define PLLMOD_MSA_STATS_NONE (0ul)
-#define PLLMOD_MSA_STATS_DUP_TAXA (1ul << 0)
-#define PLLMOD_MSA_STATS_DUP_SEQS (1ul << 1)
-#define PLLMOD_MSA_STATS_GAP_PROP (1ul << 2)
-#define PLLMOD_MSA_STATS_GAP_SEQS (1ul << 3)
-#define PLLMOD_MSA_STATS_GAP_COLS (1ul << 4)
-#define PLLMOD_MSA_STATS_INV_PROP (1ul << 5)
-#define PLLMOD_MSA_STATS_INV_COLS (1ul << 6)
-#define PLLMOD_MSA_STATS_FREQS (1ul << 7)
-#define PLLMOD_MSA_STATS_SUBST_RATES (1ul << 8)
-#define PLLMOD_MSA_STATS_ALL (~0ul)
+#define CORAX_MSA_STATS_NONE (0ul)
+#define CORAX_MSA_STATS_DUP_TAXA (1ul << 0)
+#define CORAX_MSA_STATS_DUP_SEQS (1ul << 1)
+#define CORAX_MSA_STATS_GAP_PROP (1ul << 2)
+#define CORAX_MSA_STATS_GAP_SEQS (1ul << 3)
+#define CORAX_MSA_STATS_GAP_COLS (1ul << 4)
+#define CORAX_MSA_STATS_INV_PROP (1ul << 5)
+#define CORAX_MSA_STATS_INV_COLS (1ul << 6)
+#define CORAX_MSA_STATS_FREQS (1ul << 7)
+#define CORAX_MSA_STATS_SUBST_RATES (1ul << 8)
+#define CORAX_MSA_STATS_ALL (~0ul)
 
-#define PLLMOD_MSA_MAX_ERRORS 100
+#define CORAX_MSA_MAX_ERRORS 100
 
 typedef struct msa_stats
 {
@@ -59,7 +59,7 @@ typedef struct msa_stats
 
   double *freqs;
   double *subst_rates;
-} pllmod_msa_stats_t;
+} corax_msa_stats_t;
 
 typedef struct msa_errors
 {
@@ -68,35 +68,35 @@ typedef struct msa_errors
   unsigned long *invalid_char_seq;
   unsigned long *invalid_char_pos;
   int            status;
-} pllmod_msa_errors_t;
+} corax_msa_errors_t;
 
-CORAX_EXPORT double *pllmod_msa_empirical_frequencies(corax_partition_t *partition);
-CORAX_EXPORT double *pllmod_msa_empirical_subst_rates(corax_partition_t *partition);
+CORAX_EXPORT double *corax_msa_empirical_frequencies(corax_partition_t *partition);
+CORAX_EXPORT double *corax_msa_empirical_subst_rates(corax_partition_t *partition);
 CORAX_EXPORT double
-pllmod_msa_empirical_invariant_sites(corax_partition_t *partition);
+corax_msa_empirical_invariant_sites(corax_partition_t *partition);
 
-CORAX_EXPORT pllmod_msa_errors_t *pllmod_msa_check(const corax_msa_t *  msa,
+CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t *  msa,
                                                  const corax_state_t *tipmap);
 
-CORAX_EXPORT void pllmod_msa_destroy_errors(pllmod_msa_errors_t *errs);
+CORAX_EXPORT void corax_msa_destroy_errors(corax_msa_errors_t *errs);
 
-CORAX_EXPORT pllmod_msa_stats_t *
-           pllmod_msa_compute_stats(const corax_msa_t *   msa,
+CORAX_EXPORT corax_msa_stats_t *
+           corax_msa_compute_stats(const corax_msa_t *   msa,
                                     unsigned int        states,
                                     const corax_state_t * tipmap,
                                     const unsigned int *weights,
                                     unsigned long       stats_mask);
 
-CORAX_EXPORT void pllmod_msa_destroy_stats(pllmod_msa_stats_t *stats);
+CORAX_EXPORT void corax_msa_destroy_stats(corax_msa_stats_t *stats);
 
-CORAX_EXPORT corax_msa_t *pllmod_msa_filter(corax_msa_t *    msa,
+CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t *    msa,
                                         unsigned long *remove_seqs,
                                         unsigned long  remove_seqs_count,
                                         unsigned long *remove_cols,
                                         unsigned long  remove_cols_count,
                                         unsigned int   inplace);
 
-CORAX_EXPORT corax_msa_t **pllmod_msa_split(const corax_msa_t *   msa,
+CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t *   msa,
                                         const unsigned int *site_part,
                                         unsigned int        part_count);
 

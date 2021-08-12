@@ -98,8 +98,8 @@ int main (int argc, char * argv[])
    corax_unode_t * root2;
 
    /* serialize and expand */
-   stree = pllmod_utree_serialize(root, n_taxa);
-   tree2 = pllmod_utree_expand(stree, n_taxa);
+   stree = corax_utree_serialize(root, n_taxa);
+   tree2 = corax_utree_expand(stree, n_taxa);
    root2 = get_utree_root(tree2);
    free(stree);
 
@@ -113,7 +113,7 @@ int main (int argc, char * argv[])
    printf("\n\nRECONSTRUCTED TREE:\n\n");
    corax_utree_show_ascii(root2, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_BRANCH_LENGTH | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
-   rf_distance = pllmod_utree_rf_distance(root,
+   rf_distance = corax_utree_rf_distance(root,
                                           root2,
                                           n_taxa);
    assert(!rf_distance);
@@ -123,8 +123,8 @@ int main (int argc, char * argv[])
    while(root2->node_index > n_taxa) root2 = root2->next?root2->next->back:root2->back;
    printf("Root set to %d\n", root2->node_index);
 
-   stree = pllmod_utree_serialize(root2->back, n_taxa);
-   tree = pllmod_utree_expand(stree, n_taxa);
+   stree = corax_utree_serialize(root2->back, n_taxa);
+   tree = corax_utree_expand(stree, n_taxa);
    root = get_utree_root(tree);
    free(stree);
 
@@ -138,7 +138,7 @@ int main (int argc, char * argv[])
    printf("\nRECONSTRUCTED FROM TIP:\n\n");
    corax_utree_show_ascii(root, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_BRANCH_LENGTH | CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_PMATRIX_INDEX);
 
-   rf_distance = pllmod_utree_rf_distance(root,
+   rf_distance = corax_utree_rf_distance(root,
                                           root2,
                                           n_taxa);
    assert(!rf_distance);

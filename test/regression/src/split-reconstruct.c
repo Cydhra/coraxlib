@@ -66,7 +66,7 @@ int main (int argc, char * argv[])
     labels[tipnodes[i]->node_index] = tipnodes[i]->label;
 
   unsigned int n_splits = tip_count - 3;
-  corax_split_t * splits = pllmod_utree_split_create(tree,
+  corax_split_t * splits = corax_utree_split_create(tree,
                                                    tip_count,
                                                    NULL);
 
@@ -80,49 +80,49 @@ int main (int argc, char * argv[])
     split_system.split_count = n_splits;
     split_system.max_support = 1.0;
 
-    corax_consensus_utree_t * constree = pllmod_utree_from_splits(&split_system,
+    corax_consensus_utree_t * constree = corax_utree_from_splits(&split_system,
                                                                 tip_count,
                                                                 labels);
 
     corax_utree_t * consensus = corax_utree_wraptree(constree->tree, tip_count);
-    if (!pllmod_utree_consistency_set(consensus, parsed_tree))
+    if (!corax_utree_consistency_set(consensus, parsed_tree))
        fatal("Cannot set trees consistent!");
 
     corax_utree_show_ascii(constree->tree, CORAX_UTREE_SHOW_CLV_INDEX | CORAX_UTREE_SHOW_LABEL);
     print_newick(constree->tree);
 
-    corax_split_t * splits2 = pllmod_utree_split_create(constree->tree,
+    corax_split_t * splits2 = corax_utree_split_create(constree->tree,
                                                       tip_count,
                                                       NULL);
 
-    pllmod_utree_split_normalize_and_sort(splits2,
+    corax_utree_split_normalize_and_sort(splits2,
                                           tip_count,
                                           n_splits,
                                           1);
 
     /* sort splits back */
-    pllmod_utree_split_normalize_and_sort(splits,
+    corax_utree_split_normalize_and_sort(splits,
                                           tip_count,
                                           n_splits,
                                           0);
 
-    rf_dist = pllmod_utree_split_rf_distance(splits, splits2, tip_count);
+    rf_dist = corax_utree_split_rf_distance(splits, splits2, tip_count);
     printf(" RF DIST = %d\n", rf_dist);
 
     if (rf_dist > 0)
       fatal("Error: Initial and reconstructed trees differ!");
 
     /* in-loop cleanup */
-    pllmod_utree_consensus_destroy(constree);
+    corax_utree_consensus_destroy(constree);
     free (consensus->nodes);
     free (consensus);
-    pllmod_utree_split_destroy(splits2);
+    corax_utree_split_destroy(splits2);
   }
 
   /* clean */
   free(labels);
   corax_utree_destroy (parsed_tree, NULL);
-  pllmod_utree_split_destroy(splits);
+  corax_utree_split_destroy(splits);
 
   return (0);
 }

@@ -90,7 +90,7 @@ static void split_multi_node(corax_utree_t *tree,
         new_link->next->next->scaler_index = (int)new_scaler_id;
 
     // set backpointers old<->new
-    pllmod_utree_connect_nodes(
+    corax_utree_connect_nodes(
         old_link, new_link, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
     tree->nodes[tree->inner_count + tree->tip_count] = new_link;
@@ -164,11 +164,11 @@ static int utree_insert_tips_random(corax_unode_t **nodes,
     corax_unode_t *next_branch = branches[rand_branch_id];
 
     /* connect tip to selected branch */
-    pllmod_utree_connect_nodes(
+    corax_utree_connect_nodes(
         next_branch->back, next_inner, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
-    pllmod_utree_connect_nodes(
+    corax_utree_connect_nodes(
         next_branch, next_inner->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
-    pllmod_utree_connect_nodes(
+    corax_utree_connect_nodes(
         next_tip, next_inner->next->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
     if (CORAX_UTREE_IS_TIP(next_inner->back))
@@ -362,11 +362,11 @@ CORAX_EXPORT corax_utree_t *corax_utree_random_create(unsigned int       taxa_co
   tree_root = nodes[taxa_count];
 
   /* build minimal tree with 3 tips and 1 inner node */
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       nodes[0], nodes[taxa_count], CORAX_TREE_DEFAULT_BRANCH_LENGTH);
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       nodes[1], nodes[taxa_count]->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       nodes[2], nodes[taxa_count]->next->next, CORAX_TREE_DEFAULT_BRANCH_LENGTH);
 
   /* insert remaining taxa_count-3 tips into the tree */

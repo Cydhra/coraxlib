@@ -60,7 +60,7 @@ double target_freqs_func(void *p, double *x)
 
   /* compute negative score */
   score = -1
-          * pllmod_opt_compute_lk(partition,
+          * corax_opt_compute_lk(partition,
                                   root,
                                   params_indices,
                                   1,  /* update pmatrices */
@@ -108,7 +108,7 @@ double target_subst_params_func(void *p, double *x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -130,7 +130,7 @@ double target_alpha_func(void *p, double x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -152,7 +152,7 @@ double target_pinv_func(void *p, double x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -179,7 +179,7 @@ double target_alpha_pinv_func(void *p, double *x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -199,7 +199,7 @@ double target_rates_func(void *p, double *x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -235,7 +235,7 @@ double target_weights_func(void *p, double *x)
 
   /* compute negative score */
   score = -1
-          * pllmod_opt_compute_lk(partition,
+          * corax_opt_compute_lk(partition,
                                   root,
                                   params_indices,
                                   0,  /* update pmatrices */
@@ -259,7 +259,7 @@ double target_brlen_scaler_func(void *p, double x)
 
   /* compute negative score */
   double score = -1
-                 * pllmod_opt_compute_lk(partition,
+                 * corax_opt_compute_lk(partition,
                                          root,
                                          params_indices,
                                          1,  /* update pmatrices */
@@ -272,7 +272,7 @@ target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged)
 {
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t *   treeinfo          = params->treeinfo;
+  corax_treeinfo_t *   treeinfo          = params->treeinfo;
   int                   param_to_optimize = params->param_to_optimize;
   unsigned int          num_parts         = params->num_opt_partitions;
   treeinfo_param_set_cb param_setter      = params->param_set_cb;
@@ -309,7 +309,7 @@ target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged)
   assert(j == num_parts);
 
   /* compute negative score */
-  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
   //  printf("score: %lf\n", score);
 
@@ -341,7 +341,7 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
 {
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t *treeinfo           = params->treeinfo;
+  corax_treeinfo_t *treeinfo           = params->treeinfo;
   unsigned int       num_parts          = params->num_opt_partitions;
   unsigned int *     fixed_var_index    = params->fixed_var_index;
   int                params_to_optimize = params->param_to_optimize;
@@ -378,7 +378,7 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
 
       switch (params_to_optimize)
       {
-      case PLLMOD_OPT_PARAM_ALPHA | PLLMOD_OPT_PARAM_PINV:
+      case CORAX_OPT_PARAM_ALPHA | CORAX_OPT_PARAM_PINV:
         /* update GAMMA rate categories */
         treeinfo->alphas[i] = x[part][0];
         if (!corax_compute_gamma_cats(treeinfo->alphas[i],
@@ -401,12 +401,12 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
           }
         }
         break;
-      case PLLMOD_OPT_PARAM_FREE_RATES:
+      case CORAX_OPT_PARAM_FREE_RATES:
         /* update rate categories */
         memcpy(
             partition->rates, x[part], partition->rate_cats * sizeof(double));
         break;
-      case PLLMOD_OPT_PARAM_RATE_WEIGHTS:
+      case CORAX_OPT_PARAM_RATE_WEIGHTS:
       {
         unsigned int fixed_weight_state = fixed_var_index[part];
         unsigned int n_weights          = partition->rate_cats;
@@ -433,7 +433,7 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
   }
 
   /* compute negative score */
-  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -466,7 +466,7 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
 {
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t *treeinfo          = params->treeinfo;
+  corax_treeinfo_t *treeinfo          = params->treeinfo;
   unsigned int       num_parts         = params->num_opt_partitions;
   unsigned int       params_index      = params->params_index;
   unsigned int *     subst_free_params = params->num_free_params;
@@ -482,7 +482,7 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   {
     corax_partition_t *partition = treeinfo->partitions[i];
 
-    if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_SUBST_RATES)
+    if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES)
     {
       if (!partition || (converged && converged[part]))
       {
@@ -536,14 +536,14 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   }
 
   /* compute negative score */
-  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
   {
     j = 0;
     for (i = 0; i < treeinfo->partition_count; ++i)
-      if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_SUBST_RATES)
+      if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES)
         fx[j++] = -1 * treeinfo->partition_loglh[i];
   }
 
@@ -565,7 +565,7 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
 {
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  pllmod_treeinfo_t *treeinfo         = params->treeinfo;
+  corax_treeinfo_t *treeinfo         = params->treeinfo;
   unsigned int       num_parts        = params->num_opt_partitions;
   unsigned int       params_index     = params->params_index;
   unsigned int *     fixed_freq_state = params->fixed_var_index;
@@ -581,7 +581,7 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   {
     corax_partition_t *partition = treeinfo->partitions[i];
 
-    if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_FREQUENCIES)
+    if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES)
     {
       if (!partition || (converged && converged[part]))
       {
@@ -642,14 +642,14 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   }
 
   /* compute negative score */
-  if (x) score = -1 * pllmod_treeinfo_compute_loglh(treeinfo, 0);
+  if (x) score = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
   {
     j = 0;
     for (i = 0; i < treeinfo->partition_count; ++i)
-      if (treeinfo->params_to_optimize[i] & PLLMOD_OPT_PARAM_FREQUENCIES)
+      if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES)
         fx[j++] = -1 * treeinfo->partition_loglh[i];
   }
 

@@ -3,7 +3,7 @@
 
 #include "corax/corax_common.h"
 
-#define PLLMOD_TREE_ERROR_POLYPHYL_OUTGROUP 3970 // B + {10...}
+#define CORAX_TREE_ERROR_POLYPHYL_OUTGROUP 3970 // B + {10...}
 
 CORAX_EXPORT void corax_utree_set_length(corax_unode_t *edge, double length);
 
@@ -31,15 +31,15 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
                                        unsigned int  outgroup_size,
                                        int           add_root_node);
 
-CORAX_EXPORT int pllmod_utree_draw_support(corax_utree_t * ref_tree,
+CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
                                          const double *support,
                                          corax_unode_t **node_map,
                                          char *(*cb_serialize)(double));
 
-CORAX_EXPORT corax_unode_t * pllmod_utree_serialize(corax_unode_t * tree,
+CORAX_EXPORT corax_unode_t * corax_utree_serialize(corax_unode_t * tree,
                                                 unsigned int tip_count);
 
-CORAX_EXPORT corax_utree_t * pllmod_utree_expand(corax_unode_t * serialized_tree,
+CORAX_EXPORT corax_utree_t * corax_utree_expand(corax_unode_t * serialized_tree,
                                              unsigned int tip_count);
 
 #endif /* CORAX_TREE_UTREE_OPS_H_ */

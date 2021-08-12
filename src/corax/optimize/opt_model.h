@@ -23,14 +23,14 @@
 
 #include "opt_generic.h"
 
-#define PLLMOD_ALGO_MIN_WEIGHT_RATIO 0.001
-#define PLLMOD_ALGO_MAX_WEIGHT_RATIO 10
-#define PLLMOD_ALGO_BFGS_FACTR 1e9
+#define CORAX_ALGO_MIN_WEIGHT_RATIO 0.001
+#define CORAX_ALGO_MAX_WEIGHT_RATIO 10
+#define CORAX_ALGO_BFGS_FACTR 1e9
 
 /*
  * Optimize stationary frequencies for parameters `params_index`.
  */
-CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
                                               corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
@@ -44,7 +44,7 @@ CORAX_EXPORT double pllmod_algo_opt_frequencies(corax_partition_t *partition,
  *            Must be sorted and start with '0'.
  *            e.g., 000000 = JC/F81, 010010 = K80/HKY, 012314 = TrN
  */
-CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
                                               corax_unode_t *    tree,
                                               unsigned int     params_index,
                                               unsigned int *   params_indices,
@@ -54,7 +54,7 @@ CORAX_EXPORT double pllmod_algo_opt_subst_rates(corax_partition_t *partition,
                                               double           bfgs_factor,
                                               double           tolerance);
 
-CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
                                         corax_unode_t *    tree,
                                         unsigned int *   params_indices,
                                         double           min_alpha,
@@ -62,14 +62,14 @@ CORAX_EXPORT double pllmod_algo_opt_alpha(corax_partition_t *partition,
                                         double *         alpha,
                                         double           tolerance);
 
-CORAX_EXPORT double pllmod_algo_opt_pinv(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
                                        corax_unode_t *    tree,
                                        unsigned int *   params_indices,
                                        double           min_pinv,
                                        double           max_pinv,
                                        double           tolerance);
 
-CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
                                              corax_unode_t *    tree,
                                              unsigned int *   params_indices,
                                              double           min_alpha,
@@ -84,7 +84,7 @@ CORAX_EXPORT double pllmod_algo_opt_alpha_pinv(corax_partition_t *partition,
  * Optimize free rates and rate weights together, linked to
  * `partition->rate_cats`. Uses 2 step L-BFGS-B algorithm.
  */
-CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
                                                 corax_unode_t *    tree,
                                                 unsigned int *   params_indices,
                                                 double           min_rate,
@@ -94,7 +94,7 @@ CORAX_EXPORT double pllmod_algo_opt_rates_weights(corax_partition_t *partition,
                                                 double *         brlen_scaler,
                                                 int scale_branches);
 
-CORAX_EXPORT double pllmod_algo_opt_brlen_scaler(corax_partition_t *partition,
+CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
                                                corax_unode_t *    tree,
                                                unsigned int *   params_indices,
                                                double *         scaler,

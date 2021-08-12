@@ -79,7 +79,7 @@ static void apply_move (corax_utree_t * tree_st,
                         corax_tree_rollback_t * rollback_stack,
                         int * rollback_stack_top)
 {
-  if (!pllmod_utree_spr (edge, tree, &rollback_stack[++(*rollback_stack_top)]))
+  if (!corax_utree_spr (edge, tree, &rollback_stack[++(*rollback_stack_top)]))
   {
     printf ("Error %d: %s\n", corax_errno, corax_errmsg);
     exit (1);
@@ -98,7 +98,7 @@ static void apply_move (corax_utree_t * tree_st,
 static void undo_move (corax_tree_rollback_t * rollback_stack,
                        int * rollback_stack_top)
 {
-  pllmod_tree_rollback (&rollback_stack[(*rollback_stack_top)--]);
+  corax_tree_rollback (&rollback_stack[(*rollback_stack_top)--]);
 }
 
 #define ROLLBACK_STACK_SIZE 10

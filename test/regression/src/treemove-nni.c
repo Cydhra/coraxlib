@@ -94,7 +94,7 @@ static void apply_move(corax_utree_t * tree,
                        corax_unode_t * edge,
                        int type)
 {
-  pllmod_utree_nni(edge, type, NULL);
+  corax_utree_nni(edge, type, NULL);
 
   show_tree(edge, SHOW_ASCII_TREE);
 

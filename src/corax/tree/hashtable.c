@@ -238,7 +238,7 @@ void hash_print(bitv_hashtable_t *h)
     bitv_hash_entry_t *e = h->table[i];
     while (e != NULL)
     {
-      pllmod_utree_split_show(e->bit_vector, h->bit_count);
+      corax_utree_split_show(e->bit_vector, h->bit_count);
       printf(" %f\n", e->support);
       e = e->next;
     }

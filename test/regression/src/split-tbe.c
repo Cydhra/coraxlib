@@ -28,15 +28,15 @@
 void run_ham_test(unsigned int test_num, corax_split_t s1, corax_split_t s2,
               unsigned int num_tips)
 {
-  pllmod_utree_split_show(s1, num_tips);
+  corax_utree_split_show(s1, num_tips);
   printf("\n");
-  pllmod_utree_split_show(s2, num_tips);
+  corax_utree_split_show(s2, num_tips);
   printf("\n");
 
-  unsigned int p1 =  pllmod_utree_split_lightside(s1, num_tips);
-  unsigned int p2 =  pllmod_utree_split_lightside(s2, num_tips);
+  unsigned int p1 =  corax_utree_split_lightside(s1, num_tips);
+  unsigned int p2 =  corax_utree_split_lightside(s2, num_tips);
 
-  unsigned int hdist = pllmod_utree_split_hamming_distance(s1, s2, num_tips);
+  unsigned int hdist = corax_utree_split_hamming_distance(s1, s2, num_tips);
 
   printf("TEST #%u: LIGHT SIDE: %3u %3u, HAMMING_DIST: %u\n", test_num, p1, p2, hdist);
 }
@@ -65,22 +65,22 @@ void run_tbe_test(const char* tree1_str, const char* tree2_str)
   corax_unode_t ** node_split_map = (corax_unode_t **) calloc(split_count, sizeof(corax_unode_t *));
   double * tbe = (double *) calloc(split_count, sizeof(double));
 
-  pllmod_utree_consistency_set(tree1, tree2);
+  corax_utree_consistency_set(tree1, tree2);
 
-  corax_split_t * splits1 = pllmod_utree_split_create(tree1->vroot,
+  corax_split_t * splits1 = corax_utree_split_create(tree1->vroot,
                                                     tree1->tip_count,
                                                     node_split_map);
 
-  corax_split_t * splits2 = pllmod_utree_split_create(tree2->vroot,
+  corax_split_t * splits2 = corax_utree_split_create(tree2->vroot,
                                                     tree2->tip_count,
                                                     NULL);
 
 
   assert(tree1->tip_count == tree2->tip_count);
 
-  pllmod_utree_tbe_naive(splits1, splits2, tree1->tip_count, tbe);
+  corax_utree_tbe_naive(splits1, splits2, tree1->tip_count, tbe);
 
-  pllmod_utree_draw_support(tree1, tbe, node_split_map, NULL);
+  corax_utree_draw_support(tree1, tbe, node_split_map, NULL);
 
   printf("TBE: ");
 
@@ -96,8 +96,8 @@ void run_tbe_test(const char* tree1_str, const char* tree2_str)
   free(node_split_map);
   free(tbe);
 
-  pllmod_utree_split_destroy(splits1);
-  pllmod_utree_split_destroy(splits2);
+  corax_utree_split_destroy(splits1);
+  corax_utree_split_destroy(splits2);
 
   corax_utree_destroy (tree1, NULL);
   corax_utree_destroy (tree2, NULL);

@@ -39,7 +39,7 @@ double *clone_double_array(const double *src, size_t len)
   return dst;
 }
 
-double *pllmod_util_get_equal_freqs(unsigned int states)
+double *corax_util_get_equal_freqs(unsigned int states)
 {
   double *basefreqs = calloc(states, sizeof(double));
   if (!basefreqs)
@@ -53,7 +53,7 @@ double *pllmod_util_get_equal_freqs(unsigned int states)
   return basefreqs;
 }
 
-double *pllmod_util_get_equal_rates(unsigned int states)
+double *corax_util_get_equal_rates(unsigned int states)
 {
   const unsigned int rates      = corax_subst_rate_count(states);
   double *           substrates = calloc(rates, sizeof(double));
@@ -82,7 +82,7 @@ double *pllmod_util_get_equal_rates(unsigned int states)
  *
  * @return array defining substitution rate symmetries
  */
-CORAX_EXPORT int *pllmod_util_model_string_to_sym(const char *s)
+CORAX_EXPORT int *corax_util_model_string_to_sym(const char *s)
 {
   size_t len      = strlen(s);
   int *  sym_list = calloc(len, sizeof(int));
@@ -109,8 +109,8 @@ CORAX_EXPORT int *pllmod_util_model_string_to_sym(const char *s)
  *
  * @return custom model instance
  */
-CORAX_EXPORT pllmod_subst_model_t *
-           pllmod_util_model_create_custom(const char *  name,
+CORAX_EXPORT corax_subst_model_t *
+           corax_util_model_create_custom(const char *  name,
                                            unsigned int  states,
                                            const double *rates,
                                            const double *freqs,
@@ -119,7 +119,7 @@ CORAX_EXPORT pllmod_subst_model_t *
 {
   if (states <= 1)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid number of states: %d",
                   states);
     return NULL;
@@ -128,7 +128,7 @@ CORAX_EXPORT pllmod_subst_model_t *
   const size_t rate_count = states * (states - 1) / 2;
   if (rate_sym_str && strlen(rate_sym_str) != rate_count)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid rates symmetry definition: %s",
                   rate_sym_str);
     return NULL;
@@ -136,13 +136,13 @@ CORAX_EXPORT pllmod_subst_model_t *
 
   if (freq_sym_str && strlen(freq_sym_str) != states)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
                   "Invalid freqs symmetry definition: %s",
                   freq_sym_str);
     return NULL;
   }
 
-  pllmod_subst_model_t *model = calloc(1, sizeof(pllmod_subst_model_t));
+  corax_subst_model_t *model = calloc(1, sizeof(corax_subst_model_t));
 
   model->states         = states;
   model->dynamic_malloc = 1;
@@ -153,10 +153,10 @@ CORAX_EXPORT pllmod_subst_model_t *
   model->freqs = freqs;
 
   if (rate_sym_str)
-    model->rate_sym = pllmod_util_model_string_to_sym(rate_sym_str);
+    model->rate_sym = corax_util_model_string_to_sym(rate_sym_str);
 
   if (freq_sym_str)
-    model->freq_sym = pllmod_util_model_string_to_sym(freq_sym_str);
+    model->freq_sym = corax_util_model_string_to_sym(freq_sym_str);
 
   return model;
 }
@@ -164,14 +164,14 @@ CORAX_EXPORT pllmod_subst_model_t *
 /**
  * @brief Creates a copy of substitution model instance
  */
-CORAX_EXPORT pllmod_subst_model_t *
-           pllmod_util_model_clone(const pllmod_subst_model_t *src)
+CORAX_EXPORT corax_subst_model_t *
+           corax_util_model_clone(const corax_subst_model_t *src)
 {
   if (!src) return NULL;
 
   const size_t rate_count = src->states * (src->states - 1) / 2;
 
-  pllmod_subst_model_t *dst = calloc(1, sizeof(pllmod_subst_model_t));
+  corax_subst_model_t *dst = calloc(1, sizeof(corax_subst_model_t));
 
   dst->dynamic_malloc = 1;
   dst->states         = src->states;
@@ -193,7 +193,7 @@ CORAX_EXPORT pllmod_subst_model_t *
 /**
  * @brief Destroy a substitution model instance and free associated memory
  */
-CORAX_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model)
+CORAX_EXPORT void corax_util_model_destroy(corax_subst_model_t *model)
 {
   if (model->dynamic_malloc)
   {
@@ -220,23 +220,23 @@ CORAX_EXPORT void pllmod_util_model_destroy(pllmod_subst_model_t *model)
  * @param mix_rates per-component rates (NULL=undefined/estimated)
  * @param mix_weights per-component weights (NULL=undefined/estimated)
  * @param mix_type defines how rates & weights are estimated:
- *        PLLMOD_MIXTYPE_FIXED = fixed user-specified rates and weights
- *        PLLMOD_MIXTYPE_GAMMA = GAMMA distribution of rates. equal weights
- *        PLLMOD_MIXTYPE_FREE  = rates and weights are estimated by ML
+ *        CORAX_MIXTYPE_FIXED = fixed user-specified rates and weights
+ *        CORAX_MIXTYPE_GAMMA = GAMMA distribution of rates. equal weights
+ *        CORAX_MIXTYPE_FREE  = rates and weights are estimated by ML
  *
  * @return mixture model instance
  */
-CORAX_EXPORT pllmod_mixture_model_t *
-           pllmod_util_model_mixture_create(const char *                 name,
+CORAX_EXPORT corax_mixture_model_t *
+           corax_util_model_mixture_create(const char *                 name,
                                             unsigned int                 ncomp,
-                                            pllmod_subst_model_t **const models,
+                                            corax_subst_model_t **const models,
                                             const double *               mix_rates,
                                             const double *               mix_weights,
                                             int                          mix_type)
 {
   if (ncomp <= 0)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MIXTURE_INVALID_SIZE,
+    corax_set_error(CORAX_UTIL_ERROR_MIXTURE_INVALID_SIZE,
                   "Invalid number of components: %d",
                   ncomp);
     return NULL;
@@ -249,7 +249,7 @@ CORAX_EXPORT pllmod_mixture_model_t *
     if (models[i]->states != models[0]->states)
     {
       corax_set_error(
-          PLLMOD_UTIL_ERROR_MIXTURE_INVALID_COMPONENT,
+          CORAX_UTIL_ERROR_MIXTURE_INVALID_COMPONENT,
           "Distinct number of states in mixture components 0 and %d: %d != %d",
           i,
           models[0]->states,
@@ -258,16 +258,16 @@ CORAX_EXPORT pllmod_mixture_model_t *
     }
   }
 
-  pllmod_mixture_model_t *mixture = calloc(1, sizeof(pllmod_mixture_model_t));
+  corax_mixture_model_t *mixture = calloc(1, sizeof(corax_mixture_model_t));
 
   mixture->ncomp    = ncomp;
   mixture->mix_type = mix_type;
 
-  mixture->models = calloc(ncomp, sizeof(pllmod_subst_model_t *));
+  mixture->models = calloc(ncomp, sizeof(corax_subst_model_t *));
 
   for (i = 0; i < ncomp; ++i)
     mixture->models[i] = models[i]->dynamic_malloc
-                             ? pllmod_util_model_clone(models[i])
+                             ? corax_util_model_clone(models[i])
                              : models[i];
 
   if (name) mixture->name = strdup(name);
@@ -283,11 +283,11 @@ CORAX_EXPORT pllmod_mixture_model_t *
 /**
  * @brief Create a copy of mixture model
  */
-CORAX_EXPORT pllmod_mixture_model_t *
-           pllmod_util_model_mixture_clone(const pllmod_mixture_model_t *src)
+CORAX_EXPORT corax_mixture_model_t *
+           corax_util_model_mixture_clone(const corax_mixture_model_t *src)
 {
   if (src)
-    return pllmod_util_model_mixture_create(src->name,
+    return corax_util_model_mixture_create(src->name,
                                             src->ncomp,
                                             src->models,
                                             src->mix_rates,
@@ -301,7 +301,7 @@ CORAX_EXPORT pllmod_mixture_model_t *
  * @brief Destroy a mixture model instance and free associated memory
  */
 CORAX_EXPORT void
-pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture)
+corax_util_model_mixture_destroy(corax_mixture_model_t *mixture)
 {
   if (mixture->name) free(mixture->name);
 
@@ -313,7 +313,7 @@ pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture)
   {
     size_t i;
     for (i = 0; i < mixture->ncomp; ++i)
-      pllmod_util_model_destroy(mixture->models[i]);
+      corax_util_model_destroy(mixture->models[i]);
 
     free(mixture->models);
   }
@@ -334,7 +334,7 @@ pllmod_util_model_mixture_destroy(pllmod_mixture_model_t *mixture)
  *
  * @return character map
  */
-CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
+CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
                                                    const char * statechars,
                                                    const char * gapchars,
                                                    int          case_sensitive)
@@ -345,7 +345,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
   if (states > maxstates)
   {
     corax_set_error(
-        PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+        CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
         "The specified number of states (%u) exceeds the allowed maximum (%u)",
         states,
         maxstates);
@@ -355,7 +355,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
   if (states > strlen(statechars))
   {
     corax_set_error(
-        PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
+        CORAX_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
         "Character map string is too short for a given number of states: %u",
         states);
     return NULL;
@@ -411,7 +411,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_create(unsigned int states,
  *
  * @return character map
  */
-CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
+CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
                                                   const char * fname,
                                                   int          case_sensitive,
                                                   char **      state_names)
@@ -422,7 +422,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
 
   if (states > maxstates)
   {
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_DEF,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
                   "The specified number of states (%u) "
                   "exceeds the allowed maximum (%u)",
                   states,
@@ -441,7 +441,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
   if (fscanf(f, "%u %u", &obs_states, &mod_states) != 2)
   {
     fclose(f);
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Invalid character map file: %s",
                   fname);
     return CORAX_FAILURE;
@@ -450,7 +450,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
   if (mod_states != states)
   {
     fclose(f);
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Invalid number of states in the charmap file: %u",
                   mod_states);
     return CORAX_FAILURE;
@@ -460,7 +460,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
   if (fscanf(f, "%1024s", statechars) != 1)
   {
     fclose(f);
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                   "Error reading observed state list");
     return CORAX_FAILURE;
   }
@@ -468,7 +468,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
   if (obs_states != strlen(statechars))
   {
     fclose(f);
-    corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
+    corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
                   "Length of the character map string (%u) does not "
                   "correspond to the declared number of observed states (%u)",
                   strlen(statechars),
@@ -483,7 +483,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
     if (fscanf(f, "%1024s", sname) != 1)
     {
       fclose(f);
-      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Error reading name of state # %u",
                     i);
       return CORAX_FAILURE;
@@ -501,7 +501,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
       ;
     if (fscanf(f, "%c", &ostate) != 1)
     {
-      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Error reading observed state %u",
                     i);
       free(map);
@@ -511,7 +511,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
 
     if (!strchr(statechars, ostate))
     {
-      corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+      corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                     "Undeclared observed state: %c",
                     ostate);
       free(map);
@@ -526,7 +526,7 @@ CORAX_EXPORT corax_state_t *pllmod_util_charmap_parse(unsigned int states,
       int flag;
       if (fscanf(f, "%d", &flag) != 1 && fscanf(f, ",%d", &flag) != 1)
       {
-        corax_set_error(PLLMOD_UTIL_ERROR_MODEL_INVALID_MAPFILE,
+        corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
                       "Error reading state map value: %c -> %u",
                       c,
                       j);

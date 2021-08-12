@@ -31,7 +31,7 @@ static inline int d_equals(double a, double b) { return (fabs(a - b) < 1e-10); }
 
 static inline int check_loglh_improvement(int opt_method)
 {
-  return (opt_method == PLLMOD_OPT_BLO_NEWTON_SAFE) ? 1 : 0;
+  return (opt_method == CORAX_OPT_BLO_NEWTON_SAFE) ? 1 : 0;
 }
 
 static void utree_derivative_func(void *  parameters,
@@ -118,9 +118,9 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
   xmax   = params->branch_length_max;
   xtol   = params->tolerance;
   xguess = tr_p->length;
-  if (xguess < xmin || xguess > xmax) xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+  if (xguess < xmin || xguess > xmax) xguess = CORAX_OPT_DEFAULT_BRANCH_LEN;
 
-  xres = pllmod_opt_minimize_newton(xmin,
+  xres = corax_opt_minimize_newton(xmin,
                                     xguess,
                                     xmax,
                                     xtol,
@@ -348,7 +348,7 @@ static int allocate_buffers(corax_newton_tree_params_multi_t *params)
   }
 
   if (!params->brlen_buffers
-      && params->opt_method == PLLMOD_OPT_BLO_NEWTON_FALLBACK)
+      && params->opt_method == CORAX_OPT_BLO_NEWTON_FALLBACK)
   {
     params->brlen_buffers =
         (double **)calloc(params->partition_count, sizeof(double *));
@@ -529,10 +529,10 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
 
   switch (params->opt_method)
   {
-  case PLLMOD_OPT_BLO_NEWTON_FAST:
-  case PLLMOD_OPT_BLO_NEWTON_SAFE:
+  case CORAX_OPT_BLO_NEWTON_FAST:
+  case CORAX_OPT_BLO_NEWTON_SAFE:
   {
-    retval = pllmod_opt_minimize_newton_multi(xnum,
+    retval = corax_opt_minimize_newton_multi(xnum,
                                               xmin,
                                               xguess,
                                               xmax,
@@ -543,14 +543,14 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
                                               utree_derivative_func_multi);
   }
   break;
-  case PLLMOD_OPT_BLO_NEWTON_FALLBACK:
+  case CORAX_OPT_BLO_NEWTON_FALLBACK:
     // TODO: adapt for unlinked branches
     params->brlen_buffers[0][tr_p->pmatrix_index] = tr_p->length;
     retval                                        = CORAX_FAILURE;
     assert(0);
     break;
     break;
-  case PLLMOD_OPT_BLO_NEWTON_GLOBAL:
+  case CORAX_OPT_BLO_NEWTON_GLOBAL:
   {
     retval = CORAX_FAILURE;
     assert(0);
@@ -563,7 +563,7 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
 
   if (!retval)
   {
-    if (corax_errno == PLLMOD_OPT_ERROR_NEWTON_LIMIT)
+    if (corax_errno == CORAX_OPT_ERROR_NEWTON_LIMIT)
     {
       /* NR optimization failed to converge:
        * - if LH improvement check is enabled, it is safe to keep
@@ -796,7 +796,7 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
  * lengths
  */
 CORAX_EXPORT double
-pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
+corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
                                          corax_unode_t *       tree,
                                          const unsigned int *params_indices,
                                          double              branch_length_min,
@@ -818,9 +818,9 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
 
   corax_reset_error();
 
-  if (radius < PLLMOD_OPT_BRLEN_OPTIMIZE_ALL)
+  if (radius < CORAX_OPT_BRLEN_OPTIMIZE_ALL)
   {
-    corax_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
+    corax_set_error(CORAX_OPT_ERROR_NEWTON_BAD_RADIUS,
                   "Invalid radius for branch length optimization");
     return (double)CORAX_FAILURE;
   }
@@ -841,13 +841,13 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
   params.tree           = tree;
   params.params_indices = params_indices;
   params.branch_length_min =
-      (branch_length_min > 0) ? branch_length_min : PLLMOD_OPT_MIN_BRANCH_LEN;
+      (branch_length_min > 0) ? branch_length_min : CORAX_OPT_MIN_BRANCH_LEN;
   params.branch_length_max =
-      (branch_length_max > 0) ? branch_length_max : PLLMOD_OPT_MAX_BRANCH_LEN;
+      (branch_length_max > 0) ? branch_length_max : CORAX_OPT_MAX_BRANCH_LEN;
   params.tolerance = (branch_length_min > 0) ? branch_length_min / 10.0
-                                             : PLLMOD_OPT_TOL_BRANCH_LEN;
+                                             : CORAX_OPT_TOL_BRANCH_LEN;
   params.sumtable         = 0;
-  params.opt_method       = PLLMOD_OPT_BLO_NEWTON_FAST;
+  params.opt_method       = CORAX_OPT_BLO_NEWTON_FAST;
   params.max_newton_iters = 30;
 
   /* allocate the sumtable */
@@ -900,7 +900,7 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
                                                        params_indices,
                                                        NULL);
 
-    DBG("pllmod_opt_optimize_branch_lengths_local: iters %u, old: %f, new: "
+    DBG("corax_opt_optimize_branch_lengths_local: iters %u, old: %f, new: "
         "%f\n",
         iters,
         loglikelihood,
@@ -923,7 +923,7 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
       else
       {
         corax_set_error(
-            PLLMOD_OPT_ERROR_NEWTON_WORSE_LK,
+            CORAX_OPT_ERROR_NEWTON_WORSE_LK,
             "Local BL opt converged to a worse likelihood score by %f units",
             new_loglikelihood - loglikelihood);
         loglikelihood = new_loglikelihood;
@@ -936,12 +936,12 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
   corax_aligned_free(params.sumtable);
 
   return -1 * loglikelihood;
-} /* pllmod_opt_optimize_branch_lengths_local */
+} /* corax_opt_optimize_branch_lengths_local */
 
 /**
  * Optimize branch lengths using Newton-Raphson minimization algorithm.
  *
- * Check `pllmod_opt_optimize_branch_lengths_local` documentation.
+ * Check `corax_opt_optimize_branch_lengths_local` documentation.
  *
  * @param[in,out]  partition         the PLL partition structure
  * @param[in,out]  tree              the PLL unrooted tree structure
@@ -957,7 +957,7 @@ pllmod_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
  * lengths
  */
 CORAX_EXPORT double
-pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
+corax_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
                                              corax_unode_t *       tree,
                                              const unsigned int *params_indices,
                                              double branch_length_min,
@@ -968,17 +968,17 @@ pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
 {
   double loglikelihood;
   loglikelihood =
-      pllmod_opt_optimize_branch_lengths_local(partition,
+      corax_opt_optimize_branch_lengths_local(partition,
                                                tree,
                                                params_indices,
                                                branch_length_min,
                                                branch_length_max,
                                                tolerance,
                                                smoothings,
-                                               PLLMOD_OPT_BRLEN_OPTIMIZE_ALL,
+                                               CORAX_OPT_BRLEN_OPTIMIZE_ALL,
                                                keep_update);
   return loglikelihood;
-} /* pllmod_opt_optimize_branch_lengths_iterative */
+} /* corax_opt_optimize_branch_lengths_iterative */
 
 /**
  * Compute the likelihood function derivatives for a specific branch length
@@ -988,7 +988,7 @@ pllmod_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
  * @param df[out]         first derivative of the likelihood function
  * @param ddf[out]        second derivative of the likelihood function
  */
-CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
+CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
                                            double  proposal,
                                            double *df,
                                            double *ddf)
@@ -1013,7 +1013,7 @@ CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
  * Optimize branch lengths locally around a given edge using Newton-Raphson
  * minimization algorithm on a multiple partition.
  *
- * Check `pllmod_opt_optimize_branch_lengths_local` documentation.
+ * Check `corax_opt_optimize_branch_lengths_local` documentation.
  *
  * @param[in,out]  partitions list of partitions
  * @param  partition_count    number of partitions in `partitions`
@@ -1030,7 +1030,7 @@ CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
  * @param  radius             radius from the virtual root
  * @param  keep_update        if true, branch lengths are iteratively updated in
  * the tree structure
- * @param  opt_method         optimization method to use (see PLLMOD_OPT_BLO_*
+ * @param  opt_method         optimization method to use (see CORAX_OPT_BLO_*
  * constants)
  * @param  parallel_context   context for parallel computation
  * @param  parallel_reduce_cb callback function for parallel reduction
@@ -1038,7 +1038,7 @@ CORAX_EXPORT void pllmod_opt_derivative_func(void *  parameters,
  * @return                   the likelihood score after optimizing branch
  * lengths
  */
-CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
+CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
     corax_partition_t **partitions,
     size_t            partition_count,
     corax_unode_t *     tree,
@@ -1070,8 +1070,8 @@ CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
    *    (2) Pmatrix indices must be **unique** for each branch
    */
 
-  if (opt_method == PLLMOD_OPT_BLO_NEWTON_FALLBACK
-      || opt_method == PLLMOD_OPT_BLO_NEWTON_GLOBAL)
+  if (opt_method == CORAX_OPT_BLO_NEWTON_FALLBACK
+      || opt_method == CORAX_OPT_BLO_NEWTON_GLOBAL)
   {
     corax_set_error(CORAX_ERROR_NOT_IMPLEMENTED,
                   "Optimization method not implemented: "
@@ -1079,9 +1079,9 @@ CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
     return (double)CORAX_FAILURE;
   }
 
-  if (radius < PLLMOD_OPT_BRLEN_OPTIMIZE_ALL)
+  if (radius < CORAX_OPT_BRLEN_OPTIMIZE_ALL)
   {
-    corax_set_error(PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS,
+    corax_set_error(CORAX_OPT_ERROR_NEWTON_BAD_RADIUS,
                   "Invalid radius for branch length optimization");
     return (double)CORAX_FAILURE;
   }
@@ -1121,11 +1121,11 @@ CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
   params.tree            = tree;
   params.params_indices  = params_indices;
   params.branch_length_min =
-      (branch_length_min > 0) ? branch_length_min : PLLMOD_OPT_MIN_BRANCH_LEN;
+      (branch_length_min > 0) ? branch_length_min : CORAX_OPT_MIN_BRANCH_LEN;
   params.branch_length_max =
-      (branch_length_max > 0) ? branch_length_max : PLLMOD_OPT_MAX_BRANCH_LEN;
+      (branch_length_max > 0) ? branch_length_max : CORAX_OPT_MAX_BRANCH_LEN;
   params.tolerance = (branch_length_min > 0) ? branch_length_min / 10.0
-                                             : PLLMOD_OPT_TOL_BRANCH_LEN;
+                                             : CORAX_OPT_TOL_BRANCH_LEN;
   params.precomp_buffers = precomp_buffers;
   params.brlen_buffers   = brlen_buffers;
   params.brlen_scalers   = brlen_scalers;
@@ -1206,19 +1206,19 @@ CORAX_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi(
     }
     else
     {
-      if (params.opt_method == PLLMOD_OPT_BLO_NEWTON_SAFE)
+      if (params.opt_method == CORAX_OPT_BLO_NEWTON_SAFE)
         assert(new_loglikelihood - loglikelihood
                > new_loglikelihood * BETTER_LL_TRESHOLD);
-      else if (opt_method == PLLMOD_OPT_BLO_NEWTON_FALLBACK)
+      else if (opt_method == CORAX_OPT_BLO_NEWTON_FALLBACK)
       {
         // reset branch lengths
-        params.opt_method = PLLMOD_OPT_BLO_NEWTON_SAFE;
+        params.opt_method = CORAX_OPT_BLO_NEWTON_SAFE;
         iters             = (unsigned int)max_iters;
       }
       else
       {
         corax_set_error(
-            PLLMOD_OPT_ERROR_NEWTON_WORSE_LK,
+            CORAX_OPT_ERROR_NEWTON_WORSE_LK,
             "BL opt converged to a worse likelihood score by %.15f units",
             new_loglikelihood - loglikelihood);
         goto cleanup;
@@ -1253,4 +1253,4 @@ cleanup:
   if (params.brlen_orig) free(params.brlen_orig);
 
   return result;
-} /* pllmod_opt_optimize_branch_lengths_local */
+} /* corax_opt_optimize_branch_lengths_local */

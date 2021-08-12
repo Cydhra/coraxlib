@@ -281,9 +281,9 @@ int main (int argc, char * argv[])
   const char * bin_fname = "test.bin";
 
   printf("** create binary file\n");
-  bin_file = pllmod_binary_create(bin_fname,
+  bin_file = corax_binary_create(bin_fname,
                                &bin_header,
-                               PLLMOD_BIN_ACCESS_SEQUENTIAL,
+                               CORAX_BIN_ACCESS_SEQUENTIAL,
                                0);
 
   if (!bin_file)
@@ -292,13 +292,13 @@ int main (int argc, char * argv[])
   }
 
   printf("** dump partition\n");
-  pllmod_binary_partition_dump(bin_file,
+  corax_binary_partition_dump(bin_file,
                             BLOCK_ID_PARTITION,
                             partition,
-                            PLLMOD_BIN_ATTRIB_PARTITION_DUMP_CLV |
-                              PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT);
+                            CORAX_BIN_ATTRIB_PARTITION_DUMP_CLV |
+                              CORAX_BIN_ATTRIB_PARTITION_DUMP_WGT);
 
-  pllmod_binary_utree_dump(bin_file,
+  corax_binary_utree_dump(bin_file,
                        BLOCK_ID_TREE,
                        tree,
                        tip_nodes_count,
@@ -306,7 +306,7 @@ int main (int argc, char * argv[])
 
   printf("** close binary file\n");
 
-  pllmod_binary_close(bin_file);
+  corax_binary_close(bin_file);
 
   /* clean */
   corax_partition_destroy(partition);
@@ -315,15 +315,15 @@ int main (int argc, char * argv[])
   /* reload */
   corax_binary_header_t input_header;
   unsigned int bin_attributes = 0;
-  bin_file = pllmod_binary_open(bin_fname, &input_header);
+  bin_file = corax_binary_open(bin_fname, &input_header);
 
-  partition = pllmod_binary_partition_load(bin_file,
+  partition = corax_binary_partition_load(bin_file,
                                         BLOCK_ID_PARTITION,
                                         NULL, /* create a new partition */
                                         &bin_attributes,
                                         0);
 
-  tree = pllmod_binary_utree_load(bin_file,
+  tree = corax_binary_utree_load(bin_file,
                                BLOCK_ID_TREE,
                                &bin_attributes,
                                0);
@@ -349,7 +349,7 @@ if (fabs(logl - save_logl) < 1e-7)
 else
   fatal("Error: Saved and loaded logL do not agree!!\n");
 
-pllmod_binary_close(bin_file);
+corax_binary_close(bin_file);
 
   printf("Log-L: %f\n", logl);
 

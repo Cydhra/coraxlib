@@ -107,7 +107,7 @@ void free_tbe_data(tbe_data_t *data)
   free(data);
 }
 
-unsigned int search_mindist(const pllmod_tbe_split_info_t *query,
+unsigned int search_mindist(const corax_tbe_split_info_t *query,
                             tbe_data_t *                   data)
 {
   unsigned int  min_dist   = query->p - 1;
@@ -171,8 +171,8 @@ static unsigned int utree_split_hamming_distance_lbound(corax_split_t  s1,
  */
 
 CORAX_EXPORT
-pllmod_tbe_split_info_t *
-pllmod_utree_tbe_nature_init(corax_unode_t *       ref_root,
+corax_tbe_split_info_t *
+corax_utree_tbe_nature_init(corax_unode_t *       ref_root,
                              unsigned int        tip_count,
                              const corax_unode_t **split_to_node_map)
 {
@@ -182,10 +182,10 @@ pllmod_utree_tbe_nature_init(corax_unode_t *       ref_root,
   unsigned int a_leaf_idx[nodes_count];
   unsigned int b_leaf_idx[nodes_count];
 
-  pllmod_tbe_split_info_t *split_info = NULL;
+  corax_tbe_split_info_t *split_info = NULL;
   corax_unode_t **           travbuffer = NULL;
 
-  split_info = (pllmod_tbe_split_info_t *)malloc(sizeof(pllmod_tbe_split_info_t)
+  split_info = (corax_tbe_split_info_t *)malloc(sizeof(corax_tbe_split_info_t)
                                                  * split_count);
 
   travbuffer = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
@@ -252,12 +252,12 @@ pllmod_utree_tbe_nature_init(corax_unode_t *       ref_root,
   return split_info;
 }
 
-CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
+CORAX_EXPORT int corax_utree_tbe_nature(corax_split_t *            ref_splits,
                                        corax_split_t *            bs_splits,
                                        corax_unode_t *            bs_root,
                                        unsigned int             tip_count,
                                        double *                 support,
-                                       pllmod_tbe_split_info_t *split_info)
+                                       corax_tbe_split_info_t *split_info)
 {
   unsigned int i;
   unsigned int split_count = tip_count - 3;
@@ -268,7 +268,7 @@ CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
     return CORAX_FAILURE;
   }
 
-  bitv_hashtable_t *bs_splits_hash = pllmod_utree_split_hashtable_insert(
+  bitv_hashtable_t *bs_splits_hash = corax_utree_split_hashtable_insert(
       NULL, bs_splits, tip_count, split_count, NULL, 0);
 
   if (!bs_splits_hash) return CORAX_FAILURE;
@@ -280,7 +280,7 @@ CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
   {
     corax_split_t ref_split = ref_splits[i];
 
-    if (pllmod_utree_split_hashtable_lookup(
+    if (corax_utree_split_hashtable_lookup(
             bs_splits_hash, ref_split, tip_count))
     {
       /* found identical split in a bootstrap tree -> assign full support */
@@ -302,7 +302,7 @@ CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
     support[i] = 1.0 - (((double)min_hdist) / (split_info[i].p - 1));
   }
 
-  pllmod_utree_split_hashtable_destroy(bs_splits_hash);
+  corax_utree_split_hashtable_destroy(bs_splits_hash);
 
   if (tbe_data) free_tbe_data(tbe_data);
 
@@ -311,7 +311,7 @@ CORAX_EXPORT int pllmod_utree_tbe_nature(corax_split_t *            ref_splits,
 
 /* This is an old, naive and rather inefficient TBE computation method by
  * Alexey, keep it here just in case */
-CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
+CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
                                       corax_split_t *bs_splits,
                                       unsigned int tip_count,
                                       double *     support)
@@ -332,7 +332,7 @@ CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
     return CORAX_FAILURE;
   }
 
-  bitv_hashtable_t *bs_splits_hash = pllmod_utree_split_hashtable_insert(
+  bitv_hashtable_t *bs_splits_hash = corax_utree_split_hashtable_insert(
       NULL, bs_splits, tip_count, split_count, NULL, 0);
 
   if (!bs_splits_hash) { return CORAX_FAILURE; }
@@ -344,23 +344,23 @@ CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
   {
     if (inv_split) free(inv_split);
     if (bs_light) free(bs_light);
-    pllmod_utree_split_hashtable_destroy(bs_splits_hash);
+    corax_utree_split_hashtable_destroy(bs_splits_hash);
     corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory\n");
     return CORAX_FAILURE;
   }
 
   /* precompute lightside size for all bootstrap splits */
   for (j = 0; j < split_count; j++)
-  { bs_light[j] = pllmod_utree_split_lightside(bs_splits[j], tip_count); }
+  { bs_light[j] = corax_utree_split_lightside(bs_splits[j], tip_count); }
 
   /* iterate over all splits of the reference tree */
   for (i = 0; i < split_count; i++)
   {
     corax_split_t  ref_split = ref_splits[i];
-    unsigned int p         = pllmod_utree_split_lightside(ref_split, tip_count);
+    unsigned int p         = corax_utree_split_lightside(ref_split, tip_count);
     unsigned int min_hdist = p - 1;
 
-    if (pllmod_utree_split_hashtable_lookup(
+    if (corax_utree_split_hashtable_lookup(
             bs_splits_hash, ref_split, tip_count))
     {
       /* found identical split in a bootstrap tree -> assign full support */
@@ -384,7 +384,7 @@ CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
       { continue; }
 
       //      unsigned int hdist =
-      //      pllmod_utree_split_hamming_distance(ref_split, bs_splits[j],
+      //      corax_utree_split_hamming_distance(ref_split, bs_splits[j],
       //      tip_count);
       hdist = utree_split_hamming_distance_lbound(
           ref_split, bs_splits[j], split_len, min_hdist);
@@ -399,7 +399,7 @@ CORAX_EXPORT int pllmod_utree_tbe_naive(corax_split_t *ref_splits,
     support[i] = 1.0 - (((double)min_hdist) / (p - 1));
   }
 
-  pllmod_utree_split_hashtable_destroy(bs_splits_hash);
+  corax_utree_split_hashtable_destroy(bs_splits_hash);
   free(inv_split);
   free(bs_light);
 

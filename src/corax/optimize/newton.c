@@ -35,7 +35,7 @@ newton_wrapper_func(void *params, double *proposal, double *df, double *ddf)
  *
  * @return            the parameter value that minimizes the function in [x1,x2]
  */
-CORAX_EXPORT double pllmod_opt_minimize_newton(
+CORAX_EXPORT double corax_opt_minimize_newton(
     double       xmin,
     double       xguess,
     double       xmax,
@@ -50,7 +50,7 @@ CORAX_EXPORT double pllmod_opt_minimize_newton(
 
   double xres = xguess;
 
-  int retval = pllmod_opt_minimize_newton_multi(1,
+  int retval = corax_opt_minimize_newton_multi(1,
                                                 xmin,
                                                 &xres,
                                                 xmax,
@@ -89,7 +89,7 @@ CORAX_EXPORT double pllmod_opt_minimize_newton(
  *
  * @return            CORAX_FAILURE on error, CORAX_SUCCESS otherwise
  */
-CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
+CORAX_EXPORT int corax_opt_minimize_newton_multi(
     unsigned int xnum,
     double       xmin,
     double *     xguess,
@@ -135,7 +135,7 @@ CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
   {
     if (iter++ > max_iters)
     {
-      corax_set_error(PLLMOD_OPT_ERROR_NEWTON_LIMIT,
+      corax_set_error(CORAX_OPT_ERROR_NEWTON_LIMIT,
                     "Exceeded maximum number of iterations");
       error_flag = 1;
       break;
@@ -160,7 +160,7 @@ CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
             x[i],
             f[i],
             df[i]);
-        corax_set_error(PLLMOD_OPT_ERROR_NEWTON_DERIV,
+        corax_set_error(CORAX_OPT_ERROR_NEWTON_DERIV,
                       "Wrong likelihood derivatives");
         error_flag = 1;
         break;

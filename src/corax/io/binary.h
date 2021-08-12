@@ -23,31 +23,31 @@
 
 #include "corax/corax_common.h"
 
-#define PLLMOD_BIN_BLOCK_PARTITION 0
-#define PLLMOD_BIN_BLOCK_CLV 1
-#define PLLMOD_BIN_BLOCK_TREE 2
-#define PLLMOD_BIN_BLOCK_CUSTOM 3
-#define PLLMOD_BIN_BLOCK_REPEATS 4
+#define CORAX_BIN_BLOCK_PARTITION 0
+#define CORAX_BIN_BLOCK_CLV 1
+#define CORAX_BIN_BLOCK_TREE 2
+#define CORAX_BIN_BLOCK_CUSTOM 3
+#define CORAX_BIN_BLOCK_REPEATS 4
 
-#define PLLMOD_BIN_ACCESS_SEQUENTIAL 0
-#define PLLMOD_BIN_ACCESS_RANDOM 1
-#define PLLMOD_BIN_ACCESS_SEEK -1
+#define CORAX_BIN_ACCESS_SEQUENTIAL 0
+#define CORAX_BIN_ACCESS_RANDOM 1
+#define CORAX_BIN_ACCESS_SEEK -1
 
-#define PLLMOD_BIN_INVALID_OFFSET -1
+#define CORAX_BIN_INVALID_OFFSET -1
 
-#define PLLMOD_BIN_ATTRIB_UPDATE_MAP (1 << 0)
-#define PLLMOD_BIN_ATTRIB_PARTITION_DUMP_CLV (1 << 1)
-#define PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT (1 << 2)
-#define PLLMOD_BIN_ATTRIB_ALIGNED (1 << 3)
-#define PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON (1 << 4)
+#define CORAX_BIN_ATTRIB_UPDATE_MAP (1 << 0)
+#define CORAX_BIN_ATTRIB_PARTITION_DUMP_CLV (1 << 1)
+#define CORAX_BIN_ATTRIB_PARTITION_DUMP_WGT (1 << 2)
+#define CORAX_BIN_ATTRIB_ALIGNED (1 << 3)
+#define CORAX_BIN_ATTRIB_PARTITION_LOAD_SKELETON (1 << 4)
 
-#define PLLMOD_BIN_ERROR_BLOCK_MISMATCH 4001
-#define PLLMOD_BIN_ERROR_BLOCK_LENGTH 4002
-#define PLLMOD_BIN_ERROR_BINARY_IO 4003
-#define PLLMOD_BIN_ERROR_INVALID_INDEX 4010
-#define PLLMOD_BIN_ERROR_INVALID_SIZE 4011
-#define PLLMOD_BIN_ERROR_LOADSTORE 4012
-#define PLLMOD_BIN_ERROR_MISSING_BLOCK 4020
+#define CORAX_BIN_ERROR_BLOCK_MISMATCH 4001
+#define CORAX_BIN_ERROR_BLOCK_LENGTH 4002
+#define CORAX_BIN_ERROR_BINARY_IO 4003
+#define CORAX_BIN_ERROR_INVALID_INDEX 4010
+#define CORAX_BIN_ERROR_INVALID_SIZE 4011
+#define CORAX_BIN_ERROR_LOADSTORE 4012
+#define CORAX_BIN_ERROR_MISSING_BLOCK 4020
 
 /*
  * This is the main header of the binary stream.
@@ -60,7 +60,7 @@ typedef struct
 {
   unsigned int n_blocks;    //! number of blocks in the file
   unsigned int max_blocks;  //! maximum number of blocks (size of block map)
-  unsigned int access_type; //! PLLMOD_BIN_ACCESS_{SEQUENTIAL|RANDOM}
+  unsigned int access_type; //! CORAX_BIN_ACCESS_{SEQUENTIAL|RANDOM}
   char         pad[4];      //! padding
   long         map_offset;  //! offset of the block map
 } corax_binary_header_t;
@@ -75,103 +75,103 @@ typedef struct
 /*
  * Header stored before each block
  * If the binary file was created for random access, it may be important that
- * attributes contain PLLMOD_BIN_ATTRIB_UPDATE_MAP such that the block map
+ * attributes contain CORAX_BIN_ATTRIB_UPDATE_MAP such that the block map
  * is updated. Otherwise the block will be only accessible sequentially after
  * reading the previous block.
  */
 typedef struct
 {
   long         block_id;   //! user-defined block id
-  unsigned int type;       //! block type PLLMOD_BIN_BLOCK_...
+  unsigned int type;       //! block type CORAX_BIN_BLOCK_...
   unsigned int attributes; //! custom block attributes
   unsigned int alignment;  //! if memory should be aligned
   char         pad[4];     //! padding
   size_t       block_len;  //! block length
 } corax_block_header_t;
 
-CORAX_EXPORT FILE *pllmod_binary_create(const char *         filename,
+CORAX_EXPORT FILE *corax_binary_create(const char *         filename,
                                       corax_binary_header_t *header,
                                       unsigned int         access_type,
                                       unsigned int         n_blocks);
 
-CORAX_EXPORT FILE *pllmod_binary_open(const char *         filename,
+CORAX_EXPORT FILE *corax_binary_open(const char *         filename,
                                     corax_binary_header_t *header);
 
-CORAX_EXPORT FILE *pllmod_binary_append_open(const char *         filename,
+CORAX_EXPORT FILE *corax_binary_append_open(const char *         filename,
                                            corax_binary_header_t *header);
 
-CORAX_EXPORT int pllmod_binary_close(FILE *bin_file);
+CORAX_EXPORT int corax_binary_close(FILE *bin_file);
 
-CORAX_EXPORT corax_block_map_t *pllmod_binary_get_map(FILE *        bin_file,
+CORAX_EXPORT corax_block_map_t *corax_binary_get_map(FILE *        bin_file,
                                                   unsigned int *n_blocks);
 
-CORAX_EXPORT int pllmod_binary_partition_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_partition_dump(FILE *           bin_file,
                                             int              block_id,
                                             corax_partition_t *partition,
                                             unsigned int     attributes);
 
 CORAX_EXPORT corax_partition_t *
-           pllmod_binary_partition_load(FILE *           bin_file,
+           corax_binary_partition_load(FILE *           bin_file,
                                         int              block_id,
                                         corax_partition_t *partition,
                                         unsigned int *   attributes,
                                         long int         offset);
 
-CORAX_EXPORT int pllmod_binary_repeats_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_repeats_dump(FILE *           bin_file,
                                           int              block_id,
                                           corax_partition_t *partition,
                                           unsigned int     attributes);
 
-CORAX_EXPORT int pllmod_binary_repeats_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_repeats_load(FILE *           bin_file,
                                           int              block_id,
                                           corax_partition_t *partition,
                                           unsigned int *   attributes,
                                           long int         offset);
 
-CORAX_EXPORT int pllmod_binary_pernoderepeats_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_pernoderepeats_dump(FILE *           bin_file,
                                                  int              block_id,
                                                  corax_partition_t *partition,
                                                  unsigned int     clv_index,
                                                  unsigned int     attributes);
 
-CORAX_EXPORT int pllmod_binary_pernoderepeats_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_pernoderepeats_load(FILE *           bin_file,
                                                  int              block_id,
                                                  corax_partition_t *partition,
                                                  unsigned int     clv_index,
                                                  unsigned int *   attributes,
                                                  long int         offset);
 
-CORAX_EXPORT int pllmod_binary_clv_dump(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_clv_dump(FILE *           bin_file,
                                       int              block_id,
                                       corax_partition_t *partition,
                                       unsigned int     clv_index,
                                       unsigned int     attributes);
 
-CORAX_EXPORT int pllmod_binary_clv_load(FILE *           bin_file,
+CORAX_EXPORT int corax_binary_clv_load(FILE *           bin_file,
                                       int              block_id,
                                       corax_partition_t *partition,
                                       unsigned int     clv_index,
                                       unsigned int *   attributes,
                                       long int         offset);
 
-CORAX_EXPORT int pllmod_binary_utree_dump(FILE *       bin_file,
+CORAX_EXPORT int corax_binary_utree_dump(FILE *       bin_file,
                                         int          block_id,
                                         corax_unode_t *tree,
                                         unsigned int tip_count,
                                         unsigned int attributes);
 
-CORAX_EXPORT corax_unode_t *pllmod_binary_utree_load(FILE *        bin_file,
+CORAX_EXPORT corax_unode_t *corax_binary_utree_load(FILE *        bin_file,
                                                  int           block_id,
                                                  unsigned int *attributes,
                                                  long int      offset);
 
-CORAX_EXPORT int pllmod_binary_custom_dump(FILE *       bin_file,
+CORAX_EXPORT int corax_binary_custom_dump(FILE *       bin_file,
                                          int          block_id,
                                          void *       data,
                                          size_t       size,
                                          unsigned int attributes);
 
-CORAX_EXPORT void *pllmod_binary_custom_load(FILE *        bin_file,
+CORAX_EXPORT void *corax_binary_custom_load(FILE *        bin_file,
                                            int           block_id,
                                            size_t *      size,
                                            unsigned int *type,

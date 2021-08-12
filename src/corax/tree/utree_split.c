@@ -193,7 +193,7 @@ static int split_is_valid_and_normalized(const corax_split_t bitv,
 /* tree split functions */
 
 CORAX_EXPORT corax_split_t
-pllmod_utree_split_from_tips(unsigned int *subtree_tip_ids,
+corax_utree_split_from_tips(unsigned int *subtree_tip_ids,
                              unsigned int  subtree_size,
                              unsigned int  tip_count)
 {
@@ -219,7 +219,7 @@ pllmod_utree_split_from_tips(unsigned int *subtree_tip_ids,
  * split_to_node_map can be NULL
  */
 CORAX_EXPORT corax_split_t *
-           pllmod_utree_split_create(const corax_unode_t *tree,
+           corax_utree_split_create(const corax_unode_t *tree,
                                      unsigned int       tip_count,
                                      corax_unode_t **     split_to_node_map)
 {
@@ -365,13 +365,13 @@ CORAX_EXPORT corax_split_t *
   return split_list;
 }
 
-CORAX_EXPORT void pllmod_utree_split_destroy(corax_split_t *split_list)
+CORAX_EXPORT void corax_utree_split_destroy(corax_split_t *split_list)
 {
   free(split_list[0]);
   free(split_list);
 }
 
-CORAX_EXPORT unsigned int pllmod_utree_split_lightside(corax_split_t  split,
+CORAX_EXPORT unsigned int corax_utree_split_lightside(corax_split_t  split,
                                                      unsigned int tip_count)
 {
   return bitv_lightside(split, tip_count, 0);
@@ -379,7 +379,7 @@ CORAX_EXPORT unsigned int pllmod_utree_split_lightside(corax_split_t  split,
 
 /* This function computes a classical Hamming distance between two tree splits
  */
-CORAX_EXPORT unsigned int pllmod_utree_split_hamming_distance(
+CORAX_EXPORT unsigned int corax_utree_split_hamming_distance(
     corax_split_t s1, corax_split_t s2, unsigned int tip_count)
 {
   unsigned int split_len = bitv_length(tip_count);
@@ -391,7 +391,7 @@ CORAX_EXPORT unsigned int pllmod_utree_split_hamming_distance(
   return CORAX_MIN(hdist, tip_count - hdist);
 }
 
-CORAX_EXPORT void pllmod_utree_split_show(corax_split_t  split,
+CORAX_EXPORT void corax_utree_split_show(corax_split_t  split,
                                         unsigned int tip_count)
 {
   unsigned int split_size   = sizeof(corax_split_base_t) * 8;
@@ -426,7 +426,7 @@ CORAX_EXPORT void pllmod_utree_split_show(corax_split_t  split,
  * a contiguous chunk of memory and you want to use s[0] to deallocate it in
  * the future.
  */
-CORAX_EXPORT void pllmod_utree_split_normalize_and_sort(corax_split_t *s,
+CORAX_EXPORT void corax_utree_split_normalize_and_sort(corax_split_t *s,
                                                       unsigned int tip_count,
                                                       unsigned int split_count,
                                                       int          keep_first)
@@ -472,7 +472,7 @@ CORAX_EXPORT void pllmod_utree_split_normalize_and_sort(corax_split_t *s,
 /*
  * Precondition: splits must be normalized and sorted!
  */
-CORAX_EXPORT unsigned int pllmod_utree_split_rf_distance(corax_split_t *s1,
+CORAX_EXPORT unsigned int corax_utree_split_rf_distance(corax_split_t *s1,
                                                        corax_split_t *s2,
                                                        unsigned int tip_count)
 {
@@ -510,7 +510,7 @@ CORAX_EXPORT unsigned int pllmod_utree_split_rf_distance(corax_split_t *s1,
   return 2 * (tip_count - 3 - equal);
 }
 
-CORAX_EXPORT int pllmod_utree_split_find(corax_split_t *split_list,
+CORAX_EXPORT int corax_utree_split_find(corax_split_t *split_list,
                                        corax_split_t  split,
                                        unsigned int tip_count)
 {
@@ -524,7 +524,7 @@ CORAX_EXPORT int pllmod_utree_split_find(corax_split_t *split_list,
   return -1;
 }
 
-CORAX_EXPORT int pllmod_utree_split_compatible(const corax_split_t s1,
+CORAX_EXPORT int corax_utree_split_compatible(const corax_split_t s1,
                                              const corax_split_t s2,
                                              unsigned int      split_len,
                                              unsigned int      tip_count)
@@ -565,7 +565,7 @@ CORAX_EXPORT int pllmod_utree_split_compatible(const corax_split_t s1,
 }
 
 CORAX_EXPORT
-bitv_hashtable_t *pllmod_utree_split_hashtable_create(unsigned int tip_count,
+bitv_hashtable_t *corax_utree_split_hashtable_create(unsigned int tip_count,
                                                       unsigned int slot_count)
 {
   if (!slot_count) slot_count = tip_count * 10;
@@ -573,7 +573,7 @@ bitv_hashtable_t *pllmod_utree_split_hashtable_create(unsigned int tip_count,
   return hash_init(slot_count, tip_count);
 }
 
-CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_insert_single(
+CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
     bitv_hashtable_t *splits_hash, corax_split_t split, double support)
 {
   if (!splits_hash)
@@ -599,7 +599,7 @@ CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_insert_single(
  * @returns hashtable with splits
  */
 CORAX_EXPORT bitv_hashtable_t *
-           pllmod_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
+           corax_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
                                                corax_split_t *     splits,
                                                unsigned int      tip_count,
                                                unsigned int      split_count,
@@ -643,7 +643,7 @@ CORAX_EXPORT bitv_hashtable_t *
   return splits_hash;
 }
 
-CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_lookup(
+CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_lookup(
     bitv_hashtable_t *splits_hash, corax_split_t split, unsigned int tip_count)
 {
   unsigned int split_len = bitv_length(tip_count);
@@ -660,7 +660,7 @@ CORAX_EXPORT bitv_hash_entry_t *pllmod_utree_split_hashtable_lookup(
 }
 
 CORAX_EXPORT
-void pllmod_utree_split_hashtable_destroy(bitv_hashtable_t *hash)
+void corax_utree_split_hashtable_destroy(bitv_hashtable_t *hash)
 {
   if (hash) hash_destroy(hash);
 }

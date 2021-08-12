@@ -438,7 +438,7 @@ brent_opt_alt(unsigned int xnum,
  * @return            the parameter value that minimizes the function in
  * [xmin,xmax]
  */
-CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
+CORAX_EXPORT double corax_opt_minimize_brent(double  xmin,
                                             double  xguess,
                                             double  xmax,
                                             double  xtol,
@@ -491,7 +491,7 @@ CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
  * @param global_range 0=xmin/xmax point to arrays of size xnum with individual
  * per-variable ranges; 1=xmin/xmax is a global range for all variables
  */
-CORAX_EXPORT int pllmod_opt_minimize_brent_multi(
+CORAX_EXPORT int corax_opt_minimize_brent_multi(
     unsigned int xnum,
     int *        opt_mask,
     double *     xmin,

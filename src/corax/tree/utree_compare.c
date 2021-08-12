@@ -112,7 +112,7 @@ static void mre(bitv_hashtable_t *  h,
     for (j = consensus->split_count; j > 0; --j)
     {
       corax_split_t split_consolidated = consensus->splits[j - 1];
-      if (!pllmod_utree_split_compatible(split_candidate->bit_vector,
+      if (!corax_utree_split_compatible(split_candidate->bit_vector,
                                          split_consolidated,
                                          split_len,
                                          h->bit_count))
@@ -486,7 +486,7 @@ static void fill_consensus(corax_consensus_utree_t *consensus_tree)
  * @return CORAX_SUCCESS if node indices are consistent,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_consistency_check(corax_utree_t *t1, corax_utree_t *t2)
+CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1, corax_utree_t *t2)
 {
   unsigned int  i;
   unsigned int  node_id;
@@ -546,7 +546,7 @@ CORAX_EXPORT int pllmod_utree_consistency_check(corax_utree_t *t1, corax_utree_t
  * @return CORAX_SUCCESS if the operation was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t2)
+CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t2)
 {
   unsigned int  i, j;
   unsigned int  node_id;
@@ -606,7 +606,7 @@ CORAX_EXPORT int pllmod_utree_consistency_set(corax_utree_t *t1, corax_utree_t *
   return retval;
 }
 
-CORAX_EXPORT unsigned int pllmod_utree_rf_distance(corax_unode_t *t1,
+CORAX_EXPORT unsigned int corax_utree_rf_distance(corax_unode_t *t1,
                                                  corax_unode_t *t2,
                                                  unsigned int tip_count)
 {
@@ -616,15 +616,15 @@ CORAX_EXPORT unsigned int pllmod_utree_rf_distance(corax_unode_t *t1,
   corax_errno = 0;
 
   /* split both trees */
-  corax_split_t *s1 = pllmod_utree_split_create(t1, tip_count, NULL);
-  corax_split_t *s2 = pllmod_utree_split_create(t2, tip_count, NULL);
+  corax_split_t *s1 = corax_utree_split_create(t1, tip_count, NULL);
+  corax_split_t *s2 = corax_utree_split_create(t2, tip_count, NULL);
 
   /* compute distance */
-  rf_distance = pllmod_utree_split_rf_distance(s1, s2, tip_count);
+  rf_distance = corax_utree_split_rf_distance(s1, s2, tip_count);
 
   /* clean up */
-  pllmod_utree_split_destroy(s1);
-  pllmod_utree_split_destroy(s2);
+  corax_utree_split_destroy(s1);
+  corax_utree_split_destroy(s2);
 
   assert(rf_distance <= 2 * (tip_count - 3));
   return rf_distance;
@@ -633,7 +633,7 @@ CORAX_EXPORT unsigned int pllmod_utree_rf_distance(corax_unode_t *t1,
 /* Consensus */
 
 CORAX_EXPORT corax_consensus_utree_t *
-           pllmod_utree_from_splits(const corax_split_system_t *split_system,
+           corax_utree_from_splits(const corax_split_system_t *split_system,
                                     unsigned int              tip_count,
                                     char *const *             tip_labels)
 {
@@ -792,7 +792,7 @@ CORAX_EXPORT corax_consensus_utree_t *
   return return_tree;
 }
 
-CORAX_EXPORT corax_split_system_t *pllmod_utree_split_consensus(
+CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
     bitv_hashtable_t *splits_hash, unsigned int tip_count, double threshold)
 {
   unsigned int        i;
@@ -881,7 +881,7 @@ CORAX_EXPORT corax_split_system_t *pllmod_utree_split_consensus(
  * @return                  consensus unrooted tree structure
  */
 CORAX_EXPORT corax_consensus_utree_t *
-           pllmod_utree_weight_consensus(corax_utree_t *const *trees,
+           corax_utree_weight_consensus(corax_utree_t *const *trees,
                                          const double *      weights,
                                          double              threshold,
                                          unsigned int        tree_count)
@@ -949,7 +949,7 @@ CORAX_EXPORT corax_consensus_utree_t *
       return NULL;
     }
 
-    tree_splits = pllmod_utree_split_create(
+    tree_splits = corax_utree_split_create(
         current_tree
             ->nodes[current_tree->tip_count + current_tree->inner_count - 1],
         tip_count,
@@ -963,7 +963,7 @@ CORAX_EXPORT corax_consensus_utree_t *
       hash_insert(
           tree_splits[j], splits_hash, j, HASH_KEY_UNDEF, weights[i], 0);
     }
-    pllmod_utree_split_destroy(tree_splits);
+    corax_utree_split_destroy(tree_splits);
   }
 
   if (corax_errno)
@@ -980,16 +980,16 @@ CORAX_EXPORT corax_consensus_utree_t *
 
   /* build final split system */
   corax_split_system_t *split_system =
-      pllmod_utree_split_consensus(splits_hash, tip_count, threshold);
+      corax_utree_split_consensus(splits_hash, tip_count, threshold);
 
   /* buld tree from splits */
-  consensus_tree = pllmod_utree_from_splits(
+  consensus_tree = corax_utree_from_splits(
       split_system, tip_count, string_hashtable->labels);
 
   /* cleanup */
   string_hash_destroy(string_hashtable);
   hash_destroy(splits_hash);
-  pllmod_utree_split_system_destroy(split_system);
+  corax_utree_split_system_destroy(split_system);
   return consensus_tree;
 }
 
@@ -1141,7 +1141,7 @@ static FILE *get_number_of_trees(unsigned int *tree_count,
   return f;
 }
 
-CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
+CORAX_EXPORT corax_consensus_utree_t * corax_utree_consensus(
                                                 const char * trees_filename,
                                                 double threshold,
                                                 unsigned int * _tree_count)
@@ -1212,7 +1212,7 @@ CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
   current_tree_index = 1;
   n_splits = tip_count - 3;
 
-  tree_splits = pllmod_utree_split_create(reference_tree->nodes[
+  tree_splits = corax_utree_split_create(reference_tree->nodes[
                                               reference_tree->tip_count +
                                               reference_tree->inner_count - 1],
                                           tip_count,
@@ -1234,7 +1234,7 @@ CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
                   individual_support,
                   0);
     }
-    pllmod_utree_split_destroy(tree_splits);
+    corax_utree_split_destroy(tree_splits);
 
     /* parse next tree */
     tree_splits = read_splits(trees_file, &n_chunks, &tip_count, string_hashtable);
@@ -1255,12 +1255,12 @@ CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
   }
 
   /* build final split system */
-  corax_split_system_t * split_system = pllmod_utree_split_consensus(splits_hash,
+  corax_split_system_t * split_system = corax_utree_split_consensus(splits_hash,
                                                                    tip_count,
                                                                    threshold);
 
   /* buld tree from splits */
-  consensus_tree = pllmod_utree_from_splits(split_system,
+  consensus_tree = corax_utree_from_splits(split_system,
                                       tip_count,
                                       string_hashtable->labels);
 
@@ -1268,14 +1268,14 @@ CORAX_EXPORT corax_consensus_utree_t * pllmod_utree_consensus(
   string_hash_destroy(string_hashtable);
   hash_destroy(splits_hash);
   corax_utree_destroy(reference_tree, NULL);
-  pllmod_utree_split_system_destroy(split_system);
+  corax_utree_split_system_destroy(split_system);
 
   return consensus_tree;
 }
 #endif
 
 CORAX_EXPORT void
-pllmod_utree_split_system_destroy(corax_split_system_t *split_system)
+corax_utree_split_system_destroy(corax_split_system_t *split_system)
 {
   unsigned int i;
 
@@ -1285,7 +1285,7 @@ pllmod_utree_split_system_destroy(corax_split_system_t *split_system)
   free(split_system);
 }
 
-CORAX_EXPORT void pllmod_utree_consensus_destroy(corax_consensus_utree_t *tree)
+CORAX_EXPORT void corax_utree_consensus_destroy(corax_consensus_utree_t *tree)
 {
   unsigned int i;
 

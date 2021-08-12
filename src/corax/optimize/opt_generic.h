@@ -34,81 +34,81 @@
 #endif
 
 // it's actually defined in lbfgsb.h, but not exported from the optimize module
-#define PLLMOD_ALGO_LBFGSB_ERROR 1.0e-4
+#define CORAX_ALGO_LBFGSB_ERROR 1.0e-4
 
 /* Parameters mask */
-#define PLLMOD_OPT_PARAM_ALL (~0)
-#define PLLMOD_OPT_PARAM_SUBST_RATES (1 << 0)
-#define PLLMOD_OPT_PARAM_ALPHA (1 << 1)
-#define PLLMOD_OPT_PARAM_PINV (1 << 2)
-#define PLLMOD_OPT_PARAM_FREQUENCIES (1 << 3)
-#define PLLMOD_OPT_PARAM_BRANCHES_SINGLE (1 << 4)
-#define PLLMOD_OPT_PARAM_BRANCHES_ALL (1 << 5)
-#define PLLMOD_OPT_PARAM_BRANCHES_ITERATIVE (1 << 6)
-#define PLLMOD_OPT_PARAM_TOPOLOGY (1 << 7)
-#define PLLMOD_OPT_PARAM_FREE_RATES (1 << 8)
-#define PLLMOD_OPT_PARAM_RATE_WEIGHTS (1 << 9)
-#define PLLMOD_OPT_PARAM_BRANCH_LEN_SCALER (1 << 10)
+#define CORAX_OPT_PARAM_ALL (~0)
+#define CORAX_OPT_PARAM_SUBST_RATES (1 << 0)
+#define CORAX_OPT_PARAM_ALPHA (1 << 1)
+#define CORAX_OPT_PARAM_PINV (1 << 2)
+#define CORAX_OPT_PARAM_FREQUENCIES (1 << 3)
+#define CORAX_OPT_PARAM_BRANCHES_SINGLE (1 << 4)
+#define CORAX_OPT_PARAM_BRANCHES_ALL (1 << 5)
+#define CORAX_OPT_PARAM_BRANCHES_ITERATIVE (1 << 6)
+#define CORAX_OPT_PARAM_TOPOLOGY (1 << 7)
+#define CORAX_OPT_PARAM_FREE_RATES (1 << 8)
+#define CORAX_OPT_PARAM_RATE_WEIGHTS (1 << 9)
+#define CORAX_OPT_PARAM_BRANCH_LEN_SCALER (1 << 10)
 /* !!! NOTE: all params in user code must be defined as
- *           PLLMOD_OPT_PARAM_USER<<0, PLLMOD_OPT_PARAM_USER<<1 etc. !!! */
-#define PLLMOD_OPT_PARAM_USER (1 << 16)
+ *           CORAX_OPT_PARAM_USER<<0, CORAX_OPT_PARAM_USER<<1 etc. !!! */
+#define CORAX_OPT_PARAM_USER (1 << 16)
 
 /* L-BFGS-B bound type */
-#define PLLMOD_OPT_LBFGSB_BOUND_NONE 0
-#define PLLMOD_OPT_LBFGSB_BOUND_LOWER 1
-#define PLLMOD_OPT_LBFGSB_BOUND_BOTH 2
-#define PLLMOD_OPT_LBFGSB_BOUND_UPPER 3
+#define CORAX_OPT_LBFGSB_BOUND_NONE 0
+#define CORAX_OPT_LBFGSB_BOUND_LOWER 1
+#define CORAX_OPT_LBFGSB_BOUND_BOTH 2
+#define CORAX_OPT_LBFGSB_BOUND_UPPER 3
 
 /* Parameter defaults */
-#define PLLMOD_OPT_DEFAULT_RATE_RATIO 1
-#define PLLMOD_OPT_DEFAULT_FREQ_RATIO 1
-#define PLLMOD_OPT_DEFAULT_PINV 0.01
-#define PLLMOD_OPT_DEFAULT_ALPHA 0.5
-#define PLLMOD_OPT_DEFAULT_BRANCH_LEN 0.1
+#define CORAX_OPT_DEFAULT_RATE_RATIO 1
+#define CORAX_OPT_DEFAULT_FREQ_RATIO 1
+#define CORAX_OPT_DEFAULT_PINV 0.01
+#define CORAX_OPT_DEFAULT_ALPHA 0.5
+#define CORAX_OPT_DEFAULT_BRANCH_LEN 0.1
 
 /* Default parameter limits */
-#define PLLMOD_OPT_MIN_BRANCH_LEN 1.0e-4
-#define PLLMOD_OPT_MAX_BRANCH_LEN 100.
-#define PLLMOD_OPT_TOL_BRANCH_LEN 1.0e-4
-#define PLLMOD_OPT_MIN_SUBST_RATE 1.0e-3
-#define PLLMOD_OPT_MAX_SUBST_RATE 1000.
-#define PLLMOD_OPT_MIN_FREQ 1.0e-3
-#define PLLMOD_OPT_MAX_FREQ 100.
-#define PLLMOD_OPT_MIN_ALPHA 0.0201 //+ CORAX_LBFGSB_ERROR
-#define PLLMOD_OPT_MAX_ALPHA 100.
-#define PLLMOD_OPT_MIN_PINV 0
-#define PLLMOD_OPT_MAX_PINV 0.99
-#define PLLMOD_OPT_LNL_UNLIKELY -1e+80
+#define CORAX_OPT_MIN_BRANCH_LEN 1.0e-4
+#define CORAX_OPT_MAX_BRANCH_LEN 100.
+#define CORAX_OPT_TOL_BRANCH_LEN 1.0e-4
+#define CORAX_OPT_MIN_SUBST_RATE 1.0e-3
+#define CORAX_OPT_MAX_SUBST_RATE 1000.
+#define CORAX_OPT_MIN_FREQ 1.0e-3
+#define CORAX_OPT_MAX_FREQ 100.
+#define CORAX_OPT_MIN_ALPHA 0.0201 //+ CORAX_LBFGSB_ERROR
+#define CORAX_OPT_MAX_ALPHA 100.
+#define CORAX_OPT_MIN_PINV 0
+#define CORAX_OPT_MAX_PINV 0.99
+#define CORAX_OPT_LNL_UNLIKELY -1e+80
 
 /* mixture models limits */
-#define PLLMOD_OPT_MIN_RATE 0.02
-#define PLLMOD_OPT_MAX_RATE 100.
-#define PLLMOD_OPT_MIN_RATE_WEIGHT 1.0e-3
-#define PLLMOD_OPT_MAX_RATE_WEIGHT 100.
+#define CORAX_OPT_MIN_RATE 0.02
+#define CORAX_OPT_MAX_RATE 100.
+#define CORAX_OPT_MIN_RATE_WEIGHT 1.0e-3
+#define CORAX_OPT_MAX_RATE_WEIGHT 100.
 
 /* branch length optimization methods */
-#define PLLMOD_OPT_BLO_NEWTON_FAST 0     /* standard Newton-Raphson (NR) */
-#define PLLMOD_OPT_BLO_NEWTON_SAFE 1     /* NR with per-branch LH check */
-#define PLLMOD_OPT_BLO_NEWTON_FALLBACK 2 /* NR-FAST with fallback to NR-SAFE   \
+#define CORAX_OPT_BLO_NEWTON_FAST 0     /* standard Newton-Raphson (NR) */
+#define CORAX_OPT_BLO_NEWTON_SAFE 1     /* NR with per-branch LH check */
+#define CORAX_OPT_BLO_NEWTON_FALLBACK 2 /* NR-FAST with fallback to NR-SAFE   \
                                           */
-#define PLLMOD_OPT_BLO_NEWTON_GLOBAL                                           \
+#define CORAX_OPT_BLO_NEWTON_GLOBAL                                           \
   3 /* NR variant which looks for local optima */
 
 /* error codes (for this module, 2000-3000) */
-#define PLLMOD_OPT_ERROR_PARAMETER 2000
-#define PLLMOD_OPT_ERROR_TAXA_MISMATCH 2010
-#define PLLMOD_OPT_ERROR_SEQLEN_MISMATCH 2020
-#define PLLMOD_OPT_ERROR_ALIGN_UNREADABLE 2030
-#define PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN 2100
-#define PLLMOD_OPT_ERROR_NEWTON_DERIV 2210
-#define PLLMOD_OPT_ERROR_NEWTON_LIMIT 2220
-#define PLLMOD_OPT_ERROR_NEWTON_UNKNOWN 2230
-#define PLLMOD_OPT_ERROR_NEWTON_WORSE_LK 2240
-#define PLLMOD_OPT_ERROR_NEWTON_BAD_RADIUS 2250
-#define PLLMOD_OPT_ERROR_BRENT_INIT 2310
+#define CORAX_OPT_ERROR_PARAMETER 2000
+#define CORAX_OPT_ERROR_TAXA_MISMATCH 2010
+#define CORAX_OPT_ERROR_SEQLEN_MISMATCH 2020
+#define CORAX_OPT_ERROR_ALIGN_UNREADABLE 2030
+#define CORAX_OPT_ERROR_LBFGSB_UNKNOWN 2100
+#define CORAX_OPT_ERROR_NEWTON_DERIV 2210
+#define CORAX_OPT_ERROR_NEWTON_LIMIT 2220
+#define CORAX_OPT_ERROR_NEWTON_UNKNOWN 2230
+#define CORAX_OPT_ERROR_NEWTON_WORSE_LK 2240
+#define CORAX_OPT_ERROR_NEWTON_BAD_RADIUS 2250
+#define CORAX_OPT_ERROR_BRENT_INIT 2310
 
 /* special options */
-#define PLLMOD_OPT_BRLEN_OPTIMIZE_ALL -1
+#define CORAX_OPT_BRLEN_OPTIMIZE_ALL -1
 
 /* Structure with information necessary for evaluating the likelihood */
 
@@ -164,7 +164,7 @@ typedef struct
 /* functions in newtom.c */
 
 /* core Newton-Raphson optimization function (multiple variables) */
-CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
+CORAX_EXPORT int corax_opt_minimize_newton_multi(
     unsigned int xnum,
     double       xmin,
     double *     xguess,
@@ -176,7 +176,7 @@ CORAX_EXPORT int pllmod_opt_minimize_newton_multi(
     void(deriv_func)(void *, double *, double *, double *));
 
 /* core Newton-Raphson optimization function */
-CORAX_EXPORT double pllmod_opt_minimize_newton(
+CORAX_EXPORT double corax_opt_minimize_newton(
     double       xmin,
     double       xguess,
     double       xmax,
@@ -187,7 +187,7 @@ CORAX_EXPORT double pllmod_opt_minimize_newton(
 /* functions in bfgs.c */
 
 /* core L-BFGS-B optimization function */
-CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
+CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
                                              double *     xmin,
                                              double *     xmax,
                                              int *        bound,
@@ -198,7 +198,7 @@ CORAX_EXPORT double pllmod_opt_minimize_lbfgsb(double *     x,
                                              double (*target_funk)(void *,
                                                                    double *));
 
-CORAX_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
+CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
     unsigned int  xnum,
     double **     x,
     double **     xmin,
@@ -214,7 +214,7 @@ CORAX_EXPORT double pllmod_opt_minimize_lbfgsb_multi(
 /* functions in brent.c */
 
 /* core Brent optimization function */
-CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
+CORAX_EXPORT double corax_opt_minimize_brent(double  xmin,
                                             double  xguess,
                                             double  xmax,
                                             double  xtol,
@@ -224,7 +224,7 @@ CORAX_EXPORT double pllmod_opt_minimize_brent(double  xmin,
                                             double (*target_funk)(void *,
                                                                   double));
 
-CORAX_EXPORT int pllmod_opt_minimize_brent_multi(
+CORAX_EXPORT int corax_opt_minimize_brent_multi(
     unsigned int xnum,
     int *        opt_mask,
     double *     xmin,
@@ -242,7 +242,7 @@ CORAX_EXPORT int pllmod_opt_minimize_brent_multi(
 
 /* core Expectation-Maximization (EM) function */
 CORAX_EXPORT void
-pllmod_opt_minimize_em(double *      w,
+corax_opt_minimize_em(double *      w,
                        unsigned int  w_count,
                        double *      sitecat_lh,
                        unsigned int *site_w,
@@ -253,13 +253,13 @@ pllmod_opt_minimize_em(double *      w,
 /* functions in opt_generic.c */
 
 CORAX_EXPORT double
-pllmod_opt_optimize_onedim(corax_optimize_options_t *p, double min, double max);
+corax_opt_optimize_onedim(corax_optimize_options_t *p, double min, double max);
 
-CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *p,
+CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *p,
                                                double *                umin,
                                                double *                umax);
 
-CORAX_EXPORT double pllmod_opt_compute_lk(corax_partition_t *   partition,
+CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *   partition,
                                         corax_unode_t *       tree,
                                         const unsigned int *params_indices,
                                         int                 update_pmatrices,

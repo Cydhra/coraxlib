@@ -48,7 +48,7 @@ static const int dna_sym_rate_tim2[]  = {0, 1, 0, 2, 3, 2};
 static const int dna_sym_rate_tim3[]  = {0, 1, 2, 0, 3, 2};
 static const int dna_sym_rate_tvm[]   = {0, 1, 2, 3, 1, 4};
 
-static const pllmod_subst_model_t dna_model_list[DNA_MODELS_COUNT] = {
+static const corax_subst_model_t dna_model_list[DNA_MODELS_COUNT] = {
     /*       states  model rates         model freqs      rate symmetries
        frequencies sym.           */
     {"JC",
@@ -143,7 +143,7 @@ static const pllmod_subst_model_t dna_model_list[DNA_MODELS_COUNT] = {
 
     {"GTR", 4, NULL, NULL, dna_sym_rate_free, dna_sym_freq_free, 0}};
 
-static const pllmod_subst_model_alias_t dna_model_aliases[] = {
+static const corax_subst_model_alias_t dna_model_aliases[] = {
     {"TrNef", "TN93ef"},
     {"TrN", "TN93"},
     {"TPM1", "K81"},
@@ -157,7 +157,7 @@ static const pllmod_subst_model_alias_t dna_model_aliases[] = {
 };
 
 const int ALIAS_COUNT =
-    sizeof(dna_model_aliases) / sizeof(pllmod_subst_model_alias_t);
+    sizeof(dna_model_aliases) / sizeof(corax_subst_model_alias_t);
 
 static int get_model_index(const char *model_name)
 {
@@ -185,7 +185,7 @@ static int get_model_index(const char *model_name)
 /**
  * @brief Returns number of available built-in DNA evolution models
  */
-CORAX_EXPORT unsigned int pllmod_util_model_count_dna()
+CORAX_EXPORT unsigned int corax_util_model_count_dna()
 {
   return DNA_MODELS_COUNT;
 }
@@ -193,7 +193,7 @@ CORAX_EXPORT unsigned int pllmod_util_model_count_dna()
 /**
  * @brief Returns list of available built-in DNA evolution models (names)
  */
-CORAX_EXPORT char **pllmod_util_model_names_dna()
+CORAX_EXPORT char **corax_util_model_names_dna()
 {
   char **names = calloc(DNA_MODELS_COUNT, sizeof(char *));
 
@@ -212,7 +212,7 @@ CORAX_EXPORT char **pllmod_util_model_names_dna()
  * @brief Returns 1 if built-in DNA models with a given name exists and 0
  * otherwise
  */
-CORAX_EXPORT int pllmod_util_model_exists_dna(const char *model_name)
+CORAX_EXPORT int corax_util_model_exists_dna(const char *model_name)
 {
   return get_model_index(model_name) >= 0 ? 1 : 0;
 }
@@ -220,24 +220,24 @@ CORAX_EXPORT int pllmod_util_model_exists_dna(const char *model_name)
 /**
  * @brief Returns properties of the specified DNA evolution model
  *
- * See pllmod_model_t definition for details
+ * See corax_model_t definition for details
  *
  * @param model_name name of the DNA model
  *
  * @return model info structure, or NULL if model doesn't exist
  */
-CORAX_EXPORT pllmod_subst_model_t *
-           pllmod_util_model_info_dna(const char *model_name)
+CORAX_EXPORT corax_subst_model_t *
+           corax_util_model_info_dna(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
   {
-    return pllmod_util_model_clone(&dna_model_list[model_index]);
+    return corax_util_model_clone(&dna_model_list[model_index]);
   }
   else
   {
     corax_set_error(
-        PLLMOD_UTIL_ERROR_MODEL_UNKNOWN, "DNA model not found: %s", model_name);
+        CORAX_UTIL_ERROR_MODEL_UNKNOWN, "DNA model not found: %s", model_name);
     return NULL;
   }
 }

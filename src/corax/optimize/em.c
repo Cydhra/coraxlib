@@ -5,7 +5,7 @@
 /* Wang, Li, Susko, and Roger (2008) */
 /******************************************************************************/
 CORAX_EXPORT void
-pllmod_opt_minimize_em(double *      w,
+corax_opt_minimize_em(double *      w,
                        unsigned int  w_count,
                        double *      sitecat_lh,
                        unsigned int *site_w,

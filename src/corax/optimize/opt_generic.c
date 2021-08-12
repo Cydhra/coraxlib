@@ -86,7 +86,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
   }
 
   /* update substitution rate parameters */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_SUBST_RATES)
+  if (params->which_parameters & CORAX_OPT_PARAM_SUBST_RATES)
   {
     int *   symm;
     int     n_subst_rates;
@@ -134,7 +134,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
   }
 
   /* update stationary frequencies */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_FREQUENCIES)
+  if (params->which_parameters & CORAX_OPT_PARAM_FREQUENCIES)
   {
     unsigned int i;
     unsigned int n_states = partition->states;
@@ -169,7 +169,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     xptr += (n_states - 1);
   }
   /* update proportion of invariant sites */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_PINV)
+  if (params->which_parameters & CORAX_OPT_PARAM_PINV)
   {
     assert(!isnan(xptr[0]));
     unsigned int i;
@@ -182,7 +182,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     xptr++;
   }
   /* update gamma shape parameter */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_ALPHA)
+  if (params->which_parameters & CORAX_OPT_PARAM_ALPHA)
   {
     assert(!isnan(xptr[0]));
     /* assign discrete rates */
@@ -206,14 +206,14 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
   }
 
   /* update free rates */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_FREE_RATES)
+  if (params->which_parameters & CORAX_OPT_PARAM_FREE_RATES)
   {
     corax_set_category_rates(partition, xptr);
     xptr += params->lk_params.partition->rate_cats;
   }
 
   /* update rate weights */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_RATE_WEIGHTS)
+  if (params->which_parameters & CORAX_OPT_PARAM_RATE_WEIGHTS)
   {
     unsigned int i;
     unsigned int rate_cats = params->lk_params.partition->rate_cats;
@@ -249,7 +249,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
   }
 
   /* update all branch lengths */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_ALL)
+  if (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_ALL)
   {
     /* assign branch lengths */
     memcpy(branch_lengths, xptr, (size_t)n_branches * sizeof(double));
@@ -257,7 +257,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
   }
 
   /* update single branch */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_SINGLE)
+  if (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_SINGLE)
   {
     assert(!isnan(xptr[0]));
     /* assign branch length */
@@ -327,7 +327,7 @@ static unsigned int count_n_free_variables(corax_optimize_options_t *params)
   corax_partition_t *partition     = params->lk_params.partition;
 
   /* count number of variables for dynamic allocation */
-  if (params->which_parameters & PLLMOD_OPT_PARAM_SUBST_RATES)
+  if (params->which_parameters & CORAX_OPT_PARAM_SUBST_RATES)
   {
     int n_subst_rates = partition->states * (partition->states - 1) / 2;
     num_variables += params->subst_params_symmetries
@@ -335,17 +335,17 @@ static unsigned int count_n_free_variables(corax_optimize_options_t *params)
                              params->subst_params_symmetries, n_subst_rates)
                          : (unsigned int)n_subst_rates - 1;
   }
-  if (params->which_parameters & PLLMOD_OPT_PARAM_FREQUENCIES)
+  if (params->which_parameters & CORAX_OPT_PARAM_FREQUENCIES)
     num_variables += partition->states - 1;
-  num_variables += (params->which_parameters & PLLMOD_OPT_PARAM_PINV) != 0;
-  num_variables += (params->which_parameters & PLLMOD_OPT_PARAM_ALPHA) != 0;
-  if (params->which_parameters & PLLMOD_OPT_PARAM_FREE_RATES)
+  num_variables += (params->which_parameters & CORAX_OPT_PARAM_PINV) != 0;
+  num_variables += (params->which_parameters & CORAX_OPT_PARAM_ALPHA) != 0;
+  if (params->which_parameters & CORAX_OPT_PARAM_FREE_RATES)
     num_variables += partition->rate_cats;
-  if (params->which_parameters & PLLMOD_OPT_PARAM_RATE_WEIGHTS)
+  if (params->which_parameters & CORAX_OPT_PARAM_RATE_WEIGHTS)
     num_variables += partition->rate_cats - 1;
   num_variables +=
-      (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_SINGLE) != 0;
-  if (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_ALL)
+      (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_SINGLE) != 0;
+  if (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_ALL)
   {
     unsigned int num_branch_lengths = params->lk_params.rooted
                                           ? (2 * partition->tips - 3)
@@ -367,7 +367,7 @@ static unsigned int count_n_free_variables(corax_optimize_options_t *params)
  *
  * @return    the negative likelihood score
  */
-CORAX_EXPORT double pllmod_opt_optimize_onedim(corax_optimize_options_t *params,
+CORAX_EXPORT double corax_opt_optimize_onedim(corax_optimize_options_t *params,
                                              double                  umin,
                                              double                  umax)
 {
@@ -381,27 +381,27 @@ CORAX_EXPORT double pllmod_opt_optimize_onedim(corax_optimize_options_t *params,
 
   switch (params->which_parameters)
   {
-  case PLLMOD_OPT_PARAM_ALPHA:
+  case CORAX_OPT_PARAM_ALPHA:
     xguess = params->lk_params.alpha_value;
-    xmin   = (umin > 0) ? umin : PLLMOD_OPT_MIN_ALPHA;
-    xmax   = (umax > 0) ? umax : PLLMOD_OPT_MAX_ALPHA;
+    xmin   = (umin > 0) ? umin : CORAX_OPT_MIN_ALPHA;
+    xmax   = (umax > 0) ? umax : CORAX_OPT_MAX_ALPHA;
     break;
-  case PLLMOD_OPT_PARAM_PINV:
+  case CORAX_OPT_PARAM_PINV:
     xguess = params->lk_params.partition->prop_invar[params->params_index];
-    xmin   = (umin > 0) ? umin : PLLMOD_OPT_MIN_PINV;
-    xmax   = (umax > 0) ? umax : PLLMOD_OPT_MAX_PINV;
+    xmin   = (umin > 0) ? umin : CORAX_OPT_MIN_PINV;
+    xmax   = (umax > 0) ? umax : CORAX_OPT_MAX_PINV;
     break;
-  case PLLMOD_OPT_PARAM_BRANCHES_SINGLE:
+  case CORAX_OPT_PARAM_BRANCHES_SINGLE:
     xguess = params->lk_params.branch_lengths[0];
-    xmin   = (umin > 0) ? umin : PLLMOD_OPT_MIN_BRANCH_LEN;
-    xmax   = (umax > 0) ? umax : PLLMOD_OPT_MAX_BRANCH_LEN;
+    xmin   = (umin > 0) ? umin : CORAX_OPT_MIN_BRANCH_LEN;
+    xmax   = (umax > 0) ? umax : CORAX_OPT_MAX_BRANCH_LEN;
     break;
   default:
     /* unavailable or multiple parameter */
     return (double)-INFINITY;
   }
 
-  double xres = pllmod_opt_minimize_brent(xmin,
+  double xres = corax_opt_minimize_brent(xmin,
                                           xguess,
                                           xmax,
                                           params->pgtol,
@@ -431,7 +431,7 @@ CORAX_EXPORT double pllmod_opt_optimize_onedim(corax_optimize_options_t *params,
  *
  * @return        the negative likelihood score
  */
-CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *params,
+CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params,
                                                double *                umin,
                                                double *                umax)
 {
@@ -446,8 +446,8 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
   int *        bound_type;
 
   /* ensure that the 2 branch optimization modes are not set together */
-  assert(!((params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_ALL)
-           && (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_SINGLE)));
+  assert(!((params->which_parameters & CORAX_OPT_PARAM_BRANCHES_ALL)
+           && (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_SINGLE)));
 
   num_variables = count_n_free_variables(params);
 
@@ -476,7 +476,7 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     unsigned int check_n = 0;
 
     /* substitution rate parameters */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_SUBST_RATES)
+    if (params->which_parameters & CORAX_OPT_PARAM_SUBST_RATES)
     {
       unsigned int n_subst_rates;
       unsigned int n_subst_free_params;
@@ -495,7 +495,7 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
       int current_rate = 0;
       for (i = 0; i < n_subst_free_params; i++)
       {
-        nbd_ptr[i]     = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+        nbd_ptr[i]     = CORAX_OPT_LBFGSB_BOUND_BOTH;
         unsigned int j = i;
         if (params->subst_params_symmetries)
         {
@@ -510,8 +510,8 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
         }
 
         x[check_n + i] = partition->subst_params[params->params_index][j];
-        l_ptr[i]       = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_SUBST_RATE;
-        u_ptr[i]       = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_SUBST_RATE;
+        l_ptr[i]       = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_SUBST_RATE;
+        u_ptr[i]       = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_SUBST_RATE;
       }
       nbd_ptr += n_subst_free_params;
       l_ptr += n_subst_free_params;
@@ -520,7 +520,7 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* stationary frequency parameters */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_FREQUENCIES)
+    if (params->which_parameters & CORAX_OPT_PARAM_FREQUENCIES)
     {
       unsigned int states              = params->lk_params.partition->states;
       unsigned int n_freqs_free_params = states - 1;
@@ -539,11 +539,11 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
       {
         if (i != params->highest_freq_state)
         {
-          nbd_ptr[cur_index] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+          nbd_ptr[cur_index] = CORAX_OPT_LBFGSB_BOUND_BOTH;
           x[check_n + cur_index] =
               frequencies[i] / frequencies[params->highest_freq_state];
-          l_ptr[cur_index] = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_FREQ;
-          u_ptr[cur_index] = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_FREQ;
+          l_ptr[cur_index] = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_FREQ;
+          u_ptr[cur_index] = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_FREQ;
           cur_index++;
         }
       }
@@ -554,13 +554,13 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* proportion of invariant sites */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_PINV)
+    if (params->which_parameters & CORAX_OPT_PARAM_PINV)
     {
-      *nbd_ptr   = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+      *nbd_ptr   = CORAX_OPT_LBFGSB_BOUND_BOTH;
       x[check_n] = partition->prop_invar[params->params_index];
       *l_ptr     = ul_ptr ? (*(ul_ptr++))
-                      : PLLMOD_OPT_MIN_PINV + PLLMOD_ALGO_LBFGSB_ERROR;
-      *u_ptr = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_PINV;
+                      : CORAX_OPT_MIN_PINV + CORAX_ALGO_LBFGSB_ERROR;
+      *u_ptr = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_PINV;
       check_n++;
       nbd_ptr++;
       l_ptr++;
@@ -568,12 +568,12 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* gamma shape parameter */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_ALPHA)
+    if (params->which_parameters & CORAX_OPT_PARAM_ALPHA)
     {
-      *nbd_ptr   = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+      *nbd_ptr   = CORAX_OPT_LBFGSB_BOUND_BOTH;
       x[check_n] = params->lk_params.alpha_value;
-      *l_ptr     = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_ALPHA;
-      *u_ptr     = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_ALPHA;
+      *l_ptr     = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_ALPHA;
+      *u_ptr     = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_ALPHA;
       check_n++;
       nbd_ptr++;
       l_ptr++;
@@ -581,15 +581,15 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* update free rates */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_FREE_RATES)
+    if (params->which_parameters & CORAX_OPT_PARAM_FREE_RATES)
     {
       unsigned int n_cats = params->lk_params.partition->rate_cats;
       for (i = 0; i < n_cats; i++)
       {
         x[check_n + i] = params->lk_params.partition->rates[i];
-        l_ptr[i]       = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_RATE;
-        u_ptr[i]       = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_RATE;
-        nbd_ptr[i]     = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+        l_ptr[i]       = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_RATE;
+        u_ptr[i]       = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_RATE;
+        nbd_ptr[i]     = CORAX_OPT_LBFGSB_BOUND_BOTH;
       }
       check_n += n_cats;
       nbd_ptr += (int)n_cats;
@@ -597,7 +597,7 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
       u_ptr += (int)n_cats;
     }
 
-    if (params->which_parameters & PLLMOD_OPT_PARAM_RATE_WEIGHTS)
+    if (params->which_parameters & CORAX_OPT_PARAM_RATE_WEIGHTS)
     {
       unsigned int rate_cats = params->lk_params.partition->rate_cats;
       unsigned int n_weights_free_params = rate_cats - 1;
@@ -615,13 +615,13 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
       {
         if (i != params->highest_weight_state)
         {
-          nbd_ptr[cur_index] = PLLMOD_OPT_LBFGSB_BOUND_BOTH;
+          nbd_ptr[cur_index] = CORAX_OPT_LBFGSB_BOUND_BOTH;
           x[check_n + cur_index] =
               rate_weights[i] / rate_weights[params->highest_weight_state];
           l_ptr[cur_index] =
-              ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_RATE_WEIGHT;
+              ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_RATE_WEIGHT;
           u_ptr[cur_index] =
-              uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_RATE_WEIGHT;
+              uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_RATE_WEIGHT;
           cur_index++;
         }
       }
@@ -632,25 +632,25 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* topology (UNIMPLEMENTED) */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_TOPOLOGY)
+    if (params->which_parameters & CORAX_OPT_PARAM_TOPOLOGY)
     {
       free(x);
       free(lower_bounds);
       free(upper_bounds);
       free(bound_type);
-      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN,
+      corax_set_error(CORAX_OPT_ERROR_LBFGSB_UNKNOWN,
                     "Topology optimization is not implemented");
 
       return (double)-INFINITY;
     }
 
     /* single branch length */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_SINGLE)
+    if (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_SINGLE)
     {
-      nbd_ptr[check_n] = PLLMOD_OPT_LBFGSB_BOUND_LOWER;
+      nbd_ptr[check_n] = CORAX_OPT_LBFGSB_BOUND_LOWER;
       x[check_n]       = params->lk_params.branch_lengths[0];
-      l_ptr[check_n]   = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_BRANCH_LEN;
-      u_ptr[check_n]   = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_BRANCH_LEN;
+      l_ptr[check_n]   = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_BRANCH_LEN;
+      u_ptr[check_n]   = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_BRANCH_LEN;
       check_n++;
       nbd_ptr++;
       l_ptr++;
@@ -658,17 +658,17 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     }
 
     /* all branches */
-    if (params->which_parameters & PLLMOD_OPT_PARAM_BRANCHES_ALL)
+    if (params->which_parameters & CORAX_OPT_PARAM_BRANCHES_ALL)
     {
       unsigned int num_branch_lengths = params->lk_params.rooted
                                             ? (2 * partition->tips - 3)
                                             : (2 * partition->tips - 2);
       for (i = 0; i < num_branch_lengths; i++)
       {
-        nbd_ptr[i]         = PLLMOD_OPT_LBFGSB_BOUND_LOWER;
+        nbd_ptr[i]         = CORAX_OPT_LBFGSB_BOUND_LOWER;
         x[check_n + i]     = params->lk_params.branch_lengths[i];
-        l_ptr[check_n + i] = ul_ptr ? (*(ul_ptr++)) : PLLMOD_OPT_MIN_BRANCH_LEN;
-        u_ptr[check_n + i] = uu_ptr ? (*(uu_ptr++)) : PLLMOD_OPT_MAX_BRANCH_LEN;
+        l_ptr[check_n + i] = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_BRANCH_LEN;
+        u_ptr[check_n + i] = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_BRANCH_LEN;
       }
       check_n += num_branch_lengths;
       nbd_ptr += num_branch_lengths;
@@ -678,7 +678,7 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     assert(check_n == num_variables);
   }
 
-  score = pllmod_opt_minimize_lbfgsb(x,
+  score = corax_opt_minimize_lbfgsb(x,
                                      lower_bounds,
                                      upper_bounds,
                                      bound_type,
@@ -698,19 +698,19 @@ CORAX_EXPORT double pllmod_opt_optimize_multidim(corax_optimize_options_t *param
     score = (double)-INFINITY;
     if (!corax_errno)
     {
-      corax_set_error(PLLMOD_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
+      corax_set_error(CORAX_OPT_ERROR_LBFGSB_UNKNOWN, "Unknown LBFGSB error");
     }
   }
 
   return score;
-} /* pllmod_opt_optimize_multidim */
+} /* corax_opt_optimize_multidim */
 
 /**
  * compute the likelihood on a utree structure
  * if update_pmatrices or update_partials are set, p-matrices and CLVs are
  * updated before computing the likelihood.
  */
-CORAX_EXPORT double pllmod_opt_compute_lk(corax_partition_t *   partition,
+CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *   partition,
                                         corax_unode_t *       tree,
                                         const unsigned int *params_indices,
                                         int                 update_pmatrices,

@@ -237,7 +237,7 @@ static int utree_find_node_in_subtree(corax_unode_t *root, corax_unode_t *node)
  * @param[in] length     the branch length
  *
  */
-CORAX_EXPORT int pllmod_utree_connect_nodes(corax_unode_t *parent,
+CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
                                           corax_unode_t *child,
                                           double       length)
 {
@@ -277,7 +277,7 @@ CORAX_EXPORT int pllmod_utree_connect_nodes(corax_unode_t *parent,
  * @param[out] child_subtree  edge corresponding to the 'edge->back' subtree
  * @return CORAX_SUCCESS if OK
  */
-CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
+CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
                                    corax_unode_t **parent_subtree,
                                    corax_unode_t **child_subtree)
 {
@@ -294,7 +294,7 @@ CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
   (*parent_subtree) = edge->next->back;
   aux_tree          = edge->next->next->back;
 
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       *parent_subtree, aux_tree, (*parent_subtree)->length + aux_tree->length);
 
   edge->next->pmatrix_index = edge->next->next->pmatrix_index;
@@ -303,7 +303,7 @@ CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
   (*child_subtree) = c_edge->next->back;
   aux_tree         = c_edge->next->next->back;
 
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       *child_subtree, aux_tree, (*child_subtree)->length + aux_tree->length);
 
   c_edge->next->pmatrix_index = c_edge->next->next->pmatrix_index;
@@ -329,7 +329,7 @@ CORAX_EXPORT int pllmod_utree_bisect(corax_unode_t * edge,
  *
  * @return the new created edge
  */
-CORAX_EXPORT corax_utree_edge_t pllmod_utree_reconnect(corax_utree_edge_t *edge,
+CORAX_EXPORT corax_utree_edge_t corax_utree_reconnect(corax_utree_edge_t *edge,
                                                    corax_unode_t *pruned_edge)
 {
   /* create and connect 2 new nodes */
@@ -351,16 +351,16 @@ CORAX_EXPORT corax_utree_edge_t pllmod_utree_reconnect(corax_utree_edge_t *edge,
   corax_utree_set_length(parent_node, edge->length);
 
   /* reconnect parent close to edge.parent */
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       parent_node->next->next, edge->parent->back, edge->parent->back->length);
 
-  pllmod_utree_connect_nodes(edge->parent, parent_node->next, 0);
+  corax_utree_connect_nodes(edge->parent, parent_node->next, 0);
 
   /* reconnect child close to edge.child */
-  pllmod_utree_connect_nodes(
+  corax_utree_connect_nodes(
       child_node->next->next, edge->child->back, edge->child->back->length);
 
-  pllmod_utree_connect_nodes(edge->child, child_node->next, 0);
+  corax_utree_connect_nodes(edge->child, child_node->next, 0);
 
   return new_edge;
 }
@@ -383,7 +383,7 @@ CORAX_EXPORT corax_utree_edge_t pllmod_utree_reconnect(corax_utree_edge_t *edge,
  * @param edge the edge to prune
  * @return the new connected edge, if the operation was applied correctly
  */
-CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge)
+CORAX_EXPORT corax_unode_t *corax_utree_prune(corax_unode_t *edge)
 {
   corax_unode_t *edge1, *edge2;
 
@@ -391,7 +391,7 @@ CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge)
   if (!edge->next)
   {
     /* invalid node */
-    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(CORAX_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to prune a tip node");
     return NULL;
   }
@@ -399,7 +399,7 @@ CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge)
   /* connect adjacent subtrees together */
   edge1 = edge->next->back;
   edge2 = edge->next->next->back;
-  pllmod_utree_connect_nodes(edge1, edge2, edge1->length + edge2->length);
+  corax_utree_connect_nodes(edge1, edge2, edge1->length + edge2->length);
 
   /* disconnect pruned edge */
   edge->next->back = edge->next->next->back = NULL;
@@ -428,7 +428,7 @@ CORAX_EXPORT corax_unode_t *pllmod_utree_prune(corax_unode_t *edge)
  * @return CORAX_SUCCESS if the operation was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
+CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
 {
   corax_unode_t *edge1, *edge2;
   double       new_length;
@@ -437,14 +437,14 @@ CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
   if (!edge->next)
   {
     /* invalid node */
-    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(CORAX_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to regraft a tip node");
     return CORAX_FAILURE;
   }
   if (edge->next->back || edge->next->next->back)
   {
     /* invalid node */
-    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(CORAX_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to regraft a connected node");
     return CORAX_FAILURE;
   }
@@ -453,8 +453,8 @@ CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
   edge1      = tree;
   edge2      = tree->back;
   new_length = tree->length / 2;
-  pllmod_utree_connect_nodes(edge1, edge->next, new_length);
-  pllmod_utree_connect_nodes(edge->next->next, edge2, new_length);
+  corax_utree_connect_nodes(edge1, edge->next, new_length);
+  corax_utree_connect_nodes(edge->next->next, edge2, new_length);
 
   return CORAX_SUCCESS;
 }
@@ -471,7 +471,7 @@ CORAX_EXPORT int pllmod_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
  * @return CORAX_SUCCESS if the move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
+CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
                                 corax_utree_edge_t *   r_edge,
                                 corax_tree_rollback_t *rollback_info)
 {
@@ -482,7 +482,7 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
   /* 1. bisection point must not be a leaf branch */
   if (!(b_edge->next && b_edge->back->next))
   {
-    corax_set_error(PLLMOD_TREE_ERROR_TBR_LEAF_BISECTION,
+    corax_set_error(CORAX_TREE_ERROR_TBR_LEAF_BISECTION,
                   "attempting to bisect at a leaf node");
     return CORAX_FAILURE;
   }
@@ -493,7 +493,7 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
       || b_edge->back == r_edge->parent || b_edge->back == r_edge->parent->back
       || b_edge->back == r_edge->child || b_edge->back == r_edge->child->back)
   {
-    corax_set_error(PLLMOD_TREE_ERROR_TBR_OVERLAPPED_NODES,
+    corax_set_error(CORAX_TREE_ERROR_TBR_OVERLAPPED_NODES,
                   "TBR nodes are overlapped");
     return CORAX_FAILURE;
   }
@@ -506,7 +506,7 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
       && !(utree_find_node_in_subtree(b_edge->back, r_edge->parent)
            && utree_find_node_in_subtree(b_edge, r_edge->child)))
   {
-    corax_set_error(PLLMOD_TREE_ERROR_TBR_SAME_SUBTREE,
+    corax_set_error(CORAX_TREE_ERROR_TBR_SAME_SUBTREE,
                   "TBR reconnection in same subtree");
     return CORAX_FAILURE;
   }
@@ -514,7 +514,7 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
   /* save rollback information */
   if (rollback_info)
   {
-    rollback_info->rearrange_type         = PLLMOD_TREE_REARRANGE_TBR;
+    rollback_info->rearrange_type         = CORAX_TREE_REARRANGE_TBR;
     rollback_info->rooted                 = 0;
     rollback_info->TBR.bisect_edge        = b_edge;
     rollback_info->TBR.reconn_edge.parent = b_edge->next->next;
@@ -531,10 +531,10 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
   }
 
   /* bisect at b_edge */
-  pllmod_utree_bisect(b_edge, &parent, &child);
+  corax_utree_bisect(b_edge, &parent, &child);
 
   /* reconnect at r_edge */
-  pllmod_utree_reconnect(r_edge, b_edge);
+  corax_utree_reconnect(r_edge, b_edge);
 
   return CORAX_SUCCESS;
 }
@@ -551,7 +551,7 @@ CORAX_EXPORT int pllmod_utree_tbr(corax_unode_t *        b_edge,
  * @return CORAX_SUCCESS if the move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
+CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
                                 corax_unode_t *        r_edge,
                                 corax_tree_rollback_t *rollback_info)
 {
@@ -560,7 +560,7 @@ CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
   if (CORAX_UTREE_IS_TIP(p_edge))
   {
     /* invalid move */
-    corax_set_error(PLLMOD_TREE_ERROR_SPR_INVALID_NODE,
+    corax_set_error(CORAX_TREE_ERROR_SPR_INVALID_NODE,
                   "Attempting to prune a leaf branch");
     return CORAX_FAILURE;
   }
@@ -568,7 +568,7 @@ CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
   /* save rollback information */
   if (rollback_info)
   {
-    rollback_info->rearrange_type     = PLLMOD_TREE_REARRANGE_SPR;
+    rollback_info->rearrange_type     = CORAX_TREE_REARRANGE_SPR;
     rollback_info->rooted             = 0;
     rollback_info->SPR.prune_edge     = p_edge;
     rollback_info->SPR.regraft_edge   = p_edge->next->back;
@@ -586,7 +586,7 @@ CORAX_EXPORT int pllmod_utree_spr(corax_unode_t *        p_edge,
 /* this is a safer (but slower) function for performing an spr move, than
    corax_utree_spr(). See the last paragraph in the comments section of the
    corax_utree_spr() function for more details */
-CORAX_EXPORT int pllmod_utree_spr_safe(corax_unode_t *   p,
+CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *   p,
                                      corax_unode_t *   r,
                                      corax_tree_rollback_t *rollback_info)
 {
@@ -627,7 +627,7 @@ CORAX_EXPORT int pllmod_utree_spr_safe(corax_unode_t *   p,
     return CORAX_FAILURE;
   }
 
-  return pllmod_utree_spr(p, r, rollback_info);
+  return corax_utree_spr(p, r, rollback_info);
 }
 
 
@@ -643,7 +643,7 @@ CORAX_EXPORT int pllmod_utree_spr_safe(corax_unode_t *   p,
  * @return CORAX_SUCCESS if the move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
+CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
                                 int                  type,
                                 corax_tree_rollback_t *rollback_info)
 {
@@ -653,13 +653,13 @@ CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
   if (!(type == CORAX_UTREE_MOVE_NNI_LEFT || type == CORAX_UTREE_MOVE_NNI_RIGHT))
   {
     /* invalid move */
-    corax_set_error(PLLMOD_TREE_ERROR_NNI_INVALID_MOVE, "Invalid NNI move type");
+    corax_set_error(CORAX_TREE_ERROR_NNI_INVALID_MOVE, "Invalid NNI move type");
     return CORAX_FAILURE;
   }
   if (CORAX_UTREE_IS_TIP(edge) || CORAX_UTREE_IS_TIP(edge->back))
   {
     /* invalid move */
-    corax_set_error(PLLMOD_TREE_ERROR_NNI_LEAF,
+    corax_set_error(CORAX_TREE_ERROR_NNI_LEAF,
                   "Attempting to apply NNI on a leaf branch");
     return CORAX_FAILURE;
   }
@@ -667,7 +667,7 @@ CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
   /* save rollback information */
   if (rollback_info)
   {
-    rollback_info->rearrange_type     = PLLMOD_TREE_REARRANGE_NNI;
+    rollback_info->rearrange_type     = CORAX_TREE_REARRANGE_NNI;
     rollback_info->rooted             = 0;
     rollback_info->NNI.edge           = edge;
     rollback_info->NNI.type           = type;
@@ -686,7 +686,7 @@ CORAX_EXPORT int pllmod_utree_nni(corax_unode_t *        edge,
 static int utree_rollback_tbr(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
-  assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_TBR);
+  assert(rollback_info->rearrange_type == CORAX_TREE_REARRANGE_TBR);
 
   corax_unode_t *p             = rollback_info->TBR.bisect_edge;
   corax_unode_t *q             = p->next->back;
@@ -694,7 +694,7 @@ static int utree_rollback_tbr(corax_tree_rollback_t *rollback_info)
   double       reconn_length = rollback_info->TBR.reconn_edge.length;
 
   /* undo move */
-  if (!pllmod_utree_tbr(p, &(rollback_info->TBR.reconn_edge), 0))
+  if (!corax_utree_tbr(p, &(rollback_info->TBR.reconn_edge), 0))
     return CORAX_FAILURE;
 
   /* reset branches */
@@ -714,7 +714,7 @@ static int utree_rollback_tbr(corax_tree_rollback_t *rollback_info)
 static int utree_rollback_spr(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
-  assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_SPR);
+  assert(rollback_info->rearrange_type == CORAX_TREE_REARRANGE_SPR);
 
   corax_unode_t *p  = rollback_info->SPR.prune_edge;
   corax_unode_t *r  = rollback_info->SPR.regraft_edge;
@@ -722,7 +722,7 @@ static int utree_rollback_spr(corax_tree_rollback_t *rollback_info)
   corax_unode_t *z2 = r->back;
 
   /* undo move */
-  if (!pllmod_utree_spr(p, r, 0)) return CORAX_FAILURE;
+  if (!corax_utree_spr(p, r, 0)) return CORAX_FAILURE;
 
   /* reset branches */
   corax_utree_set_length(z1, rollback_info->SPR.regraft_bl);
@@ -736,13 +736,13 @@ static int utree_rollback_spr(corax_tree_rollback_t *rollback_info)
 static int utree_rollback_nni(corax_tree_rollback_t *rollback_info)
 {
   assert(!rollback_info->rooted);
-  assert(rollback_info->rearrange_type == PLLMOD_TREE_REARRANGE_NNI);
+  assert(rollback_info->rearrange_type == CORAX_TREE_REARRANGE_NNI);
 
   corax_unode_t *p = rollback_info->NNI.edge;
   corax_unode_t *q = p->back;
 
   /* undo move */
-  if (!pllmod_utree_nni(p, rollback_info->NNI.type, 0)) return CORAX_FAILURE;
+  if (!corax_utree_nni(p, rollback_info->NNI.type, 0)) return CORAX_FAILURE;
 
   /* reset branches */
 
@@ -762,22 +762,22 @@ static int utree_rollback_nni(corax_tree_rollback_t *rollback_info)
  * @return CORAX_SUCCESS if the rollback move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int pllmod_tree_rollback(corax_tree_rollback_t *rollback_info)
+CORAX_EXPORT int corax_tree_rollback(corax_tree_rollback_t *rollback_info)
 {
   int retval = CORAX_FAILURE;
   switch (rollback_info->rearrange_type)
   {
-  case PLLMOD_TREE_REARRANGE_TBR:
+  case CORAX_TREE_REARRANGE_TBR:
   {
     retval = utree_rollback_tbr(rollback_info);
   }
   break;
-  case PLLMOD_TREE_REARRANGE_SPR:
+  case CORAX_TREE_REARRANGE_SPR:
   {
     retval = utree_rollback_spr(rollback_info);
   }
   break;
-  case PLLMOD_TREE_REARRANGE_NNI:
+  case CORAX_TREE_REARRANGE_NNI:
   {
     retval = utree_rollback_nni(rollback_info);
   }
