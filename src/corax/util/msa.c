@@ -28,7 +28,9 @@
  * @author Alexey Kozlov
  */
 
+#ifdef USE_POSIX_SEARCH
 #include <search.h>
+#endif
 
 #include "msa.h"
 
@@ -284,6 +286,7 @@ corax_msa_empirical_invariant_sites(corax_partition_t *partition)
   return empirical_pinv;
 }
 
+#ifdef USE_POSIX_SEARCH
 /* Find duplicates using hash table from search.h. This works best for short
  * strings, so we use this method for checking taxa names */
 static int find_duplicate_strings_htable(char **const    strings,
@@ -352,6 +355,7 @@ static int find_duplicate_strings_htable(char **const    strings,
 
   return CORAX_SUCCESS;
 }
+#endif
 
 /* Find duplicates using custom hash function optimized for long low-variance
  * strings - this method is used for detecting identical sequences */
@@ -595,10 +599,19 @@ CORAX_EXPORT corax_msa_stats_t *
   /* search for duplicate taxa names (=sequence labels) */
   if (stats_mask & CORAX_MSA_STATS_DUP_TAXA)
   {
+#ifdef USE_POSIX_SEARCH
     int retval = find_duplicate_strings_htable(msa->label,
                                                msa_count,
                                                &stats->dup_taxa_pairs,
                                                &stats->dup_taxa_pairs_count);
+#else
+    int retval = find_duplicate_strings(msa->label,
+                                        msa_count,
+                                        0,
+                                        &stats->dup_taxa_pairs,
+                                        &stats->dup_taxa_pairs_count);
+#endif
+
     if (!retval)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC, "Error finding duplicated taxa");
