@@ -29,7 +29,7 @@ Structures
 
 The data structure is made up of two different structs. The first, `pll_utree_t`
 wraps the tree. In general, when a tree is used for a function, it requires a
-`pll_utree_t`. Some important things to know about this structure: the first
+`pll_utree_t`. Some important things to know about this structure: the last
 `inner_count` nodes in the `nodes` array are assumed to be "inner nodes". This
 means that they have a non-null `next` pointer. Several functions that use
 `pll_utree_t`s don't check for this, so they may fail when this assumption is
