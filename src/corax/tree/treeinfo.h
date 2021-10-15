@@ -15,11 +15,11 @@ typedef struct treeinfo_edge
 
 typedef struct treeinfo_topology
 {
-  unsigned int            edge_count;
-  unsigned int            brlen_set_count;
-  unsigned int            root_index;
+  unsigned int           edge_count;
+  unsigned int           brlen_set_count;
+  unsigned int           root_index;
   corax_treeinfo_edge_t *edges;
-  double **               branch_lengths;
+  double **              branch_lengths;
 } corax_treeinfo_topology_t;
 
 typedef struct treeinfo
@@ -35,12 +35,12 @@ typedef struct treeinfo
   corax_unode_t *root;
   corax_utree_t *tree;
 
-  unsigned int  subnode_count;
+  unsigned int    subnode_count;
   corax_unode_t **subnodes;
 
   // partitions & partition-specific stuff
   corax_partition_t **partitions;
-  double *          alphas;
+  double *            alphas;
   int *gamma_mode; /* discrete GAMMA rates computation mode (mean, median) */
   unsigned int **param_indices;
   int **         subst_matrix_symmetries;
@@ -50,8 +50,8 @@ typedef struct treeinfo
   int *          params_to_optimize;
 
   // partition that have been initialized (useful for parallelization)
-  unsigned int      init_partition_count;
-  unsigned int *    init_partition_idx;
+  unsigned int        init_partition_count;
+  unsigned int *      init_partition_idx;
   corax_partition_t **init_partitions;
 
   /* tree topology constraint */
@@ -66,7 +66,7 @@ typedef struct treeinfo
 
   // buffers
   corax_unode_t **   travbuffer;
-  unsigned int *   matrix_indices;
+  unsigned int *     matrix_indices;
   corax_operation_t *operations;
 
   // partition on which all operations should be performed
@@ -82,14 +82,14 @@ typedef struct treeinfo
 
 typedef struct
 {
-  unsigned int  node_count;
+  unsigned int    node_count;
   corax_unode_t **nodes;
 
   unsigned int  partition_count;
   unsigned int *partition_indices;
 
   corax_utree_t *tree;
-  double **    probs;
+  double **      probs;
 } corax_ancestral_t;
 
 /** @defgroup corax_treeinfo_t corax_treeinfo_t
@@ -116,14 +116,14 @@ typedef struct
  * @ingroup corax_treeinfo_t
  */
 CORAX_EXPORT corax_treeinfo_t *corax_treeinfo_create(corax_unode_t *root,
-                                                     unsigned int tips,
-                                                     unsigned int partitions,
+                                                     unsigned int   tips,
+                                                     unsigned int   partitions,
                                                      int brlen_linkage);
 
 CORAX_EXPORT
 int corax_treeinfo_set_parallel_context(
     corax_treeinfo_t *treeinfo,
-    void *             parallel_context,
+    void *            parallel_context,
     void (*parallel_reduce_cb)(void *, double *, size_t, int op));
 
 /**
@@ -169,80 +169,80 @@ int corax_treeinfo_set_parallel_context(
  * @ingroup corax_treeinfo_t
  */
 CORAX_EXPORT int
-corax_treeinfo_init_partition(corax_treeinfo_t * treeinfo,
-                               unsigned int        partition_index,
-                               corax_partition_t *   partition,
-                               int                 params_to_optimize,
-                               int                 gamma_mode,
-                               double              alpha,
-                               const unsigned int *param_indices,
-                               const int *         subst_matrix_symmetries);
+corax_treeinfo_init_partition(corax_treeinfo_t *  treeinfo,
+                              unsigned int        partition_index,
+                              corax_partition_t * partition,
+                              int                 params_to_optimize,
+                              int                 gamma_mode,
+                              double              alpha,
+                              const unsigned int *param_indices,
+                              const int *         subst_matrix_symmetries);
 
 CORAX_EXPORT int corax_treeinfo_set_active_partition(corax_treeinfo_t *treeinfo,
-                                                    int partition_index);
+                                                     int partition_index);
 
 CORAX_EXPORT int corax_treeinfo_set_root(corax_treeinfo_t *treeinfo,
-                                        corax_unode_t *      root);
+                                         corax_unode_t *   root);
 
 CORAX_EXPORT
 int corax_treeinfo_get_branch_length_all(const corax_treeinfo_t *treeinfo,
-                                          const corax_unode_t *      edge,
-                                          double *                 lengths);
+                                         const corax_unode_t *   edge,
+                                         double *                lengths);
 
 CORAX_EXPORT int corax_treeinfo_set_branch_length(corax_treeinfo_t *treeinfo,
-                                                 corax_unode_t *      edge,
-                                                 double             length);
+                                                  corax_unode_t *   edge,
+                                                  double            length);
 
 CORAX_EXPORT
 int corax_treeinfo_set_branch_length_all(corax_treeinfo_t *treeinfo,
-                                          corax_unode_t *      edge,
-                                          const double *     lengths);
+                                         corax_unode_t *   edge,
+                                         const double *    lengths);
 
 CORAX_EXPORT
 int corax_treeinfo_set_branch_length_partition(corax_treeinfo_t *treeinfo,
-                                                corax_unode_t *      edge,
-                                                int    partition_index,
-                                                double length);
+                                               corax_unode_t *   edge,
+                                               int    partition_index,
+                                               double length);
 
 CORAX_EXPORT
 corax_utree_t *
 corax_treeinfo_get_partition_tree(const corax_treeinfo_t *treeinfo,
-                                   int                      partition_index);
+                                  int                     partition_index);
 
 CORAX_EXPORT
 corax_treeinfo_topology_t *
 corax_treeinfo_get_topology(const corax_treeinfo_t *   treeinfo,
-                             corax_treeinfo_topology_t *topol);
+                            corax_treeinfo_topology_t *topol);
 
 CORAX_EXPORT
 int corax_treeinfo_set_topology(corax_treeinfo_t *               treeinfo,
-                                 const corax_treeinfo_topology_t *topol);
+                                const corax_treeinfo_topology_t *topol);
 
 CORAX_EXPORT
 int corax_treeinfo_destroy_topology(corax_treeinfo_topology_t *topol);
 
 CORAX_EXPORT int corax_treeinfo_destroy_partition(corax_treeinfo_t *treeinfo,
-                                                 unsigned int partition_index);
+                                                  unsigned int partition_index);
 
 CORAX_EXPORT void corax_treeinfo_destroy(corax_treeinfo_t *treeinfo);
 
 CORAX_EXPORT int corax_treeinfo_update_prob_matrices(corax_treeinfo_t *treeinfo,
-                                                    int update_all);
+                                                     int update_all);
 
 CORAX_EXPORT void corax_treeinfo_invalidate_all(corax_treeinfo_t *treeinfo);
 
 CORAX_EXPORT int corax_treeinfo_validate_clvs(corax_treeinfo_t *treeinfo,
-                                             corax_unode_t **     travbuffer,
-                                             unsigned int travbuffer_size);
+                                              corax_unode_t **  travbuffer,
+                                              unsigned int travbuffer_size);
 
 CORAX_EXPORT void corax_treeinfo_invalidate_pmatrix(corax_treeinfo_t *treeinfo,
-                                                   const corax_unode_t *edge);
+                                                    const corax_unode_t *edge);
 
-CORAX_EXPORT void corax_treeinfo_invalidate_clv(corax_treeinfo_t *treeinfo,
-                                               const corax_unode_t *edge);
+CORAX_EXPORT void corax_treeinfo_invalidate_clv(corax_treeinfo_t *   treeinfo,
+                                                const corax_unode_t *edge);
 
 CORAX_EXPORT double corax_treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
-                                                int                incremental);
+                                                 int               incremental);
 
 CORAX_EXPORT double corax_treeinfo_compute_loglh_flex(
     corax_treeinfo_t *treeinfo, int incremental, int update_pmatrices);
@@ -252,33 +252,33 @@ CORAX_EXPORT double corax_treeinfo_compute_loglh_persite(
 
 CORAX_EXPORT
 int corax_treeinfo_scale_branches_all(corax_treeinfo_t *treeinfo,
-                                       double             scaler);
+                                      double            scaler);
 
 CORAX_EXPORT
 int corax_treeinfo_scale_branches_partition(corax_treeinfo_t *treeinfo,
-                                             unsigned int       partition_idx,
-                                             double             scaler);
+                                            unsigned int      partition_idx,
+                                            double            scaler);
 
 CORAX_EXPORT
 int corax_treeinfo_normalize_brlen_scalers(corax_treeinfo_t *treeinfo);
 
 CORAX_EXPORT int corax_treeinfo_set_tree(corax_treeinfo_t *treeinfo,
-                                        corax_utree_t *      tree);
+                                         corax_utree_t *   tree);
 
 CORAX_EXPORT int
 corax_treeinfo_set_constraint_clvmap(corax_treeinfo_t *treeinfo,
-                                      const int *        clv_index_map);
+                                     const int *       clv_index_map);
 
 CORAX_EXPORT int
-corax_treeinfo_set_constraint_tree(corax_treeinfo_t *treeinfo,
-                                    const corax_utree_t *cons_tree);
+corax_treeinfo_set_constraint_tree(corax_treeinfo_t *   treeinfo,
+                                   const corax_utree_t *cons_tree);
 
 CORAX_EXPORT int corax_treeinfo_check_constraint(corax_treeinfo_t *treeinfo,
-                                                corax_unode_t *      subtree,
-                                                corax_unode_t *regraft_edge);
+                                                 corax_unode_t *   subtree,
+                                                 corax_unode_t *regraft_edge);
 
 CORAX_EXPORT corax_ancestral_t *
-           corax_treeinfo_compute_ancestral(corax_treeinfo_t *treeinfo);
+             corax_treeinfo_compute_ancestral(corax_treeinfo_t *treeinfo);
 
 CORAX_EXPORT void
 corax_treeinfo_destroy_ancestral(corax_ancestral_t *ancestral);

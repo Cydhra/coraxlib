@@ -1,12 +1,13 @@
 #include "corax/corax.h"
 
-CORAX_EXPORT void corax_utree_create_pars_buildops(corax_unode_t *const *trav_buffer,
-                                               unsigned int trav_buffer_size,
-                                               corax_pars_buildop_t *ops,
-                                               unsigned int *      ops_count)
+CORAX_EXPORT void
+corax_utree_create_pars_buildops(corax_unode_t *const *trav_buffer,
+                                 unsigned int          trav_buffer_size,
+                                 corax_pars_buildop_t *ops,
+                                 unsigned int *        ops_count)
 {
   const corax_unode_t *node;
-  unsigned int       i;
+  unsigned int         i;
 
   *ops_count = 0;
 
@@ -30,29 +31,29 @@ CORAX_EXPORT void corax_utree_create_pars_buildops(corax_unode_t *const *trav_bu
  * algorithm. All branch lengths will be set to default.
  */
 CORAX_EXPORT
-corax_utree_t *corax_utree_create_parsimony(unsigned int        taxon_count,
-                                        unsigned int        seq_length,
-                                        char *const *       names,
-                                        char *const *       sequences,
-                                        const unsigned int *site_weights,
-                                        const corax_state_t * map,
-                                        unsigned int        states,
-                                        unsigned int        attributes,
-                                        unsigned int        random_seed,
-                                        unsigned int *      score)
+corax_utree_t *corax_utree_create_parsimony(unsigned int         taxon_count,
+                                            unsigned int         seq_length,
+                                            char *const *        names,
+                                            char *const *        sequences,
+                                            const unsigned int * site_weights,
+                                            const corax_state_t *map,
+                                            unsigned int         states,
+                                            unsigned int         attributes,
+                                            unsigned int         random_seed,
+                                            unsigned int *       score)
 {
-  size_t       i;
+  size_t         i;
   corax_utree_t *tree = NULL;
 
   corax_partition_t *partition = corax_partition_create(taxon_count,
-                                                    0, /* number of CLVs */
-                                                    states,
-                                                    seq_length,
-                                                    1,
-                                                    1, /* pmatrix count */
-                                                    1, /* rate_cats */
-                                                    0, /* scale buffers */
-                                                    attributes);
+                                                        0, /* number of CLVs */
+                                                        states,
+                                                        seq_length,
+                                                        1,
+                                                        1, /* pmatrix count */
+                                                        1, /* rate_cats */
+                                                        0, /* scale buffers */
+                                                        attributes);
 
   if (!partition)
   {
@@ -84,18 +85,18 @@ corax_utree_t *corax_utree_create_parsimony(unsigned int        taxon_count,
  */
 CORAX_EXPORT
 corax_utree_t *
-corax_utree_create_parsimony_multipart(unsigned int            taxon_count,
-                                     char *const *           taxon_names,
-                                     unsigned int            partition_count,
-                                     corax_partition_t *const *partitions,
-                                     unsigned int            random_seed,
-                                     unsigned int *          score)
+corax_utree_create_parsimony_multipart(unsigned int taxon_count,
+                                       char *const *taxon_names,
+                                       unsigned int partition_count,
+                                       corax_partition_t *const *partitions,
+                                       unsigned int              random_seed,
+                                       unsigned int *            score)
 {
   corax_utree_t *tree = NULL;
-  unsigned int i;
+  unsigned int   i;
 
-  corax_parsimony_t **parsimony =
-      (corax_parsimony_t **)calloc(partition_count, sizeof(corax_parsimony_t *));
+  corax_parsimony_t **parsimony = (corax_parsimony_t **)calloc(
+      partition_count, sizeof(corax_parsimony_t *));
 
   if (!parsimony)
   {

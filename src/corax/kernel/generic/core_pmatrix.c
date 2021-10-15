@@ -22,18 +22,18 @@
 #include "corax/corax.h"
 
 CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
-                                       unsigned int        states,
-                                       unsigned int        rate_cats,
-                                       const double *      rates,
-                                       const double *      branch_lengths,
-                                       const unsigned int *matrix_indices,
-                                       const unsigned int *params_indices,
-                                       const double *      prop_invar,
-                                       double *const *     eigenvals,
-                                       double *const *     eigenvecs,
-                                       double *const *     inv_eigenvecs,
-                                       unsigned int        count,
-                                       unsigned int        attrib)
+                                           unsigned int        states,
+                                           unsigned int        rate_cats,
+                                           const double *      rates,
+                                           const double *      branch_lengths,
+                                           const unsigned int *matrix_indices,
+                                           const unsigned int *params_indices,
+                                           const double *      prop_invar,
+                                           double *const *     eigenvals,
+                                           double *const *     eigenvecs,
+                                           double *const *     inv_eigenvecs,
+                                           unsigned int        count,
+                                           unsigned int        attrib)
 {
   unsigned int i, n, j, k, m;
   unsigned int states_padded = states;
@@ -52,20 +52,6 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
     if (states == 4)
     {
       return corax_core_update_pmatrix_4x4_sse(pmatrix,
-                                             rate_cats,
-                                             rates,
-                                             branch_lengths,
-                                             matrix_indices,
-                                             params_indices,
-                                             prop_invar,
-                                             eigenvals,
-                                             eigenvecs,
-                                             inv_eigenvecs,
-                                             count);
-    }
-    else if (states == 20)
-    {
-      return corax_core_update_pmatrix_20x20_sse(pmatrix,
                                                rate_cats,
                                                rates,
                                                branch_lengths,
@@ -76,6 +62,20 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
                                                eigenvecs,
                                                inv_eigenvecs,
                                                count);
+    }
+    else if (states == 20)
+    {
+      return corax_core_update_pmatrix_20x20_sse(pmatrix,
+                                                 rate_cats,
+                                                 rates,
+                                                 branch_lengths,
+                                                 matrix_indices,
+                                                 params_indices,
+                                                 prop_invar,
+                                                 eigenvals,
+                                                 eigenvecs,
+                                                 inv_eigenvecs,
+                                                 count);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -88,20 +88,6 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
     if (states == 4)
     {
       return corax_core_update_pmatrix_4x4_avx(pmatrix,
-                                             rate_cats,
-                                             rates,
-                                             branch_lengths,
-                                             matrix_indices,
-                                             params_indices,
-                                             prop_invar,
-                                             eigenvals,
-                                             eigenvecs,
-                                             inv_eigenvecs,
-                                             count);
-    }
-    if (states == 20)
-    {
-      return corax_core_update_pmatrix_20x20_avx(pmatrix,
                                                rate_cats,
                                                rates,
                                                branch_lengths,
@@ -112,6 +98,20 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
                                                eigenvecs,
                                                inv_eigenvecs,
                                                count);
+    }
+    if (states == 20)
+    {
+      return corax_core_update_pmatrix_20x20_avx(pmatrix,
+                                                 rate_cats,
+                                                 rates,
+                                                 branch_lengths,
+                                                 matrix_indices,
+                                                 params_indices,
+                                                 prop_invar,
+                                                 eigenvals,
+                                                 eigenvecs,
+                                                 inv_eigenvecs,
+                                                 count);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -125,30 +125,30 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
     {
       /* use AVX version here since FMA doesn't make much sense */
       return corax_core_update_pmatrix_4x4_avx(pmatrix,
-                                             rate_cats,
-                                             rates,
-                                             branch_lengths,
-                                             matrix_indices,
-                                             params_indices,
-                                             prop_invar,
-                                             eigenvals,
-                                             eigenvecs,
-                                             inv_eigenvecs,
-                                             count);
+                                               rate_cats,
+                                               rates,
+                                               branch_lengths,
+                                               matrix_indices,
+                                               params_indices,
+                                               prop_invar,
+                                               eigenvals,
+                                               eigenvecs,
+                                               inv_eigenvecs,
+                                               count);
     }
     if (states == 20)
     {
       return corax_core_update_pmatrix_20x20_avx2(pmatrix,
-                                                rate_cats,
-                                                rates,
-                                                branch_lengths,
-                                                matrix_indices,
-                                                params_indices,
-                                                prop_invar,
-                                                eigenvals,
-                                                eigenvecs,
-                                                inv_eigenvecs,
-                                                count);
+                                                  rate_cats,
+                                                  rates,
+                                                  branch_lengths,
+                                                  matrix_indices,
+                                                  params_indices,
+                                                  prop_invar,
+                                                  eigenvals,
+                                                  eigenvecs,
+                                                  inv_eigenvecs,
+                                                  count);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */

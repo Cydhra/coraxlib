@@ -36,7 +36,7 @@ Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 
 typedef struct spr_params
 {
-  corax_bool_t   thorough;
+  corax_bool_t thorough;
   unsigned int radius_min;
   unsigned int radius_max;
   unsigned int ntopol_keep;
@@ -50,19 +50,19 @@ typedef struct spr_params
 typedef struct rollback_list
 {
   corax_tree_rollback_t *list;
-  size_t               current;
-  unsigned int         round;
-  size_t               size;
+  size_t                 current;
+  unsigned int           round;
+  size_t                 size;
 } corax_rollback_list_t;
 
 typedef struct node_entry
 {
   corax_unode_t *p_node;
   corax_unode_t *r_node;
-  double       bb1, bb2, bb3;
-  double *     b1, *b2, *b3;
-  double       lh;
-  unsigned int rollback_num;
+  double         bb1, bb2, bb3;
+  double *       b1, *b2, *b3;
+  double         lh;
+  unsigned int   rollback_num;
 } node_entry_t;
 
 typedef struct bestnode_list
@@ -76,7 +76,7 @@ typedef struct bestnode_list
 
 static void algo_query_allnodes_recursive(corax_unode_t * node,
                                           corax_unode_t **buffer,
-                                          unsigned int *index)
+                                          unsigned int *  index)
 {
   if (node->next)
   {
@@ -89,7 +89,8 @@ static void algo_query_allnodes_recursive(corax_unode_t * node,
   }
 }
 
-static unsigned int algo_query_allnodes(corax_unode_t *root, corax_unode_t **buffer)
+static unsigned int algo_query_allnodes(corax_unode_t * root,
+                                        corax_unode_t **buffer)
 {
   assert(root && buffer);
 
@@ -108,7 +109,7 @@ static corax_rollback_list_t *algo_rollback_list_create(size_t slots)
   if (!rollback_list)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for rollback list\n");
+                    "Cannot allocate memory for rollback list\n");
     return NULL;
   }
   rollback_list->current = 0;
@@ -121,7 +122,7 @@ static corax_rollback_list_t *algo_rollback_list_create(size_t slots)
     if (!rollback_list->list)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rollback list items\n");
+                      "Cannot allocate memory for rollback list items\n");
       free(rollback_list);
       return NULL;
     }
@@ -200,7 +201,7 @@ algo_bestnode_list_create(size_t slots, unsigned int brlen_set_count)
   if (!bestnode_list)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for best node list\n");
+                    "Cannot allocate memory for best node list\n");
     return NULL;
   }
   bestnode_list->current         = 0;
@@ -212,7 +213,7 @@ algo_bestnode_list_create(size_t slots, unsigned int brlen_set_count)
     if (!bestnode_list->list)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for best node list items\n");
+                      "Cannot allocate memory for best node list items\n");
       free(bestnode_list);
       return NULL;
     }
@@ -242,7 +243,7 @@ algo_bestnode_list_create(size_t slots, unsigned int brlen_set_count)
           || !bestnode_list->brlen_buffers[slots - 1])
       {
         corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                      "Cannot allocate memory for best node list items\n");
+                        "Cannot allocate memory for best node list items\n");
         algo_bestnode_list_destroy(bestnode_list);
         return NULL;
       }
@@ -261,8 +262,9 @@ algo_bestnode_list_create(size_t slots, unsigned int brlen_set_count)
   return bestnode_list;
 }
 
-static void algo_bestnode_list_copy_entry(
-    corax_bestnode_list_t *best_node_list, size_t idx, const node_entry_t *src)
+static void algo_bestnode_list_copy_entry(corax_bestnode_list_t *best_node_list,
+                                          size_t                 idx,
+                                          const node_entry_t *   src)
 {
   node_entry_t *dst = &best_node_list->list[idx];
   dst->p_node       = src->p_node;
@@ -285,14 +287,16 @@ static void algo_bestnode_list_copy_entry(
 }
 
 static void algo_bestnode_list_save(corax_bestnode_list_t *best_node_list,
-                                    const node_entry_t *    entry)
+                                    const node_entry_t *   entry)
 {
   node_entry_t *list      = best_node_list->list;
   const size_t  list_size = best_node_list->size;
   size_t        idx       = 0, j;
 
   while (idx < list_size && (list[idx].p_node) && (entry->lh < list[idx].lh))
-  { ++idx; }
+  {
+    ++idx;
+  }
 
   /* do not insert: candidate tree LH too low, or list has size of 0 */
   if (idx >= list_size) return;
@@ -310,16 +314,15 @@ static void algo_bestnode_list_save(corax_bestnode_list_t *best_node_list,
 }
 
 static int algo_bestnode_list_next_index(corax_bestnode_list_t *best_node_list,
-                                         unsigned int            rollback_num,
-                                         int                     curr_index)
+                                         unsigned int           rollback_num,
+                                         int                    curr_index)
 {
   assert(curr_index >= -1);
 
   node_entry_t *     list      = best_node_list->list;
   const unsigned int list_size = best_node_list->size;
 
-  do
-  {
+  do {
     curr_index++;
     if (curr_index >= (int)list_size || !list[curr_index].p_node) return -1;
   } while (list[curr_index].rollback_num != rollback_num);
@@ -342,10 +345,10 @@ static void algo_bestnode_list_print(corax_bestnode_list_t *best_node_list)
 }
 #endif
 
-static double algo_optimize_bl_iterative(corax_unode_t *                 node,
+static double algo_optimize_bl_iterative(corax_unode_t *              node,
                                          corax_treeinfo_t *           treeinfo,
                                          const corax_search_params_t *params,
-                                         int                           radius,
+                                         int                          radius,
                                          double lh_epsilon,
                                          double smooth_factor)
 {
@@ -379,7 +382,7 @@ static double algo_optimize_bl_iterative(corax_unode_t *                 node,
   }
 }
 
-static double algo_optimize_bl_triplet(corax_unode_t *                 node,
+static double algo_optimize_bl_triplet(corax_unode_t *              node,
                                        corax_treeinfo_t *           treeinfo,
                                        const corax_search_params_t *params,
                                        double smooth_factor)
@@ -390,8 +393,8 @@ static double algo_optimize_bl_triplet(corax_unode_t *                 node,
 
 static double algo_optimize_bl_all(corax_treeinfo_t *           treeinfo,
                                    const corax_search_params_t *params,
-                                   double                        lh_epsilon,
-                                   double                        smooth_factor)
+                                   double                       lh_epsilon,
+                                   double                       smooth_factor)
 {
   corax_treeinfo_compute_loglh(treeinfo, 0);
 
@@ -404,9 +407,9 @@ static double algo_optimize_bl_all(corax_treeinfo_t *           treeinfo,
 }
 
 static void algo_unode_fix_length(corax_treeinfo_t *treeinfo,
-                                  corax_unode_t *      node,
-                                  double             bl_min,
-                                  double             bl_max)
+                                  corax_unode_t *   node,
+                                  double            bl_min,
+                                  double            bl_max)
 {
   unsigned int p;
   unsigned int pmatrix_index = node->pmatrix_index;
@@ -420,14 +423,12 @@ static void algo_unode_fix_length(corax_treeinfo_t *treeinfo,
         double p_brlen = treeinfo->branch_lengths[p][pmatrix_index];
         if (p_brlen < bl_min)
         {
-          corax_treeinfo_set_branch_length_partition(
-              treeinfo, node, p, bl_min);
+          corax_treeinfo_set_branch_length_partition(treeinfo, node, p, bl_min);
           treeinfo->pmatrix_valid[p][pmatrix_index] = 0;
         }
         else if (p_brlen > bl_max)
         {
-          corax_treeinfo_set_branch_length_partition(
-              treeinfo, node, p, bl_max);
+          corax_treeinfo_set_branch_length_partition(treeinfo, node, p, bl_max);
           treeinfo->pmatrix_valid[p][pmatrix_index] = 0;
         }
       }
@@ -466,10 +467,10 @@ int algo_update_pmatrix(corax_treeinfo_t *treeinfo, corax_unode_t *edge)
         p_brlen *= treeinfo->brlen_scalers[p];
 
       int ret = corax_update_prob_matrices(treeinfo->partitions[p],
-                                         treeinfo->param_indices[p],
-                                         &pmatrix_index,
-                                         &p_brlen,
-                                         1);
+                                           treeinfo->param_indices[p],
+                                           &pmatrix_index,
+                                           &p_brlen,
+                                           1);
 
       if (!ret) return CORAX_FAILURE;
 
@@ -482,8 +483,8 @@ int algo_update_pmatrix(corax_treeinfo_t *treeinfo, corax_unode_t *edge)
 }
 
 static corax_unode_t *algo_utree_prune(corax_treeinfo_t *           treeinfo,
-                                     const corax_search_params_t *params,
-                                     corax_unode_t *                 edge)
+                                       const corax_search_params_t *params,
+                                       corax_unode_t *              edge)
 {
   corax_unode_t *orig_prune_edge;
   if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
@@ -515,8 +516,8 @@ static corax_unode_t *algo_utree_prune(corax_treeinfo_t *           treeinfo,
 
 static int algo_utree_regraft(corax_treeinfo_t *           treeinfo,
                               const corax_search_params_t *params,
-                              corax_unode_t *                 p_edge,
-                              corax_unode_t *                 r_edge)
+                              corax_unode_t *              p_edge,
+                              corax_unode_t *              r_edge)
 {
   int retval;
   if (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED)
@@ -551,10 +552,10 @@ static int algo_utree_regraft(corax_treeinfo_t *           treeinfo,
 }
 
 CORAX_EXPORT int algo_utree_spr(corax_treeinfo_t *           treeinfo,
-                              const corax_search_params_t *params,
-                              corax_unode_t *                 p_edge,
-                              corax_unode_t *                 r_edge,
-                              corax_tree_rollback_t *         rollback_info)
+                                const corax_search_params_t *params,
+                                corax_unode_t *              p_edge,
+                                corax_unode_t *              r_edge,
+                                corax_tree_rollback_t *      rollback_info)
 {
   int retval;
 
@@ -562,7 +563,7 @@ CORAX_EXPORT int algo_utree_spr(corax_treeinfo_t *           treeinfo,
   {
     /* invalid move */
     corax_set_error(CORAX_TREE_ERROR_SPR_INVALID_NODE,
-                  "Attempting to prune a leaf branch");
+                    "Attempting to prune a leaf branch");
     return CORAX_FAILURE;
   }
 
@@ -588,30 +589,30 @@ CORAX_EXPORT int algo_utree_spr(corax_treeinfo_t *           treeinfo,
 }
 
 static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
-                              node_entry_t *                entry,
-                              cutoff_info_t *               cutoff_info,
+                              node_entry_t *               entry,
+                              cutoff_info_t *              cutoff_info,
                               const corax_search_params_t *params)
 {
   assert(treeinfo && entry && params);
 
-  unsigned int  i, j;
+  unsigned int    i, j;
   corax_unode_t * orig_prune_edge;
   corax_unode_t **regraft_nodes;
   corax_unode_t * r_edge;
-  int           regraft_edges;
-  unsigned int  r_dist;
-  double *      z1, *z2, *z3;
-  double *      b1, *b2, *b3;
-  double *      regraft_length;
-  unsigned int  redge_count = 0;
-  unsigned int  ncount;
-  int           retval;
-  unsigned int *regraft_dist;
-  int           descent;
-  double        loglh;
+  int             regraft_edges;
+  unsigned int    r_dist;
+  double *        z1, *z2, *z3;
+  double *        b1, *b2, *b3;
+  double *        regraft_length;
+  unsigned int    redge_count = 0;
+  unsigned int    ncount;
+  int             retval;
+  unsigned int *  regraft_dist;
+  int             descent;
+  double          loglh;
 
   corax_unode_t *p_edge           = entry->p_node;
-  const size_t total_edge_count = treeinfo->tree->edge_count;
+  const size_t   total_edge_count = treeinfo->tree->edge_count;
 
   entry->r_node = NULL;
   entry->lh     = CORAX_OPT_LNL_UNLIKELY;
@@ -664,24 +665,24 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
   if (!regraft_nodes)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for regraft nodes\n");
+                    "Cannot allocate memory for regraft nodes\n");
     return CORAX_FAILURE;
   }
 
   retval = corax_utree_nodes_at_node_dist(treeinfo->root,
-                                        &regraft_nodes[redge_count],
-                                        &ncount,
-                                        params->radius_min,
-                                        params->radius_min);
+                                          &regraft_nodes[redge_count],
+                                          &ncount,
+                                          params->radius_min,
+                                          params->radius_min);
   redge_count += ncount;
 
   if (!CORAX_UTREE_IS_TIP(treeinfo->root->back))
   {
     retval &= corax_utree_nodes_at_node_dist(treeinfo->root->back,
-                                           &regraft_nodes[redge_count],
-                                           &ncount,
-                                           params->radius_min,
-                                           params->radius_min);
+                                             &regraft_nodes[redge_count],
+                                             &ncount,
+                                             params->radius_min,
+                                             params->radius_min);
     redge_count += ncount;
   }
   assert(retval == CORAX_SUCCESS);
@@ -691,7 +692,7 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
   if (!regraft_dist)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for regraft distances\n");
+                    "Cannot allocate memory for regraft distances\n");
     return CORAX_FAILURE;
   }
 
@@ -785,8 +786,7 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
 
     /* rollback the REGRAFT */
     corax_unode_t *pruned_tree = corax_utree_prune(p_edge);
-    corax_treeinfo_set_branch_length_all(
-        treeinfo, pruned_tree, regraft_length);
+    corax_treeinfo_set_branch_length_all(treeinfo, pruned_tree, regraft_length);
     corax_treeinfo_invalidate_pmatrix(treeinfo, pruned_tree);
 
     /* recompute p-matrix for the pendant branch of the pruned subtree */
@@ -840,11 +840,11 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
 }
 
 static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
-                             corax_unode_t **                nodes,
-                             int                           node_count,
+                             corax_unode_t **             nodes,
+                             int                          node_count,
                              corax_rollback_list_t *      rollback_list,
                              corax_bestnode_list_t *      best_node_list,
-                             cutoff_info_t *               cutoff_info,
+                             cutoff_info_t *              cutoff_info,
                              const corax_search_params_t *params)
 {
   int i;
@@ -858,7 +858,8 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
   spr_entry.b2 = params->brlen_buf[8];
   spr_entry.b3 = params->brlen_buf[9];
 
-  corax_tree_rollback_t *rollback = rollback_list->list + rollback_list->current;
+  corax_tree_rollback_t *rollback =
+      rollback_list->list + rollback_list->current;
 
   for (i = 0; i < node_count; ++i)
   {
@@ -888,7 +889,9 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
      * next one */
     if (!best_r_edge || best_r_edge == p_edge || best_r_edge == p_edge->back
         || best_r_edge->back == p_edge)
-    { continue; }
+    {
+      continue;
+    }
 
     /* LH improved -> re-apply the SPR move */
     if (spr_entry.lh - best_lh > 1e-6)
@@ -900,7 +903,7 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
           best_r_edge->back->clv_index);
 
       corax_unode_t *orig_prune_edge = p_edge->next->back;
-      int          retval =
+      int            retval =
           algo_utree_spr(treeinfo, params, p_edge, best_r_edge, rollback);
       assert(retval == CORAX_SUCCESS);
       if (!retval) return CORAX_FAILURE;
@@ -972,39 +975,39 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
 }
 
 CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
-                                        unsigned int       radius_min,
-                                        unsigned int       radius_max,
-                                        unsigned int       ntopol_keep,
-                                        corax_bool_t         thorough,
-                                        int                brlen_opt_method,
-                                        double             bl_min,
-                                        double             bl_max,
-                                        int                smoothings,
-                                        double             epsilon,
-                                        cutoff_info_t *    cutoff_info,
-                                        double             subtree_cutoff)
+                                         unsigned int      radius_min,
+                                         unsigned int      radius_max,
+                                         unsigned int      ntopol_keep,
+                                         corax_bool_t      thorough,
+                                         int               brlen_opt_method,
+                                         double            bl_min,
+                                         double            bl_max,
+                                         int               smoothings,
+                                         double            epsilon,
+                                         cutoff_info_t *   cutoff_info,
+                                         double            subtree_cutoff)
 {
-  unsigned int           i;
-  double                 loglh, best_lh;
+  unsigned int          i;
+  double                loglh, best_lh;
   corax_search_params_t params;
-  int                    retval;
-  int                    brlen_unlinked;
+  int                   retval;
+  int                   brlen_unlinked;
 
-  unsigned int  allnodes_count;
+  unsigned int    allnodes_count;
   corax_unode_t **allnodes = NULL;
 
-  size_t                  rollback_slots;
-  size_t                  toplist_slots;
-  unsigned int            brlen_set_count;
+  size_t                 rollback_slots;
+  size_t                 toplist_slots;
+  unsigned int           brlen_set_count;
   corax_rollback_list_t *rollback_list = NULL;
   corax_bestnode_list_t *bestnode_list = NULL;
-  corax_tree_rollback_t *   rollback;
-  size_t                  rollback_counter;
-  corax_tree_rollback_t *   rollback2 = NULL;
-  int                     toplist_index;
+  corax_tree_rollback_t *rollback;
+  size_t                 rollback_counter;
+  corax_tree_rollback_t *rollback2 = NULL;
+  int                    toplist_index;
 
-  node_entry_t *spr_entry;
-  corax_unode_t * p_edge, *r_edge;
+  node_entry_t * spr_entry;
+  corax_unode_t *p_edge, *r_edge;
 
   corax_treeinfo_topology_t *best_topol = NULL;
 #ifndef CORAX_SEARCH_GREEDY_BLO
@@ -1070,7 +1073,8 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   allnodes = (corax_unode_t **)calloc(allnodes_count, sizeof(corax_unode_t *));
   if (!allnodes)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory nodes list\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory nodes list\n");
     goto error_exit;
   }
 
@@ -1146,7 +1150,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   if (!rollback2)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for additional rollback list\n");
+                    "Cannot allocate memory for additional rollback list\n");
     goto error_exit;
   }
   int undo_SPR = 0;

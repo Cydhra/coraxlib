@@ -29,7 +29,7 @@ typedef struct corax_utree_edge
 {
   corax_unode_t *parent;
   corax_unode_t *child;
-  double       length;
+  double         length;
 } corax_utree_edge_t;
 
 typedef struct
@@ -44,68 +44,69 @@ typedef struct
     {
       corax_unode_t *prune_edge;
       corax_unode_t *regraft_edge;
-      double       prune_bl;       //! length of the pruned branch
-      double       prune_left_bl;  //! length of the removed branch when pruning
-      double       prune_right_bl; //! length of the removed branch when pruning
-      double       regraft_bl; //! length of the splitted branch when regrafting
+      double         prune_bl; //! length of the pruned branch
+      double prune_left_bl;    //! length of the removed branch when pruning
+      double prune_right_bl;   //! length of the removed branch when pruning
+      double regraft_bl;       //! length of the splitted branch when regrafting
     } SPR;
     struct
     {
       corax_unode_t *edge;
-      double       left_left_bl;
-      double       left_right_bl;
-      double       right_left_bl;
-      double       right_right_bl;
-      double       edge_bl;
-      int          type;
+      double         left_left_bl;
+      double         left_right_bl;
+      double         right_left_bl;
+      double         right_right_bl;
+      double         edge_bl;
+      int            type;
     } NNI;
     struct
     {
       corax_unode_t *    bisect_edge;
       corax_utree_edge_t reconn_edge;
-      double           bisect_left_bl;
-      double           bisect_right_bl;
-      double           reconn_parent_left_bl;
-      double           reconn_parent_right_bl;
-      double           reconn_child_left_bl;
-      double           reconn_child_right_bl;
+      double             bisect_left_bl;
+      double             bisect_right_bl;
+      double             reconn_parent_left_bl;
+      double             reconn_parent_right_bl;
+      double             reconn_child_left_bl;
+      double             reconn_child_right_bl;
     } TBR;
   };
 } corax_tree_rollback_t;
 
 CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
-                                          corax_unode_t *child,
-                                          double       length);
+                                           corax_unode_t *child,
+                                           double         length);
 
 CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
-                                   corax_unode_t **parent_subtree,
-                                   corax_unode_t **child_subtree);
+                                    corax_unode_t **parent_subtree,
+                                    corax_unode_t **child_subtree);
 
-CORAX_EXPORT corax_utree_edge_t corax_utree_reconnect(corax_utree_edge_t *edge,
-                                                   corax_unode_t *pruned_edge);
+CORAX_EXPORT corax_utree_edge_t
+corax_utree_reconnect(corax_utree_edge_t *edge, corax_unode_t *pruned_edge);
 
 CORAX_EXPORT corax_unode_t *corax_utree_prune(corax_unode_t *edge);
 
 CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree);
 
-CORAX_EXPORT int corax_utree_interchange(corax_unode_t *edge1, corax_unode_t *edge2);
+CORAX_EXPORT int corax_utree_interchange(corax_unode_t *edge1,
+                                         corax_unode_t *edge2);
 
 CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
-                                corax_utree_edge_t *   r_edge,
-                                corax_tree_rollback_t *rollback_info);
+                                 corax_utree_edge_t *   r_edge,
+                                 corax_tree_rollback_t *rollback_info);
 
 CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
-                                corax_unode_t *        r_edge,
-                                corax_tree_rollback_t *rollback_info);
+                                 corax_unode_t *        r_edge,
+                                 corax_tree_rollback_t *rollback_info);
 
-CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *   p,
-                                     corax_unode_t *   r,
-                                     corax_tree_rollback_t *rollback_info);
+CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
+                                      corax_unode_t *        r,
+                                      corax_tree_rollback_t *rollback_info);
 
 /* type = {CORAX_NNI_NEXT, CORAX_NNI_NEXTNEXT} */
 CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
-                                int                  type,
-                                corax_tree_rollback_t *rollback_info);
+                                 int                    type,
+                                 corax_tree_rollback_t *rollback_info);
 
 CORAX_EXPORT int corax_tree_rollback(corax_tree_rollback_t *rollback_info);
 

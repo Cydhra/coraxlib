@@ -28,7 +28,8 @@ static int dlist_insert(corax_dlist_t **dlist, void *data, int insert_end)
     *dlist = (corax_dlist_t *)malloc(sizeof(corax_dlist_t));
     if (!*dlist)
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       return CORAX_FAILURE;
     }
 

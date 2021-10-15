@@ -45,9 +45,9 @@ static void fill_parent_scaler(unsigned int        scaler_size,
 }
 
 CORAX_EXPORT void corax_core_create_lookup_4x4_sse(unsigned int  rate_cats,
-                                               double *      lookup,
-                                               const double *left_matrix,
-                                               const double *right_matrix)
+                                                   double *      lookup,
+                                                   const double *left_matrix,
+                                                   const double *right_matrix)
 {
   unsigned int j, k, n;
   unsigned int maxstates = 16;
@@ -225,13 +225,13 @@ CORAX_EXPORT void corax_core_create_lookup_4x4_sse(unsigned int  rate_cats,
   }
 }
 
-CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int       states,
-                                           unsigned int       rate_cats,
-                                           double *           ttlookup,
-                                           const double *     left_matrix,
-                                           const double *     right_matrix,
-                                           const corax_state_t *tipmap,
-                                           unsigned int       tipmap_size)
+CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int  states,
+                                               unsigned int  rate_cats,
+                                               double *      ttlookup,
+                                               const double *left_matrix,
+                                               const double *right_matrix,
+                                               const corax_state_t *tipmap,
+                                               unsigned int         tipmap_size)
 {
   if (states == 4)
   {
@@ -266,8 +266,8 @@ CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int       states,
     for (k = 0; k < maxstates; ++k)
     {
       corax_state_t kstate = tipmap[k];
-      jmat               = left_matrix;
-      kmat               = right_matrix;
+      jmat                 = left_matrix;
+      kmat                 = right_matrix;
 
       /* find offset of state-pair in the precomputation table */
       lookup = ttlookup;
@@ -348,7 +348,7 @@ CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int       states,
         jmat -= displacement;
         kmat -= displacement;
         ///* this is to avoid valgrind warnings on accessing uninitialized
-        ///memory
+        /// memory
         //   when using SSE and states are not a multiple of 2 */
         // if (states_padded-states)
         //  memset(lookup+index, 0, (states_padded-states)*sizeof(double));
@@ -378,13 +378,13 @@ static void pshow_sse(char * name, __m128d x)
 
 CORAX_EXPORT void
 corax_core_update_clv_tt_4x4_sse(unsigned int         sites,
-                               unsigned int         rate_cats,
-                               double *             parent_clv,
-                               unsigned int *       parent_scaler,
-                               const unsigned char *left_tipchars,
-                               const unsigned char *right_tipchars,
-                               const double *       lookup,
-                               unsigned int         attrib)
+                                 unsigned int         rate_cats,
+                                 double *             parent_clv,
+                                 unsigned int *       parent_scaler,
+                                 const unsigned char *left_tipchars,
+                                 const unsigned char *right_tipchars,
+                                 const double *       lookup,
+                                 unsigned int         attrib)
 {
   unsigned int  j, k, n;
   unsigned int  states = 4;
@@ -411,17 +411,18 @@ corax_core_update_clv_tt_4x4_sse(unsigned int         sites,
   }
 }
 
-CORAX_EXPORT void corax_core_update_clv_ii_4x4_sse(unsigned int  sites,
-                                               unsigned int  rate_cats,
-                                               double *      parent_clv,
-                                               unsigned int *parent_scaler,
-                                               const double *left_clv,
-                                               const double *right_clv,
-                                               const double *left_matrix,
-                                               const double *right_matrix,
-                                               const unsigned int *left_scaler,
-                                               const unsigned int *right_scaler,
-                                               unsigned int        attrib)
+CORAX_EXPORT void
+corax_core_update_clv_ii_4x4_sse(unsigned int        sites,
+                                 unsigned int        rate_cats,
+                                 double *            parent_clv,
+                                 unsigned int *      parent_scaler,
+                                 const double *      left_clv,
+                                 const double *      right_clv,
+                                 const double *      left_matrix,
+                                 const double *      right_matrix,
+                                 const unsigned int *left_scaler,
+                                 const unsigned int *right_scaler,
+                                 unsigned int        attrib)
 {
   unsigned int states = 4;
   unsigned int span   = states * rate_cats;
@@ -636,16 +637,17 @@ CORAX_EXPORT void corax_core_update_clv_ii_4x4_sse(unsigned int  sites,
   }
 }
 
-CORAX_EXPORT void corax_core_update_clv_tt_sse(unsigned int         states,
-                                           unsigned int         sites,
-                                           unsigned int         rate_cats,
-                                           double *             parent_clv,
-                                           unsigned int *       parent_scaler,
-                                           const unsigned char *left_tipchars,
-                                           const unsigned char *right_tipchars,
-                                           const double *       lookup,
-                                           unsigned int         tipstates_count,
-                                           unsigned int         attrib)
+CORAX_EXPORT void
+corax_core_update_clv_tt_sse(unsigned int         states,
+                             unsigned int         sites,
+                             unsigned int         rate_cats,
+                             double *             parent_clv,
+                             unsigned int *       parent_scaler,
+                             const unsigned char *left_tipchars,
+                             const unsigned char *right_tipchars,
+                             const double *       lookup,
+                             unsigned int         tipstates_count,
+                             unsigned int         attrib)
 {
   unsigned int  j, k, n;
   unsigned int  log2_maxstates = (unsigned int)ceil(log2(tipstates_count));
@@ -656,13 +658,13 @@ CORAX_EXPORT void corax_core_update_clv_tt_sse(unsigned int         states,
   if (states == 4)
   {
     corax_core_update_clv_tt_4x4_sse(sites,
-                                   rate_cats,
-                                   parent_clv,
-                                   parent_scaler,
-                                   left_tipchars,
-                                   right_tipchars,
-                                   lookup,
-                                   attrib);
+                                     rate_cats,
+                                     parent_clv,
+                                     parent_scaler,
+                                     left_tipchars,
+                                     right_tipchars,
+                                     lookup,
+                                     attrib);
     return;
   }
 
@@ -686,18 +688,18 @@ CORAX_EXPORT void corax_core_update_clv_tt_sse(unsigned int         states,
   }
 }
 
-CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int        states,
-                                           unsigned int        sites,
-                                           unsigned int        rate_cats,
-                                           double *            parent_clv,
-                                           unsigned int *      parent_scaler,
-                                           const double *      left_clv,
-                                           const double *      right_clv,
-                                           const double *      left_matrix,
-                                           const double *      right_matrix,
-                                           const unsigned int *left_scaler,
-                                           const unsigned int *right_scaler,
-                                           unsigned int        attrib)
+CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int  states,
+                                               unsigned int  sites,
+                                               unsigned int  rate_cats,
+                                               double *      parent_clv,
+                                               unsigned int *parent_scaler,
+                                               const double *left_clv,
+                                               const double *right_clv,
+                                               const double *left_matrix,
+                                               const double *right_matrix,
+                                               const unsigned int *left_scaler,
+                                               const unsigned int *right_scaler,
+                                               unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -710,16 +712,16 @@ CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int        states,
   if (states == 4)
   {
     corax_core_update_clv_ii_4x4_sse(sites,
-                                   rate_cats,
-                                   parent_clv,
-                                   parent_scaler,
-                                   left_clv,
-                                   right_clv,
-                                   left_matrix,
-                                   right_matrix,
-                                   left_scaler,
-                                   right_scaler,
-                                   attrib);
+                                     rate_cats,
+                                     parent_clv,
+                                     parent_scaler,
+                                     left_clv,
+                                     right_clv,
+                                     left_matrix,
+                                     right_matrix,
+                                     left_scaler,
+                                     right_scaler,
+                                     attrib);
     return;
   }
 
@@ -867,23 +869,23 @@ CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int        states,
 
 CORAX_EXPORT void
 corax_core_update_clv_repeats_generic_sse(unsigned int        states,
-                                        unsigned int        parent_sites,
-                                        unsigned int        left_sites,
-                                        unsigned int        right_sites,
-                                        unsigned int        rate_cats,
-                                        double *            parent_clv,
-                                        unsigned int *      parent_scaler,
-                                        const double *      left_clv,
-                                        const double *      right_clv,
-                                        const double *      left_matrix,
-                                        const double *      right_matrix,
-                                        const unsigned int *left_scaler,
-                                        const unsigned int *right_scaler,
-                                        const unsigned int *parent_id_site,
-                                        const unsigned int *left_site_id,
-                                        const unsigned int *right_site_id,
-                                        double *            bclv_buffer,
-                                        unsigned int        attrib)
+                                          unsigned int        parent_sites,
+                                          unsigned int        left_sites,
+                                          unsigned int        right_sites,
+                                          unsigned int        rate_cats,
+                                          double *            parent_clv,
+                                          unsigned int *      parent_scaler,
+                                          const double *      left_clv,
+                                          const double *      right_clv,
+                                          const double *      left_matrix,
+                                          const double *      right_matrix,
+                                          const unsigned int *left_scaler,
+                                          const unsigned int *right_scaler,
+                                          const unsigned int *parent_id_site,
+                                          const unsigned int *left_site_id,
+                                          const unsigned int *right_site_id,
+                                          double *            bclv_buffer,
+                                          unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -912,21 +914,21 @@ corax_core_update_clv_repeats_generic_sse(unsigned int        states,
     /* add up the scale vector of the two children if available */
     if (scale_mode == 2)
       corax_fill_parent_scaler_repeats_per_rate(parent_sites,
-                                              rate_cats,
-                                              parent_scaler,
-                                              parent_id_site,
-                                              left_scaler,
-                                              left_site_id,
-                                              right_scaler,
-                                              right_site_id);
+                                                rate_cats,
+                                                parent_scaler,
+                                                parent_id_site,
+                                                left_scaler,
+                                                left_site_id,
+                                                right_scaler,
+                                                right_site_id);
     else
       corax_fill_parent_scaler_repeats(parent_sites,
-                                     parent_scaler,
-                                     parent_id_site,
-                                     left_scaler,
-                                     left_site_id,
-                                     right_scaler,
-                                     right_site_id);
+                                       parent_scaler,
+                                       parent_id_site,
+                                       left_scaler,
+                                       left_site_id,
+                                       right_scaler,
+                                       right_site_id);
   }
   else
   {
@@ -1056,15 +1058,15 @@ corax_core_update_clv_repeats_generic_sse(unsigned int        states,
 
 CORAX_EXPORT void
 corax_core_update_clv_ti_4x4_sse(unsigned int         sites,
-                               unsigned int         rate_cats,
-                               double *             parent_clv,
-                               unsigned int *       parent_scaler,
-                               const unsigned char *left_tipchar,
-                               const double *       right_clv,
-                               const double *       left_matrix,
-                               const double *       right_matrix,
-                               const unsigned int * right_scaler,
-                               unsigned int         attrib)
+                                 unsigned int         rate_cats,
+                                 double *             parent_clv,
+                                 unsigned int *       parent_scaler,
+                                 const unsigned char *left_tipchar,
+                                 const double *       right_clv,
+                                 const double *       left_matrix,
+                                 const double *       right_matrix,
+                                 const unsigned int * right_scaler,
+                                 unsigned int         attrib)
 {
   unsigned int states = 4;
   unsigned int span   = states * rate_cats;
@@ -1094,7 +1096,7 @@ corax_core_update_clv_ti_4x4_sse(unsigned int         sites,
        resort to a non-lookup-precomputation version of this function,
        available at commit e.g.  a4fc873fdc65741e402cdc1c59919375143d97d1 */
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for precomputation.");
+                    "Cannot allocate space for precomputation.");
     return;
   }
 
@@ -1307,19 +1309,20 @@ corax_core_update_clv_ti_4x4_sse(unsigned int         sites,
   corax_aligned_free(lookup);
 }
 
-CORAX_EXPORT void corax_core_update_clv_ti_sse(unsigned int         states,
-                                           unsigned int         sites,
-                                           unsigned int         rate_cats,
-                                           double *             parent_clv,
-                                           unsigned int *       parent_scaler,
-                                           const unsigned char *left_tipchars,
-                                           const double *       right_clv,
-                                           const double *       left_matrix,
-                                           const double *       right_matrix,
-                                           const unsigned int * right_scaler,
-                                           const corax_state_t *  tipmap,
-                                           unsigned int         tipmap_size,
-                                           unsigned int         attrib)
+CORAX_EXPORT void
+corax_core_update_clv_ti_sse(unsigned int         states,
+                             unsigned int         sites,
+                             unsigned int         rate_cats,
+                             double *             parent_clv,
+                             unsigned int *       parent_scaler,
+                             const unsigned char *left_tipchars,
+                             const double *       right_clv,
+                             const double *       left_matrix,
+                             const double *       right_matrix,
+                             const unsigned int * right_scaler,
+                             const corax_state_t *tipmap,
+                             unsigned int         tipmap_size,
+                             unsigned int         attrib)
 {
   unsigned int i, j, k, n;
   unsigned int states_padded = (states + 1) & 0xFFFFFFFE;
@@ -1334,15 +1337,15 @@ CORAX_EXPORT void corax_core_update_clv_ti_sse(unsigned int         states,
   if (states == 4)
   {
     corax_core_update_clv_ti_4x4_sse(sites,
-                                   rate_cats,
-                                   parent_clv,
-                                   parent_scaler,
-                                   left_tipchars,
-                                   right_clv,
-                                   left_matrix,
-                                   right_matrix,
-                                   right_scaler,
-                                   attrib);
+                                     rate_cats,
+                                     parent_clv,
+                                     parent_scaler,
+                                     left_tipchars,
+                                     right_clv,
+                                     left_matrix,
+                                     right_matrix,
+                                     right_scaler,
+                                     attrib);
     return;
   }
 

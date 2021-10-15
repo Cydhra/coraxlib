@@ -39,15 +39,15 @@ static inline int d_equals(double a, double b) { return (fabs(a - b) < 1e-10); }
  * @return             the minimal score found
  */
 CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
-                                             double *     xmin,
-                                             double *     xmax,
-                                             int *        bound,
-                                             unsigned int n,
-                                             double       factr,
-                                             double       pgtol,
-                                             void *       params,
-                                             double (*target_funk)(void *,
-                                                                   double *))
+                                              double *     xmin,
+                                              double *     xmax,
+                                              int *        bound,
+                                              unsigned int n,
+                                              double       factr,
+                                              double       pgtol,
+                                              void *       params,
+                                              double (*target_funk)(void *,
+                                                                    double *))
 {
   unsigned int i;
 
@@ -88,7 +88,7 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
   if (!(wa && iwa && g))
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for l-bfgs-b variables");
+                    "Cannot allocate memory for l-bfgs-b variables");
     if (g) free(g);
     if (iwa) free(iwa);
     if (wa) free(wa);
@@ -233,7 +233,7 @@ static int init_bfgs_opt(struct bfgs_multi_opt *opt,
   if (!opt->g || !opt->iwa || !opt->wa)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for l-bfgs-b variables");
+                    "Cannot allocate memory for l-bfgs-b variables");
     return CORAX_FAILURE;
   }
 
@@ -301,7 +301,7 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
   if (!lh_old || !lh_new || !converged || !skip || !opts)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for l-bfgs-b variables");
+                    "Cannot allocate memory for l-bfgs-b variables");
     goto cleanup;
   }
 
@@ -318,7 +318,7 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
     if (!opts[p])
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for l-bfgs-b variables");
+                      "Cannot allocate memory for l-bfgs-b variables");
       goto cleanup;
     }
 

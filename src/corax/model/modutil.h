@@ -52,12 +52,12 @@ typedef struct subst_model
 /* Substitution model definition */
 typedef struct mixture_model
 {
-  char *                 name;      /* name of the model                      */
-  unsigned int           ncomp;     /* number of mixture components           */
+  char *                name;      /* name of the model                      */
+  unsigned int          ncomp;     /* number of mixture components           */
   corax_subst_model_t **models;    /* list of mixture components             */
-  double *               mix_rates; /* fixed mixture rates; NULL = optimize   */
-  double *mix_weights;              /* fixed mixture weights; NULL = optimize */
-  int     mix_type;                 /* component rates: fixed, gamma or free  */
+  double *              mix_rates; /* fixed mixture rates; NULL = optimize   */
+  double *mix_weights;             /* fixed mixture weights; NULL = optimize */
+  int     mix_type;                /* component rates: fixed, gamma or free  */
 } corax_mixture_model_t;
 
 /* Model alias name definition */
@@ -72,77 +72,77 @@ CORAX_EXPORT double *corax_util_get_equal_freqs(unsigned int states);
 CORAX_EXPORT double *corax_util_get_equal_rates(unsigned int states);
 
 CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
-                                                   const char * statechars,
-                                                   const char * gapchars,
-                                                   int          case_sensitive);
+                                                      const char * statechars,
+                                                      const char * gapchars,
+                                                      int case_sensitive);
 
 CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
-                                                  const char * fname,
-                                                  int          case_sensitive,
-                                                  char **      state_names);
+                                                     const char * fname,
+                                                     int    case_sensitive,
+                                                     char **state_names);
 
 CORAX_EXPORT      corax_subst_model_t *
-                corax_util_model_create_custom(const char *  name,
-                                                unsigned int  states,
-                                                const double *rates,
-                                                const double *freqs,
-                                                const char *  rate_sym_str,
-                                                const char *  freq_sym_str);
+                  corax_util_model_create_custom(const char *  name,
+                                                 unsigned int  states,
+                                                 const double *rates,
+                                                 const double *freqs,
+                                                 const char *  rate_sym_str,
+                                                 const char *  freq_sym_str);
 CORAX_EXPORT void corax_util_model_destroy(corax_subst_model_t *model);
 CORAX_EXPORT      corax_subst_model_t *
-                corax_util_model_clone(const corax_subst_model_t *src);
+                  corax_util_model_clone(const corax_subst_model_t *src);
 CORAX_EXPORT int *corax_util_model_string_to_sym(const char *s);
 
 CORAX_EXPORT corax_mixture_model_t *
-           corax_util_model_mixture_create(const char *                 name,
-                                            unsigned int                 ncomp,
-                                            corax_subst_model_t **const models,
-                                            const double *               mix_rates,
-                                            const double *               mix_weights,
-                                            int                          mix_type);
+             corax_util_model_mixture_create(const char *                name,
+                                             unsigned int                ncomp,
+                                             corax_subst_model_t **const models,
+                                             const double *              mix_rates,
+                                             const double *              mix_weights,
+                                             int                         mix_type);
 CORAX_EXPORT void
-           corax_util_model_mixture_destroy(corax_mixture_model_t *mixture);
+             corax_util_model_mixture_destroy(corax_mixture_model_t *mixture);
 CORAX_EXPORT corax_mixture_model_t *
-           corax_util_model_mixture_clone(const corax_mixture_model_t *src);
+             corax_util_model_mixture_clone(const corax_mixture_model_t *src);
 
 /* functions for working with built-in DNA models */
 CORAX_EXPORT unsigned int corax_util_model_count_dna();
 CORAX_EXPORT char **      corax_util_model_names_dna();
 CORAX_EXPORT int          corax_util_model_exists_dna(const char *model_name);
 CORAX_EXPORT              corax_subst_model_t *
-                        corax_util_model_info_dna(const char *model_name);
+                          corax_util_model_info_dna(const char *model_name);
 
 /* functions for working with built-in protein models */
 CORAX_EXPORT unsigned int corax_util_model_count_protein();
 CORAX_EXPORT char **      corax_util_model_names_protein();
 CORAX_EXPORT int corax_util_model_exists_protein(const char *model_name);
 CORAX_EXPORT     corax_subst_model_t *
-               corax_util_model_info_protein(const char *model_name);
+                 corax_util_model_info_protein(const char *model_name);
 CORAX_EXPORT int corax_util_model_set_protein(corax_partition_t *partition,
-                                             const char *     model_name,
-                                             int              model_freqs);
+                                              const char *       model_name,
+                                              int                model_freqs);
 
 CORAX_EXPORT int corax_util_model_exists_protmix(const char *model_name);
 CORAX_EXPORT     corax_mixture_model_t *
-               corax_util_model_info_protmix(const char *model_name);
+                 corax_util_model_info_protmix(const char *model_name);
 CORAX_EXPORT int corax_util_model_set_protmix(corax_partition_t *partition,
-                                             const char *     model_name,
-                                             int              model_freqs);
+                                              const char *       model_name,
+                                              int                model_freqs);
 
 /* functions for working with multistates models */
 CORAX_EXPORT int corax_util_model_exists_mult(const char *model_name);
 CORAX_EXPORT unsigned int
-           corax_util_model_numstates_mult(const char *model_name);
+             corax_util_model_numstates_mult(const char *model_name);
 CORAX_EXPORT corax_state_t *corax_util_model_charmap_mult(unsigned int states);
-CORAX_EXPORT              corax_subst_model_t *
-                        corax_util_model_info_mult(const char *model_name);
+CORAX_EXPORT                corax_subst_model_t *
+                            corax_util_model_info_mult(const char *model_name);
 
 /* functions for working with built-in genotype models */
 CORAX_EXPORT unsigned int corax_util_model_count_genotype();
 CORAX_EXPORT char **      corax_util_model_names_genotype();
 CORAX_EXPORT int corax_util_model_exists_genotype(const char *model_name);
 CORAX_EXPORT     corax_subst_model_t *
-               corax_util_model_info_genotype(const char *model_name);
+                 corax_util_model_info_genotype(const char *model_name);
 
 CORAX_EXPORT int corax_util_model_exists_genotype10(const char *model_name);
 CORAX_EXPORT int corax_util_model_exists_genotype16(const char *model_name);

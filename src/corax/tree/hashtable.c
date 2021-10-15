@@ -35,7 +35,7 @@ bitv_hashtable_t *hash_init(unsigned int n, unsigned int bit_count)
   if (!h)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for hashtable\n");
+                    "Cannot allocate memory for hashtable\n");
     return NULL;
   }
 
@@ -66,7 +66,7 @@ bitv_hashtable_t *hash_init(unsigned int n, unsigned int bit_count)
   {
     free(h);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for hashtable entries\n");
+                    "Cannot allocate memory for hashtable entries\n");
     return NULL;
   }
 
@@ -93,8 +93,7 @@ void hash_destroy(bitv_hashtable_t *h)
       bitv_hash_entry_t *e = h->table[i];
       bitv_hash_entry_t *previous;
 
-      do
-      {
+      do {
         previous = e;
         e        = e->next;
 
@@ -144,7 +143,7 @@ hash_key_t hash_get_key(corax_split_t s, int len)
 
 /* this function only increments support for existing splits,
  * but never adds new splits to the hashtable */
-bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
+bitv_hash_entry_t *hash_update(corax_split_t     bit_vector,
                                bitv_hashtable_t *h,
                                hash_key_t        key,
                                double            support,
@@ -159,8 +158,7 @@ bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
   if (h->table[position] != NULL)
   {
     bitv_hash_entry_t *e = h->table[position];
-    do
-    {
+    do {
       unsigned int i = 0;
 
       /* check for identity of bipartitions */
@@ -183,7 +181,7 @@ bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
   return CORAX_FAILURE;
 }
 
-bitv_hash_entry_t *hash_insert(corax_split_t       bit_vector,
+bitv_hash_entry_t *hash_insert(corax_split_t     bit_vector,
                                bitv_hashtable_t *h,
                                unsigned int      bip_number,
                                hash_key_t        key,
@@ -207,7 +205,8 @@ bitv_hash_entry_t *hash_insert(corax_split_t       bit_vector,
   e->key        = key;
   e->bip_number = bip_number;
 
-  e->bit_vector = (corax_split_t)calloc(h->bitv_len, sizeof(corax_split_base_t));
+  e->bit_vector =
+      (corax_split_t)calloc(h->bitv_len, sizeof(corax_split_base_t));
   memcpy(e->bit_vector, bit_vector, sizeof(corax_split_base_t) * h->bitv_len);
 
   e->next            = h->table[position];
@@ -286,8 +285,8 @@ int bitv_compare(corax_split_t v1, corax_split_t v2, unsigned int bitv_len)
 }
 
 inline unsigned int bitv_popcount(const corax_split_t bitv,
-                                  unsigned int      bit_count,
-                                  unsigned int      bitv_len)
+                                  unsigned int        bit_count,
+                                  unsigned int        bitv_len)
 {
   unsigned int setb = 0;
   unsigned int i;
@@ -295,13 +294,15 @@ inline unsigned int bitv_popcount(const corax_split_t bitv,
   if (!bitv_len) bitv_len = bitv_length(bit_count);
 
   for (i = 0; i < bitv_len; ++i)
-  { setb += (unsigned int)CORAX_POPCNT32(bitv[i]); }
+  {
+    setb += (unsigned int)CORAX_POPCNT32(bitv[i]);
+  }
   return setb;
 }
 
 inline unsigned int bitv_lightside(const corax_split_t bitv,
-                                   unsigned int      bit_count,
-                                   unsigned int      bitv_len)
+                                   unsigned int        bit_count,
+                                   unsigned int        bitv_len)
 {
   unsigned int setb = bitv_popcount(bitv, bit_count, bitv_len);
 
@@ -357,8 +358,7 @@ void string_hash_destroy(string_hashtable_t *h)
       string_hash_entry_t *e = h->table[i];
       string_hash_entry_t *previous;
 
-      do
-      {
+      do {
         previous = e;
         e        = e->next;
 

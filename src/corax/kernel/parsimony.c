@@ -22,12 +22,12 @@
 #include "corax/corax.h"
 
 CORAX_EXPORT int corax_set_parsimony_sequence(corax_parsimony_t *  pars,
-                                          unsigned int       tip_index,
-                                          const corax_state_t *map,
-                                          const char *       sequence)
+                                              unsigned int         tip_index,
+                                              const corax_state_t *map,
+                                              const char *         sequence)
 {
-  corax_state_t  c;
-  unsigned int i, j;
+  corax_state_t c;
+  unsigned int  i, j;
 
   unsigned int states   = pars->states;
   double *     tipstate = pars->sbuffer[tip_index];
@@ -45,8 +45,8 @@ CORAX_EXPORT int corax_set_parsimony_sequence(corax_parsimony_t *  pars,
     if ((c = map[(int)sequence[i]]) == 0)
     {
       corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
-                    "Illegal state code in tip \"%c\"",
-                    sequence[i]);
+                      "Illegal state code in tip \"%c\"",
+                      sequence[i]);
       printf("%s\n", corax_errmsg);
       return CORAX_FAILURE;
     }
@@ -113,17 +113,19 @@ CORAX_EXPORT void corax_parsimony_destroy(corax_parsimony_t *parsimony)
   free(parsimony);
 }
 
-CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
-                                                 unsigned int  states,
-                                                 unsigned int  sites,
-                                                 const double *score_matrix,
-                                                 unsigned int  score_buffers,
-                                                 unsigned int ancestral_buffers)
+CORAX_EXPORT corax_parsimony_t *
+             corax_parsimony_create(unsigned int  tips,
+                                    unsigned int  states,
+                                    unsigned int  sites,
+                                    const double *score_matrix,
+                                    unsigned int  score_buffers,
+                                    unsigned int  ancestral_buffers)
 {
   unsigned int i;
 
   /* create parsimony instance */
-  corax_parsimony_t *pars = (corax_parsimony_t *)calloc(1, sizeof(corax_parsimony_t));
+  corax_parsimony_t *pars =
+      (corax_parsimony_t *)calloc(1, sizeof(corax_parsimony_t));
   if (!pars)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
@@ -143,7 +145,7 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
   {
     corax_parsimony_destroy(pars);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for scoring matrix.");
+                    "Unable to allocate enough memory for scoring matrix.");
     return NULL;
   }
   memcpy(pars->score_matrix, score_matrix, states * states * sizeof(double));
@@ -154,7 +156,7 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
   {
     corax_parsimony_destroy(pars);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for score buffers.");
+                    "Unable to allocate enough memory for score buffers.");
     return NULL;
   }
   for (i = 0; i < score_buffers + tips; ++i)
@@ -164,7 +166,7 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
     {
       corax_parsimony_destroy(pars);
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Unable to allocate enough memory for score buffers.");
+                      "Unable to allocate enough memory for score buffers.");
       return NULL;
     }
   }
@@ -176,7 +178,7 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
   {
     corax_parsimony_destroy(pars);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for score buffers.");
+                    "Unable to allocate enough memory for score buffers.");
     return NULL;
   }
   for (i = tips; i < ancestral_buffers + tips; ++i)
@@ -186,7 +188,7 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
     {
       corax_parsimony_destroy(pars);
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Unable to allocate enough memory for score buffers.");
+                      "Unable to allocate enough memory for score buffers.");
       return NULL;
     }
   }
@@ -194,11 +196,12 @@ CORAX_EXPORT corax_parsimony_t *corax_parsimony_create(unsigned int  tips,
   return pars;
 }
 
-CORAX_EXPORT double corax_parsimony_build(corax_parsimony_t *         pars,
-                                      const corax_pars_buildop_t *operations,
-                                      unsigned int              count)
+CORAX_EXPORT double
+corax_parsimony_build(corax_parsimony_t *         pars,
+                      const corax_pars_buildop_t *operations,
+                      unsigned int                count)
 {
-  unsigned int              i, j, k, n;
+  unsigned int                i, j, k, n;
   const corax_pars_buildop_t *op;
 
   unsigned int sites  = pars->sites;
@@ -276,7 +279,7 @@ CORAX_EXPORT double corax_parsimony_build(corax_parsimony_t *         pars,
 }
 
 CORAX_EXPORT double corax_parsimony_score(corax_parsimony_t *pars,
-                                      unsigned int     score_buffer_index)
+                                          unsigned int       score_buffer_index)
 {
   unsigned int i, j, k;
   unsigned int states = pars->states;
@@ -297,10 +300,11 @@ CORAX_EXPORT double corax_parsimony_score(corax_parsimony_t *pars,
   return sum;
 }
 
-CORAX_EXPORT void corax_parsimony_reconstruct(corax_parsimony_t *       pars,
-                                          const corax_state_t *     map,
-                                          const corax_pars_recop_t *operations,
-                                          unsigned int            count)
+CORAX_EXPORT void
+corax_parsimony_reconstruct(corax_parsimony_t *       pars,
+                            const corax_state_t *     map,
+                            const corax_pars_recop_t *operations,
+                            unsigned int              count)
 {
   unsigned int i, j, n;
   unsigned int revmap[256];
@@ -318,7 +322,10 @@ CORAX_EXPORT void corax_parsimony_reconstruct(corax_parsimony_t *       pars,
   for (i = 0; i < 256; ++i) revmap[i] = 0;
   for (i = 0; i < 256; ++i)
   {
-    if (CORAX_STATE_POPCNT(map[i]) == 1) { revmap[CORAX_STATE_CTZ(map[i])] = i; }
+    if (CORAX_STATE_POPCNT(map[i]) == 1)
+    {
+      revmap[CORAX_STATE_CTZ(map[i])] = i;
+    }
   }
 
   /* start from root of given subtree */
@@ -359,9 +366,8 @@ CORAX_EXPORT void corax_parsimony_reconstruct(corax_parsimony_t *       pars,
           minindex = j;
       }
 
-      double parent_val =
-          parent_score_buffer[n * states
-                              + CORAX_STATE_CTZ(map[parent_ancestral_buffer[n]])];
+      double parent_val = parent_score_buffer
+          [n * states + CORAX_STATE_CTZ(map[parent_ancestral_buffer[n]])];
 
       if (score_buffer[n * states + minindex] + 1 > parent_val)
         ancestral_buffer[n] = parent_ancestral_buffer[n];

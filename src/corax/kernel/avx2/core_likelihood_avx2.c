@@ -24,17 +24,17 @@
 
 CORAX_EXPORT double
 corax_core_root_loglikelihood_avx2(unsigned int        states,
-                                 unsigned int        sites,
-                                 unsigned int        rate_cats,
-                                 const double *      clv,
-                                 const unsigned int *scaler,
-                                 double *const *     frequencies,
-                                 const double *      rate_weights,
-                                 const unsigned int *pattern_weights,
-                                 const double *      invar_proportion,
-                                 const int *         invar_indices,
-                                 const unsigned int *freqs_indices,
-                                 double *            persite_lnl)
+                                   unsigned int        sites,
+                                   unsigned int        rate_cats,
+                                   const double *      clv,
+                                   const unsigned int *scaler,
+                                   double *const *     frequencies,
+                                   const double *      rate_weights,
+                                   const unsigned int *pattern_weights,
+                                   const double *      invar_proportion,
+                                   const int *         invar_indices,
+                                   const unsigned int *freqs_indices,
+                                   double *            persite_lnl)
 {
   unsigned int i, j, k;
   double       logl       = 0;
@@ -108,18 +108,18 @@ corax_core_root_loglikelihood_avx2(unsigned int        states,
 
 CORAX_EXPORT double
 corax_core_root_loglikelihood_repeats_avx2(unsigned int        states,
-                                         unsigned int        sites,
-                                         unsigned int        rate_cats,
-                                         const double *      clv,
-                                         const unsigned int *site_id,
-                                         const unsigned int *scaler,
-                                         double *const *     frequencies,
-                                         const double *      rate_weights,
-                                         const unsigned int *pattern_weights,
-                                         const double *      invar_proportion,
-                                         const int *         invar_indices,
-                                         const unsigned int *freqs_indices,
-                                         double *            persite_lnl)
+                                           unsigned int        sites,
+                                           unsigned int        rate_cats,
+                                           const double *      clv,
+                                           const unsigned int *site_id,
+                                           const unsigned int *scaler,
+                                           double *const *     frequencies,
+                                           const double *      rate_weights,
+                                           const unsigned int *pattern_weights,
+                                           const double *      invar_proportion,
+                                           const int *         invar_indices,
+                                           const unsigned int *freqs_indices,
+                                           double *            persite_lnl)
 {
   unsigned int i, j, k;
   double       logl       = 0;
@@ -197,21 +197,21 @@ corax_core_root_loglikelihood_repeats_avx2(unsigned int        states,
 CORAX_EXPORT
 double
 corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
-                                          unsigned int         rate_cats,
-                                          const double *       parent_clv,
-                                          const unsigned int * parent_scaler,
-                                          const unsigned char *tipchars,
-                                          const corax_state_t *  tipmap,
-                                          unsigned int         tipmap_size,
-                                          const double *       pmatrix,
-                                          double *const *      frequencies,
-                                          const double *       rate_weights,
-                                          const unsigned int * pattern_weights,
-                                          const double *       invar_proportion,
-                                          const int *          invar_indices,
-                                          const unsigned int * freqs_indices,
-                                          double *             persite_lnl,
-                                          unsigned int         attrib)
+                                            unsigned int         rate_cats,
+                                            const double *       parent_clv,
+                                            const unsigned int * parent_scaler,
+                                            const unsigned char *tipchars,
+                                            const corax_state_t *tipmap,
+                                            unsigned int         tipmap_size,
+                                            const double *       pmatrix,
+                                            double *const *      frequencies,
+                                            const double *       rate_weights,
+                                            const unsigned int *pattern_weights,
+                                            const double *invar_proportion,
+                                            const int *   invar_indices,
+                                            const unsigned int *freqs_indices,
+                                            double *            persite_lnl,
+                                            unsigned int        attrib)
 {
   unsigned int n, i, j, m = 0;
   double       logl       = 0;
@@ -255,7 +255,7 @@ corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -265,8 +265,8 @@ corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
 
   /* precompute a lookup table of four values per entry (one for each state),
      for all 16 states (including ambiguities) and for each rate category. */
-  double *lookup =
-      corax_aligned_alloc(maxstates * span * sizeof(double), CORAX_ALIGNMENT_AVX);
+  double *lookup = corax_aligned_alloc(maxstates * span * sizeof(double),
+                                       CORAX_ALIGNMENT_AVX);
   if (!lookup)
   {
     /* TODO: in the highly unlikely event that allocation fails, we should
@@ -275,7 +275,7 @@ corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for precomputation.");
+                    "Cannot allocate space for precomputation.");
     return -INFINITY;
   }
 
@@ -343,8 +343,8 @@ corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -439,22 +439,23 @@ corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
 }
 
 CORAX_EXPORT
-double corax_core_edge_loglikelihood_ii_avx2(unsigned int        states,
-                                           unsigned int        sites,
-                                           unsigned int        rate_cats,
-                                           const double *      parent_clv,
-                                           const unsigned int *parent_scaler,
-                                           const double *      child_clv,
-                                           const unsigned int *child_scaler,
-                                           const double *      pmatrix,
-                                           double *const *     frequencies,
-                                           const double *      rate_weights,
-                                           const unsigned int *pattern_weights,
-                                           const double *      invar_proportion,
-                                           const int *         invar_indices,
-                                           const unsigned int *freqs_indices,
-                                           double *            persite_lnl,
-                                           unsigned int        attrib)
+double
+corax_core_edge_loglikelihood_ii_avx2(unsigned int        states,
+                                      unsigned int        sites,
+                                      unsigned int        rate_cats,
+                                      const double *      parent_clv,
+                                      const unsigned int *parent_scaler,
+                                      const double *      child_clv,
+                                      const unsigned int *child_scaler,
+                                      const double *      pmatrix,
+                                      double *const *     frequencies,
+                                      const double *      rate_weights,
+                                      const unsigned int *pattern_weights,
+                                      const double *      invar_proportion,
+                                      const int *         invar_indices,
+                                      const unsigned int *freqs_indices,
+                                      double *            persite_lnl,
+                                      unsigned int        attrib)
 {
   unsigned int n, i, j, k;
   double       logl       = 0;
@@ -497,7 +498,7 @@ double corax_core_edge_loglikelihood_ii_avx2(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -524,8 +525,8 @@ double corax_core_edge_loglikelihood_ii_avx2(unsigned int        states,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -739,7 +740,7 @@ double corax_core_edge_loglikelihood_repeats_generic_avx2(
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -770,8 +771,8 @@ double corax_core_edge_loglikelihood_repeats_generic_avx2(
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else

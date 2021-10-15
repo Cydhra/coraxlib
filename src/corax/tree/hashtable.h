@@ -38,13 +38,13 @@ bitv_hash_entry_t *entry_init(double support);
 
 hash_key_t hash_get_key(corax_split_t s, int len);
 
-bitv_hash_entry_t *hash_update(corax_split_t       bit_vector,
+bitv_hash_entry_t *hash_update(corax_split_t     bit_vector,
                                bitv_hashtable_t *h,
                                hash_key_t        key,
                                double            support,
                                unsigned int      position);
 
-bitv_hash_entry_t *hash_insert(corax_split_t       bit_vector,
+bitv_hash_entry_t *hash_insert(corax_split_t     bit_vector,
                                bitv_hashtable_t *h,
                                unsigned int      bip_number,
                                hash_key_t        key,
@@ -68,12 +68,12 @@ unsigned int bitv_length(unsigned int bit_count);
 int bitv_compare(corax_split_t v1, corax_split_t v2, unsigned int bitv_len);
 
 unsigned int bitv_popcount(const corax_split_t bitv,
-                           unsigned int      bit_count,
-                           unsigned int      bitv_len);
+                           unsigned int        bit_count,
+                           unsigned int        bitv_len);
 
 unsigned int bitv_lightside(const corax_split_t bitv,
-                            unsigned int      bit_count,
-                            unsigned int      bitv_len);
+                            unsigned int        bit_count,
+                            unsigned int        bitv_len);
 
 /* string */
 

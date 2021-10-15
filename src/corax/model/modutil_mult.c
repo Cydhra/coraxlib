@@ -45,7 +45,8 @@ CORAX_EXPORT int corax_util_model_exists_mult(const char *model_name)
 /**
  * @brief Parses model string (MULTIxx) and returns the number of state (xx)
  */
-CORAX_EXPORT unsigned int corax_util_model_numstates_mult(const char *model_name)
+CORAX_EXPORT unsigned int
+corax_util_model_numstates_mult(const char *model_name)
 {
   unsigned int states;
   if (sscanf(model_name, "MULTI%u", &states) == 1)
@@ -80,14 +81,14 @@ CORAX_EXPORT corax_state_t *corax_util_model_charmap_mult(unsigned int states)
  * @return model info structure, or NULL if model doesn't exist
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_info_mult(const char *model_name)
+             corax_util_model_info_mult(const char *model_name)
 {
   unsigned int states = corax_util_model_numstates_mult(model_name);
   if (!states)
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Unknown number of states in a MULTISTATE model: %s",
-                  model_name);
+                    "Unknown number of states in a MULTISTATE model: %s",
+                    model_name);
     return NULL;
   }
 
@@ -112,11 +113,11 @@ CORAX_EXPORT corax_subst_model_t *
            || strcasecmp("JC", subst_model_name) == 0)
   {
     return corax_util_model_create_custom(model_name,
-                                           states,
-                                           corax_util_get_equal_rates(states),
-                                           corax_util_get_equal_freqs(states),
-                                           NULL,
-                                           NULL);
+                                          states,
+                                          corax_util_get_equal_rates(states),
+                                          corax_util_get_equal_freqs(states),
+                                          NULL,
+                                          NULL);
   }
   else if (strncasecmp("USER", subst_model_name, 4) == 0)
   {
@@ -126,8 +127,8 @@ CORAX_EXPORT corax_subst_model_t *
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "MULTISTATE model not found: %s",
-                  subst_model_name);
+                    "MULTISTATE model not found: %s",
+                    subst_model_name);
     return NULL;
   }
 }

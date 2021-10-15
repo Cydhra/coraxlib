@@ -48,7 +48,7 @@ CORAX_EXPORT int corax_repeats_enabled(const corax_partition_t *partition)
 }
 
 CORAX_EXPORT void corax_resize_repeats_lookup(corax_partition_t *partition,
-                                          unsigned int     size)
+                                              unsigned int       size)
 {
   if (!size) return;
   partition->repeats->lookup_buffer_size = size;
@@ -59,8 +59,9 @@ CORAX_EXPORT void corax_resize_repeats_lookup(corax_partition_t *partition,
          partition->repeats->lookup_buffer_size * sizeof(unsigned int));
 }
 
-CORAX_EXPORT unsigned int corax_get_sites_number(const corax_partition_t *partition,
-                                             unsigned int           clv_index)
+CORAX_EXPORT unsigned int
+corax_get_sites_number(const corax_partition_t *partition,
+                       unsigned int             clv_index)
 {
   unsigned int sites = partition->attributes & CORAX_ATTRIB_SITE_REPEATS
                            ? partition->repeats->pernode_ids[clv_index]
@@ -71,14 +72,14 @@ CORAX_EXPORT unsigned int corax_get_sites_number(const corax_partition_t *partit
 }
 
 CORAX_EXPORT unsigned int corax_get_clv_size(const corax_partition_t *partition,
-                                         unsigned int           clv_index)
+                                             unsigned int             clv_index)
 {
   return corax_get_sites_number(partition, clv_index) * partition->states_padded
          * partition->rate_cats;
 }
 
 CORAX_EXPORT unsigned int *corax_get_site_id(const corax_partition_t *partition,
-                                         unsigned int           clv_index)
+                                             unsigned int             clv_index)
 {
   unsigned int *site_id = 0;
   if (corax_repeats_enabled(partition)
@@ -88,7 +89,7 @@ CORAX_EXPORT unsigned int *corax_get_site_id(const corax_partition_t *partition,
 }
 
 CORAX_EXPORT unsigned int *corax_get_id_site(const corax_partition_t *partition,
-                                         unsigned int           clv_index)
+                                             unsigned int             clv_index)
 {
   unsigned int *id_site = 0;
   if (corax_repeats_enabled(partition)
@@ -97,11 +98,10 @@ CORAX_EXPORT unsigned int *corax_get_id_site(const corax_partition_t *partition,
   return id_site;
 }
 
-CORAX_EXPORT unsigned int corax_default_enable_repeats(corax_partition_t *partition,
-                                                   unsigned int     left_clv,
-                                                   unsigned int     right_clv)
+CORAX_EXPORT unsigned int corax_default_enable_repeats(
+    corax_partition_t *partition, unsigned int left_clv, unsigned int right_clv)
 {
-  corax_repeats_t *    repeats = partition->repeats;
+  corax_repeats_t *  repeats = partition->repeats;
   unsigned long long min_size =
       (unsigned long long)repeats->pernode_ids[left_clv]
       * (unsigned long long)repeats->pernode_ids[right_clv];
@@ -112,8 +112,8 @@ CORAX_EXPORT unsigned int corax_default_enable_repeats(corax_partition_t *partit
 }
 
 CORAX_EXPORT unsigned int corax_no_enable_repeats(corax_partition_t *partition,
-                                              unsigned int     left_clv,
-                                              unsigned int     right_clv)
+                                                  unsigned int       left_clv,
+                                                  unsigned int       right_clv)
 {
   return 0;
 }
@@ -127,19 +127,20 @@ CORAX_EXPORT int corax_repeats_initialize(corax_partition_t *partition)
   if (!partition->repeats)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for repeats structure.");
+                    "Unable to allocate enough memory for repeats structure.");
     return CORAX_FAILURE;
   }
   memset(partition->repeats, 0, sizeof(corax_repeats_t));
-  corax_repeats_t *repeats      = partition->repeats;
+  corax_repeats_t *repeats    = partition->repeats;
   repeats->enable_repeats     = corax_default_enable_repeats;
   repeats->reallocate_repeats = corax_default_reallocate_repeats;
   repeats->pernode_site_id = calloc(partition->nodes, sizeof(unsigned int *));
   repeats->pernode_id_site = calloc(partition->nodes, sizeof(unsigned int *));
   if (!repeats->pernode_site_id || !repeats->pernode_id_site)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for repeats identifiers.");
+    corax_set_error(
+        CORAX_ERROR_MEM_ALLOC,
+        "Unable to allocate enough memory for repeats identifiers.");
     return CORAX_FAILURE;
   }
   for (i = 0; i < partition->nodes; ++i)
@@ -165,8 +166,8 @@ CORAX_EXPORT int corax_repeats_initialize(corax_partition_t *partition)
   repeats->id_site_buffer     = malloc(sites_alloc * sizeof(unsigned int));
   repeats->bclv_buffer =
       corax_aligned_alloc(sites_alloc * partition->rate_cats
-                            * partition->states_padded * sizeof(double),
-                        partition->alignment);
+                              * partition->states_padded * sizeof(double),
+                          partition->alignment);
   repeats->charmap = calloc(CORAX_ASCII_SIZE, sizeof(char));
   if (!(repeats->pernode_ids && repeats->pernode_allocated_clvs
         && repeats->bclv_buffer && repeats->toclean_buffer
@@ -181,17 +182,17 @@ CORAX_EXPORT int corax_repeats_initialize(corax_partition_t *partition)
 }
 
 CORAX_EXPORT int corax_update_repeats_tips(corax_partition_t *  partition,
-                                       unsigned int       tip_index,
-                                       const corax_state_t *map,
-                                       const char *       sequence)
+                                           unsigned int         tip_index,
+                                           const corax_state_t *map,
+                                           const char *         sequence)
 {
   if (!partition->repeats->lookup_buffer)
     corax_resize_repeats_lookup(partition, CORAX_REPEATS_LOOKUP_SIZE);
 
-  unsigned int   s;
+  unsigned int     s;
   corax_repeats_t *repeats = partition->repeats;
-  unsigned int **id_site = repeats->pernode_id_site;
-  unsigned int   additional_sites =
+  unsigned int **  id_site = repeats->pernode_id_site;
+  unsigned int     additional_sites =
       partition->asc_bias_alloc ? partition->states : 0;
 
   repeats_fill_charmap(map, repeats->charmap);
@@ -234,7 +235,7 @@ CORAX_EXPORT int corax_update_repeats_tips(corax_partition_t *  partition,
   if (!partition->clv[tip_index])
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for repeats structure.");
+                    "Unable to allocate enough memory for repeats structure.");
     return CORAX_FAILURE;
   }
   /* zero-out CLV vectors to avoid valgrind warnings when using odd number of
@@ -245,9 +246,9 @@ CORAX_EXPORT int corax_update_repeats_tips(corax_partition_t *  partition,
 }
 
 CORAX_EXPORT void corax_default_reallocate_repeats(corax_partition_t *partition,
-                                               unsigned int     parent,
-                                               int              scaler_index,
-                                               unsigned int     sites_to_alloc)
+                                                   unsigned int       parent,
+                                                   int          scaler_index,
+                                                   unsigned int sites_to_alloc)
 {
   corax_repeats_t *repeats = partition->repeats;
   if (sites_to_alloc == repeats->pernode_allocated_clvs[parent]) return;
@@ -257,14 +258,14 @@ CORAX_EXPORT void corax_default_reallocate_repeats(corax_partition_t *partition,
   corax_aligned_free(partition->clv[parent]);
   partition->clv[parent] =
       corax_aligned_alloc(sites_to_alloc * partition->states_padded
-                            * partition->rate_cats * sizeof(double),
-                        partition->alignment);
+                              * partition->rate_cats * sizeof(double),
+                          partition->alignment);
 
   if (!partition->clv[parent])
   {
     corax_errno = CORAX_ERROR_MEM_ALLOC;
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Unable to allocate enough memory for repeats structure.");
+                    "Unable to allocate enough memory for repeats structure.");
     return;
   }
   // reallocate scales
@@ -286,12 +287,12 @@ CORAX_EXPORT void corax_default_reallocate_repeats(corax_partition_t *partition,
 
 /* Fill the repeat structure in partition for the parent node of op */
 CORAX_EXPORT void corax_update_repeats(corax_partition_t *      partition,
-                                   const corax_operation_t *op)
+                                       const corax_operation_t *op)
 {
   if (!partition->repeats->lookup_buffer)
     corax_resize_repeats_lookup(partition, CORAX_REPEATS_LOOKUP_SIZE);
 
-  corax_repeats_t *     repeats        = partition->repeats;
+  corax_repeats_t *   repeats        = partition->repeats;
   unsigned int        left           = op->child1_clv_index;
   unsigned int        right          = op->child2_clv_index;
   unsigned int        parent         = op->parent_clv_index;
@@ -375,13 +376,14 @@ CORAX_EXPORT void corax_disable_bclv(corax_partition_t *partition)
   partition->repeats->bclv_buffer = 0;
 }
 
-CORAX_EXPORT void corax_fill_parent_scaler_repeats(unsigned int  sites,
-                                               unsigned int *parent_scaler,
-                                               const unsigned int *psites,
-                                               const unsigned int *left_scaler,
-                                               const unsigned int *lids,
-                                               const unsigned int *right_scaler,
-                                               const unsigned int *rids)
+CORAX_EXPORT void
+corax_fill_parent_scaler_repeats(unsigned int        sites,
+                                 unsigned int *      parent_scaler,
+                                 const unsigned int *psites,
+                                 const unsigned int *left_scaler,
+                                 const unsigned int *lids,
+                                 const unsigned int *right_scaler,
+                                 const unsigned int *rids)
 {
   // no repeats
   if (!lids && !rids)
@@ -447,13 +449,13 @@ CORAX_EXPORT void corax_fill_parent_scaler_repeats(unsigned int  sites,
 
 CORAX_EXPORT void
 corax_fill_parent_scaler_repeats_per_rate(unsigned int        sites,
-                                        unsigned int        rates,
-                                        unsigned int *      parent_scaler,
-                                        const unsigned int *psites,
-                                        const unsigned int *left_scaler,
-                                        const unsigned int *lids,
-                                        const unsigned int *right_scaler,
-                                        const unsigned int *rids)
+                                          unsigned int        rates,
+                                          unsigned int *      parent_scaler,
+                                          const unsigned int *psites,
+                                          const unsigned int *left_scaler,
+                                          const unsigned int *lids,
+                                          const unsigned int *right_scaler,
+                                          const unsigned int *rids)
 {
   unsigned int total_size     = sites * rates;
   unsigned int cpy_size       = rates * sizeof(unsigned int);

@@ -24,9 +24,14 @@
 #include "corax/model/modutil.h"
 
 /* general single-matrix models */
-const corax_subst_model_t M_DAYHOFF = {
-    "DAYHOFF", 20, corax_aa_rates_dayhoff, corax_aa_freqs_dayhoff, NULL, NULL, 0};
-const corax_subst_model_t M_LG = {
+const corax_subst_model_t M_DAYHOFF = {"DAYHOFF",
+                                       20,
+                                       corax_aa_rates_dayhoff,
+                                       corax_aa_freqs_dayhoff,
+                                       NULL,
+                                       NULL,
+                                       0};
+const corax_subst_model_t M_LG      = {
     "LG", 20, corax_aa_rates_lg, corax_aa_freqs_lg, NULL, NULL, 0};
 const corax_subst_model_t M_DCMUT = {
     "DCMUT", 20, corax_aa_rates_dcmut, corax_aa_freqs_dcmut, NULL, NULL, 0};
@@ -43,12 +48,12 @@ const corax_subst_model_t M_CPREV = {
 const corax_subst_model_t M_VT = {
     "VT", 20, corax_aa_rates_vt, corax_aa_freqs_vt, NULL, NULL, 0};
 const corax_subst_model_t M_BLOSUM62 = {"BLOSUM62",
-                                         20,
-                                         corax_aa_rates_blosum62,
-                                         corax_aa_freqs_blosum62,
-                                         NULL,
-                                         NULL,
-                                         0};
+                                        20,
+                                        corax_aa_rates_blosum62,
+                                        corax_aa_freqs_blosum62,
+                                        NULL,
+                                        NULL,
+                                        0};
 const corax_subst_model_t M_MTMAM    = {
     "MTMAM", 20, corax_aa_rates_mtmam, corax_aa_freqs_mtmam, NULL, NULL, 0};
 const corax_subst_model_t M_MTART = {
@@ -62,17 +67,22 @@ const corax_subst_model_t M_HIVB = {
 const corax_subst_model_t M_HIVW = {
     "HIVW", 20, corax_aa_rates_hivw, corax_aa_freqs_hivw, NULL, NULL, 0};
 const corax_subst_model_t M_JTTDCMUT = {"JTT-DCMUT",
-                                         20,
-                                         corax_aa_rates_jttdcmut,
-                                         corax_aa_freqs_jttdcmut,
-                                         NULL,
-                                         NULL,
-                                         0};
+                                        20,
+                                        corax_aa_rates_jttdcmut,
+                                        corax_aa_freqs_jttdcmut,
+                                        NULL,
+                                        NULL,
+                                        0};
 const corax_subst_model_t M_FLU      = {
     "FLU", 20, corax_aa_rates_flu, corax_aa_freqs_flu, NULL, NULL, 0};
-const corax_subst_model_t M_STMTREV = {
-    "STMTREV", 20, corax_aa_rates_stmtrev, corax_aa_freqs_stmtrev, NULL, NULL, 0};
-const corax_subst_model_t M_DEN = {
+const corax_subst_model_t M_STMTREV = {"STMTREV",
+                                       20,
+                                       corax_aa_rates_stmtrev,
+                                       corax_aa_freqs_stmtrev,
+                                       NULL,
+                                       NULL,
+                                       0};
+const corax_subst_model_t M_DEN     = {
     "DEN", 20, corax_aa_rates_den, corax_aa_freqs_den, NULL, NULL, 0};
 
 /* LG4M components */
@@ -116,20 +126,20 @@ const int PROT_MODELS_COUNT =
 const corax_subst_model_t *lg4m_matrices[] = {
     &M_LG4M1, &M_LG4M2, &M_LG4M3, &M_LG4M4};
 const corax_mixture_model_t M_LG4M = {"LG4M",
-                                       4,
-                                       (corax_subst_model_t **)lg4m_matrices,
-                                       NULL,
-                                       NULL,
-                                       CORAX_UTIL_MIXTYPE_GAMMA};
+                                      4,
+                                      (corax_subst_model_t **)lg4m_matrices,
+                                      NULL,
+                                      NULL,
+                                      CORAX_UTIL_MIXTYPE_GAMMA};
 
 const corax_subst_model_t *lg4x_matrices[] = {
     &M_LG4X1, &M_LG4X2, &M_LG4X3, &M_LG4X4};
 const corax_mixture_model_t M_LG4X = {"LG4X",
-                                       4,
-                                       (corax_subst_model_t **)lg4x_matrices,
-                                       NULL,
-                                       NULL,
-                                       CORAX_UTIL_MIXTYPE_FREE};
+                                      4,
+                                      (corax_subst_model_t **)lg4x_matrices,
+                                      NULL,
+                                      NULL,
+                                      CORAX_UTIL_MIXTYPE_FREE};
 
 static const corax_mixture_model_t *protmix_model_list[] = {&M_LG4M, &M_LG4X};
 
@@ -201,7 +211,7 @@ CORAX_EXPORT int corax_util_model_exists_protein(const char *model_name)
  * @return model info structure, or NULL if model doesn't exist
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_info_protein(const char *model_name)
+             corax_util_model_info_protein(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
@@ -211,8 +221,8 @@ CORAX_EXPORT corax_subst_model_t *
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Protein model not found: %s",
-                  model_name);
+                    "Protein model not found: %s",
+                    model_name);
     return NULL;
   }
 }
@@ -225,12 +235,12 @@ CORAX_EXPORT corax_subst_model_t *
  * @param model_freqs 0: set model rate matrices only, 1: set model AA
  * frequencies as well
  *
- * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg for
- * details)
+ * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg
+ * for details)
  */
 CORAX_EXPORT int corax_util_model_set_protein(corax_partition_t *partition,
-                                             const char *     model_name,
-                                             int              model_freqs)
+                                              const char *       model_name,
+                                              int                model_freqs)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
@@ -245,8 +255,8 @@ CORAX_EXPORT int corax_util_model_set_protein(corax_partition_t *partition,
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Protein model not found: %s",
-                  model_name);
+                    "Protein model not found: %s",
+                    model_name);
     return CORAX_FAILURE;
   }
 }
@@ -257,7 +267,7 @@ CORAX_EXPORT int corax_util_model_exists_protmix(const char *model_name)
 }
 
 CORAX_EXPORT corax_mixture_model_t *
-           corax_util_model_info_protmix(const char *model_name)
+             corax_util_model_info_protmix(const char *model_name)
 {
   const int model_index = get_mixmodel_index(model_name);
   if (model_index >= 0)
@@ -267,8 +277,8 @@ CORAX_EXPORT corax_mixture_model_t *
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Protein mixture model not found: %s",
-                  model_name);
+                    "Protein mixture model not found: %s",
+                    model_name);
     return NULL;
   }
 }
@@ -281,12 +291,12 @@ CORAX_EXPORT corax_mixture_model_t *
  * @param model_freqs 0: set model rate matrices only, 1: set model AA
  * frequencies as well
  *
- * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg for
- * details)
+ * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg
+ * for details)
  */
 CORAX_EXPORT int corax_util_model_set_protmix(corax_partition_t *partition,
-                                             const char *     model_name,
-                                             int              model_freqs)
+                                              const char *       model_name,
+                                              int                model_freqs)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
@@ -296,10 +306,10 @@ CORAX_EXPORT int corax_util_model_set_protmix(corax_partition_t *partition,
     if (partition->rate_matrices != mixture->ncomp)
     {
       corax_set_error(CORAX_UTIL_ERROR_MIXTURE_INVALID_SIZE,
-                    "Number of partition matrices (%d) differs "
-                    "from the number of mixture components (%d)",
-                    partition->rate_matrices,
-                    mixture->ncomp);
+                      "Number of partition matrices (%d) differs "
+                      "from the number of mixture components (%d)",
+                      partition->rate_matrices,
+                      mixture->ncomp);
       return CORAX_FAILURE;
     }
 
@@ -320,8 +330,8 @@ CORAX_EXPORT int corax_util_model_set_protmix(corax_partition_t *partition,
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Protein model not found: %s",
-                  model_name);
+                    "Protein model not found: %s",
+                    model_name);
     return CORAX_FAILURE;
   }
 }

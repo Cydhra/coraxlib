@@ -110,18 +110,18 @@ CORAX_EXPORT int *corax_util_model_string_to_sym(const char *s)
  * @return custom model instance
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_create_custom(const char *  name,
-                                           unsigned int  states,
-                                           const double *rates,
-                                           const double *freqs,
-                                           const char *  rate_sym_str,
-                                           const char *  freq_sym_str)
+             corax_util_model_create_custom(const char *  name,
+                                            unsigned int  states,
+                                            const double *rates,
+                                            const double *freqs,
+                                            const char *  rate_sym_str,
+                                            const char *  freq_sym_str)
 {
   if (states <= 1)
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
-                  "Invalid number of states: %d",
-                  states);
+                    "Invalid number of states: %d",
+                    states);
     return NULL;
   }
 
@@ -129,16 +129,16 @@ CORAX_EXPORT corax_subst_model_t *
   if (rate_sym_str && strlen(rate_sym_str) != rate_count)
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
-                  "Invalid rates symmetry definition: %s",
-                  rate_sym_str);
+                    "Invalid rates symmetry definition: %s",
+                    rate_sym_str);
     return NULL;
   }
 
   if (freq_sym_str && strlen(freq_sym_str) != states)
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
-                  "Invalid freqs symmetry definition: %s",
-                  freq_sym_str);
+                    "Invalid freqs symmetry definition: %s",
+                    freq_sym_str);
     return NULL;
   }
 
@@ -165,7 +165,7 @@ CORAX_EXPORT corax_subst_model_t *
  * @brief Creates a copy of substitution model instance
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_clone(const corax_subst_model_t *src)
+             corax_util_model_clone(const corax_subst_model_t *src)
 {
   if (!src) return NULL;
 
@@ -227,18 +227,18 @@ CORAX_EXPORT void corax_util_model_destroy(corax_subst_model_t *model)
  * @return mixture model instance
  */
 CORAX_EXPORT corax_mixture_model_t *
-           corax_util_model_mixture_create(const char *                 name,
-                                            unsigned int                 ncomp,
-                                            corax_subst_model_t **const models,
-                                            const double *               mix_rates,
-                                            const double *               mix_weights,
-                                            int                          mix_type)
+             corax_util_model_mixture_create(const char *                name,
+                                             unsigned int                ncomp,
+                                             corax_subst_model_t **const models,
+                                             const double *              mix_rates,
+                                             const double *              mix_weights,
+                                             int                         mix_type)
 {
   if (ncomp <= 0)
   {
     corax_set_error(CORAX_UTIL_ERROR_MIXTURE_INVALID_SIZE,
-                  "Invalid number of components: %d",
-                  ncomp);
+                    "Invalid number of components: %d",
+                    ncomp);
     return NULL;
   }
 
@@ -284,15 +284,15 @@ CORAX_EXPORT corax_mixture_model_t *
  * @brief Create a copy of mixture model
  */
 CORAX_EXPORT corax_mixture_model_t *
-           corax_util_model_mixture_clone(const corax_mixture_model_t *src)
+             corax_util_model_mixture_clone(const corax_mixture_model_t *src)
 {
   if (src)
     return corax_util_model_mixture_create(src->name,
-                                            src->ncomp,
-                                            src->models,
-                                            src->mix_rates,
-                                            src->mix_weights,
-                                            src->mix_type);
+                                           src->ncomp,
+                                           src->models,
+                                           src->mix_rates,
+                                           src->mix_weights,
+                                           src->mix_type);
   else
     return NULL;
 }
@@ -335,9 +335,9 @@ corax_util_model_mixture_destroy(corax_mixture_model_t *mixture)
  * @return character map
  */
 CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
-                                                   const char * statechars,
-                                                   const char * gapchars,
-                                                   int          case_sensitive)
+                                                      const char * statechars,
+                                                      const char * gapchars,
+                                                      int case_sensitive)
 {
   size_t                    i;
   static const unsigned int maxstates = sizeof(corax_state_t) * 8;
@@ -401,8 +401,8 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
 }
 
 /**
- * @brief Parses a custom coraxlib character map (ASCII code -> bit-encoded state)
- *        from a file
+ * @brief Parses a custom coraxlib character map (ASCII code -> bit-encoded
+ * state) from a file
  *
  * @param states number of states
  * @param fname name of the file with charmap definition
@@ -412,9 +412,9 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
  * @return character map
  */
 CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
-                                                  const char * fname,
-                                                  int          case_sensitive,
-                                                  char **      state_names)
+                                                     const char * fname,
+                                                     int    case_sensitive,
+                                                     char **state_names)
 {
   size_t                    i, j;
   static const unsigned int maxstates = sizeof(corax_state_t) * 8;
@@ -423,10 +423,10 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
   if (states > maxstates)
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_DEF,
-                  "The specified number of states (%u) "
-                  "exceeds the allowed maximum (%u)",
-                  states,
-                  maxstates);
+                    "The specified number of states (%u) "
+                    "exceeds the allowed maximum (%u)",
+                    states,
+                    maxstates);
     return NULL;
   }
 
@@ -442,8 +442,8 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
   {
     fclose(f);
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                  "Invalid character map file: %s",
-                  fname);
+                    "Invalid character map file: %s",
+                    fname);
     return CORAX_FAILURE;
   }
 
@@ -451,8 +451,8 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
   {
     fclose(f);
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                  "Invalid number of states in the charmap file: %u",
-                  mod_states);
+                    "Invalid number of states in the charmap file: %u",
+                    mod_states);
     return CORAX_FAILURE;
   }
 
@@ -461,7 +461,7 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
   {
     fclose(f);
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                  "Error reading observed state list");
+                    "Error reading observed state list");
     return CORAX_FAILURE;
   }
 
@@ -469,10 +469,10 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
   {
     fclose(f);
     corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPSTRING,
-                  "Length of the character map string (%u) does not "
-                  "correspond to the declared number of observed states (%u)",
-                  strlen(statechars),
-                  obs_states);
+                    "Length of the character map string (%u) does not "
+                    "correspond to the declared number of observed states (%u)",
+                    strlen(statechars),
+                    obs_states);
     return CORAX_FAILURE;
   }
 
@@ -484,8 +484,8 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
     {
       fclose(f);
       corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                    "Error reading name of state # %u",
-                    i);
+                      "Error reading name of state # %u",
+                      i);
       return CORAX_FAILURE;
     }
     if (state_names) state_names[i] = strdup(sname);
@@ -502,8 +502,8 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
     if (fscanf(f, "%c", &ostate) != 1)
     {
       corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                    "Error reading observed state %u",
-                    i);
+                      "Error reading observed state %u",
+                      i);
       free(map);
       fclose(f);
       return CORAX_FAILURE;
@@ -512,24 +512,24 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_parse(unsigned int states,
     if (!strchr(statechars, ostate))
     {
       corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                    "Undeclared observed state: %c",
-                    ostate);
+                      "Undeclared observed state: %c",
+                      ostate);
       free(map);
       fclose(f);
       return CORAX_FAILURE;
     }
 
     corax_state_t mstate = 1;
-    int         c      = (int)ostate;
+    int           c      = (int)ostate;
     for (j = 0; j < mod_states; ++j)
     {
       int flag;
       if (fscanf(f, "%d", &flag) != 1 && fscanf(f, ",%d", &flag) != 1)
       {
         corax_set_error(CORAX_UTIL_ERROR_MODEL_INVALID_MAPFILE,
-                      "Error reading state map value: %c -> %u",
-                      c,
-                      j);
+                        "Error reading state map value: %c -> %u",
+                        c,
+                        j);
         free(map);
         fclose(f);
         return CORAX_FAILURE;

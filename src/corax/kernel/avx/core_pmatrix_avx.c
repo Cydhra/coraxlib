@@ -41,16 +41,16 @@
 
 CORAX_EXPORT int
 corax_core_update_pmatrix_4x4_avx(double **           pmatrix,
-                                unsigned int        rate_cats,
-                                const double *      rates,
-                                const double *      branch_lengths,
-                                const unsigned int *matrix_indices,
-                                const unsigned int *params_indices,
-                                const double *      prop_invar,
-                                double *const *     eigenvals,
-                                double *const *     eigenvecs,
-                                double *const *     inv_eigenvecs,
-                                unsigned int        count)
+                                  unsigned int        rate_cats,
+                                  const double *      rates,
+                                  const double *      branch_lengths,
+                                  const unsigned int *matrix_indices,
+                                  const unsigned int *params_indices,
+                                  const double *      prop_invar,
+                                  double *const *     eigenvals,
+                                  double *const *     eigenvecs,
+                                  double *const *     inv_eigenvecs,
+                                  unsigned int        count)
 {
   unsigned int i, n;
   double *     expd;
@@ -280,16 +280,16 @@ corax_core_update_pmatrix_4x4_avx(double **           pmatrix,
 
 CORAX_EXPORT int
 corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
-                                  unsigned int        rate_cats,
-                                  const double *      rates,
-                                  const double *      branch_lengths,
-                                  const unsigned int *matrix_indices,
-                                  const unsigned int *params_indices,
-                                  const double *      prop_invar,
-                                  double *const *     eigenvals,
-                                  double *const *     eigenvecs,
-                                  double *const *     inv_eigenvecs,
-                                  unsigned int        count)
+                                    unsigned int        rate_cats,
+                                    const double *      rates,
+                                    const double *      branch_lengths,
+                                    const unsigned int *matrix_indices,
+                                    const unsigned int *params_indices,
+                                    const double *      prop_invar,
+                                    double *const *     eigenvals,
+                                    double *const *     eigenvecs,
+                                    double *const *     inv_eigenvecs,
+                                    unsigned int        count)
 {
   unsigned int i, n, j, k;
   double       pinvar;
@@ -303,8 +303,10 @@ corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
   double * temp;
   double **tran_evecs;
 
-  expd = (double *)corax_aligned_alloc(20 * sizeof(double), CORAX_ALIGNMENT_AVX);
-  temp = (double *)corax_aligned_alloc(400 * sizeof(double), CORAX_ALIGNMENT_AVX);
+  expd =
+      (double *)corax_aligned_alloc(20 * sizeof(double), CORAX_ALIGNMENT_AVX);
+  temp =
+      (double *)corax_aligned_alloc(400 * sizeof(double), CORAX_ALIGNMENT_AVX);
 
   /* transposed eigen vectors */
   transposed = (int *)calloc((size_t)rate_cats, sizeof(int));
@@ -331,8 +333,8 @@ corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
     {
       /* allocate space for transposed eigenvectors and check that
          allocation succeeds */
-      double *tran =
-          (double *)corax_aligned_alloc(400 * sizeof(double), CORAX_ALIGNMENT_AVX);
+      double *tran = (double *)corax_aligned_alloc(400 * sizeof(double),
+                                                   CORAX_ALIGNMENT_AVX);
       if (!tran)
       {
         corax_aligned_free(expd);
@@ -342,7 +344,8 @@ corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
           if (tran_evecs[i]) corax_aligned_free(tran_evecs[i]);
         free(tran_evecs);
 
-        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                        "Unable to allocate enough memory.");
         return CORAX_FAILURE;
       }
 

@@ -25,8 +25,7 @@
 
 #ifdef DEBUG
 #define DBG(fmt, ...)                                                          \
-  do                                                                           \
-  {                                                                            \
+  do {                                                                         \
     printf(fmt, ##__VA_ARGS__);                                                \
   } while (0)
 #else
@@ -87,11 +86,12 @@
 #define CORAX_OPT_MAX_RATE_WEIGHT 100.
 
 /* branch length optimization methods */
-#define CORAX_OPT_BLO_NEWTON_FAST 0     /* standard Newton-Raphson (NR) */
-#define CORAX_OPT_BLO_NEWTON_SAFE 1     /* NR with per-branch LH check */
-#define CORAX_OPT_BLO_NEWTON_FALLBACK 2 /* NR-FAST with fallback to NR-SAFE   \
-                                          */
-#define CORAX_OPT_BLO_NEWTON_GLOBAL                                           \
+#define CORAX_OPT_BLO_NEWTON_FAST 0 /* standard Newton-Raphson (NR) */
+#define CORAX_OPT_BLO_NEWTON_SAFE 1 /* NR with per-branch LH check */
+#define CORAX_OPT_BLO_NEWTON_FALLBACK                                          \
+  2 /* NR-FAST with fallback to NR-SAFE                                        \
+     */
+#define CORAX_OPT_BLO_NEWTON_GLOBAL                                            \
   3 /* NR variant which looks for local optima */
 
 /* error codes (for this module, 2000-3000) */
@@ -116,8 +116,8 @@
  * high level optimization functions (L-BFGS-B + Brent). */
 typedef struct
 {
-  corax_partition_t *   partition;
-  corax_operation_t *   operations;
+  corax_partition_t * partition;
+  corax_operation_t * operations;
   double *            branch_lengths;
   unsigned int *      matrix_indices;
   int                 rooted;
@@ -146,8 +146,8 @@ typedef struct
 typedef struct
 {
   corax_likelihood_info_t lk_params;
-  unsigned int          highest_freq_state;
-  unsigned int          highest_weight_state;
+  unsigned int            highest_freq_state;
+  unsigned int            highest_weight_state;
   // const unsigned int * params_indices;     /* indices according to rate cats
   // */
   unsigned int params_index; /* individual index to optimize */
@@ -176,27 +176,27 @@ CORAX_EXPORT int corax_opt_minimize_newton_multi(
     void(deriv_func)(void *, double *, double *, double *));
 
 /* core Newton-Raphson optimization function */
-CORAX_EXPORT double corax_opt_minimize_newton(
-    double       xmin,
-    double       xguess,
-    double       xmax,
-    double       tolerance,
-    unsigned int max_iters,
-    void *       params,
-    void(deriv_func)(void *, double, double *, double *));
+CORAX_EXPORT double
+corax_opt_minimize_newton(double       xmin,
+                          double       xguess,
+                          double       xmax,
+                          double       tolerance,
+                          unsigned int max_iters,
+                          void *       params,
+                          void(deriv_func)(void *, double, double *, double *));
 /* functions in bfgs.c */
 
 /* core L-BFGS-B optimization function */
 CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
-                                             double *     xmin,
-                                             double *     xmax,
-                                             int *        bound,
-                                             unsigned int n,
-                                             double       factr,
-                                             double       pgtol,
-                                             void *       params,
-                                             double (*target_funk)(void *,
-                                                                   double *));
+                                              double *     xmin,
+                                              double *     xmax,
+                                              int *        bound,
+                                              unsigned int n,
+                                              double       factr,
+                                              double       pgtol,
+                                              void *       params,
+                                              double (*target_funk)(void *,
+                                                                    double *));
 
 CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
     unsigned int  xnum,
@@ -215,14 +215,14 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb_multi(
 
 /* core Brent optimization function */
 CORAX_EXPORT double corax_opt_minimize_brent(double  xmin,
-                                            double  xguess,
-                                            double  xmax,
-                                            double  xtol,
-                                            double *fx,
-                                            double *f2x,
-                                            void *  params,
-                                            double (*target_funk)(void *,
-                                                                  double));
+                                             double  xguess,
+                                             double  xmax,
+                                             double  xtol,
+                                             double *fx,
+                                             double *f2x,
+                                             void *  params,
+                                             double (*target_funk)(void *,
+                                                                   double));
 
 CORAX_EXPORT int corax_opt_minimize_brent_multi(
     unsigned int xnum,
@@ -243,12 +243,12 @@ CORAX_EXPORT int corax_opt_minimize_brent_multi(
 /* core Expectation-Maximization (EM) function */
 CORAX_EXPORT void
 corax_opt_minimize_em(double *      w,
-                       unsigned int  w_count,
-                       double *      sitecat_lh,
-                       unsigned int *site_w,
-                       unsigned int  l,
-                       void *        params,
-                       double (*update_sitecatlk_funk)(void *, double *));
+                      unsigned int  w_count,
+                      double *      sitecat_lh,
+                      unsigned int *site_w,
+                      unsigned int  l,
+                      void *        params,
+                      double (*update_sitecatlk_funk)(void *, double *));
 
 /* functions in opt_generic.c */
 
@@ -256,13 +256,13 @@ CORAX_EXPORT double
 corax_opt_optimize_onedim(corax_optimize_options_t *p, double min, double max);
 
 CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *p,
-                                               double *                umin,
-                                               double *                umax);
+                                                double *                  umin,
+                                                double *                  umax);
 
-CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *   partition,
-                                        corax_unode_t *       tree,
-                                        const unsigned int *params_indices,
-                                        int                 update_pmatrices,
-                                        int                 update_partials);
+CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t * partition,
+                                         corax_unode_t *     tree,
+                                         const unsigned int *params_indices,
+                                         int                 update_pmatrices,
+                                         int                 update_partials);
 
 #endif /* CORAX_OPTIMIZE_GENERIC_H_ */

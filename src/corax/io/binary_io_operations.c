@@ -51,7 +51,7 @@ int bin_fread(void *data, size_t size, size_t count, FILE *file)
   return CORAX_SUCCESS;
 }
 
-int binary_block_header_apply(FILE *              bin_file,
+int binary_block_header_apply(FILE *                bin_file,
                               corax_block_header_t *block_header,
                               int (*bin_func)(void *, size_t, size_t, FILE *))
 {
@@ -67,7 +67,7 @@ int binary_block_header_apply(FILE *              bin_file,
 
 int binary_update_header(FILE *bin_file, corax_block_header_t *header)
 {
-  unsigned int    next_block;
+  unsigned int      next_block;
   corax_block_map_t next_map;
 
   long int cur_position = ftell(bin_file);
@@ -135,8 +135,8 @@ int binary_update_header(FILE *bin_file, corax_block_header_t *header)
 long int binary_get_offset(FILE *bin_file, int block_id)
 {
   corax_block_map_t *map;
-  unsigned int     i, n_blocks;
-  long int         offset = CORAX_BIN_INVALID_OFFSET;
+  unsigned int       i, n_blocks;
+  long int           offset = CORAX_BIN_INVALID_OFFSET;
 
   map = corax_binary_get_map(bin_file, &n_blocks);
 
@@ -156,9 +156,9 @@ long int binary_get_offset(FILE *bin_file, int block_id)
   return offset;
 }
 
-int binary_partition_desc_apply(FILE *           bin_file,
+int binary_partition_desc_apply(FILE *             bin_file,
                                 corax_partition_t *partition,
-                                unsigned int     attributes,
+                                unsigned int       attributes,
                                 int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   CORAX_UNUSED(attributes);
@@ -186,9 +186,9 @@ int binary_partition_desc_apply(FILE *           bin_file,
   return CORAX_SUCCESS;
 }
 
-int binary_partition_body_apply(FILE *           bin_file,
+int binary_partition_body_apply(FILE *             bin_file,
                                 corax_partition_t *partition,
-                                unsigned int     attributes,
+                                unsigned int       attributes,
                                 int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   unsigned int i;
@@ -201,8 +201,8 @@ int binary_partition_body_apply(FILE *           bin_file,
   unsigned int prob_matrices = partition->prob_matrices;
   unsigned int rate_matrices = partition->rate_matrices;
   unsigned int sites_alloc   = partition->asc_bias_alloc
-                                 ? partition->sites + partition->states
-                                 : partition->sites;
+                                   ? partition->sites + partition->states
+                                   : partition->sites;
 
   bin_func(partition->eigen_decomp_valid, sizeof(int), rate_matrices, bin_file);
   for (i = 0; i < rate_matrices; ++i)
@@ -332,9 +332,9 @@ int binary_partition_body_apply(FILE *           bin_file,
   return CORAX_SUCCESS;
 }
 
-int binary_partition_apply(FILE *           bin_file,
+int binary_partition_apply(FILE *             bin_file,
                            corax_partition_t *partition,
-                           unsigned int     attributes,
+                           unsigned int       attributes,
                            int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   if (!binary_partition_desc_apply(bin_file, partition, attributes, bin_func))
@@ -345,10 +345,10 @@ int binary_partition_apply(FILE *           bin_file,
   return CORAX_SUCCESS;
 }
 
-int binary_repeats_apply(FILE *           bin_file,
+int binary_repeats_apply(FILE *             bin_file,
                          corax_partition_t *partition,
-                         unsigned int     attributes,
-                         size_t           nodes,
+                         unsigned int       attributes,
+                         size_t             nodes,
                          int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   CORAX_UNUSED(attributes);
@@ -371,11 +371,11 @@ int binary_repeats_apply(FILE *           bin_file,
   return CORAX_SUCCESS;
 }
 
-int binary_clv_apply(FILE *           bin_file,
+int binary_clv_apply(FILE *             bin_file,
                      corax_partition_t *partition,
-                     unsigned int     clv_index,
-                     unsigned int     attributes,
-                     size_t           clv_size,
+                     unsigned int       clv_index,
+                     unsigned int       attributes,
+                     size_t             clv_size,
                      int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   CORAX_UNUSED(attributes);
@@ -394,14 +394,15 @@ int binary_clv_apply(FILE *           bin_file,
   {
     unsigned int uncompressed_sites =
         partition->sites + (partition->asc_bias_alloc ? partition->states : 0);
-    unsigned int compressed_sites = corax_get_sites_number(partition, clv_index);
+    unsigned int compressed_sites =
+        corax_get_sites_number(partition, clv_index);
     if (!bin_func(partition->repeats->pernode_site_id[clv_index],
                   sizeof(unsigned int),
                   uncompressed_sites,
                   bin_file))
     {
       corax_set_error(CORAX_BIN_ERROR_LOADSTORE,
-                    "Error loading/storing CLV (site_id)");
+                      "Error loading/storing CLV (site_id)");
       return CORAX_FAILURE;
     }
     if (!bin_func(partition->repeats->pernode_id_site[clv_index],
@@ -410,16 +411,16 @@ int binary_clv_apply(FILE *           bin_file,
                   bin_file))
     {
       corax_set_error(CORAX_BIN_ERROR_LOADSTORE,
-                    "Error loading/storing CLV (id_site)");
+                      "Error loading/storing CLV (id_site)");
       return CORAX_FAILURE;
     }
   }
   return CORAX_SUCCESS;
 }
 
-int binary_node_apply(FILE *       bin_file,
+int binary_node_apply(FILE *         bin_file,
                       corax_unode_t *node,
-                      int          write,
+                      int            write,
                       int (*bin_func)(void *, size_t, size_t, FILE *))
 {
   char *        label     = 0;

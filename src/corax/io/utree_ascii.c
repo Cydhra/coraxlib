@@ -7,7 +7,8 @@ static void print_node_info(const corax_unode_t *node, int options)
   if (options & CORAX_UTREE_SHOW_LABEL) printf(" %s", node->label);
   if (options & CORAX_UTREE_SHOW_BRANCH_LENGTH) printf(" %f", node->length);
   if (options & CORAX_UTREE_SHOW_CLV_INDEX) printf(" %u", node->clv_index);
-  if (options & CORAX_UTREE_SHOW_SCALER_INDEX) printf(" %d", node->scaler_index);
+  if (options & CORAX_UTREE_SHOW_SCALER_INDEX)
+    printf(" %d", node->scaler_index);
   if (options & CORAX_UTREE_SHOW_PMATRIX_INDEX)
     printf(" %u", node->pmatrix_index);
   if (options & CORAX_UTREE_SHOW_DATA) printf(" %p", node->data);
@@ -15,9 +16,9 @@ static void print_node_info(const corax_unode_t *node, int options)
 }
 
 static void print_tree_recurse(corax_unode_t *node,
-                               int          indent_level,
-                               int *        active_node_order,
-                               int          options)
+                               int            indent_level,
+                               int *          active_node_order,
+                               int            options)
 {
   int i, j;
 
@@ -56,8 +57,7 @@ static void print_tree_recurse(corax_unode_t *node,
   if (node->next)
   {
     corax_unode_t *snode = node->next;
-    do
-    {
+    do {
       active_node_order[indent_level] = snode->next == node ? 2 : 1;
       print_tree_recurse(
           snode->back, indent_level + 1, active_node_order, options);
@@ -67,14 +67,13 @@ static void print_tree_recurse(corax_unode_t *node,
 }
 
 static unsigned int tree_indent_level(const corax_unode_t *node,
-                                      unsigned int       indent)
+                                      unsigned int         indent)
 {
   if (!node->next) return indent + 1;
 
-  unsigned int ind   = 0;
+  unsigned int   ind   = 0;
   corax_unode_t *snode = node->next;
-  do
-  {
+  do {
     unsigned int sind = tree_indent_level(snode->back, indent + 1);
     ind               = CORAX_MAX(ind, sind);
     snode             = snode->next;
@@ -103,8 +102,7 @@ CORAX_EXPORT void corax_utree_show_ascii(const corax_unode_t *root, int options)
   active_node_order[1] = 1;
 
   const corax_unode_t *node = root;
-  do
-  {
+  do {
     active_node_order[0] = node->next == root ? 2 : 1;
     print_tree_recurse(node->back, 1, active_node_order, options);
     node = node->next;

@@ -24,22 +24,22 @@
 
 CORAX_EXPORT int
 corax_core_update_sumtable_repeats(unsigned int        states,
-                                 unsigned int        sites,
-                                 unsigned int        parent_sites,
-                                 unsigned int        rate_cats,
-                                 const double *      clvp,
-                                 const double *      clvc,
-                                 const unsigned int *parent_scaler,
-                                 const unsigned int *child_scaler,
-                                 double *const *     eigenvecs,
-                                 double *const *     inv_eigenvecs,
-                                 double *const *     freqs,
-                                 double *            sumtable,
-                                 const unsigned int *parent_site_id,
-                                 const unsigned int *child_site_id,
-                                 double *            bclv_buffer,
-                                 unsigned int        inv,
-                                 unsigned int        attrib)
+                                   unsigned int        sites,
+                                   unsigned int        parent_sites,
+                                   unsigned int        rate_cats,
+                                   const double *      clvp,
+                                   const double *      clvc,
+                                   const unsigned int *parent_scaler,
+                                   const unsigned int *child_scaler,
+                                   double *const *     eigenvecs,
+                                   double *const *     inv_eigenvecs,
+                                   double *const *     freqs,
+                                   double *            sumtable,
+                                   const unsigned int *parent_site_id,
+                                   const unsigned int *child_site_id,
+                                   double *            bclv_buffer,
+                                   unsigned int        inv,
+                                   unsigned int        attrib)
 {
   int (*core_update_sumtable)(unsigned int        states,
                               unsigned int        sites,
@@ -116,15 +116,15 @@ corax_core_update_sumtable_repeats(unsigned int        states,
 
 CORAX_EXPORT int
 corax_core_update_sumtable_ti_4x4(unsigned int         sites,
-                                unsigned int         rate_cats,
-                                const double *       parent_clv,
-                                const unsigned char *left_tipchars,
-                                const unsigned int * parent_scaler,
-                                double *const *      eigenvecs,
-                                double *const *      inv_eigenvecs,
-                                double *const *      freqs,
-                                double *             sumtable,
-                                unsigned int         attrib)
+                                  unsigned int         rate_cats,
+                                  const double *       parent_clv,
+                                  const unsigned char *left_tipchars,
+                                  const unsigned int * parent_scaler,
+                                  double *const *      eigenvecs,
+                                  double *const *      inv_eigenvecs,
+                                  double *const *      freqs,
+                                  double *             sumtable,
+                                  unsigned int         attrib)
 {
   unsigned int i, j, k, n;
   unsigned int tipstate;
@@ -215,22 +215,22 @@ corax_core_update_sumtable_ti_4x4(unsigned int         sites,
 
 CORAX_EXPORT int
 corax_core_update_sumtable_repeats_generic(unsigned int        states,
-                                         unsigned int        sites,
-                                         unsigned int        parent_sites,
-                                         unsigned int        rate_cats,
-                                         const double *      clvp,
-                                         const double *      clvc,
-                                         const unsigned int *parent_scaler,
-                                         const unsigned int *child_scaler,
-                                         double *const *     eigenvecs,
-                                         double *const *     inv_eigenvecs,
-                                         double *const *     freqs,
-                                         double *            sumtable,
-                                         const unsigned int *parent_site_id,
-                                         const unsigned int *child_site_id,
-                                         double *            bclv_buffer,
-                                         unsigned int        inv,
-                                         unsigned int        attrib)
+                                           unsigned int        sites,
+                                           unsigned int        parent_sites,
+                                           unsigned int        rate_cats,
+                                           const double *      clvp,
+                                           const double *      clvc,
+                                           const unsigned int *parent_scaler,
+                                           const unsigned int *child_scaler,
+                                           double *const *     eigenvecs,
+                                           double *const *     inv_eigenvecs,
+                                           double *const *     freqs,
+                                           double *            sumtable,
+                                           const unsigned int *parent_site_id,
+                                           const unsigned int *child_site_id,
+                                           double *            bclv_buffer,
+                                           unsigned int        inv,
+                                           unsigned int        attrib)
 {
   unsigned int i, j, k, n;
   double       lefterm  = 0;
@@ -320,18 +320,19 @@ corax_core_update_sumtable_repeats_generic(unsigned int        states,
 
   return CORAX_SUCCESS;
 }
-CORAX_EXPORT int corax_core_update_sumtable_ii(unsigned int        states,
-                                           unsigned int        sites,
-                                           unsigned int        rate_cats,
-                                           const double *      parent_clv,
-                                           const double *      child_clv,
-                                           const unsigned int *parent_scaler,
-                                           const unsigned int *child_scaler,
-                                           double *const *     eigenvecs,
-                                           double *const *     inv_eigenvecs,
-                                           double *const *     freqs,
-                                           double *            sumtable,
-                                           unsigned int        attrib)
+CORAX_EXPORT int
+corax_core_update_sumtable_ii(unsigned int        states,
+                              unsigned int        sites,
+                              unsigned int        rate_cats,
+                              const double *      parent_clv,
+                              const double *      child_clv,
+                              const unsigned int *parent_scaler,
+                              const unsigned int *child_scaler,
+                              double *const *     eigenvecs,
+                              double *const *     inv_eigenvecs,
+                              double *const *     freqs,
+                              double *            sumtable,
+                              unsigned int        attrib)
 {
   unsigned int i, j, k, n;
   double       lefterm  = 0;
@@ -350,51 +351,51 @@ CORAX_EXPORT int corax_core_update_sumtable_ii(unsigned int        states,
   if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
     return corax_core_update_sumtable_ii_sse(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           child_clv,
-                                           parent_scaler,
-                                           child_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           sumtable,
-                                           attrib);
+                                             sites,
+                                             rate_cats,
+                                             parent_clv,
+                                             child_clv,
+                                             parent_scaler,
+                                             child_scaler,
+                                             eigenvecs,
+                                             inv_eigenvecs,
+                                             freqs,
+                                             sumtable,
+                                             attrib);
   }
 #endif
 #ifdef HAVE_AVX
   if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
     return corax_core_update_sumtable_ii_avx(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           child_clv,
-                                           parent_scaler,
-                                           child_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           sumtable,
-                                           attrib);
+                                             sites,
+                                             rate_cats,
+                                             parent_clv,
+                                             child_clv,
+                                             parent_scaler,
+                                             child_scaler,
+                                             eigenvecs,
+                                             inv_eigenvecs,
+                                             freqs,
+                                             sumtable,
+                                             attrib);
   }
 #endif
 #ifdef HAVE_AVX2
   if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
     return corax_core_update_sumtable_ii_avx2(states,
-                                            sites,
-                                            rate_cats,
-                                            parent_clv,
-                                            child_clv,
-                                            parent_scaler,
-                                            child_scaler,
-                                            eigenvecs,
-                                            inv_eigenvecs,
-                                            freqs,
-                                            sumtable,
-                                            attrib);
+                                              sites,
+                                              rate_cats,
+                                              parent_clv,
+                                              child_clv,
+                                              parent_scaler,
+                                              child_scaler,
+                                              eigenvecs,
+                                              inv_eigenvecs,
+                                              freqs,
+                                              sumtable,
+                                              attrib);
   }
 #endif
 
@@ -472,24 +473,25 @@ CORAX_EXPORT int corax_core_update_sumtable_ii(unsigned int        states,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int corax_core_update_sumtable_ti(unsigned int         states,
-                                           unsigned int         sites,
-                                           unsigned int         rate_cats,
-                                           const double *       parent_clv,
-                                           const unsigned char *left_tipchars,
-                                           const unsigned int * parent_scaler,
-                                           double *const *      eigenvecs,
-                                           double *const *      inv_eigenvecs,
-                                           double *const *      freqs,
-                                           const corax_state_t *  tipmap,
-                                           unsigned int         tipmap_size,
-                                           double *             sumtable,
-                                           unsigned int         attrib)
+CORAX_EXPORT int
+corax_core_update_sumtable_ti(unsigned int         states,
+                              unsigned int         sites,
+                              unsigned int         rate_cats,
+                              const double *       parent_clv,
+                              const unsigned char *left_tipchars,
+                              const unsigned int * parent_scaler,
+                              double *const *      eigenvecs,
+                              double *const *      inv_eigenvecs,
+                              double *const *      freqs,
+                              const corax_state_t *tipmap,
+                              unsigned int         tipmap_size,
+                              double *             sumtable,
+                              unsigned int         attrib)
 {
-  unsigned int i, j, k, n;
-  corax_state_t  tipstate;
-  double       lefterm  = 0;
-  double       righterm = 0;
+  unsigned int  i, j, k, n;
+  corax_state_t tipstate;
+  double        lefterm  = 0;
+  double        righterm = 0;
 
   double *      sum    = sumtable;
   const double *t_clvc = parent_clv;
@@ -503,53 +505,53 @@ CORAX_EXPORT int corax_core_update_sumtable_ti(unsigned int         states,
   if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
     return corax_core_update_sumtable_ti_sse(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           left_tipchars,
-                                           parent_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           tipmap,
-                                           sumtable,
-                                           attrib);
+                                             sites,
+                                             rate_cats,
+                                             parent_clv,
+                                             left_tipchars,
+                                             parent_scaler,
+                                             eigenvecs,
+                                             inv_eigenvecs,
+                                             freqs,
+                                             tipmap,
+                                             sumtable,
+                                             attrib);
   }
 #endif
 #ifdef HAVE_AVX
   if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
     return corax_core_update_sumtable_ti_avx(states,
-                                           sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           left_tipchars,
-                                           parent_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           tipmap,
-                                           tipmap_size,
-                                           sumtable,
-                                           attrib);
+                                             sites,
+                                             rate_cats,
+                                             parent_clv,
+                                             left_tipchars,
+                                             parent_scaler,
+                                             eigenvecs,
+                                             inv_eigenvecs,
+                                             freqs,
+                                             tipmap,
+                                             tipmap_size,
+                                             sumtable,
+                                             attrib);
   }
 #endif
 #ifdef HAVE_AVX2
   if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
     return corax_core_update_sumtable_ti_avx2(states,
-                                            sites,
-                                            rate_cats,
-                                            parent_clv,
-                                            left_tipchars,
-                                            parent_scaler,
-                                            eigenvecs,
-                                            inv_eigenvecs,
-                                            freqs,
-                                            tipmap,
-                                            tipmap_size,
-                                            sumtable,
-                                            attrib);
+                                              sites,
+                                              rate_cats,
+                                              parent_clv,
+                                              left_tipchars,
+                                              parent_scaler,
+                                              eigenvecs,
+                                              inv_eigenvecs,
+                                              freqs,
+                                              tipmap,
+                                              tipmap_size,
+                                              sumtable,
+                                              attrib);
   }
 #endif
 
@@ -557,15 +559,15 @@ CORAX_EXPORT int corax_core_update_sumtable_ti(unsigned int         states,
   if (states == 4)
   {
     return corax_core_update_sumtable_ti_4x4(sites,
-                                           rate_cats,
-                                           parent_clv,
-                                           left_tipchars,
-                                           parent_scaler,
-                                           eigenvecs,
-                                           inv_eigenvecs,
-                                           freqs,
-                                           sumtable,
-                                           attrib);
+                                             rate_cats,
+                                             parent_clv,
+                                             left_tipchars,
+                                             parent_scaler,
+                                             eigenvecs,
+                                             inv_eigenvecs,
+                                             freqs,
+                                             sumtable,
+                                             attrib);
   }
 
   unsigned int  min_scaler;
@@ -696,24 +698,24 @@ static void core_site_likelihood_derivatives(unsigned int   states,
 
 CORAX_EXPORT int
 corax_core_likelihood_derivatives(unsigned int        states,
-                                unsigned int        sites,
-                                unsigned int        rate_cats,
-                                const double *      rate_weights,
-                                const unsigned int *parent_scaler,
-                                const unsigned int *child_scaler,
-                                unsigned int        parent_sites,
-                                unsigned int        child_ids,
-                                const int *         invariant,
-                                const unsigned int *pattern_weights,
-                                double              branch_length,
-                                const double *      prop_invar,
-                                double *const *     freqs,
-                                const double *      rates,
-                                double *const *     eigenvals,
-                                const double *      sumtable,
-                                double *            d_f,
-                                double *            dd_f,
-                                unsigned int        attrib)
+                                  unsigned int        sites,
+                                  unsigned int        rate_cats,
+                                  const double *      rate_weights,
+                                  const unsigned int *parent_scaler,
+                                  const unsigned int *child_scaler,
+                                  unsigned int        parent_sites,
+                                  unsigned int        child_ids,
+                                  const int *         invariant,
+                                  const unsigned int *pattern_weights,
+                                  double              branch_length,
+                                  const double *      prop_invar,
+                                  double *const *     freqs,
+                                  const double *      rates,
+                                  double *const *     eigenvals,
+                                  const double *      sumtable,
+                                  double *            d_f,
+                                  double *            dd_f,
+                                  unsigned int        attrib)
 {
   unsigned int n, i, j;
   unsigned int ef_sites;
@@ -750,7 +752,8 @@ corax_core_likelihood_derivatives(unsigned int        states,
       rate_cats * states * 4 * sizeof(double), CORAX_ALIGNMENT_AVX);
   if (!diagptable)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for diagptable");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory for diagptable");
     return CORAX_FAILURE;
   }
 
@@ -785,18 +788,18 @@ corax_core_likelihood_derivatives(unsigned int        states,
     states_padded = (states + 3) & 0xFFFFFFFC;
 
     corax_core_likelihood_derivatives_avx2(states,
-                                         states_padded,
-                                         rate_cats,
-                                         ef_sites,
-                                         pattern_weights,
-                                         rate_weights,
-                                         invariant,
-                                         prop_invar,
-                                         freqs,
-                                         sumtable,
-                                         diagptable,
-                                         d_f,
-                                         dd_f);
+                                           states_padded,
+                                           rate_cats,
+                                           ef_sites,
+                                           pattern_weights,
+                                           rate_weights,
+                                           invariant,
+                                           prop_invar,
+                                           freqs,
+                                           sumtable,
+                                           diagptable,
+                                           d_f,
+                                           dd_f);
   }
   else
 #endif
@@ -806,18 +809,18 @@ corax_core_likelihood_derivatives(unsigned int        states,
     states_padded = (states + 3) & 0xFFFFFFFC;
 
     corax_core_likelihood_derivatives_avx(states,
-                                        states_padded,
-                                        rate_cats,
-                                        ef_sites,
-                                        pattern_weights,
-                                        rate_weights,
-                                        invariant,
-                                        prop_invar,
-                                        freqs,
-                                        sumtable,
-                                        diagptable,
-                                        d_f,
-                                        dd_f);
+                                          states_padded,
+                                          rate_cats,
+                                          ef_sites,
+                                          pattern_weights,
+                                          rate_weights,
+                                          invariant,
+                                          prop_invar,
+                                          freqs,
+                                          sumtable,
+                                          diagptable,
+                                          d_f,
+                                          dd_f);
   }
   else
 #endif
@@ -916,7 +919,7 @@ corax_core_likelihood_derivatives(unsigned int        states,
         break;
       default:
         corax_set_error(CORAX_ERROR_AB_INVALIDMETHOD,
-                      "Illegal ascertainment bias algorithm");
+                        "Illegal ascertainment bias algorithm");
         return CORAX_FAILURE;
       }
     }

@@ -1,7 +1,8 @@
 /**
  * @file utree.h
  *
- * @brief This header file contains functions related to the corax_utree_t struct
+ * @brief This header file contains functions related to the corax_utree_t
+ * struct
  *
  * @author whoever
  */
@@ -10,20 +11,20 @@
 
 #include "corax/corax_common.h"
 
-/** 
+/**
  * Deallocate the memory associated with a utree. `cb_destroy` is used to delete
  * the user data allocated in data.
  *
  * @ingroup corax_utree_t
  */
 CORAX_EXPORT void corax_utree_destroy(corax_utree_t *tree,
-                                  void (*cb_destroy)(void *));
+                                      void (*cb_destroy)(void *));
 
 CORAX_EXPORT void corax_utree_reset_template_indices(corax_unode_t *node,
-                                                 unsigned int tip_count);
+                                                     unsigned int   tip_count);
 
 CORAX_EXPORT void corax_utree_graph_destroy(corax_unode_t *root,
-                                        void (*cb_destroy)(void *));
+                                            void (*cb_destroy)(void *));
 
 /**
  * Takes a tree, represented by a node, and optionally a tip count. Will produce
@@ -38,24 +39,23 @@ CORAX_EXPORT void corax_utree_graph_destroy(corax_unode_t *root,
  * @ingroup corax_utree_t
  */
 CORAX_EXPORT corax_utree_t *corax_utree_wraptree(corax_unode_t *root,
-                                           unsigned int tip_count);
+                                                 unsigned int   tip_count);
 
-CORAX_EXPORT corax_utree_t *corax_utree_wraptree_multi(corax_unode_t *root,
-                                                 unsigned int tip_count,
-                                                 unsigned int inner_count);
+CORAX_EXPORT corax_utree_t *corax_utree_wraptree_multi(
+    corax_unode_t *root, unsigned int tip_count, unsigned int inner_count);
 
 CORAX_EXPORT corax_unode_t *corax_utree_create_node(unsigned int clv_index,
-                                              int          scaler_index,
-                                              char *       label,
-                                              void *       data);
+                                                    int          scaler_index,
+                                                    char *       label,
+                                                    void *       data);
 
 CORAX_EXPORT int corax_unode_is_rooted(const corax_unode_t *root);
 
 CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
 
 /**
- * Given the `corax_unode_t**` from a traversal using `corax_utree_traverse`, this
- * will create a list of `corax_operation_t`.
+ * Given the `corax_unode_t**` from a traversal using `corax_utree_traverse`,
+ * this will create a list of `corax_operation_t`.
  *
  * @param trav_buffer
  *
@@ -80,13 +80,14 @@ CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
  * @ingroup corax_utree_t
  * @ingroup corax_operation_t
  */
-CORAX_EXPORT void corax_utree_create_operations(corax_unode_t *const *trav_buffer,
-                                            unsigned int     trav_buffer_size,
-                                            double *         branches,
-                                            unsigned int *   pmatrix_indices,
-                                            corax_operation_t *ops,
-                                            unsigned int *   matrix_count,
-                                            unsigned int *   ops_count);
+CORAX_EXPORT void
+corax_utree_create_operations(corax_unode_t *const *trav_buffer,
+                              unsigned int          trav_buffer_size,
+                              double *              branches,
+                              unsigned int *        pmatrix_indices,
+                              corax_operation_t *   ops,
+                              unsigned int *        matrix_count,
+                              unsigned int *        ops_count);
 
 CORAX_EXPORT int corax_utree_check_integrity(const corax_utree_t *root);
 
@@ -101,6 +102,6 @@ CORAX_EXPORT corax_unode_t *corax_utree_graph_clone(const corax_unode_t *root);
 CORAX_EXPORT corax_utree_t *corax_utree_clone(const corax_utree_t *root);
 
 CORAX_EXPORT int corax_utree_set_clv_minimal(corax_unode_t *root,
-                                         unsigned int tip_count);
+                                             unsigned int   tip_count);
 
 #endif /* CORAX_TREE_UTREE_H_ */

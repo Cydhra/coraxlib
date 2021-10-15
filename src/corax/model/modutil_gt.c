@@ -121,8 +121,7 @@ static const corax_subst_model_t gt_model_list[] = {
     {"GTGTR", 10, NULL, NULL, NULL, NULL, 0},
     {"GPGTR4", 16, NULL, NULL, gt16_sym_rate_dna4, NULL, 0}};
 
-const int GT_MODELS_COUNT =
-    sizeof(gt_model_list) / sizeof(corax_subst_model_t);
+const int GT_MODELS_COUNT = sizeof(gt_model_list) / sizeof(corax_subst_model_t);
 
 static int get_model_index(const char *model_name)
 {
@@ -197,7 +196,7 @@ CORAX_EXPORT int corax_util_model_exists_genotype16(const char *model_name)
  * @return model info structure, or NULL if model doesn't exist
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_info_genotype(const char *model_name)
+             corax_util_model_info_genotype(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
@@ -207,8 +206,8 @@ CORAX_EXPORT corax_subst_model_t *
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Genotype model not found: %s",
-                  model_name);
+                    "Genotype model not found: %s",
+                    model_name);
     return NULL;
   }
 }
@@ -221,12 +220,12 @@ CORAX_EXPORT corax_subst_model_t *
  * @param model_freqs 0: set model rate matrices only, 1: set model AA
  * frequencies as well
  *
- * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg for
- * details)
+ * @return CORAX_SUCCESS on success, CORAX_FAILURE on error (check corax_errmsg
+ * for details)
  */
 CORAX_EXPORT int corax_util_model_set_genotype(corax_partition_t *partition,
-                                              const char *     model_name,
-                                              int              model_freqs)
+                                               const char *       model_name,
+                                               int                model_freqs)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)
@@ -241,8 +240,8 @@ CORAX_EXPORT int corax_util_model_set_genotype(corax_partition_t *partition,
   else
   {
     corax_set_error(CORAX_UTIL_ERROR_MODEL_UNKNOWN,
-                  "Genotype model not found: %s",
-                  model_name);
+                    "Genotype model not found: %s",
+                    model_name);
     return CORAX_FAILURE;
   }
 }

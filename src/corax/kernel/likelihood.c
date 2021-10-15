@@ -41,13 +41,13 @@ static double compute_asc_bias_correction(double       logl_base,
     break;
   default:
     corax_set_error(CORAX_ERROR_AB_INVALIDMETHOD,
-                  "Illegal ascertainment bias algorithm");
+                    "Illegal ascertainment bias algorithm");
     return -INFINITY;
   }
   return logl_correction;
 }
 
-static double root_loglikelihood_asc_bias(corax_partition_t *   partition,
+static double root_loglikelihood_asc_bias(corax_partition_t * partition,
                                           unsigned int        sites,
                                           const double *      clv,
                                           unsigned int *      scaler,
@@ -114,11 +114,11 @@ static double root_loglikelihood_asc_bias(corax_partition_t *   partition,
 }
 
 CORAX_EXPORT double
-corax_compute_root_loglikelihood(corax_partition_t *   partition,
-                               unsigned int        clv_index,
-                               int                 scaler_index,
-                               const unsigned int *freqs_indices,
-                               double *            persite_lnl)
+corax_compute_root_loglikelihood(corax_partition_t * partition,
+                                 unsigned int        clv_index,
+                                 int                 scaler_index,
+                                 const unsigned int *freqs_indices,
+                                 double *            persite_lnl)
 {
   double        logl = 0;
   unsigned int *scaler;
@@ -153,18 +153,18 @@ corax_compute_root_loglikelihood(corax_partition_t *   partition,
   {
     /* compute log-likelihood via the core function */
     logl = corax_core_root_loglikelihood(partition->states,
-                                       partition->sites,
-                                       partition->rate_cats,
-                                       partition->clv[clv_index],
-                                       scaler,
-                                       partition->frequencies,
-                                       partition->rate_weights,
-                                       partition->pattern_weights,
-                                       partition->prop_invar,
-                                       partition->invariant,
-                                       freqs_indices,
-                                       persite_lnl,
-                                       partition->attributes);
+                                         partition->sites,
+                                         partition->rate_cats,
+                                         partition->clv[clv_index],
+                                         scaler,
+                                         partition->frequencies,
+                                         partition->rate_weights,
+                                         partition->pattern_weights,
+                                         partition->prop_invar,
+                                         partition->invariant,
+                                         freqs_indices,
+                                         persite_lnl,
+                                         partition->attributes);
   }
 
   /* ascertainment bias correction */
@@ -186,9 +186,9 @@ corax_compute_root_loglikelihood(corax_partition_t *   partition,
 }
 
 static double edge_loglikelihood_asc_bias_ti(corax_partition_t *partition,
-                                             unsigned int     parent_clv_index,
-                                             unsigned int *   parent_scaler,
-                                             unsigned int     matrix_index,
+                                             unsigned int  parent_clv_index,
+                                             unsigned int *parent_scaler,
+                                             unsigned int  matrix_index,
                                              const unsigned int *freqs_indices)
 {
   unsigned int n, i, j;
@@ -261,10 +261,10 @@ static double edge_loglikelihood_asc_bias_ti(corax_partition_t *partition,
 }
 
 static double edge_loglikelihood_tipinner(corax_partition_t *partition,
-                                          unsigned int     parent_clv_index,
-                                          int              parent_scaler_index,
-                                          unsigned int     child_clv_index,
-                                          unsigned int     matrix_index,
+                                          unsigned int       parent_clv_index,
+                                          int          parent_scaler_index,
+                                          unsigned int child_clv_index,
+                                          unsigned int matrix_index,
                                           const unsigned int *freqs_indices,
                                           double *            persite_lnl)
 {
@@ -280,41 +280,42 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
 
   if (states == 4)
   {
-    logl =
-        corax_core_edge_loglikelihood_ti_4x4(partition->sites,
-                                           partition->rate_cats,
-                                           partition->clv[parent_clv_index],
-                                           parent_scaler,
-                                           partition->tipchars[child_clv_index],
-                                           partition->pmatrix[matrix_index],
-                                           partition->frequencies,
-                                           partition->rate_weights,
-                                           partition->pattern_weights,
-                                           partition->prop_invar,
-                                           partition->invariant,
-                                           freqs_indices,
-                                           persite_lnl,
-                                           partition->attributes);
+    logl = corax_core_edge_loglikelihood_ti_4x4(
+        partition->sites,
+        partition->rate_cats,
+        partition->clv[parent_clv_index],
+        parent_scaler,
+        partition->tipchars[child_clv_index],
+        partition->pmatrix[matrix_index],
+        partition->frequencies,
+        partition->rate_weights,
+        partition->pattern_weights,
+        partition->prop_invar,
+        partition->invariant,
+        freqs_indices,
+        persite_lnl,
+        partition->attributes);
   }
   else
   {
-    logl = corax_core_edge_loglikelihood_ti(partition->states,
-                                          partition->sites,
-                                          partition->rate_cats,
-                                          partition->clv[parent_clv_index],
-                                          parent_scaler,
-                                          partition->tipchars[child_clv_index],
-                                          partition->tipmap,
-                                          partition->maxstates,
-                                          partition->pmatrix[matrix_index],
-                                          partition->frequencies,
-                                          partition->rate_weights,
-                                          partition->pattern_weights,
-                                          partition->prop_invar,
-                                          partition->invariant,
-                                          freqs_indices,
-                                          persite_lnl,
-                                          partition->attributes);
+    logl =
+        corax_core_edge_loglikelihood_ti(partition->states,
+                                         partition->sites,
+                                         partition->rate_cats,
+                                         partition->clv[parent_clv_index],
+                                         parent_scaler,
+                                         partition->tipchars[child_clv_index],
+                                         partition->tipmap,
+                                         partition->maxstates,
+                                         partition->pmatrix[matrix_index],
+                                         partition->frequencies,
+                                         partition->rate_weights,
+                                         partition->pattern_weights,
+                                         partition->prop_invar,
+                                         partition->invariant,
+                                         freqs_indices,
+                                         persite_lnl,
+                                         partition->attributes);
   }
 
   /* ascertainment bias correction */
@@ -333,7 +334,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
   return logl;
 }
 
-static double edge_loglikelihood_asc_bias_ii(corax_partition_t *   partition,
+static double edge_loglikelihood_asc_bias_ii(corax_partition_t * partition,
                                              const double *      clvp,
                                              unsigned int *      parent_scaler,
                                              unsigned int        parent_sites,
@@ -423,7 +424,7 @@ static double edge_loglikelihood_asc_bias_ii(corax_partition_t *   partition,
   return logl;
 }
 
-static double edge_loglikelihood(corax_partition_t *   partition,
+static double edge_loglikelihood(corax_partition_t * partition,
                                  unsigned int        parent_clv_index,
                                  int                 parent_scaler_index,
                                  unsigned int        child_clv_index,
@@ -452,21 +453,21 @@ static double edge_loglikelihood(corax_partition_t *   partition,
 
   /* compute log-likelihood via the core function */
   logl = corax_core_edge_loglikelihood_ii(partition->states,
-                                        partition->sites,
-                                        partition->rate_cats,
-                                        clvp,
-                                        parent_scaler,
-                                        clvc,
-                                        child_scaler,
-                                        partition->pmatrix[matrix_index],
-                                        partition->frequencies,
-                                        partition->rate_weights,
-                                        partition->pattern_weights,
-                                        partition->prop_invar,
-                                        partition->invariant,
-                                        freqs_indices,
-                                        persite_lnl,
-                                        partition->attributes);
+                                          partition->sites,
+                                          partition->rate_cats,
+                                          clvp,
+                                          parent_scaler,
+                                          clvc,
+                                          child_scaler,
+                                          partition->pmatrix[matrix_index],
+                                          partition->frequencies,
+                                          partition->rate_weights,
+                                          partition->pattern_weights,
+                                          partition->prop_invar,
+                                          partition->invariant,
+                                          freqs_indices,
+                                          persite_lnl,
+                                          partition->attributes);
 
   /* ascertainment bias correction */
   if (partition->attributes & CORAX_ATTRIB_AB_MASK)
@@ -488,11 +489,11 @@ static double edge_loglikelihood(corax_partition_t *   partition,
 }
 
 static double edge_loglikelihood_repeats(corax_partition_t *partition,
-                                         unsigned int     parent_clv_index,
-                                         int              parent_scaler_index,
-                                         unsigned int     child_clv_index,
-                                         int              child_scaler_index,
-                                         unsigned int     matrix_index,
+                                         unsigned int       parent_clv_index,
+                                         int                parent_scaler_index,
+                                         unsigned int       child_clv_index,
+                                         int                child_scaler_index,
+                                         unsigned int       matrix_index,
                                          const unsigned int *freqs_indices,
                                          double *            persite_lnl)
 {
@@ -505,9 +506,10 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
       corax_get_site_id(partition, parent_clv_index);
   const unsigned int *child_site_id =
       corax_get_site_id(partition, child_clv_index);
-  unsigned int parent_sites = corax_get_sites_number(partition, parent_clv_index);
-  unsigned int child_sites  = corax_get_sites_number(partition, child_clv_index);
-  unsigned int inv          = parent_sites > child_sites;
+  unsigned int parent_sites =
+      corax_get_sites_number(partition, parent_clv_index);
+  unsigned int child_sites = corax_get_sites_number(partition, child_clv_index);
+  unsigned int inv         = parent_sites > child_sites;
 
   unsigned int *parent_scaler;
   unsigned int *child_scaler;
@@ -523,27 +525,27 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
   /* compute log-likelihood via the core function */
-  logl =
-      corax_core_edge_loglikelihood_repeats(partition->states,
-                                          partition->sites,
-                                          !inv ? parent_sites : child_sites,
-                                          partition->rate_cats,
-                                          inv ? clvp : clvc,
-                                          inv ? parent_scaler : child_scaler,
-                                          !inv ? clvp : clvc,
-                                          !inv ? parent_scaler : child_scaler,
-                                          partition->pmatrix[matrix_index],
-                                          partition->frequencies,
-                                          partition->rate_weights,
-                                          partition->pattern_weights,
-                                          partition->prop_invar,
-                                          partition->invariant,
-                                          freqs_indices,
-                                          persite_lnl,
-                                          inv ? parent_site_id : child_site_id,
-                                          !inv ? parent_site_id : child_site_id,
-                                          partition->repeats->bclv_buffer,
-                                          partition->attributes);
+  logl = corax_core_edge_loglikelihood_repeats(
+      partition->states,
+      partition->sites,
+      !inv ? parent_sites : child_sites,
+      partition->rate_cats,
+      inv ? clvp : clvc,
+      inv ? parent_scaler : child_scaler,
+      !inv ? clvp : clvc,
+      !inv ? parent_scaler : child_scaler,
+      partition->pmatrix[matrix_index],
+      partition->frequencies,
+      partition->rate_weights,
+      partition->pattern_weights,
+      partition->prop_invar,
+      partition->invariant,
+      freqs_indices,
+      persite_lnl,
+      inv ? parent_site_id : child_site_id,
+      !inv ? parent_site_id : child_site_id,
+      partition->repeats->bclv_buffer,
+      partition->attributes);
 
   /* ascertainment bias correction */
   if (partition->attributes & CORAX_ATTRIB_AB_MASK)
@@ -565,14 +567,14 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double
-corax_compute_edge_loglikelihood(corax_partition_t *   partition,
-                               unsigned int        parent_clv_index,
-                               int                 parent_scaler_index,
-                               unsigned int        child_clv_index,
-                               int                 child_scaler_index,
-                               unsigned int        matrix_index,
-                               const unsigned int *freqs_indices,
-                               double *            persite_lnl)
+corax_compute_edge_loglikelihood(corax_partition_t * partition,
+                                 unsigned int        parent_clv_index,
+                                 int                 parent_scaler_index,
+                                 unsigned int        child_clv_index,
+                                 int                 child_scaler_index,
+                                 unsigned int        matrix_index,
+                                 const unsigned int *freqs_indices,
+                                 double *            persite_lnl)
 {
   double logl;
 
@@ -618,17 +620,17 @@ corax_compute_edge_loglikelihood(corax_partition_t *   partition,
 }
 
 CORAX_EXPORT int
-corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
-                                  unsigned int        node_clv_index,
-                                  int                 node_scaler_index,
-                                  unsigned int        other_clv_index,
-                                  int                 other_scaler_index,
-                                  unsigned int        pmatrix_index,
-                                  const unsigned int *freqs_indices,
-                                  double *            ancestral,
-                                  double *            temp_clv,
-                                  unsigned int *      temp_scaler,
-                                  double *            ident_pmat)
+corax_compute_node_ancestral_extbuf(corax_partition_t * partition,
+                                    unsigned int        node_clv_index,
+                                    int                 node_scaler_index,
+                                    unsigned int        other_clv_index,
+                                    int                 other_scaler_index,
+                                    unsigned int        pmatrix_index,
+                                    const unsigned int *freqs_indices,
+                                    double *            ancestral,
+                                    double *            temp_clv,
+                                    unsigned int *      temp_scaler,
+                                    double *            ident_pmat)
 {
   if (!partition || !ancestral)
   {
@@ -668,18 +670,18 @@ corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
       && (partition->attributes & CORAX_ATTRIB_PATTERN_TIP))
   {
     corax_core_update_clv_ti(states,
-                           sites,
-                           rate_cats,
-                           temp_clv,
-                           temp_scaler,
-                           partition->tipchars[other_clv_index],
-                           node_clv,
-                           pmat,
-                           ident_pmat,
-                           node_scaler,
-                           partition->tipmap,
-                           partition->maxstates,
-                           partition->attributes);
+                             sites,
+                             rate_cats,
+                             temp_clv,
+                             temp_scaler,
+                             partition->tipchars[other_clv_index],
+                             node_clv,
+                             pmat,
+                             ident_pmat,
+                             node_scaler,
+                             partition->tipmap,
+                             partition->maxstates,
+                             partition->attributes);
   }
   else
   {
@@ -690,17 +692,17 @@ corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
             : partition->scale_buffer[other_scaler_index];
 
     corax_core_update_clv_ii(states,
-                           sites,
-                           rate_cats,
-                           temp_clv,
-                           temp_scaler,
-                           node_clv,
-                           other_clv,
-                           ident_pmat,
-                           pmat,
-                           node_scaler,
-                           other_scaler,
-                           partition->attributes);
+                             sites,
+                             rate_cats,
+                             temp_clv,
+                             temp_scaler,
+                             node_clv,
+                             other_clv,
+                             ident_pmat,
+                             pmat,
+                             node_scaler,
+                             other_scaler,
+                             partition->attributes);
   }
 
   double *clvp = temp_clv;
@@ -735,13 +737,13 @@ corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
 }
 
 CORAX_EXPORT int corax_compute_node_ancestral(corax_partition_t *partition,
-                                          unsigned int     node_clv_index,
-                                          int              node_scaler_index,
-                                          unsigned int     other_clv_index,
-                                          int              other_scaler_index,
-                                          unsigned int     matrix_index,
-                                          const unsigned int *freqs_indices,
-                                          double *            ancestral)
+                                              unsigned int       node_clv_index,
+                                              int          node_scaler_index,
+                                              unsigned int other_clv_index,
+                                              int          other_scaler_index,
+                                              unsigned int matrix_index,
+                                              const unsigned int *freqs_indices,
+                                              double *            ancestral)
 {
   int          retval = CORAX_FAILURE;
   unsigned int i, j, k;
@@ -757,7 +759,7 @@ CORAX_EXPORT int corax_compute_node_ancestral(corax_partition_t *partition,
       (double *)corax_aligned_alloc(clv_size, partition->alignment);
   unsigned int scaler_size =
       ((partition->attributes & CORAX_ATTRIB_RATE_SCALERS) ? sites * rate_cats
-                                                         : sites)
+                                                           : sites)
       * sizeof(unsigned int);
   unsigned int *temp_scaler =
       (unsigned int *)corax_aligned_alloc(scaler_size, partition->alignment);
@@ -789,16 +791,16 @@ CORAX_EXPORT int corax_compute_node_ancestral(corax_partition_t *partition,
   }
 
   retval = corax_compute_node_ancestral_extbuf(partition,
-                                             node_clv_index,
-                                             node_scaler_index,
-                                             other_clv_index,
-                                             other_scaler_index,
-                                             matrix_index,
-                                             freqs_indices,
-                                             ancestral,
-                                             temp_clv,
-                                             temp_scaler,
-                                             ident_pmat);
+                                               node_clv_index,
+                                               node_scaler_index,
+                                               other_clv_index,
+                                               other_scaler_index,
+                                               matrix_index,
+                                               freqs_indices,
+                                               ancestral,
+                                               temp_clv,
+                                               temp_scaler,
+                                               ident_pmat);
 
 cleanup:
   corax_aligned_free(temp_clv);

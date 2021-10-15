@@ -1,8 +1,8 @@
 #include "utree_traverse.h"
 
 CORAX_EXPORT int corax_utree_every(corax_utree_t *tree,
-                               int (*cb)(const corax_utree_t *,
-                                         const corax_unode_t *))
+                                   int (*cb)(const corax_utree_t *,
+                                             const corax_unode_t *))
 {
   unsigned int i;
   int          rc = 1;
@@ -14,8 +14,8 @@ CORAX_EXPORT int corax_utree_every(corax_utree_t *tree,
 }
 
 CORAX_EXPORT int corax_utree_every_const(const corax_utree_t *tree,
-                                     int (*cb)(const corax_utree_t *,
-                                               const corax_unode_t *))
+                                         int (*cb)(const corax_utree_t *,
+                                                   const corax_unode_t *))
 {
   unsigned int i;
   int          rc = 1;
@@ -27,9 +27,9 @@ CORAX_EXPORT int corax_utree_every_const(const corax_utree_t *tree,
 }
 
 static void utree_traverse_recursive(corax_unode_t *node,
-                                     int          traversal,
+                                     int            traversal,
                                      int (*cbtrav)(corax_unode_t *),
-                                     unsigned int *index,
+                                     unsigned int *  index,
                                      corax_unode_t **outbuffer)
 {
   if (!cbtrav(node)) return;
@@ -43,8 +43,7 @@ static void utree_traverse_recursive(corax_unode_t *node,
   if (node->next)
   {
     corax_unode_t *snode = node->next;
-    do
-    {
+    do {
       utree_traverse_recursive(
           snode->back, traversal, cbtrav, index, outbuffer);
       snode = snode->next;
@@ -59,10 +58,10 @@ static void utree_traverse_recursive(corax_unode_t *node,
 }
 
 CORAX_EXPORT int corax_utree_traverse_subtree(corax_unode_t *root,
-                                          int          traversal,
-                                          int (*cbtrav)(corax_unode_t *),
-                                          corax_unode_t **outbuffer,
-                                          unsigned int *trav_size)
+                                              int            traversal,
+                                              int (*cbtrav)(corax_unode_t *),
+                                              corax_unode_t **outbuffer,
+                                              unsigned int *  trav_size)
 {
   *trav_size = 0;
   if (!root->next) return CORAX_FAILURE;
@@ -94,10 +93,10 @@ CORAX_EXPORT int corax_utree_traverse_subtree(corax_unode_t *root,
 }
 
 CORAX_EXPORT int corax_utree_traverse(corax_unode_t *root,
-                                  int          traversal,
-                                  int (*cbtrav)(corax_unode_t *),
-                                  corax_unode_t **outbuffer,
-                                  unsigned int *trav_size)
+                                      int            traversal,
+                                      int (*cbtrav)(corax_unode_t *),
+                                      corax_unode_t **outbuffer,
+                                      unsigned int *  trav_size)
 {
   *trav_size = 0;
   if (!root->next) return CORAX_FAILURE;
@@ -136,7 +135,7 @@ static int utree_traverse_apply(corax_unode_t *node,
                                 int (*cb_post_trav)(corax_unode_t *, void *),
                                 void *data)
 {
-  int          retval     = 1;
+  int            retval     = 1;
   corax_unode_t *child_tree = 0;
 
   if (cb_pre_trav && !cb_pre_trav(node, data)) return CORAX_FAILURE;
@@ -167,10 +166,10 @@ static int utree_traverse_apply(corax_unode_t *node,
 
 CORAX_EXPORT int
 corax_utree_traverse_apply(corax_unode_t *root,
-                         int (*cb_pre_trav)(corax_unode_t *, void *),
-                         int (*cb_in_trav)(corax_unode_t *, void *),
-                         int (*cb_post_trav)(corax_unode_t *, void *),
-                         void *data)
+                           int (*cb_pre_trav)(corax_unode_t *, void *),
+                           int (*cb_in_trav)(corax_unode_t *, void *),
+                           int (*cb_post_trav)(corax_unode_t *, void *),
+                           void *data)
 {
   int retval = 1;
 
@@ -188,10 +187,10 @@ corax_utree_traverse_apply(corax_unode_t *root,
 
 static void utree_nodes_at_dist(corax_unode_t * node,
                                 corax_unode_t **outbuffer,
-                                unsigned int *index,
-                                unsigned int  min_distance,
-                                unsigned int  max_distance,
-                                unsigned int  depth)
+                                unsigned int *  index,
+                                unsigned int    min_distance,
+                                unsigned int    max_distance,
+                                unsigned int    depth)
 {
   if (depth >= min_distance && depth <= max_distance)
   {
@@ -226,15 +225,15 @@ static void utree_nodes_at_dist(corax_unode_t * node,
  * @param[in] max_distance the maximum distance to check
  */
 CORAX_EXPORT int corax_utree_nodes_at_node_dist(corax_unode_t * node,
-                                            corax_unode_t **outbuffer,
-                                            unsigned int *node_count,
-                                            unsigned int  min_distance,
-                                            unsigned int  max_distance)
+                                                corax_unode_t **outbuffer,
+                                                unsigned int *  node_count,
+                                                unsigned int    min_distance,
+                                                unsigned int    max_distance)
 {
   if (!node->next)
   {
     corax_set_error(CORAX_ERROR_INVALID_NODE_TYPE,
-                  "Internal node expected, but tip node was provided");
+                    "Internal node expected, but tip node was provided");
     return CORAX_FAILURE;
   }
 
@@ -277,17 +276,17 @@ CORAX_EXPORT int corax_utree_nodes_at_node_dist(corax_unode_t * node,
  */
 
 CORAX_EXPORT int corax_utree_nodes_at_edge_dist(corax_unode_t * edge,
-                                            corax_unode_t **outbuffer,
-                                            unsigned int *node_count,
-                                            unsigned int  min_distance,
-                                            unsigned int  max_distance)
+                                                corax_unode_t **outbuffer,
+                                                unsigned int *  node_count,
+                                                unsigned int    min_distance,
+                                                unsigned int    max_distance)
 {
   unsigned int depth = 0;
 
   if (!edge->next)
   {
     corax_set_error(CORAX_ERROR_INVALID_NODE_TYPE,
-                  "Internal node expected, but tip node was provided");
+                    "Internal node expected, but tip node was provided");
     return CORAX_FAILURE;
   }
 

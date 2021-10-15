@@ -46,7 +46,7 @@ int cb_full_traversal(corax_unode_t *node)
   return 1;
 }
 
-void postorder_init_recursive(corax_unode_t *        node,
+void postorder_init_recursive(corax_unode_t *      node,
                               unsigned int *       index,
                               unsigned int *       subtree_size,
                               index_information_t *idx_infos)
@@ -57,8 +57,7 @@ void postorder_init_recursive(corax_unode_t *        node,
     return;
   }
   corax_unode_t *snode = node->next;
-  do
-  {
+  do {
     postorder_init_recursive(snode->back, index, subtree_size, idx_infos);
     snode = snode->next;
   } while (snode && snode != node);
@@ -72,7 +71,7 @@ void postorder_init_recursive(corax_unode_t *        node,
   *index            = *index + 1;
 }
 
-void postorder_init(corax_unode_t *        root,
+void postorder_init(corax_unode_t *      root,
                     unsigned int *       trav_size,
                     unsigned int *       subtree_size,
                     index_information_t *idx_infos)
@@ -108,18 +107,24 @@ void free_tbe_data(tbe_data_t *data)
 }
 
 unsigned int search_mindist(const corax_tbe_split_info_t *query,
-                            tbe_data_t *                   data)
+                            tbe_data_t *                  data)
 {
   unsigned int  min_dist   = query->p - 1;
   unsigned int *count_ones = data->count_ones;
 
   // initialize the leaf node informations...
   for (size_t i = 0; i < query->left_leaf_idx; ++i)
-  { count_ones[i] = !query->subtree_res; }
+  {
+    count_ones[i] = !query->subtree_res;
+  }
   for (size_t i = query->left_leaf_idx; i <= query->right_leaf_idx; ++i)
-  { count_ones[i] = query->subtree_res; }
+  {
+    count_ones[i] = query->subtree_res;
+  }
   for (size_t i = query->right_leaf_idx + 1; i < data->nodes_count; ++i)
-  { count_ones[i] = !query->subtree_res; }
+  {
+    count_ones[i] = !query->subtree_res;
+  }
 
   for (size_t i = 0; i < data->trav_size; ++i)
   {
@@ -131,7 +136,9 @@ unsigned int search_mindist(const corax_tbe_split_info_t *query,
     unsigned int dist_cand   = query->p - count_zeros + count_ones[idx];
 
     if (dist_cand > data->tip_count_div_2)
-    { dist_cand = data->tip_count - dist_cand; }
+    {
+      dist_cand = data->tip_count - dist_cand;
+    }
     if (dist_cand < min_dist)
     {
       min_dist = dist_cand;
@@ -150,16 +157,18 @@ unsigned int search_mindist(const corax_tbe_split_info_t *query,
  * it should be called twice, with original and inverted s1 (or s2),
  * to account for possible complementary split encoding.
  * */
-static unsigned int utree_split_hamming_distance_lbound(corax_split_t  s1,
-                                                        corax_split_t  s2,
-                                                        unsigned int split_len,
-                                                        unsigned int min_hdist)
+static unsigned int utree_split_hamming_distance_lbound(corax_split_t s1,
+                                                        corax_split_t s2,
+                                                        unsigned int  split_len,
+                                                        unsigned int  min_hdist)
 {
   unsigned int hdist = 0;
   unsigned int i;
 
   for (i = 0; (i < split_len) && (hdist <= min_hdist); ++i)
-  { hdist += CORAX_POPCNT32(s1[i] ^ s2[i]); }
+  {
+    hdist += CORAX_POPCNT32(s1[i] ^ s2[i]);
+  }
 
   return hdist;
 }
@@ -173,8 +182,8 @@ static unsigned int utree_split_hamming_distance_lbound(corax_split_t  s1,
 CORAX_EXPORT
 corax_tbe_split_info_t *
 corax_utree_tbe_nature_init(corax_unode_t *       ref_root,
-                             unsigned int        tip_count,
-                             const corax_unode_t **split_to_node_map)
+                            unsigned int          tip_count,
+                            const corax_unode_t **split_to_node_map)
 {
   unsigned int nodes_count = 2 * tip_count - 2;
   unsigned int split_count = tip_count - 3;
@@ -183,10 +192,10 @@ corax_utree_tbe_nature_init(corax_unode_t *       ref_root,
   unsigned int b_leaf_idx[nodes_count];
 
   corax_tbe_split_info_t *split_info = NULL;
-  corax_unode_t **           travbuffer = NULL;
+  corax_unode_t **        travbuffer = NULL;
 
   split_info = (corax_tbe_split_info_t *)malloc(sizeof(corax_tbe_split_info_t)
-                                                 * split_count);
+                                                * split_count);
 
   travbuffer = (corax_unode_t **)malloc(nodes_count * sizeof(corax_unode_t *));
 
@@ -201,10 +210,10 @@ corax_utree_tbe_nature_init(corax_unode_t *       ref_root,
   // do a post-order traversal of the reference tree.
   unsigned int trav_size;
   corax_utree_traverse(ref_root,
-                     CORAX_TREE_TRAVERSE_POSTORDER,
-                     cb_full_traversal,
-                     travbuffer,
-                     &trav_size);
+                       CORAX_TREE_TRAVERSE_POSTORDER,
+                       cb_full_traversal,
+                       travbuffer,
+                       &trav_size);
   for (unsigned int i = 0; i < trav_size; ++i)
   { // first, we compute the subtree sizes.
     unsigned int idx = travbuffer[i]->clv_index;
@@ -252,12 +261,12 @@ corax_utree_tbe_nature_init(corax_unode_t *       ref_root,
   return split_info;
 }
 
-CORAX_EXPORT int corax_utree_tbe_nature(corax_split_t *            ref_splits,
-                                       corax_split_t *            bs_splits,
-                                       corax_unode_t *            bs_root,
-                                       unsigned int             tip_count,
-                                       double *                 support,
-                                       corax_tbe_split_info_t *split_info)
+CORAX_EXPORT int corax_utree_tbe_nature(corax_split_t *         ref_splits,
+                                        corax_split_t *         bs_splits,
+                                        corax_unode_t *         bs_root,
+                                        unsigned int            tip_count,
+                                        double *                support,
+                                        corax_tbe_split_info_t *split_info)
 {
   unsigned int i;
   unsigned int split_count = tip_count - 3;
@@ -312,9 +321,9 @@ CORAX_EXPORT int corax_utree_tbe_nature(corax_split_t *            ref_splits,
 /* This is an old, naive and rather inefficient TBE computation method by
  * Alexey, keep it here just in case */
 CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
-                                      corax_split_t *bs_splits,
-                                      unsigned int tip_count,
-                                      double *     support)
+                                       corax_split_t *bs_splits,
+                                       unsigned int   tip_count,
+                                       double *       support)
 {
   unsigned int i, j, k;
   unsigned int split_count  = tip_count - 3;
@@ -323,7 +332,7 @@ CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
   unsigned int split_offset = tip_count % split_size;
   unsigned int split_mask   = split_offset ? (1u << split_offset) - 1 : ~0u;
 
-  corax_split_t   inv_split = NULL;
+  corax_split_t inv_split = NULL;
   unsigned int *bs_light  = NULL;
 
   if (!ref_splits || !bs_splits || !support)
@@ -351,14 +360,16 @@ CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
 
   /* precompute lightside size for all bootstrap splits */
   for (j = 0; j < split_count; j++)
-  { bs_light[j] = corax_utree_split_lightside(bs_splits[j], tip_count); }
+  {
+    bs_light[j] = corax_utree_split_lightside(bs_splits[j], tip_count);
+  }
 
   /* iterate over all splits of the reference tree */
   for (i = 0; i < split_count; i++)
   {
-    corax_split_t  ref_split = ref_splits[i];
-    unsigned int p         = corax_utree_split_lightside(ref_split, tip_count);
-    unsigned int min_hdist = p - 1;
+    corax_split_t ref_split = ref_splits[i];
+    unsigned int  p         = corax_utree_split_lightside(ref_split, tip_count);
+    unsigned int  min_hdist = p - 1;
 
     if (corax_utree_split_hashtable_lookup(
             bs_splits_hash, ref_split, tip_count))
@@ -381,7 +392,9 @@ CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
       /* this split is too far away -> skip it */
       if (abs(bs_light[j] - p) > min_hdist
           && abs(tip_count - bs_light[j] - p) > min_hdist)
-      { continue; }
+      {
+        continue;
+      }
 
       //      unsigned int hdist =
       //      corax_utree_split_hamming_distance(ref_split, bs_splits[j],

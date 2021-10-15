@@ -236,9 +236,9 @@ l4:
 }
 
 CORAX_EXPORT int corax_compute_gamma_cats(double       alpha,
-                                      unsigned int categories,
-                                      double *     output_rates,
-                                      int          rates_mode)
+                                          unsigned int categories,
+                                          double *     output_rates,
+                                          int          rates_mode)
 {
   unsigned int i;
 
@@ -251,7 +251,8 @@ CORAX_EXPORT int corax_compute_gamma_cats(double       alpha,
 
   if (alpha < ALPHA_MIN || categories < 1)
   {
-    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Invalid alpha value (%f)", alpha);
+    corax_set_error(
+        CORAX_ERROR_INVALID_PARAM, "Invalid alpha value (%f)", alpha);
     return CORAX_FAILURE;
   }
 
@@ -290,8 +291,8 @@ CORAX_EXPORT int corax_compute_gamma_cats(double       alpha,
   else
   {
     corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                  "Invalid GAMMA discretization mode (%d)",
-                  rates_mode);
+                    "Invalid GAMMA discretization mode (%d)",
+                    rates_mode);
     return CORAX_FAILURE;
   }
 

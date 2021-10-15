@@ -117,9 +117,9 @@ static void fill_weights(double *      weights,
 }
 
 static int treeinfo_get_alpha(const corax_treeinfo_t *treeinfo,
-                              unsigned int             part_num,
-                              double *                 param_vals,
-                              unsigned int             param_count)
+                              unsigned int            part_num,
+                              double *                param_vals,
+                              unsigned int            param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
@@ -128,9 +128,9 @@ static int treeinfo_get_alpha(const corax_treeinfo_t *treeinfo,
 }
 
 static int treeinfo_set_alpha(corax_treeinfo_t *treeinfo,
-                              unsigned int       part_num,
-                              const double *     param_vals,
-                              unsigned int       param_count)
+                              unsigned int      part_num,
+                              const double *    param_vals,
+                              unsigned int      param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
@@ -140,18 +140,18 @@ static int treeinfo_set_alpha(corax_treeinfo_t *treeinfo,
 
   /* update rate categories */
   if (!corax_compute_gamma_cats(treeinfo->alphas[part_num],
-                              partition->rate_cats,
-                              partition->rates,
-                              treeinfo->gamma_mode[part_num]))
+                                partition->rate_cats,
+                                partition->rates,
+                                treeinfo->gamma_mode[part_num]))
     return CORAX_FAILURE;
 
   return CORAX_SUCCESS;
 }
 
 static int treeinfo_get_pinv(const corax_treeinfo_t *treeinfo,
-                             unsigned int             part_num,
-                             double *                 param_vals,
-                             unsigned int             param_count)
+                             unsigned int            part_num,
+                             double *                param_vals,
+                             unsigned int            param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
@@ -161,13 +161,13 @@ static int treeinfo_get_pinv(const corax_treeinfo_t *treeinfo,
 }
 
 static int treeinfo_set_pinv(corax_treeinfo_t *treeinfo,
-                             unsigned int       part_num,
-                             const double *     param_vals,
-                             unsigned int       param_count)
+                             unsigned int      part_num,
+                             const double *    param_vals,
+                             unsigned int      param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
-  unsigned int     k;
+  unsigned int       k;
   corax_partition_t *partition = treeinfo->partitions[part_num];
 
   /* update proportion of invariant sites */
@@ -182,9 +182,9 @@ static int treeinfo_set_pinv(corax_treeinfo_t *treeinfo,
 }
 
 static int treeinfo_get_brlen_scaler(const corax_treeinfo_t *treeinfo,
-                                     unsigned int             part_num,
-                                     double *                 param_vals,
-                                     unsigned int             param_count)
+                                     unsigned int            part_num,
+                                     double *                param_vals,
+                                     unsigned int            param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
@@ -193,9 +193,9 @@ static int treeinfo_get_brlen_scaler(const corax_treeinfo_t *treeinfo,
 }
 
 static int treeinfo_set_brlen_scaler(corax_treeinfo_t *treeinfo,
-                                     unsigned int       part_num,
-                                     const double *     param_vals,
-                                     unsigned int       param_count)
+                                     unsigned int      part_num,
+                                     const double *    param_vals,
+                                     unsigned int      param_count)
 {
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
@@ -205,8 +205,8 @@ static int treeinfo_set_brlen_scaler(corax_treeinfo_t *treeinfo,
 }
 
 static void fix_brlen_scalers(corax_treeinfo_t *treeinfo,
-                              double             min_scaler,
-                              double             max_scaler)
+                              double            min_scaler,
+                              double            max_scaler)
 {
   unsigned int i;
 
@@ -286,13 +286,13 @@ fix_brlen_minmax(corax_treeinfo_t *treeinfo, double blmin, double blmax)
 
 CORAX_EXPORT
 double
-corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
-                                       int                   param_to_optimize,
-                                       treeinfo_param_get_cb params_getter,
-                                       treeinfo_param_set_cb params_setter,
-                                       double                min_value,
-                                       double                max_value,
-                                       double                tolerance)
+corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *    treeinfo,
+                                      int                   param_to_optimize,
+                                      treeinfo_param_get_cb params_getter,
+                                      treeinfo_param_set_cb params_setter,
+                                      double                min_value,
+                                      double                max_value,
+                                      double                tolerance)
 {
   unsigned int param_count = 0;
   unsigned int i;
@@ -338,17 +338,17 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
 
     /* run BRENT optimization for all partitions in parallel */
     int ret = corax_opt_minimize_brent_multi(param_count,
-                                              opt_mask,
-                                              &min_value,
-                                              param_vals,
-                                              &max_value,
-                                              tolerance,
-                                              param_vals,
-                                              NULL,
-                                              NULL, /* fx, f2x */
-                                              (void *)&opt_params,
-                                              &target_func_onedim_treeinfo,
-                                              1 /* global_range */
+                                             opt_mask,
+                                             &min_value,
+                                             param_vals,
+                                             &max_value,
+                                             tolerance,
+                                             param_vals,
+                                             NULL,
+                                             NULL, /* fx, f2x */
+                                             (void *)&opt_params,
+                                             &target_func_onedim_treeinfo,
+                                             1 /* global_range */
     );
 
     free(param_vals);
@@ -367,16 +367,16 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
 }
 
 CORAX_EXPORT double corax_algo_opt_onedim_treeinfo(corax_treeinfo_t *treeinfo,
-                                                  int    param_to_optimize,
-                                                  double min_value,
-                                                  double max_value,
-                                                  double tolerance)
+                                                   int    param_to_optimize,
+                                                   double min_value,
+                                                   double max_value,
+                                                   double tolerance)
 {
   if (__builtin_popcount(param_to_optimize) > 1)
   {
     corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                  "Multi-parameter optimization is not supported by the "
-                  "corax_algo_opt_onedim_treeinfo() function!");
+                    "Multi-parameter optimization is not supported by the "
+                    "corax_algo_opt_onedim_treeinfo() function!");
     return -INFINITY;
   }
 
@@ -399,29 +399,29 @@ CORAX_EXPORT double corax_algo_opt_onedim_treeinfo(corax_treeinfo_t *treeinfo,
     break;
   default:
     corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                  "Unsupported parameter: %d",
-                  param_to_optimize);
+                    "Unsupported parameter: %d",
+                    param_to_optimize);
     return -INFINITY;
   }
 
   assert(params_getter && params_setter);
 
   return corax_algo_opt_onedim_treeinfo_custom(treeinfo,
-                                                param_to_optimize,
-                                                params_getter,
-                                                params_setter,
-                                                min_value,
-                                                max_value,
-                                                tolerance);
+                                               param_to_optimize,
+                                               params_getter,
+                                               params_setter,
+                                               min_value,
+                                               max_value,
+                                               tolerance);
 }
 
 CORAX_EXPORT
 double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
-                                              double             min_scaler,
-                                              double             max_scaler,
-                                              double             min_brlen,
-                                              double             max_brlen,
-                                              double             lh_epsilon)
+                                             double            min_scaler,
+                                             double            max_scaler,
+                                             double            min_brlen,
+                                             double            max_brlen,
+                                             double            lh_epsilon)
 {
   unsigned int i, j;
   double       old_loglh, loglh;
@@ -431,8 +431,8 @@ double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
   if (treeinfo->brlen_linkage != CORAX_BRLEN_SCALED)
   {
     corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                  "Branch length scaler optimization works only in "
-                  "scaled branch length mode.");
+                    "Branch length scaler optimization works only in "
+                    "scaled branch length mode.");
     return (double)CORAX_FAILURE;
   }
 
@@ -457,10 +457,10 @@ double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
 
   loglh = -1
           * corax_algo_opt_onedim_treeinfo(treeinfo,
-                                            CORAX_OPT_PARAM_BRANCH_LEN_SCALER,
-                                            min_scaler,
-                                            max_scaler,
-                                            lh_epsilon);
+                                           CORAX_OPT_PARAM_BRANCH_LEN_SCALER,
+                                           min_scaler,
+                                           max_scaler,
+                                           lh_epsilon);
 
   /* normalize scalers and scale the branches accordingly */
   corax_treeinfo_normalize_brlen_scalers(treeinfo);
@@ -505,11 +505,11 @@ double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
-                                            unsigned int       params_index,
-                                            double             min_rate,
-                                            double             max_rate,
-                                            double             bfgs_factor,
-                                            double             tolerance)
+                                           unsigned int      params_index,
+                                           double            min_rate,
+                                           double            max_rate,
+                                           double            bfgs_factor,
+                                           double            tolerance)
 {
   unsigned int i, j, k, l;
 
@@ -614,10 +614,10 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
     }
 
     corax_partition_t *partition    = treeinfo->partitions[i];
-    double *         subst_rates  = partition->subst_params[params_index];
-    unsigned int     states       = partition->states;
-    unsigned int     subst_params = corax_subst_rate_count(states);
-    int *            symmetries   = treeinfo->subst_matrix_symmetries[i];
+    double *           subst_rates  = partition->subst_params[params_index];
+    unsigned int       states       = partition->states;
+    unsigned int       subst_params = corax_subst_rate_count(states);
+    int *              symmetries   = treeinfo->subst_matrix_symmetries[i];
 
     x[part]  = (double *)malloc(sizeof(double) * (subst_free_params[part]));
     bt[part] = bt[0];
@@ -665,16 +665,16 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
   opt_params.fixed_var_index    = NULL;
 
   cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                              x,
-                                              lb,
-                                              ub,
-                                              bt,
-                                              subst_free_params,
-                                              max_free_params,
-                                              factor,
-                                              tolerance,
-                                              (void *)&opt_params,
-                                              target_subst_params_func_multi);
+                                             x,
+                                             lb,
+                                             ub,
+                                             bt,
+                                             subst_free_params,
+                                             max_free_params,
+                                             factor,
+                                             tolerance,
+                                             (void *)&opt_params,
+                                             target_subst_params_func_multi);
 
   /* cleanup */
   for (i = 0; i < part_count; ++i)
@@ -697,11 +697,11 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
-                                            unsigned int       params_index,
-                                            double             min_freq,
-                                            double             max_freq,
-                                            double             bfgs_factor,
-                                            double             tolerance)
+                                           unsigned int      params_index,
+                                           double            min_freq,
+                                           double            max_freq,
+                                           double            bfgs_factor,
+                                           double            tolerance)
 {
   const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
@@ -784,9 +784,9 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
     }
 
     corax_partition_t *partition   = treeinfo->partitions[i];
-    double *         frequencies = partition->frequencies[params_index];
-    unsigned int     states      = partition->states;
-    unsigned int     cur_index;
+    double *           frequencies = partition->frequencies[params_index];
+    unsigned int       states      = partition->states;
+    unsigned int       cur_index;
 
     num_free_params[part] = states - 1;
 
@@ -841,16 +841,16 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
   assert(part == part_count);
 
   cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                              x,
-                                              lb,
-                                              ub,
-                                              bt,
-                                              num_free_params,
-                                              max_free_params,
-                                              factor,
-                                              tolerance,
-                                              (void *)&opt_params,
-                                              target_freqs_func_multi);
+                                             x,
+                                             lb,
+                                             ub,
+                                             bt,
+                                             num_free_params,
+                                             max_free_params,
+                                             factor,
+                                             tolerance,
+                                             (void *)&opt_params,
+                                             target_freqs_func_multi);
 
   /* cleanup */
   for (i = 0; i < part_count; ++i) free(x[i]);
@@ -872,13 +872,13 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
-                                           unsigned int       params_index,
-                                           double             min_alpha,
-                                           double             max_alpha,
-                                           double             min_pinv,
-                                           double             max_pinv,
-                                           double             bfgs_factor,
-                                           double             tolerance)
+                                          unsigned int      params_index,
+                                          double            min_alpha,
+                                          double            max_alpha,
+                                          double            min_pinv,
+                                          double            max_pinv,
+                                          double            bfgs_factor,
+                                          double            tolerance)
 {
   const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
   const int params_to_optimize = CORAX_OPT_PARAM_ALPHA | CORAX_OPT_PARAM_PINV;
@@ -899,7 +899,9 @@ double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
   {
     if ((treeinfo->params_to_optimize[i] & params_to_optimize)
         == params_to_optimize)
-    { part_count++; }
+    {
+      part_count++;
+    }
   }
 
   /* nothing to optimize */
@@ -970,16 +972,16 @@ double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
   assert(part == part_count);
 
   cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                              x,
-                                              lb,
-                                              ub,
-                                              bt,
-                                              num_free_params,
-                                              max_free_params,
-                                              factor,
-                                              tolerance,
-                                              (void *)&opt_params,
-                                              target_func_multidim_treeinfo);
+                                             x,
+                                             lb,
+                                             ub,
+                                             bt,
+                                             num_free_params,
+                                             max_free_params,
+                                             factor,
+                                             tolerance,
+                                             (void *)&opt_params,
+                                             target_func_multidim_treeinfo);
 
   /* cleanup */
   free(lb[0]);
@@ -997,18 +999,18 @@ double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
 }
 
 static void scales_rates_and_branches(corax_treeinfo_t *treeinfo,
-                                      size_t             part_num,
-                                      double             rate_scaler)
+                                      size_t            part_num,
+                                      double            rate_scaler)
 {
   assert(treeinfo);
   assert(part_num < treeinfo->partition_count);
   assert(rate_scaler > 0.);
 
   corax_partition_t *partition    = treeinfo->partitions[part_num];
-  double *         rates        = partition->rates;
-  unsigned int     rate_cats    = partition->rate_cats;
-  double           brlen_scaler = 1.0 / rate_scaler;
-  size_t           j;
+  double *           rates        = partition->rates;
+  unsigned int       rate_cats    = partition->rate_cats;
+  double             brlen_scaler = 1.0 / rate_scaler;
+  size_t             j;
 
   for (j = 0; j < rate_cats; ++j) rates[j] *= rate_scaler;
 
@@ -1039,11 +1041,11 @@ fix_free_rates(corax_treeinfo_t *treeinfo, double min_rate, double max_rate)
       continue;
 
     corax_partition_t *partition    = treeinfo->partitions[i];
-    double *         rates        = partition->rates;
-    unsigned int     rate_cats    = partition->rate_cats;
-    double           lowest_rate  = rates[0];
-    double           highest_rate = rates[0];
-    double           rate_scaler;
+    double *           rates        = partition->rates;
+    unsigned int       rate_cats    = partition->rate_cats;
+    double             lowest_rate  = rates[0];
+    double             highest_rate = rates[0];
+    double             rate_scaler;
 
     /* force constraint sum(weights x rates) = 1.0 */
     for (j = 1; j < rate_cats; ++j)
@@ -1081,10 +1083,10 @@ static void renormalize_free_rates(corax_treeinfo_t *treeinfo)
       continue;
 
     corax_partition_t *partition = treeinfo->partitions[i];
-    double *         rates     = partition->rates;
-    double *         weights   = partition->rate_weights;
-    unsigned int     rate_cats = partition->rate_cats;
-    double           sum_weightrates, rate_scaler;
+    double *           rates     = partition->rates;
+    double *           weights   = partition->rate_weights;
+    unsigned int       rate_cats = partition->rate_cats;
+    double             sum_weightrates, rate_scaler;
 
     /* force constraint sum(weights x rates) = 1.0 */
     sum_weightrates = 0.0;
@@ -1097,12 +1099,12 @@ static void renormalize_free_rates(corax_treeinfo_t *treeinfo)
 
 CORAX_EXPORT
 double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
-                                              double             min_rate,
-                                              double             max_rate,
-                                              double             min_brlen,
-                                              double             max_brlen,
-                                              double             bfgs_factor,
-                                              double             tolerance)
+                                             double            min_rate,
+                                             double            max_rate,
+                                             double            min_brlen,
+                                             double            max_brlen,
+                                             double            bfgs_factor,
+                                             double            tolerance)
 {
   const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
@@ -1155,11 +1157,11 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
   /* in doubles! */
   rw_span = max_free_params;
 
-  x  = (double **) calloc(part_count, sizeof(double*));
-  lb = (double **) calloc(part_count, sizeof(double*));
-  ub = (double **) calloc(part_count, sizeof(double*));
-  bt = (int **)    calloc(part_count, sizeof(int*));
-  num_free_params = (unsigned int *) calloc(part_count, sizeof(unsigned int));
+  x               = (double **)calloc(part_count, sizeof(double *));
+  lb              = (double **)calloc(part_count, sizeof(double *));
+  ub              = (double **)calloc(part_count, sizeof(double *));
+  bt              = (int **)calloc(part_count, sizeof(int *));
+  num_free_params = (unsigned int *)calloc(part_count, sizeof(unsigned int));
 
   /* those values are the same for all partitions */
   lb[0] = (double *)malloc(sizeof(double) * (max_free_params));
@@ -1170,17 +1172,19 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
   old_rates = old_weights = old_brlens = old_scalers = NULL;
   if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED)
   {
-    old_rates = (double *) calloc(local_part_count * max_free_params, sizeof(double));
-    old_weights = (double *) calloc(local_part_count * max_free_params, sizeof(double));
+    old_rates =
+        (double *)calloc(local_part_count * max_free_params, sizeof(double));
+    old_weights =
+        (double *)calloc(local_part_count * max_free_params, sizeof(double));
 
-    old_brlens = (double *) calloc(treeinfo->tree->edge_count, sizeof(double));
+    old_brlens = (double *)calloc(treeinfo->tree->edge_count, sizeof(double));
     memcpy(old_brlens,
            treeinfo->linked_branch_lengths,
            sizeof(double) * treeinfo->tree->edge_count);
 
     if (treeinfo->brlen_scalers)
     {
-      old_scalers  = (double *) calloc(treeinfo->partition_count, sizeof(double));
+      old_scalers = (double *)calloc(treeinfo->partition_count, sizeof(double));
       memcpy(old_scalers,
              treeinfo->brlen_scalers,
              sizeof(double) * treeinfo->partition_count);
@@ -1231,8 +1235,7 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
   cur_logl = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
   DBG("corax_algo_opt_rates_weights_treeinfo: START: logLH = %.15lf\n",
       cur_logl);
-  do
-  {
+  do {
     prev_logl = cur_logl;
 
     /* optimize mixture weights */
@@ -1268,16 +1271,16 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
     opt_params.param_to_optimize = CORAX_OPT_PARAM_RATE_WEIGHTS;
 
     cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                                x,
-                                                lb,
-                                                ub,
-                                                bt,
-                                                num_free_params,
-                                                max_free_params,
-                                                factor,
-                                                tolerance,
-                                                (void *)&opt_params,
-                                                target_func_multidim_treeinfo);
+                                               x,
+                                               lb,
+                                               ub,
+                                               bt,
+                                               num_free_params,
+                                               max_free_params,
+                                               factor,
+                                               tolerance,
+                                               (void *)&opt_params,
+                                               target_func_multidim_treeinfo);
 
     DBG("corax_algo_opt_rates_weights_treeinfo: AFTER WEIGHTS: logLH = "
         "%.15lf\n",
@@ -1324,16 +1327,16 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
     opt_params.param_to_optimize = CORAX_OPT_PARAM_FREE_RATES;
 
     cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                                x,
-                                                lb,
-                                                ub,
-                                                bt,
-                                                num_free_params,
-                                                max_free_params,
-                                                factor,
-                                                tolerance,
-                                                (void *)&opt_params,
-                                                target_func_multidim_treeinfo);
+                                               x,
+                                               lb,
+                                               ub,
+                                               bt,
+                                               num_free_params,
+                                               max_free_params,
+                                               factor,
+                                               tolerance,
+                                               (void *)&opt_params,
+                                               target_func_multidim_treeinfo);
 
     DBG("corax_algo_opt_rates_weights_treeinfo: AFTER RATES: logLH = %.15lf\n",
         cur_logl);
@@ -1448,12 +1451,12 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
-                                      double             min_brlen,
-                                      double             max_brlen,
-                                      double             lh_epsilon,
-                                      int                max_iters,
-                                      int                opt_method,
-                                      int                radius)
+                                     double            min_brlen,
+                                     double            max_brlen,
+                                     double            lh_epsilon,
+                                     int               max_iters,
+                                     int               opt_method,
+                                     int               radius)
 {
   return corax_opt_optimize_branch_lengths_local_multi(
       treeinfo->partitions,

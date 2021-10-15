@@ -67,23 +67,23 @@
 
 #define CORAX_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CORAX_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define CORAX_SWAP(x, y)                                                         \
+#define CORAX_SWAP(x, y)                                                       \
   do {                                                                         \
     __typeof__(x) _t = x;                                                      \
     x                = y;                                                      \
     y                = _t;                                                     \
   } while (0)
-#define CORAX_STAT(x)                                                            \
+#define CORAX_STAT(x)                                                          \
   ((corax_hardware.init || corax_hardware_probe()) && corax_hardware.x)
-#define CORAX_UNUSED(expr)                                                       \
+#define CORAX_UNUSED(expr)                                                     \
   do {                                                                         \
     (void)(expr);                                                              \
   } while (0)
 
 #define CORAX_UTREE_IS_TIP(node) (node->next == NULL)
 
-/** @defgroup corax_defines Constant Definitions 
- * @{ 
+/** @defgroup corax_defines Constant Definitions
+ * @{
  */
 /* constants */
 #define CORAX_FAILURE 0
@@ -102,10 +102,10 @@
 
 #define CORAX_ERRMSG_LEN 200
 
-#define CORAX_SCALE_FACTOR                                                       \
+#define CORAX_SCALE_FACTOR                                                     \
   115792089237316195423570985008687907853269984665640564039457584007913129639936.0 /*  2**256 (exactly)  */
 #define CORAX_SCALE_THRESHOLD (1.0 / CORAX_SCALE_FACTOR)
-#define CORAX_SCALE_FACTOR_SQRT                                                  \
+#define CORAX_SCALE_FACTOR_SQRT                                                \
   340282366920938463463374607431768211456.0 /* 2**128 */
 #define CORAX_SCALE_THRESHOLD_SQRT (1.0 / CORAX_SCALE_FACTOR_SQRT)
 #define CORAX_SCALE_BUFFER_NONE -1
@@ -130,7 +130,6 @@
 
 /* attribute flags */
 
-
 /** Flag specifying no SIMD operations */
 #define CORAX_ATTRIB_ARCH_CPU 0
 /** Flag specifying only SSE3 SIMD operations */
@@ -144,7 +143,7 @@
 /** Mask for the CPU architecture attributes */
 #define CORAX_ATTRIB_ARCH_MASK 0xF
 
-/** 
+/**
  * Flag which indicates the use of the pattern tip optimization. Mutually
  * exclusive with the `CORAX_ATTRIB_SITE_REPEATS` flag.
  */
@@ -161,7 +160,7 @@
 
 /* site repeats */
 
-/** 
+/**
  * Flag indicating the use of the site repeats optimization. Mutually exclusive
  * with the `CORAX_ATTRIB_PATTERN_TIP` flag.
  */
@@ -249,14 +248,14 @@
 #define CORAX_GAMMA_RATES_MEDIAN 1
 
 /* branch linkage modes */
-#define CORAX_BRLEN_LINKED    0
-#define CORAX_BRLEN_SCALED    1
-#define CORAX_BRLEN_UNLINKED  2
+#define CORAX_BRLEN_LINKED 0
+#define CORAX_BRLEN_SCALED 1
+#define CORAX_BRLEN_UNLINKED 2
 
 /* parallel reduction modes */
-#define CORAX_REDUCE_SUM     0
-#define CORAX_REDUCE_MAX     1
-#define CORAX_REDUCE_MIN     2
+#define CORAX_REDUCE_SUM 0
+#define CORAX_REDUCE_MAX 1
+#define CORAX_REDUCE_MIN 2
 
 // TODO: this must be adapted for MSVC
 #define CORAX_POPCNT32 __builtin_popcount
@@ -303,7 +302,7 @@ struct corax_repeats;
  * understand that this is not always the case. In particular partitions of a
  * genome might not code for something, and there are no requirements that the
  * sites which make up a partition are even contiguous.
- * 
+ *
  * Here is a checklist for creating and using a new partition:
  * - Create the partition.
  * - Set the substitution parameters,
@@ -314,7 +313,7 @@ struct corax_repeats;
  * - Set the proportion of invariant sites.
  * - Set the category rates.
  * - Set the category weights.
- * 
+ *
  * @ingroup corax_partition_t
  */
 typedef struct corax_partition
@@ -332,8 +331,8 @@ typedef struct corax_partition
 
   /**
    * The number of "conceptual" nodes in the tree. This is to say, the number of
-   * nodes in the tree, and not the number of `corax_unode_t` present in the tree
-   * structure. Includes the tips.
+   * nodes in the tree, and not the number of `corax_unode_t` present in the
+   * tree structure. Includes the tips.
    */
   unsigned int nodes; // tips + clv_buffer
 
@@ -357,7 +356,7 @@ typedef struct corax_partition
    * MSA weights.
    */
   unsigned int pattern_weight_sum;
-  
+
   /**
    * How many rate matrices are present in the partition. This is different than
    * the number of rate _categories_. This is instead to be able to specify a
@@ -385,7 +384,7 @@ typedef struct corax_partition
   unsigned int scale_buffers;
 
   /**
-   * Bitvector of the flags used for computation in the `corax_partition_t`. 
+   * Bitvector of the flags used for computation in the `corax_partition_t`.
    *
    * @ingroup corax_attributes
    */
@@ -400,7 +399,7 @@ typedef struct corax_partition
    * - `CORAX_ALIGNMENT_SSE`
    * - `CORAX_ALIGNMENT_AVX`
    */
-  size_t       alignment;
+  size_t alignment;
 
   /**
    * How many states are used, after padding. This is also the size of an
@@ -429,14 +428,14 @@ typedef struct corax_partition
   unsigned char **tipchars;
   unsigned char * charmap;
   double *        ttlookup;
-  corax_state_t *   tipmap;
+  corax_state_t * tipmap;
 
   /* ascertainment bias correction */
   int asc_bias_alloc;
   int asc_additional_sites; // partition->asc_bias_alloc ? states : 0
 
   /* site repeats */
-  /** 
+  /**
    * If repeats are disabled, repeats is set to NULL. Otherwise, it points to a
    * structure holding all information required to use the site repeats
    * optimization.
@@ -453,12 +452,12 @@ typedef struct corax_partition
  *  compresses all the site CLVs that are expected to be equal,
  *  in order to save memory and computations.
  *
- *  Let u be a node, and let i and j be two sites. If the sites 
+ *  Let u be a node, and let i and j be two sites. If the sites
  *  i and j are equal in all the sequences under the node u, then
  *  their CLVs are also equal, and thus do not need to be computed/stored
- *  twice. We say that they belong to the same repeat class. 
+ *  twice. We say that they belong to the same repeat class.
  *
- *  For a given node, the site repeats technique identifies all the 
+ *  For a given node, the site repeats technique identifies all the
  *  different repeat classes, and associates to each of them a unique
  *  class identifier (starting from 1 for each node), which is required
  *  to find the location of the CLV of this repeat class
@@ -493,7 +492,8 @@ typedef struct corax_repeats
    * `perscale_ids[scaler_index]` is the number of different repeat classes for
    * the scaler associated with the `id` scaler_index.  For a given
    * `corax_operation_t *op`, if scalers are enabled:
-   * `pernode_ids[op->parent_clv_index] == perscale_ids[op->parent_scaler_index]`
+   * `pernode_ids[op->parent_clv_index] ==
+   * perscale_ids[op->parent_scaler_index]`
    */
   unsigned int *perscale_ids;
 
@@ -511,21 +511,21 @@ typedef struct corax_repeats
    * node of `left_clv` and `right_clv`. In particular, applying site repeats on
    * nodes that are close to the (virtual) root of the tree is often
    * counterproductive.  This function can be redefined, and its default
-   * definition is is `corax_default_enable_repeats` 
+   * definition is is `corax_default_enable_repeats`
    */
   unsigned int (*enable_repeats)(struct corax_partition *partition,
-                                 unsigned int          left_clv,
-                                 unsigned int          right_clv);
+                                 unsigned int            left_clv,
+                                 unsigned int            right_clv);
 
   /**
    * callback called when repeats are updated. Reallocate the CLV
-   * and scaler vector for the node whose clv_index is parent. 
-   * sites_to_alloc indicates the number of "unique sites", 
+   * and scaler vector for the node whose clv_index is parent.
+   * sites_to_alloc indicates the number of "unique sites",
    * (or rather class identifiers) for this node.
-   * 
+   *
    * This function can be redefined and its default definition
    * is corax_default_reallocate_repeats
-   * 
+   *
    * By default, we always reallocate the exact required size, in
    * order to save memory. An alternative strategy could consist
    * in preallocating the maximum size (assuming that there is no
@@ -533,9 +533,9 @@ typedef struct corax_repeats
    * at the next calls (to avoid deallocation/reallocation).
    */
   void (*reallocate_repeats)(struct corax_partition *partition,
-                             unsigned int          parent,
-                             int                   scaler_index,
-                             unsigned int          sites_to_alloc);
+                             unsigned int            parent,
+                             int                     scaler_index,
+                             unsigned int            sites_to_alloc);
 
   /*
    * The `lookup_buffer` corresponds to the "matrix M" in the original site
@@ -553,10 +553,10 @@ typedef struct corax_repeats
   unsigned int  lookup_buffer_size;
 
   /**
-   * Map each character (representing a state) to a unique identifier 
+   * Map each character (representing a state) to a unique identifier
    */
-  char *        charmap;
-  
+  char *charmap;
+
   /**
    * Those vectors are pre-allocated buffers for the site repeats algorithm (or
    * for using site repeats in some kernels functions). They are only relevant
@@ -596,7 +596,7 @@ typedef struct corax_dlist
 {
   struct corax_dlist *next;
   struct corax_dlist *prev;
-  void *            data;
+  void *              data;
 } corax_dlist_t;
 
 /* multiple sequence alignment */
@@ -650,38 +650,38 @@ typedef struct corax_unode_s
    * Label for the tree. Optional. If not present, then should be set to
    * `nullptr`
    */
-  char *              label;
+  char *label;
 
   /**
    * Length of the edge, which is represented by the back pointer
    */
-  double              length;
+  double length;
 
   /**
    * Index of this node in the `nodes` buffer of `corax_utree_t`. Each
    * "super"-node shares and index. I.E. the index is on the "tree node" level,
    * not on the corax_unode_t level.
    */
-  unsigned int        node_index;
+  unsigned int node_index;
 
   /**
    * Index into the CLV buffer when computing a likelihood. For more
    * information, please see the documentation on `corax_partition_t`.
    */
-  unsigned int        clv_index;
+  unsigned int clv_index;
 
   /**
    * Index into the scalar array to represent the CLV scaler. Please see the
    * documentation on `corax_partition_t` for more information.
    */
-  int                 scaler_index;
+  int scaler_index;
 
   /**
    * Index into the array of probability matrices. These probability matrices
    * will be computed based on the branch length `length`. For more information
    * please see the documentation on `corax_partition_t`.
    */
-  unsigned int        pmatrix_index;
+  unsigned int pmatrix_index;
 
   /**
    * See the explaination in the concepts section of `docs/corax_utree_t.md`
@@ -737,7 +737,7 @@ typedef struct corax_utree_s
   /**
    * Flag indicating if the tree is binary
    */
-  int          binary;
+  int binary;
 
   /**
    * An array of `corax_unode_t` pointers
@@ -749,7 +749,7 @@ typedef struct corax_utree_s
    * All tree manipulation functions such as `corax_utree_wraptree` follow this
    * convention.
    */
-  corax_unode_t * vroot;
+  corax_unode_t *vroot;
 } corax_utree_t;
 
 /* structures for parsimony */
@@ -833,22 +833,22 @@ struct corax_random_data
 typedef struct corax_random_state_s
 {
   struct corax_random_data rdata;
-  char *                 state_buf; /* Buffer to store state */
+  char *                   state_buf; /* Buffer to store state */
 } corax_random_state;
 
 /* common data */
 
-CORAX_EXPORT extern __thread int            corax_errno;
-CORAX_EXPORT extern __thread char           corax_errmsg[200];
+CORAX_EXPORT extern __thread int              corax_errno;
+CORAX_EXPORT extern __thread char             corax_errmsg[200];
 CORAX_EXPORT extern __thread corax_hardware_t corax_hardware;
 
-CORAX_EXPORT extern const corax_state_t  corax_map_bin[256];
-CORAX_EXPORT extern const corax_state_t  corax_map_nt[256];
-CORAX_EXPORT extern const corax_state_t  corax_map_aa[256];
-CORAX_EXPORT extern const corax_state_t  corax_map_gt10[256];
-CORAX_EXPORT extern const unsigned int corax_map_fasta[256];
-CORAX_EXPORT extern const unsigned int corax_map_phylip[256];
-CORAX_EXPORT extern const unsigned int corax_map_generic[256];
+CORAX_EXPORT extern const corax_state_t corax_map_bin[256];
+CORAX_EXPORT extern const corax_state_t corax_map_nt[256];
+CORAX_EXPORT extern const corax_state_t corax_map_aa[256];
+CORAX_EXPORT extern const corax_state_t corax_map_gt10[256];
+CORAX_EXPORT extern const unsigned int  corax_map_fasta[256];
+CORAX_EXPORT extern const unsigned int  corax_map_phylip[256];
+CORAX_EXPORT extern const unsigned int  corax_map_generic[256];
 
 CORAX_EXPORT extern const double corax_aa_rates_dayhoff[190];
 CORAX_EXPORT extern const double corax_aa_rates_lg[190];
@@ -952,17 +952,18 @@ extern "C"
    *
    * @ingroup corax_partition_t
    */
-  CORAX_EXPORT corax_partition_t *corax_partition_create(unsigned int tips,
-                                                   unsigned int clv_buffers,
-                                                   unsigned int states,
-                                                   unsigned int sites,
-                                                   unsigned int rate_matrices,
-                                                   unsigned int prob_matrices,
-                                                   unsigned int rate_cats,
-                                                   unsigned int scale_buffers,
-                                                   unsigned int attributes);
+  CORAX_EXPORT corax_partition_t *
+               corax_partition_create(unsigned int tips,
+                                      unsigned int clv_buffers,
+                                      unsigned int states,
+                                      unsigned int sites,
+                                      unsigned int rate_matrices,
+                                      unsigned int prob_matrices,
+                                      unsigned int rate_cats,
+                                      unsigned int scale_buffers,
+                                      unsigned int attributes);
 
-  /** 
+  /**
    * Destroys the partition, deallocating the memory.
    *
    * @param partition The partition to be destroyed.
@@ -989,14 +990,14 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT int corax_set_tip_states(corax_partition_t *  partition,
-                                    unsigned int       tip_index,
-                                    const corax_state_t *map,
-                                    const char *       sequence);
+                                        unsigned int         tip_index,
+                                        const corax_state_t *map,
+                                        const char *         sequence);
 
   CORAX_EXPORT int corax_set_tip_clv(corax_partition_t *partition,
-                                 unsigned int     tip_index,
-                                 const double *   clv,
-                                 int              padding);
+                                     unsigned int       tip_index,
+                                     const double *     clv,
+                                     int                padding);
 
   /**
    * Sets the pattern weights for a partition.
@@ -1004,18 +1005,21 @@ extern "C"
    * @param partition The partition to set the weights on.
    *
    * @param pattern_weights The array of weights. While you could set this
-   * yourself, it should typically be the output of `corax_compress_site_patterns`
+   * yourself, it should typically be the output of
+   * `corax_compress_site_patterns`
    *
    * @ingroup corax_partition_t
    */
-  CORAX_EXPORT void corax_set_pattern_weights(corax_partition_t *   partition,
-                                          const unsigned int *pattern_weights);
+  CORAX_EXPORT void
+  corax_set_pattern_weights(corax_partition_t * partition,
+                            const unsigned int *pattern_weights);
 
   CORAX_EXPORT int corax_set_asc_bias_type(corax_partition_t *partition,
-                                       int              asc_bias_type);
+                                           int                asc_bias_type);
 
-  CORAX_EXPORT void corax_set_asc_state_weights(corax_partition_t *   partition,
-                                            const unsigned int *state_weights);
+  CORAX_EXPORT void
+  corax_set_asc_state_weights(corax_partition_t * partition,
+                              const unsigned int *state_weights);
 
   /* functions in list.c */
 
@@ -1024,9 +1028,9 @@ extern "C"
   CORAX_EXPORT int corax_dlist_prepend(corax_dlist_t **dlist, void *data);
 
   CORAX_EXPORT void corax_fill_parent_scaler(unsigned int        scaler_size,
-                                         unsigned int *      parent_scaler,
-                                         const unsigned int *left_scaler,
-                                         const unsigned int *right_scaler);
+                                             unsigned int *      parent_scaler,
+                                             const unsigned int *left_scaler,
+                                             const unsigned int *right_scaler);
 
   /* functions in repeats.c */
 
@@ -1036,63 +1040,68 @@ extern "C"
   CORAX_EXPORT int corax_repeats_enabled(const corax_partition_t *partition);
 
   CORAX_EXPORT void corax_resize_repeats_lookup(corax_partition_t *partition,
-                                            unsigned int     size);
+                                                unsigned int       size);
 
-  CORAX_EXPORT unsigned int corax_get_sites_number(const corax_partition_t *partition,
-                                               unsigned int clv_index);
+  CORAX_EXPORT unsigned int
+  corax_get_sites_number(const corax_partition_t *partition,
+                         unsigned int             clv_index);
 
-  CORAX_EXPORT unsigned int *corax_get_site_id(const corax_partition_t *partition,
-                                           unsigned int           clv_index);
+  CORAX_EXPORT unsigned int *
+  corax_get_site_id(const corax_partition_t *partition, unsigned int clv_index);
 
-  CORAX_EXPORT unsigned int *corax_get_id_site(const corax_partition_t *partition,
-                                           unsigned int           clv_index);
+  CORAX_EXPORT unsigned int *
+  corax_get_id_site(const corax_partition_t *partition, unsigned int clv_index);
 
-  CORAX_EXPORT unsigned int corax_get_clv_size(const corax_partition_t *partition,
-                                           unsigned int           clv_index);
+  CORAX_EXPORT unsigned int
+  corax_get_clv_size(const corax_partition_t *partition,
+                     unsigned int             clv_index);
 
-  CORAX_EXPORT unsigned int corax_default_enable_repeats(corax_partition_t *partition,
-                                                     unsigned int     left_clv,
-                                                     unsigned int right_clv);
+  CORAX_EXPORT unsigned int
+  corax_default_enable_repeats(corax_partition_t *partition,
+                               unsigned int       left_clv,
+                               unsigned int       right_clv);
 
-  CORAX_EXPORT unsigned int corax_no_enable_repeats(corax_partition_t *partition,
-                                                unsigned int     left_clv,
-                                                unsigned int     right_clv);
+  CORAX_EXPORT unsigned int
+  corax_no_enable_repeats(corax_partition_t *partition,
+                          unsigned int       left_clv,
+                          unsigned int       right_clv);
 
-  CORAX_EXPORT void corax_default_reallocate_repeats(corax_partition_t *partition,
-                                                 unsigned int     parent,
-                                                 int              scaler_index,
-                                                 unsigned int sites_to_alloc);
+  CORAX_EXPORT void
+  corax_default_reallocate_repeats(corax_partition_t *partition,
+                                   unsigned int       parent,
+                                   int                scaler_index,
+                                   unsigned int       sites_to_alloc);
 
   CORAX_EXPORT int corax_repeats_initialize(corax_partition_t *partition);
 
   CORAX_EXPORT int corax_update_repeats_tips(corax_partition_t *  partition,
-                                         unsigned int       tip_index,
-                                         const corax_state_t *map,
-                                         const char *       sequence);
+                                             unsigned int         tip_index,
+                                             const corax_state_t *map,
+                                             const char *         sequence);
 
   CORAX_EXPORT void corax_update_repeats(corax_partition_t *      partition,
-                                     const corax_operation_t *op);
+                                         const corax_operation_t *op);
 
   CORAX_EXPORT void corax_disable_bclv(corax_partition_t *partition);
 
   CORAX_EXPORT void
   corax_fill_parent_scaler_repeats(unsigned int        sites,
-                                 unsigned int *      parent_scaler,
-                                 const unsigned int *psites,
-                                 const unsigned int *left_scaler,
-                                 const unsigned int *lids,
-                                 const unsigned int *right_scaler,
-                                 const unsigned int *rids);
+                                   unsigned int *      parent_scaler,
+                                   const unsigned int *psites,
+                                   const unsigned int *left_scaler,
+                                   const unsigned int *lids,
+                                   const unsigned int *right_scaler,
+                                   const unsigned int *rids);
 
   CORAX_EXPORT void
   corax_fill_parent_scaler_repeats_per_rate(unsigned int        sites,
-                                          unsigned int        rates,
-                                          unsigned int *      parent_scaler,
-                                          const unsigned int *psites,
-                                          const unsigned int *left_scaler,
-                                          const unsigned int *lids,
-                                          const unsigned int *right_scaler,
-                                          const unsigned int *rids);
+                                            unsigned int        rates,
+                                            unsigned int *      parent_scaler,
+                                            const unsigned int *psites,
+                                            const unsigned int *left_scaler,
+                                            const unsigned int *lids,
+                                            const unsigned int *right_scaler,
+                                            const unsigned int *rids);
 
   /* functions in models.c */
 
@@ -1121,8 +1130,8 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
-                                       unsigned int     params_index,
-                                       const double *   params);
+                                           unsigned int       params_index,
+                                           const double *     params);
 
   /**
    * Sets the based distribution frequencies for a partition. This needs to be
@@ -1138,20 +1147,20 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT void corax_set_frequencies(corax_partition_t *partition,
-                                      unsigned int     params_index,
-                                      const double *   frequencies);
+                                          unsigned int       params_index,
+                                          const double *     frequencies);
 
   CORAX_EXPORT void corax_set_category_rates(corax_partition_t *partition,
-                                         const double *   rates);
+                                             const double *     rates);
 
   CORAX_EXPORT void corax_set_category_weights(corax_partition_t *partition,
-                                           const double *   rate_weights);
+                                               const double *     rate_weights);
 
   CORAX_EXPORT int corax_update_eigen(corax_partition_t *partition,
-                                  unsigned int     params_index);
+                                      unsigned int       params_index);
 
   /**
-   * Update the probability matrices of partition. 
+   * Update the probability matrices of partition.
    *
    * @param params_index Index of the parameters to use, as in rate categories.
    *
@@ -1167,20 +1176,23 @@ extern "C"
    *
    * @ingroup corax_partition_t
    */
-  CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t *   partition,
-                                          const unsigned int *params_index,
-                                          const unsigned int *matrix_indices,
-                                          const double *      branch_lengths,
-                                          unsigned int        count);
+  CORAX_EXPORT int
+  corax_update_prob_matrices(corax_partition_t * partition,
+                             const unsigned int *params_index,
+                             const unsigned int *matrix_indices,
+                             const double *      branch_lengths,
+                             unsigned int        count);
 
   CORAX_EXPORT unsigned int
   corax_count_invariant_sites(corax_partition_t *partition,
-                            unsigned int *   state_inv_count);
+                              unsigned int *     state_inv_count);
 
   CORAX_EXPORT int corax_update_invariant_sites(corax_partition_t *partition);
 
-  CORAX_EXPORT int corax_update_invariant_sites_proportion(
-      corax_partition_t *partition, unsigned int params_index, double prop_invar);
+  CORAX_EXPORT int
+  corax_update_invariant_sites_proportion(corax_partition_t *partition,
+                                          unsigned int       params_index,
+                                          double             prop_invar);
 
   CORAX_EXPORT void *corax_aligned_alloc(size_t size, size_t alignment);
 
@@ -1209,11 +1221,11 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT double
-  corax_compute_root_loglikelihood(corax_partition_t *   partition,
-                                 unsigned int        clv_index,
-                                 int                 scaler_index,
-                                 const unsigned int *freqs_indices,
-                                 double *            persite_lnl);
+  corax_compute_root_loglikelihood(corax_partition_t * partition,
+                                   unsigned int        clv_index,
+                                   int                 scaler_index,
+                                   const unsigned int *freqs_indices,
+                                   double *            persite_lnl);
 
   /**
    * Computes the likelihood of an edge. It does this by "rootinng" the tree at
@@ -1243,36 +1255,37 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT double
-  corax_compute_edge_loglikelihood(corax_partition_t *   partition,
-                                 unsigned int        parent_clv_index,
-                                 int                 parent_scaler_index,
-                                 unsigned int        child_clv_index,
-                                 int                 child_scaler_index,
-                                 unsigned int        matrix_index,
-                                 const unsigned int *freqs_indices,
-                                 double *            persite_lnl);
-
-  CORAX_EXPORT int corax_compute_node_ancestral(corax_partition_t *partition,
-                                            unsigned int     node_clv_index,
-                                            int              node_scaler_index,
-                                            unsigned int     other_clv_index,
-                                            int              other_scaler_index,
-                                            unsigned int     matrix_index,
-                                            const unsigned int *freqs_indices,
-                                            double *            ancestral);
+  corax_compute_edge_loglikelihood(corax_partition_t * partition,
+                                   unsigned int        parent_clv_index,
+                                   int                 parent_scaler_index,
+                                   unsigned int        child_clv_index,
+                                   int                 child_scaler_index,
+                                   unsigned int        matrix_index,
+                                   const unsigned int *freqs_indices,
+                                   double *            persite_lnl);
 
   CORAX_EXPORT int
-  corax_compute_node_ancestral_extbuf(corax_partition_t *   partition,
-                                    unsigned int        node_clv_index,
-                                    int                 node_scaler_index,
-                                    unsigned int        other_clv_index,
-                                    int                 other_scaler_index,
-                                    unsigned int        pmatrix_index,
-                                    const unsigned int *freqs_indices,
-                                    double *            ancestral,
-                                    double *            temp_clv,
-                                    unsigned int *      temp_scaler,
-                                    double *            ident_pmat);
+  corax_compute_node_ancestral(corax_partition_t * partition,
+                               unsigned int        node_clv_index,
+                               int                 node_scaler_index,
+                               unsigned int        other_clv_index,
+                               int                 other_scaler_index,
+                               unsigned int        matrix_index,
+                               const unsigned int *freqs_indices,
+                               double *            ancestral);
+
+  CORAX_EXPORT int
+  corax_compute_node_ancestral_extbuf(corax_partition_t * partition,
+                                      unsigned int        node_clv_index,
+                                      int                 node_scaler_index,
+                                      unsigned int        other_clv_index,
+                                      int                 other_scaler_index,
+                                      unsigned int        pmatrix_index,
+                                      const unsigned int *freqs_indices,
+                                      double *            ancestral,
+                                      double *            temp_clv,
+                                      unsigned int *      temp_scaler,
+                                      double *            ident_pmat);
 
   /* functions in clvs.c */
 
@@ -1290,15 +1303,15 @@ extern "C"
    *
    * @ingroup corax_partition_t
    * @ingroup corax_operation_t
-   */ 
+   */
   CORAX_EXPORT void corax_update_clvs(corax_partition_t *      partition,
-                                  const corax_operation_t *operations,
-                                  unsigned int           count);
+                                      const corax_operation_t *operations,
+                                      unsigned int             count);
 
   CORAX_EXPORT void corax_update_clvs_rep(corax_partition_t *      partition,
-                                      const corax_operation_t *operations,
-                                      unsigned int           count,
-                                      unsigned int           update_repeats);
+                                          const corax_operation_t *operations,
+                                          unsigned int             count,
+                                          unsigned int update_repeats);
 
   /* functions in derivatives.c */
 
@@ -1320,13 +1333,13 @@ extern "C"
    *
    * @ingroup corax_partition_t
    */
-  CORAX_EXPORT int corax_update_sumtable(corax_partition_t *   partition,
-                                     unsigned int        parent_clv_index,
-                                     unsigned int        child_clv_index,
-                                     int                 parent_scaler_index,
-                                     int                 child_scaler_index,
-                                     const unsigned int *params_indices,
-                                     double *            sumtable);
+  CORAX_EXPORT int corax_update_sumtable(corax_partition_t *partition,
+                                         unsigned int       parent_clv_index,
+                                         unsigned int       child_clv_index,
+                                         int                parent_scaler_index,
+                                         int                child_scaler_index,
+                                         const unsigned int *params_indices,
+                                         double *            sumtable);
 
   /**
    * Computes the first and second derivative with respect to a specific branch
@@ -1352,44 +1365,44 @@ extern "C"
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT int
-  corax_compute_likelihood_derivatives(corax_partition_t *   partition,
-                                     int                 parent_scaler_index,
-                                     int                 child_scaler_index,
-                                     double              branch_length,
-                                     const unsigned int *params_indices,
-                                     const double *      sumtable,
-                                     double *            d_f,
-                                     double *            dd_f);
+  corax_compute_likelihood_derivatives(corax_partition_t * partition,
+                                       int                 parent_scaler_index,
+                                       int                 child_scaler_index,
+                                       double              branch_length,
+                                       const unsigned int *params_indices,
+                                       const double *      sumtable,
+                                       double *            d_f,
+                                       double *            dd_f);
 
   /* functions in gamma.c */
 
   CORAX_EXPORT int corax_compute_gamma_cats(double       alpha,
-                                        unsigned int categories,
-                                        double *     output_rates,
-                                        int          rates_mode);
+                                            unsigned int categories,
+                                            double *     output_rates,
+                                            int          rates_mode);
 
   /* functions in output.c */
 
   CORAX_EXPORT void corax_show_pmatrix(const corax_partition_t *partition,
-                                   unsigned int           index,
-                                   unsigned int           float_precision);
+                                       unsigned int             index,
+                                       unsigned int float_precision);
 
   CORAX_EXPORT void corax_show_clv(const corax_partition_t *partition,
-                               unsigned int           clv_index,
-                               int                    scaler_index,
-                               unsigned int           float_precision);
+                                   unsigned int             clv_index,
+                                   int                      scaler_index,
+                                   unsigned int             float_precision);
 
   /* functions in fasta.c */
 
   CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
-                                         const unsigned int *map);
+                                               const unsigned int *map);
 
   CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
-                                   char **      head,
-                                   long *       head_len,
-                                   char **      seq,
-                                   long *       seq_len,
-                                   long *       seqno);
+                                       char **        head,
+                                       long *         head_len,
+                                       char **        seq,
+                                       long *         seq_len,
+                                       long *         seqno);
 
   CORAX_EXPORT void corax_fasta_close(corax_fasta_t *fd);
 
@@ -1406,7 +1419,7 @@ extern "C"
   CORAX_EXPORT void corax_msa_destroy(corax_msa_t *msa);
 
   CORAX_EXPORT corax_phylip_t *corax_phylip_open(const char *        filename,
-                                           const unsigned int *map);
+                                                 const unsigned int *map);
 
   CORAX_EXPORT int corax_phylip_rewind(corax_phylip_t *fd);
 
@@ -1416,137 +1429,38 @@ extern "C"
 
   CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd);
 
-  CORAX_EXPORT corax_msa_t *corax_phylip_load(const char *fname,
-                                        corax_bool_t  interleaved);
+  CORAX_EXPORT corax_msa_t *corax_phylip_load(const char * fname,
+                                              corax_bool_t interleaved);
 
-  CORAX_EXPORT int corax_phylip_save(const char *out_fname, const corax_msa_t *msa);
+  CORAX_EXPORT int corax_phylip_save(const char *       out_fname,
+                                     const corax_msa_t *msa);
 
   /* functions in core_clvs.c */
 
-  CORAX_EXPORT void corax_core_create_lookup(unsigned int       states,
-                                         unsigned int       rate_cats,
-                                         double *           lookup,
-                                         const double *     left_matrix,
-                                         const double *     right_matrix,
-                                         const corax_state_t *tipmap,
-                                         unsigned int       tipmap_size,
-                                         unsigned int       attrib);
+  CORAX_EXPORT void corax_core_create_lookup(unsigned int         states,
+                                             unsigned int         rate_cats,
+                                             double *             lookup,
+                                             const double *       left_matrix,
+                                             const double *       right_matrix,
+                                             const corax_state_t *tipmap,
+                                             unsigned int         tipmap_size,
+                                             unsigned int         attrib);
 
-  CORAX_EXPORT void corax_core_update_clv_tt(unsigned int         states,
-                                         unsigned int         sites,
-                                         unsigned int         rate_cats,
-                                         double *             parent_clv,
-                                         unsigned int *       parent_scaler,
-                                         const unsigned char *left_tipchars,
-                                         const unsigned char *right_tipchars,
-                                         const corax_state_t *  tipmap,
-                                         unsigned int         tipmap_size,
-                                         const double *       lookup,
-                                         unsigned int         attrib);
+  CORAX_EXPORT void
+  corax_core_update_clv_tt(unsigned int         states,
+                           unsigned int         sites,
+                           unsigned int         rate_cats,
+                           double *             parent_clv,
+                           unsigned int *       parent_scaler,
+                           const unsigned char *left_tipchars,
+                           const unsigned char *right_tipchars,
+                           const corax_state_t *tipmap,
+                           unsigned int         tipmap_size,
+                           const double *       lookup,
+                           unsigned int         attrib);
 
   CORAX_EXPORT void corax_core_update_clv_ti(unsigned int         states,
-                                         unsigned int         sites,
-                                         unsigned int         rate_cats,
-                                         double *             parent_clv,
-                                         unsigned int *       parent_scaler,
-                                         const unsigned char *left_tipchars,
-                                         const double *       right_clv,
-                                         const double *       left_matrix,
-                                         const double *       right_matrix,
-                                         const unsigned int * right_scaler,
-                                         const corax_state_t *  tipmap,
-                                         unsigned int         tipmap_size,
-                                         unsigned int         attrib);
-
-  CORAX_EXPORT void corax_core_update_clv_ii(unsigned int        states,
-                                         unsigned int        sites,
-                                         unsigned int        rate_cats,
-                                         double *            parent_clv,
-                                         unsigned int *      parent_scaler,
-                                         const double *      left_clv,
-                                         const double *      right_clv,
-                                         const double *      left_matrix,
-                                         const double *      right_matrix,
-                                         const unsigned int *left_scaler,
-                                         const unsigned int *right_scaler,
-                                         unsigned int        attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_repeats(unsigned int        states,
-                              unsigned int        parent_sites,
-                              unsigned int        left_sites,
-                              unsigned int        right_sites,
-                              unsigned int        rate_cats,
-                              double *            parent_clv,
-                              unsigned int *      parent_scaler,
-                              const double *      left_clv,
-                              const double *      right_clv,
-                              const double *      left_matrix,
-                              const double *      right_matrix,
-                              const unsigned int *left_scaler,
-                              const unsigned int *right_scaler,
-                              const unsigned int *parent_id_site,
-                              const unsigned int *left_site_id,
-                              const unsigned int *right_site_id,
-                              double *            bclv_buffer,
-                              unsigned int        attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_repeats_generic(unsigned int        states,
-                                      unsigned int        parent_sites,
-                                      unsigned int        left_sites,
-                                      unsigned int        right_sites,
-                                      unsigned int        rate_cats,
-                                      double *            parent_clv,
-                                      unsigned int *      parent_scaler,
-                                      const double *      left_clv,
-                                      const double *      right_clv,
-                                      const double *      left_matrix,
-                                      const double *      right_matrix,
-                                      const unsigned int *left_scaler,
-                                      const unsigned int *right_scaler,
-                                      const unsigned int *parent_id_site,
-                                      const unsigned int *left_site_id,
-                                      const unsigned int *right_site_id,
-                                      double *            bclv_buffer,
-                                      unsigned int        attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_repeatsbclv_generic(unsigned int        states,
-                                          unsigned int        parent_sites,
-                                          unsigned int        left_sites,
-                                          unsigned int        right_sites,
-                                          unsigned int        rate_cats,
-                                          double *            parent_clv,
-                                          unsigned int *      parent_scaler,
-                                          const double *      left_clv,
-                                          const double *      right_clv,
-                                          const double *      left_matrix,
-                                          const double *      right_matrix,
-                                          const unsigned int *left_scaler,
-                                          const unsigned int *right_scaler,
-                                          const unsigned int *parent_id_site,
-                                          const unsigned int *left_site_id,
-                                          const unsigned int *right_site_id,
-                                          double *            bclv_buffer,
-                                          unsigned int        attrib);
-
-  CORAX_EXPORT void corax_core_create_lookup_4x4(unsigned int  rate_cats,
-                                             double *      lookup,
-                                             const double *left_matrix,
-                                             const double *right_matrix);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_tt_4x4(unsigned int         sites,
-                             unsigned int         rate_cats,
-                             double *             parent_clv,
-                             unsigned int *       parent_scaler,
-                             const unsigned char *left_tipchars,
-                             const unsigned char *right_tipchars,
-                             const double *       lookup,
-                             unsigned int         attrib);
-
-  CORAX_EXPORT void corax_core_update_clv_ti_4x4(unsigned int         sites,
+                                             unsigned int         sites,
                                              unsigned int         rate_cats,
                                              double *             parent_clv,
                                              unsigned int *       parent_scaler,
@@ -1555,218 +1469,322 @@ extern "C"
                                              const double *       left_matrix,
                                              const double *       right_matrix,
                                              const unsigned int * right_scaler,
+                                             const corax_state_t *tipmap,
+                                             unsigned int         tipmap_size,
                                              unsigned int         attrib);
+
+  CORAX_EXPORT void corax_core_update_clv_ii(unsigned int        states,
+                                             unsigned int        sites,
+                                             unsigned int        rate_cats,
+                                             double *            parent_clv,
+                                             unsigned int *      parent_scaler,
+                                             const double *      left_clv,
+                                             const double *      right_clv,
+                                             const double *      left_matrix,
+                                             const double *      right_matrix,
+                                             const unsigned int *left_scaler,
+                                             const unsigned int *right_scaler,
+                                             unsigned int        attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_repeats(unsigned int        states,
+                                unsigned int        parent_sites,
+                                unsigned int        left_sites,
+                                unsigned int        right_sites,
+                                unsigned int        rate_cats,
+                                double *            parent_clv,
+                                unsigned int *      parent_scaler,
+                                const double *      left_clv,
+                                const double *      right_clv,
+                                const double *      left_matrix,
+                                const double *      right_matrix,
+                                const unsigned int *left_scaler,
+                                const unsigned int *right_scaler,
+                                const unsigned int *parent_id_site,
+                                const unsigned int *left_site_id,
+                                const unsigned int *right_site_id,
+                                double *            bclv_buffer,
+                                unsigned int        attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_repeats_generic(unsigned int        states,
+                                        unsigned int        parent_sites,
+                                        unsigned int        left_sites,
+                                        unsigned int        right_sites,
+                                        unsigned int        rate_cats,
+                                        double *            parent_clv,
+                                        unsigned int *      parent_scaler,
+                                        const double *      left_clv,
+                                        const double *      right_clv,
+                                        const double *      left_matrix,
+                                        const double *      right_matrix,
+                                        const unsigned int *left_scaler,
+                                        const unsigned int *right_scaler,
+                                        const unsigned int *parent_id_site,
+                                        const unsigned int *left_site_id,
+                                        const unsigned int *right_site_id,
+                                        double *            bclv_buffer,
+                                        unsigned int        attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_repeatsbclv_generic(unsigned int        states,
+                                            unsigned int        parent_sites,
+                                            unsigned int        left_sites,
+                                            unsigned int        right_sites,
+                                            unsigned int        rate_cats,
+                                            double *            parent_clv,
+                                            unsigned int *      parent_scaler,
+                                            const double *      left_clv,
+                                            const double *      right_clv,
+                                            const double *      left_matrix,
+                                            const double *      right_matrix,
+                                            const unsigned int *left_scaler,
+                                            const unsigned int *right_scaler,
+                                            const unsigned int *parent_id_site,
+                                            const unsigned int *left_site_id,
+                                            const unsigned int *right_site_id,
+                                            double *            bclv_buffer,
+                                            unsigned int        attrib);
+
+  CORAX_EXPORT void corax_core_create_lookup_4x4(unsigned int  rate_cats,
+                                                 double *      lookup,
+                                                 const double *left_matrix,
+                                                 const double *right_matrix);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_tt_4x4(unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const unsigned char *right_tipchars,
+                               const double *       lookup,
+                               unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ti_4x4(unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const double *       right_clv,
+                               const double *       left_matrix,
+                               const double *       right_matrix,
+                               const unsigned int * right_scaler,
+                               unsigned int         attrib);
 
   /* functions in core_derivatives.c */
 
   CORAX_EXPORT int
   corax_core_update_sumtable_repeats(unsigned int        states,
-                                   unsigned int        sites,
-                                   unsigned int        parent_sites,
-                                   unsigned int        rate_cats,
-                                   const double *      clvp,
-                                   const double *      clvc,
-                                   const unsigned int *parent_scaler,
-                                   const unsigned int *child_scaler,
-                                   double *const *     eigenvecs,
-                                   double *const *     inv_eigenvecs,
-                                   double *const *     freqs,
-                                   double *            sumtable,
-                                   const unsigned int *parent_site_id,
-                                   const unsigned int *child_site_id,
-                                   double *            bclv_buffer,
-                                   unsigned int        inv,
-                                   unsigned int        attrib);
+                                     unsigned int        sites,
+                                     unsigned int        parent_sites,
+                                     unsigned int        rate_cats,
+                                     const double *      clvp,
+                                     const double *      clvc,
+                                     const unsigned int *parent_scaler,
+                                     const unsigned int *child_scaler,
+                                     double *const *     eigenvecs,
+                                     double *const *     inv_eigenvecs,
+                                     double *const *     freqs,
+                                     double *            sumtable,
+                                     const unsigned int *parent_site_id,
+                                     const unsigned int *child_site_id,
+                                     double *            bclv_buffer,
+                                     unsigned int        inv,
+                                     unsigned int        attrib);
 
   CORAX_EXPORT int
   corax_core_update_sumtable_repeats_generic(unsigned int        states,
-                                           unsigned int        sites,
-                                           unsigned int        parent_sites,
-                                           unsigned int        rate_cats,
-                                           const double *      clvp,
-                                           const double *      clvc,
-                                           const unsigned int *parent_scaler,
-                                           const unsigned int *child_scaler,
-                                           double *const *     eigenvecs,
-                                           double *const *     inv_eigenvecs,
-                                           double *const *     freqs,
-                                           double *            sumtable,
-                                           const unsigned int *parent_site_id,
-                                           const unsigned int *child_site_id,
-                                           double *            bclv_buffer,
-                                           unsigned int        inv,
-                                           unsigned int        attrib);
-  CORAX_EXPORT int
-  corax_core_update_sumtable_ti_4x4(unsigned int         sites,
-                                  unsigned int         rate_cats,
-                                  const double *       parent_clv,
-                                  const unsigned char *left_tipchars,
-                                  const unsigned int * parent_scaler,
-                                  double *const *      eigenvecs,
-                                  double *const *      inv_eigenvecs,
-                                  double *const *      freqs,
-                                  double *             sumtable,
-                                  unsigned int         attrib);
-
-  CORAX_EXPORT int corax_core_update_sumtable_ii(unsigned int        states,
                                              unsigned int        sites,
+                                             unsigned int        parent_sites,
                                              unsigned int        rate_cats,
-                                             const double *      parent_clv,
-                                             const double *      child_clv,
+                                             const double *      clvp,
+                                             const double *      clvc,
                                              const unsigned int *parent_scaler,
                                              const unsigned int *child_scaler,
                                              double *const *     eigenvecs,
                                              double *const *     inv_eigenvecs,
                                              double *const *     freqs,
                                              double *            sumtable,
+                                             const unsigned int *parent_site_id,
+                                             const unsigned int *child_site_id,
+                                             double *            bclv_buffer,
+                                             unsigned int        inv,
                                              unsigned int        attrib);
+  CORAX_EXPORT int
+  corax_core_update_sumtable_ti_4x4(unsigned int         sites,
+                                    unsigned int         rate_cats,
+                                    const double *       parent_clv,
+                                    const unsigned char *left_tipchars,
+                                    const unsigned int * parent_scaler,
+                                    double *const *      eigenvecs,
+                                    double *const *      inv_eigenvecs,
+                                    double *const *      freqs,
+                                    double *             sumtable,
+                                    unsigned int         attrib);
 
-  CORAX_EXPORT int corax_core_update_sumtable_ti(unsigned int         states,
-                                             unsigned int         sites,
-                                             unsigned int         rate_cats,
-                                             const double *       parent_clv,
-                                             const unsigned char *left_tipchars,
-                                             const unsigned int * parent_scaler,
-                                             double *const *      eigenvecs,
-                                             double *const *      inv_eigenvecs,
-                                             double *const *      freqs,
-                                             const corax_state_t *  tipmap,
-                                             unsigned int         tipmap_size,
-                                             double *             sumtable,
-                                             unsigned int         attrib);
+  CORAX_EXPORT int
+  corax_core_update_sumtable_ii(unsigned int        states,
+                                unsigned int        sites,
+                                unsigned int        rate_cats,
+                                const double *      parent_clv,
+                                const double *      child_clv,
+                                const unsigned int *parent_scaler,
+                                const unsigned int *child_scaler,
+                                double *const *     eigenvecs,
+                                double *const *     inv_eigenvecs,
+                                double *const *     freqs,
+                                double *            sumtable,
+                                unsigned int        attrib);
+
+  CORAX_EXPORT int
+  corax_core_update_sumtable_ti(unsigned int         states,
+                                unsigned int         sites,
+                                unsigned int         rate_cats,
+                                const double *       parent_clv,
+                                const unsigned char *left_tipchars,
+                                const unsigned int * parent_scaler,
+                                double *const *      eigenvecs,
+                                double *const *      inv_eigenvecs,
+                                double *const *      freqs,
+                                const corax_state_t *tipmap,
+                                unsigned int         tipmap_size,
+                                double *             sumtable,
+                                unsigned int         attrib);
 
   CORAX_EXPORT int
   corax_core_likelihood_derivatives(unsigned int        states,
-                                  unsigned int        sites,
-                                  unsigned int        rate_cats,
-                                  const double *      rate_weights,
-                                  const unsigned int *parent_scaler,
-                                  const unsigned int *child_scaler,
-                                  unsigned int        parent_ids,
-                                  unsigned int        child_ids,
-                                  const int *         invariant,
-                                  const unsigned int *pattern_weights,
-                                  double              branch_length,
-                                  const double *      prop_invar,
-                                  double *const *     freqs,
-                                  const double *      rates,
-                                  double *const *     eigenvals,
-                                  const double *      sumtable,
-                                  double *            d_f,
-                                  double *            dd_f,
-                                  unsigned int        attrib);
+                                    unsigned int        sites,
+                                    unsigned int        rate_cats,
+                                    const double *      rate_weights,
+                                    const unsigned int *parent_scaler,
+                                    const unsigned int *child_scaler,
+                                    unsigned int        parent_ids,
+                                    unsigned int        child_ids,
+                                    const int *         invariant,
+                                    const unsigned int *pattern_weights,
+                                    double              branch_length,
+                                    const double *      prop_invar,
+                                    double *const *     freqs,
+                                    const double *      rates,
+                                    double *const *     eigenvals,
+                                    const double *      sumtable,
+                                    double *            d_f,
+                                    double *            dd_f,
+                                    unsigned int        attrib);
 
   CORAX_EXPORT int
   corax_core_update_sumtable_repeats_avx(unsigned int        states,
-                                       unsigned int        sites,
-                                       unsigned int        parent_sites,
-                                       unsigned int        rate_cats,
-                                       const double *      clvp,
-                                       const double *      clvc,
-                                       const unsigned int *parent_scaler,
-                                       const unsigned int *child_scaler,
-                                       double *const *     eigenvecs,
-                                       double *const *     inv_eigenvecs,
-                                       double *const *     freqs,
-                                       double *            sumtable,
-                                       const unsigned int *parent_site_id,
-                                       const unsigned int *child_site_id,
-                                       double *            bclv_buffer,
-                                       unsigned int        inv,
-                                       unsigned int        attrib);
+                                         unsigned int        sites,
+                                         unsigned int        parent_sites,
+                                         unsigned int        rate_cats,
+                                         const double *      clvp,
+                                         const double *      clvc,
+                                         const unsigned int *parent_scaler,
+                                         const unsigned int *child_scaler,
+                                         double *const *     eigenvecs,
+                                         double *const *     inv_eigenvecs,
+                                         double *const *     freqs,
+                                         double *            sumtable,
+                                         const unsigned int *parent_site_id,
+                                         const unsigned int *child_site_id,
+                                         double *            bclv_buffer,
+                                         unsigned int        inv,
+                                         unsigned int        attrib);
 
   /* functions in core_likelihood.c */
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ii(unsigned int        states,
-                                 unsigned int        sites,
-                                 unsigned int        rate_cats,
-                                 const double *      parent_clv,
-                                 const unsigned int *parent_scaler,
-                                 const double *      child_clv,
-                                 const unsigned int *child_scaler,
-                                 const double *      pmatrix,
-                                 double *const *     frequencies,
-                                 const double *      rate_weights,
-                                 const unsigned int *pattern_weights,
-                                 const double *      invar_proportion,
-                                 const int *         invar_indices,
-                                 const unsigned int *freqs_indices,
-                                 double *            persite_lnl,
-                                 unsigned int        attrib);
+                                   unsigned int        sites,
+                                   unsigned int        rate_cats,
+                                   const double *      parent_clv,
+                                   const unsigned int *parent_scaler,
+                                   const double *      child_clv,
+                                   const unsigned int *child_scaler,
+                                   const double *      pmatrix,
+                                   double *const *     frequencies,
+                                   const double *      rate_weights,
+                                   const unsigned int *pattern_weights,
+                                   const double *      invar_proportion,
+                                   const int *         invar_indices,
+                                   const unsigned int *freqs_indices,
+                                   double *            persite_lnl,
+                                   unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti(unsigned int         states,
-                                 unsigned int         sites,
-                                 unsigned int         rate_cats,
-                                 const double *       parent_clv,
-                                 const unsigned int * parent_scaler,
-                                 const unsigned char *tipchars,
-                                 const corax_state_t *  tipmap,
-                                 unsigned int         tipmap_size,
-                                 const double *       pmatrix,
-                                 double *const *      frequencies,
-                                 const double *       rate_weights,
-                                 const unsigned int * pattern_weights,
-                                 const double *       invar_proportion,
-                                 const int *          invar_indices,
-                                 const unsigned int * freqs_indices,
-                                 double *             persite_lnl,
-                                 unsigned int         attrib);
+                                   unsigned int         sites,
+                                   unsigned int         rate_cats,
+                                   const double *       parent_clv,
+                                   const unsigned int * parent_scaler,
+                                   const unsigned char *tipchars,
+                                   const corax_state_t *tipmap,
+                                   unsigned int         tipmap_size,
+                                   const double *       pmatrix,
+                                   double *const *      frequencies,
+                                   const double *       rate_weights,
+                                   const unsigned int * pattern_weights,
+                                   const double *       invar_proportion,
+                                   const int *          invar_indices,
+                                   const unsigned int * freqs_indices,
+                                   double *             persite_lnl,
+                                   unsigned int         attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
-                                     unsigned int         rate_cats,
-                                     const double *       parent_clv,
-                                     const unsigned int * parent_scaler,
-                                     const unsigned char *tipchars,
-                                     const double *       pmatrix,
-                                     double *const *      frequencies,
-                                     const double *       rate_weights,
-                                     const unsigned int * pattern_weights,
-                                     const double *       invar_proportion,
-                                     const int *          invar_indices,
-                                     const unsigned int * freqs_indices,
-                                     double *             persite_lnl,
-                                     unsigned int         attrib);
+                                       unsigned int         rate_cats,
+                                       const double *       parent_clv,
+                                       const unsigned int * parent_scaler,
+                                       const unsigned char *tipchars,
+                                       const double *       pmatrix,
+                                       double *const *      frequencies,
+                                       const double *       rate_weights,
+                                       const unsigned int * pattern_weights,
+                                       const double *       invar_proportion,
+                                       const int *          invar_indices,
+                                       const unsigned int * freqs_indices,
+                                       double *             persite_lnl,
+                                       unsigned int         attrib);
 
   CORAX_EXPORT double
   corax_core_root_loglikelihood_repeats(unsigned int        states,
-                                      unsigned int        sites,
-                                      unsigned int        rate_cats,
-                                      const double *      clv,
-                                      const unsigned int *site_id,
-                                      const unsigned int *scaler,
-                                      double *const *     frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl,
-                                      unsigned int        attrib);
+                                        unsigned int        sites,
+                                        unsigned int        rate_cats,
+                                        const double *      clv,
+                                        const unsigned int *site_id,
+                                        const unsigned int *scaler,
+                                        double *const *     frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl,
+                                        unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_repeats(unsigned int        states,
-                                      unsigned int        sites,
-                                      const unsigned int  child_sites,
-                                      unsigned int        rate_cats,
-                                      const double *      parent_clv,
-                                      const unsigned int *parent_scaler,
-                                      const double *      child_clv,
-                                      const unsigned int *child_scaler,
-                                      const double *      pmatrix,
-                                      double **           frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl,
-                                      const unsigned int *parent_site_id,
-                                      const unsigned int *child_site_id,
-                                      double *            bclv,
-                                      unsigned int        attrib);
+                                        unsigned int        sites,
+                                        const unsigned int  child_sites,
+                                        unsigned int        rate_cats,
+                                        const double *      parent_clv,
+                                        const unsigned int *parent_scaler,
+                                        const double *      child_clv,
+                                        const unsigned int *child_scaler,
+                                        const double *      pmatrix,
+                                        double **           frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl,
+                                        const unsigned int *parent_site_id,
+                                        const unsigned int *child_site_id,
+                                        double *            bclv,
+                                        unsigned int        attrib);
 
   CORAX_EXPORT double corax_core_edge_loglikelihood_repeats_generic(
       unsigned int        states,
@@ -1792,203 +1810,75 @@ extern "C"
 
   CORAX_EXPORT double
   corax_core_root_loglikelihood(unsigned int        states,
-                              unsigned int        sites,
-                              unsigned int        rate_cats,
-                              const double *      clv,
-                              const unsigned int *scaler,
-                              double *const *     frequencies,
-                              const double *      rate_weights,
-                              const unsigned int *pattern_weights,
-                              const double *      invar_proportion,
-                              const int *         invar_indices,
-                              const unsigned int *freqs_indices,
-                              double *            persite_lnl,
-                              unsigned int        attrib);
+                                unsigned int        sites,
+                                unsigned int        rate_cats,
+                                const double *      clv,
+                                const unsigned int *scaler,
+                                double *const *     frequencies,
+                                const double *      rate_weights,
+                                const unsigned int *pattern_weights,
+                                const double *      invar_proportion,
+                                const int *         invar_indices,
+                                const unsigned int *freqs_indices,
+                                double *            persite_lnl,
+                                unsigned int        attrib);
 
   /* functions in core_clvs_sse.c */
 
 #ifdef HAVE_SSE3
-  CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int       states,
-                                             unsigned int       rate_cats,
-                                             double *           ttlookup,
-                                             const double *     left_matrix,
-                                             const double *     right_matrix,
-                                             const corax_state_t *tipmap,
-                                             unsigned int       tipmap_size);
-
-  CORAX_EXPORT void corax_core_create_lookup_4x4_sse(unsigned int  rate_cats,
-                                                 double *      lookup,
+  CORAX_EXPORT void corax_core_create_lookup_sse(unsigned int  states,
+                                                 unsigned int  rate_cats,
+                                                 double *      ttlookup,
                                                  const double *left_matrix,
-                                                 const double *right_matrix);
+                                                 const double *right_matrix,
+                                                 const corax_state_t *tipmap,
+                                                 unsigned int tipmap_size);
+
+  CORAX_EXPORT void
+  corax_core_create_lookup_4x4_sse(unsigned int  rate_cats,
+                                   double *      lookup,
+                                   const double *left_matrix,
+                                   const double *right_matrix);
 
   CORAX_EXPORT void
   corax_core_update_clv_tt_sse(unsigned int         states,
-                             unsigned int         sites,
-                             unsigned int         rate_cats,
-                             double *             parent_clv,
-                             unsigned int *       parent_scaler,
-                             const unsigned char *left_tipchars,
-                             const unsigned char *right_tipchars,
-                             const double *       lookup,
-                             unsigned int         tipstates_count,
-                             unsigned int         attrib);
+                               unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const unsigned char *right_tipchars,
+                               const double *       lookup,
+                               unsigned int         tipstates_count,
+                               unsigned int         attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_tt_4x4_sse(unsigned int         sites,
-                                 unsigned int         rate_cats,
-                                 double *             parent_clv,
-                                 unsigned int *       parent_scaler,
-                                 const unsigned char *left_tipchars,
-                                 const unsigned char *right_tipchars,
-                                 const double *       lookup,
-                                 unsigned int         attrib);
+                                   unsigned int         rate_cats,
+                                   double *             parent_clv,
+                                   unsigned int *       parent_scaler,
+                                   const unsigned char *left_tipchars,
+                                   const unsigned char *right_tipchars,
+                                   const double *       lookup,
+                                   unsigned int         attrib);
 
-  CORAX_EXPORT void corax_core_update_clv_ti_sse(unsigned int         states,
-                                             unsigned int         sites,
-                                             unsigned int         rate_cats,
-                                             double *             parent_clv,
-                                             unsigned int *       parent_scaler,
-                                             const unsigned char *left_tipchars,
-                                             const double *       right_clv,
-                                             const double *       left_matrix,
-                                             const double *       right_matrix,
-                                             const unsigned int * right_scaler,
-                                             const corax_state_t *  tipmap,
-                                             unsigned int         tipmap_size,
-                                             unsigned int         attrib);
+  CORAX_EXPORT void
+  corax_core_update_clv_ti_sse(unsigned int         states,
+                               unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const double *       right_clv,
+                               const double *       left_matrix,
+                               const double *       right_matrix,
+                               const unsigned int * right_scaler,
+                               const corax_state_t *tipmap,
+                               unsigned int         tipmap_size,
+                               unsigned int         attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_ti_4x4_sse(unsigned int         sites,
-                                 unsigned int         rate_cats,
-                                 double *             parent_clv,
-                                 unsigned int *       parent_scaler,
-                                 const unsigned char *left_tipchar,
-                                 const double *       right_clv,
-                                 const double *       left_matrix,
-                                 const double *       right_matrix,
-                                 const unsigned int * right_scaler,
-                                 unsigned int         attrib);
-
-  CORAX_EXPORT void corax_core_update_clv_ii_sse(unsigned int        states,
-                                             unsigned int        sites,
-                                             unsigned int        rate_cats,
-                                             double *            parent_clv,
-                                             unsigned int *      parent_scaler,
-                                             const double *      left_clv,
-                                             const double *      right_clv,
-                                             const double *      left_matrix,
-                                             const double *      right_matrix,
-                                             const unsigned int *left_scaler,
-                                             const unsigned int *right_scaler,
-                                             unsigned int        attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_ii_4x4_sse(unsigned int        sites,
-                                 unsigned int        rate_cats,
-                                 double *            parent_clv,
-                                 unsigned int *      parent_scaler,
-                                 const double *      left_clv,
-                                 const double *      right_clv,
-                                 const double *      left_matrix,
-                                 const double *      right_matrix,
-                                 const unsigned int *left_scaler,
-                                 const unsigned int *right_scaler,
-                                 unsigned int        attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_repeats_generic_sse(unsigned int        states,
-                                          unsigned int        parent_sites,
-                                          unsigned int        left_sites,
-                                          unsigned int        right_sites,
-                                          unsigned int        rate_cats,
-                                          double *            parent_clv,
-                                          unsigned int *      parent_scaler,
-                                          const double *      left_clv,
-                                          const double *      right_clv,
-                                          const double *      left_matrix,
-                                          const double *      right_matrix,
-                                          const unsigned int *left_scaler,
-                                          const unsigned int *right_scaler,
-                                          const unsigned int *parent_id_site,
-                                          const unsigned int *left_site_id,
-                                          const unsigned int *right_site_id,
-                                          double *            bclv_buffer,
-                                          unsigned int        attrib);
-#endif
-
-  /* functions in core_clvs_avx.c */
-
-#ifdef HAVE_AVX
-  CORAX_EXPORT void corax_core_create_lookup_avx(unsigned int       states,
-                                             unsigned int       rate_cats,
-                                             double *           lookup,
-                                             const double *     left_matrix,
-                                             const double *     right_matrix,
-                                             const corax_state_t *tipmap,
-                                             unsigned int       tipmap_size);
-
-  CORAX_EXPORT void corax_core_create_lookup_4x4_avx(unsigned int  rate_cats,
-                                                 double *      lookup,
-                                                 const double *left_matrix,
-                                                 const double *right_matrix);
-
-  CORAX_EXPORT void corax_core_create_lookup_20x20_avx(unsigned int  rate_cats,
-                                                   double *      ttlookup,
-                                                   const double *left_matrix,
-                                                   const double *right_matrix,
-                                                   const corax_state_t *tipmap,
-                                                   unsigned int tipmap_size);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_tt_avx(unsigned int         states,
-                             unsigned int         sites,
-                             unsigned int         rate_cats,
-                             double *             parent_clv,
-                             unsigned int *       parent_scaler,
-                             const unsigned char *left_tipchars,
-                             const unsigned char *right_tipchars,
-                             const double *       lookup,
-                             unsigned int         tipstates_count,
-                             unsigned int         attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_tt_4x4_avx(unsigned int         sites,
-                                 unsigned int         rate_cats,
-                                 double *             parent_clv,
-                                 unsigned int *       parent_scaler,
-                                 const unsigned char *left_tipchars,
-                                 const unsigned char *right_tipchars,
-                                 const double *       lookup,
-                                 unsigned int         attrib);
-
-  CORAX_EXPORT void corax_core_update_clv_ti_avx(unsigned int         states,
-                                             unsigned int         sites,
-                                             unsigned int         rate_cats,
-                                             double *             parent_clv,
-                                             unsigned int *       parent_scaler,
-                                             const unsigned char *left_tipchars,
-                                             const double *       right_clv,
-                                             const double *       left_matrix,
-                                             const double *       right_matrix,
-                                             const unsigned int * right_scaler,
-                                             const corax_state_t *  tipmap,
-                                             unsigned int         tipmap_size,
-                                             unsigned int         attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_ti_4x4_avx(unsigned int         sites,
-                                 unsigned int         rate_cats,
-                                 double *             parent_clv,
-                                 unsigned int *       parent_scaler,
-                                 const unsigned char *left_tipchar,
-                                 const double *       right_clv,
-                                 const double *       left_matrix,
-                                 const double *       right_matrix,
-                                 const unsigned int * right_scaler,
-                                 unsigned int         attrib);
-
-  CORAX_EXPORT void
-  corax_core_update_clv_ti_20x20_avx(unsigned int         sites,
                                    unsigned int         rate_cats,
                                    double *             parent_clv,
                                    unsigned int *       parent_scaler,
@@ -1997,95 +1887,230 @@ extern "C"
                                    const double *       left_matrix,
                                    const double *       right_matrix,
                                    const unsigned int * right_scaler,
-                                   const corax_state_t *  tipmap,
-                                   unsigned int         tipmap_size,
                                    unsigned int         attrib);
 
-  CORAX_EXPORT void corax_core_update_clv_ii_avx(unsigned int        states,
-                                             unsigned int        sites,
-                                             unsigned int        rate_cats,
-                                             double *            parent_clv,
-                                             unsigned int *      parent_scaler,
-                                             const double *      left_clv,
-                                             const double *      right_clv,
-                                             const double *      left_matrix,
-                                             const double *      right_matrix,
-                                             const unsigned int *left_scaler,
-                                             const unsigned int *right_scaler,
-                                             unsigned int        attrib);
+  CORAX_EXPORT void
+  corax_core_update_clv_ii_sse(unsigned int        states,
+                               unsigned int        sites,
+                               unsigned int        rate_cats,
+                               double *            parent_clv,
+                               unsigned int *      parent_scaler,
+                               const double *      left_clv,
+                               const double *      right_clv,
+                               const double *      left_matrix,
+                               const double *      right_matrix,
+                               const unsigned int *left_scaler,
+                               const unsigned int *right_scaler,
+                               unsigned int        attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ii_4x4_sse(unsigned int        sites,
+                                   unsigned int        rate_cats,
+                                   double *            parent_clv,
+                                   unsigned int *      parent_scaler,
+                                   const double *      left_clv,
+                                   const double *      right_clv,
+                                   const double *      left_matrix,
+                                   const double *      right_matrix,
+                                   const unsigned int *left_scaler,
+                                   const unsigned int *right_scaler,
+                                   unsigned int        attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_repeats_generic_sse(unsigned int        states,
+                                            unsigned int        parent_sites,
+                                            unsigned int        left_sites,
+                                            unsigned int        right_sites,
+                                            unsigned int        rate_cats,
+                                            double *            parent_clv,
+                                            unsigned int *      parent_scaler,
+                                            const double *      left_clv,
+                                            const double *      right_clv,
+                                            const double *      left_matrix,
+                                            const double *      right_matrix,
+                                            const unsigned int *left_scaler,
+                                            const unsigned int *right_scaler,
+                                            const unsigned int *parent_id_site,
+                                            const unsigned int *left_site_id,
+                                            const unsigned int *right_site_id,
+                                            double *            bclv_buffer,
+                                            unsigned int        attrib);
+#endif
+
+  /* functions in core_clvs_avx.c */
+
+#ifdef HAVE_AVX
+  CORAX_EXPORT void corax_core_create_lookup_avx(unsigned int  states,
+                                                 unsigned int  rate_cats,
+                                                 double *      lookup,
+                                                 const double *left_matrix,
+                                                 const double *right_matrix,
+                                                 const corax_state_t *tipmap,
+                                                 unsigned int tipmap_size);
+
+  CORAX_EXPORT void
+  corax_core_create_lookup_4x4_avx(unsigned int  rate_cats,
+                                   double *      lookup,
+                                   const double *left_matrix,
+                                   const double *right_matrix);
+
+  CORAX_EXPORT void
+  corax_core_create_lookup_20x20_avx(unsigned int         rate_cats,
+                                     double *             ttlookup,
+                                     const double *       left_matrix,
+                                     const double *       right_matrix,
+                                     const corax_state_t *tipmap,
+                                     unsigned int         tipmap_size);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_tt_avx(unsigned int         states,
+                               unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const unsigned char *right_tipchars,
+                               const double *       lookup,
+                               unsigned int         tipstates_count,
+                               unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_tt_4x4_avx(unsigned int         sites,
+                                   unsigned int         rate_cats,
+                                   double *             parent_clv,
+                                   unsigned int *       parent_scaler,
+                                   const unsigned char *left_tipchars,
+                                   const unsigned char *right_tipchars,
+                                   const double *       lookup,
+                                   unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ti_avx(unsigned int         states,
+                               unsigned int         sites,
+                               unsigned int         rate_cats,
+                               double *             parent_clv,
+                               unsigned int *       parent_scaler,
+                               const unsigned char *left_tipchars,
+                               const double *       right_clv,
+                               const double *       left_matrix,
+                               const double *       right_matrix,
+                               const unsigned int * right_scaler,
+                               const corax_state_t *tipmap,
+                               unsigned int         tipmap_size,
+                               unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ti_4x4_avx(unsigned int         sites,
+                                   unsigned int         rate_cats,
+                                   double *             parent_clv,
+                                   unsigned int *       parent_scaler,
+                                   const unsigned char *left_tipchar,
+                                   const double *       right_clv,
+                                   const double *       left_matrix,
+                                   const double *       right_matrix,
+                                   const unsigned int * right_scaler,
+                                   unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ti_20x20_avx(unsigned int         sites,
+                                     unsigned int         rate_cats,
+                                     double *             parent_clv,
+                                     unsigned int *       parent_scaler,
+                                     const unsigned char *left_tipchar,
+                                     const double *       right_clv,
+                                     const double *       left_matrix,
+                                     const double *       right_matrix,
+                                     const unsigned int * right_scaler,
+                                     const corax_state_t *tipmap,
+                                     unsigned int         tipmap_size,
+                                     unsigned int         attrib);
+
+  CORAX_EXPORT void
+  corax_core_update_clv_ii_avx(unsigned int        states,
+                               unsigned int        sites,
+                               unsigned int        rate_cats,
+                               double *            parent_clv,
+                               unsigned int *      parent_scaler,
+                               const double *      left_clv,
+                               const double *      right_clv,
+                               const double *      left_matrix,
+                               const double *      right_matrix,
+                               const unsigned int *left_scaler,
+                               const unsigned int *right_scaler,
+                               unsigned int        attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_ii_4x4_avx(unsigned int        sites,
-                                 unsigned int        rate_cats,
-                                 double *            parent_clv,
-                                 unsigned int *      parent_scaler,
-                                 const double *      left_clv,
-                                 const double *      right_clv,
-                                 const double *      left_matrix,
-                                 const double *      right_matrix,
-                                 const unsigned int *left_scaler,
-                                 const unsigned int *right_scaler,
-                                 unsigned int        attrib);
+                                   unsigned int        rate_cats,
+                                   double *            parent_clv,
+                                   unsigned int *      parent_scaler,
+                                   const double *      left_clv,
+                                   const double *      right_clv,
+                                   const double *      left_matrix,
+                                   const double *      right_matrix,
+                                   const unsigned int *left_scaler,
+                                   const unsigned int *right_scaler,
+                                   unsigned int        attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_repeats_generic_avx(unsigned int        states,
-                                          unsigned int        parent_sites,
-                                          unsigned int        left_sites,
-                                          unsigned int        right_sites,
-                                          unsigned int        rate_cats,
-                                          double *            parent_clv,
-                                          unsigned int *      parent_scaler,
-                                          const double *      left_clv,
-                                          const double *      right_clv,
-                                          const double *      left_matrix,
-                                          const double *      right_matrix,
-                                          const unsigned int *left_scaler,
-                                          const unsigned int *right_scaler,
-                                          const unsigned int *parent_id_site,
-                                          const unsigned int *left_site_id,
-                                          const unsigned int *right_site_id,
-                                          double *            bclv_buffer,
-                                          unsigned int        attrib);
+                                            unsigned int        parent_sites,
+                                            unsigned int        left_sites,
+                                            unsigned int        right_sites,
+                                            unsigned int        rate_cats,
+                                            double *            parent_clv,
+                                            unsigned int *      parent_scaler,
+                                            const double *      left_clv,
+                                            const double *      right_clv,
+                                            const double *      left_matrix,
+                                            const double *      right_matrix,
+                                            const unsigned int *left_scaler,
+                                            const unsigned int *right_scaler,
+                                            const unsigned int *parent_id_site,
+                                            const unsigned int *left_site_id,
+                                            const unsigned int *right_site_id,
+                                            double *            bclv_buffer,
+                                            unsigned int        attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_repeats_4x4_avx(unsigned int        states,
-                                      unsigned int        parent_sites,
-                                      unsigned int        left_sites,
-                                      unsigned int        right_sites,
-                                      unsigned int        rate_cats,
-                                      double *            parent_clv,
-                                      unsigned int *      parent_scaler,
-                                      const double *      left_clv,
-                                      const double *      right_clv,
-                                      const double *      left_matrix,
-                                      const double *      right_matrix,
-                                      const unsigned int *left_scaler,
-                                      const unsigned int *right_scaler,
-                                      const unsigned int *parent_id_site,
-                                      const unsigned int *left_site_id,
-                                      const unsigned int *right_site_id,
-                                      double *            bclv_buffer,
-                                      unsigned int        attrib);
+                                        unsigned int        parent_sites,
+                                        unsigned int        left_sites,
+                                        unsigned int        right_sites,
+                                        unsigned int        rate_cats,
+                                        double *            parent_clv,
+                                        unsigned int *      parent_scaler,
+                                        const double *      left_clv,
+                                        const double *      right_clv,
+                                        const double *      left_matrix,
+                                        const double *      right_matrix,
+                                        const unsigned int *left_scaler,
+                                        const unsigned int *right_scaler,
+                                        const unsigned int *parent_id_site,
+                                        const unsigned int *left_site_id,
+                                        const unsigned int *right_site_id,
+                                        double *            bclv_buffer,
+                                        unsigned int        attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_repeatsbclv_4x4_avx(unsigned int        states,
-                                          unsigned int        parent_sites,
-                                          unsigned int        left_sites,
-                                          unsigned int        right_sites,
-                                          unsigned int        rate_cats,
-                                          double *            parent_clv,
-                                          unsigned int *      parent_scaler,
-                                          const double *      left_clv,
-                                          const double *      right_clv,
-                                          const double *      left_matrix,
-                                          const double *      right_matrix,
-                                          const unsigned int *left_scaler,
-                                          const unsigned int *right_scaler,
-                                          const unsigned int *parent_id_site,
-                                          const unsigned int *left_site_id,
-                                          const unsigned int *right_site_id,
-                                          double *            bclv_buffer,
-                                          unsigned int        attrib);
+                                            unsigned int        parent_sites,
+                                            unsigned int        left_sites,
+                                            unsigned int        right_sites,
+                                            unsigned int        rate_cats,
+                                            double *            parent_clv,
+                                            unsigned int *      parent_scaler,
+                                            const double *      left_clv,
+                                            const double *      right_clv,
+                                            const double *      left_matrix,
+                                            const double *      right_matrix,
+                                            const unsigned int *left_scaler,
+                                            const unsigned int *right_scaler,
+                                            const unsigned int *parent_id_site,
+                                            const unsigned int *left_site_id,
+                                            const unsigned int *right_site_id,
+                                            double *            bclv_buffer,
+                                            unsigned int        attrib);
 
   CORAX_EXPORT void corax_core_update_clv_repeatsbclv_generic_avx(
       unsigned int        states,
@@ -2113,65 +2138,66 @@ extern "C"
 #ifdef HAVE_AVX2
   CORAX_EXPORT void
   corax_core_update_clv_ti_avx2(unsigned int         states,
-                              unsigned int         sites,
-                              unsigned int         rate_cats,
-                              double *             parent_clv,
-                              unsigned int *       parent_scaler,
-                              const unsigned char *left_tipchars,
-                              const double *       right_clv,
-                              const double *       left_matrix,
-                              const double *       right_matrix,
-                              const unsigned int * right_scaler,
-                              const corax_state_t *  tipmap,
-                              unsigned int         tipmap_size,
-                              unsigned int         attrib);
+                                unsigned int         sites,
+                                unsigned int         rate_cats,
+                                double *             parent_clv,
+                                unsigned int *       parent_scaler,
+                                const unsigned char *left_tipchars,
+                                const double *       right_clv,
+                                const double *       left_matrix,
+                                const double *       right_matrix,
+                                const unsigned int * right_scaler,
+                                const corax_state_t *tipmap,
+                                unsigned int         tipmap_size,
+                                unsigned int         attrib);
 
   CORAX_EXPORT
   void corax_core_update_clv_ti_20x20_avx2(unsigned int         sites,
-                                         unsigned int         rate_cats,
-                                         double *             parent_clv,
-                                         unsigned int *       parent_scaler,
-                                         const unsigned char *left_tipchar,
-                                         const double *       right_clv,
-                                         const double *       left_matrix,
-                                         const double *       right_matrix,
-                                         const unsigned int * right_scaler,
-                                         const corax_state_t *  tipmap,
-                                         unsigned int         tipmap_size,
-                                         unsigned int         attrib);
+                                           unsigned int         rate_cats,
+                                           double *             parent_clv,
+                                           unsigned int *       parent_scaler,
+                                           const unsigned char *left_tipchar,
+                                           const double *       right_clv,
+                                           const double *       left_matrix,
+                                           const double *       right_matrix,
+                                           const unsigned int * right_scaler,
+                                           const corax_state_t *tipmap,
+                                           unsigned int         tipmap_size,
+                                           unsigned int         attrib);
 
-  CORAX_EXPORT void corax_core_update_clv_ii_avx2(unsigned int        states,
-                                              unsigned int        sites,
-                                              unsigned int        rate_cats,
-                                              double *            parent_clv,
-                                              unsigned int *      parent_scaler,
-                                              const double *      left_clv,
-                                              const double *      right_clv,
-                                              const double *      left_matrix,
-                                              const double *      right_matrix,
-                                              const unsigned int *left_scaler,
-                                              const unsigned int *right_scaler,
-                                              unsigned int        attrib);
+  CORAX_EXPORT void
+  corax_core_update_clv_ii_avx2(unsigned int        states,
+                                unsigned int        sites,
+                                unsigned int        rate_cats,
+                                double *            parent_clv,
+                                unsigned int *      parent_scaler,
+                                const double *      left_clv,
+                                const double *      right_clv,
+                                const double *      left_matrix,
+                                const double *      right_matrix,
+                                const unsigned int *left_scaler,
+                                const unsigned int *right_scaler,
+                                unsigned int        attrib);
 
   CORAX_EXPORT void
   corax_core_update_clv_repeats_generic_avx2(unsigned int        states,
-                                           unsigned int        parent_sites,
-                                           unsigned int        left_sites,
-                                           unsigned int        right_sites,
-                                           unsigned int        rate_cats,
-                                           double *            parent_clv,
-                                           unsigned int *      parent_scaler,
-                                           const double *      left_clv,
-                                           const double *      right_clv,
-                                           const double *      left_matrix,
-                                           const double *      right_matrix,
-                                           const unsigned int *left_scaler,
-                                           const unsigned int *right_scaler,
-                                           const unsigned int *parent_id_site,
-                                           const unsigned int *left_site_id,
-                                           const unsigned int *right_site_id,
-                                           double *            bclv_buffer,
-                                           unsigned int        attrib);
+                                             unsigned int        parent_sites,
+                                             unsigned int        left_sites,
+                                             unsigned int        right_sites,
+                                             unsigned int        rate_cats,
+                                             double *            parent_clv,
+                                             unsigned int *      parent_scaler,
+                                             const double *      left_clv,
+                                             const double *      right_clv,
+                                             const double *      left_matrix,
+                                             const double *      right_matrix,
+                                             const unsigned int *left_scaler,
+                                             const unsigned int *right_scaler,
+                                             const unsigned int *parent_id_site,
+                                             const unsigned int *left_site_id,
+                                             const unsigned int *right_site_id,
+                                             double *            bclv_buffer,
+                                             unsigned int        attrib);
 #endif
 
   /* functions in core_derivatives_sse.c */
@@ -2179,31 +2205,31 @@ extern "C"
 #ifdef HAVE_SSE3
   CORAX_EXPORT int
   corax_core_update_sumtable_ii_sse(unsigned int        states,
-                                  unsigned int        sites,
-                                  unsigned int        rate_cats,
-                                  const double *      parent_clv,
-                                  const double *      child_clv,
-                                  const unsigned int *parent_scaler,
-                                  const unsigned int *child_scaler,
-                                  double *const *     eigenvecs,
-                                  double *const *     inv_eigenvecs,
-                                  double *const *     freqs,
-                                  double *            sumtable,
-                                  unsigned int        attrib);
+                                    unsigned int        sites,
+                                    unsigned int        rate_cats,
+                                    const double *      parent_clv,
+                                    const double *      child_clv,
+                                    const unsigned int *parent_scaler,
+                                    const unsigned int *child_scaler,
+                                    double *const *     eigenvecs,
+                                    double *const *     inv_eigenvecs,
+                                    double *const *     freqs,
+                                    double *            sumtable,
+                                    unsigned int        attrib);
 
   CORAX_EXPORT int
   corax_core_update_sumtable_ti_sse(unsigned int         states,
-                                  unsigned int         sites,
-                                  unsigned int         rate_cats,
-                                  const double *       parent_clv,
-                                  const unsigned char *left_tipchars,
-                                  const unsigned int * parent_scaler,
-                                  double *const *      eigenvecs,
-                                  double *const *      inv_eigenvecs,
-                                  double *const *      freqs,
-                                  const corax_state_t *  tipmap,
-                                  double *             sumtable,
-                                  unsigned int         attrib);
+                                    unsigned int         sites,
+                                    unsigned int         rate_cats,
+                                    const double *       parent_clv,
+                                    const unsigned char *left_tipchars,
+                                    const unsigned int * parent_scaler,
+                                    double *const *      eigenvecs,
+                                    double *const *      inv_eigenvecs,
+                                    double *const *      freqs,
+                                    const corax_state_t *tipmap,
+                                    double *             sumtable,
+                                    unsigned int         attrib);
 
   CORAX_EXPORT int corax_core_update_sumtable_repeats_generic_sse(
       unsigned int        states,
@@ -2231,47 +2257,47 @@ extern "C"
 
   CORAX_EXPORT int
   corax_core_update_sumtable_ii_avx(unsigned int        states,
-                                  unsigned int        sites,
-                                  unsigned int        rate_cats,
-                                  const double *      clvp,
-                                  const double *      clvc,
-                                  const unsigned int *parent_scaler,
-                                  const unsigned int *child_scaler,
-                                  double *const *     eigenvecs,
-                                  double *const *     inv_eigenvecs,
-                                  double *const *     freqs,
-                                  double *            sumtable,
-                                  unsigned int        attrib);
+                                    unsigned int        sites,
+                                    unsigned int        rate_cats,
+                                    const double *      clvp,
+                                    const double *      clvc,
+                                    const unsigned int *parent_scaler,
+                                    const unsigned int *child_scaler,
+                                    double *const *     eigenvecs,
+                                    double *const *     inv_eigenvecs,
+                                    double *const *     freqs,
+                                    double *            sumtable,
+                                    unsigned int        attrib);
 
   CORAX_EXPORT int
   corax_core_update_sumtable_ti_avx(unsigned int         states,
-                                  unsigned int         sites,
-                                  unsigned int         rate_cats,
-                                  const double *       parent_clv,
-                                  const unsigned char *left_tipchars,
-                                  const unsigned int * parent_scaler,
-                                  double *const *      eigenvecs,
-                                  double *const *      inv_eigenvecs,
-                                  double *const *      freqs,
-                                  const corax_state_t *  tipmap,
-                                  unsigned int         tipmap_size,
-                                  double *             sumtable,
-                                  unsigned int         attrib);
+                                    unsigned int         sites,
+                                    unsigned int         rate_cats,
+                                    const double *       parent_clv,
+                                    const unsigned char *left_tipchars,
+                                    const unsigned int * parent_scaler,
+                                    double *const *      eigenvecs,
+                                    double *const *      inv_eigenvecs,
+                                    double *const *      freqs,
+                                    const corax_state_t *tipmap,
+                                    unsigned int         tipmap_size,
+                                    double *             sumtable,
+                                    unsigned int         attrib);
 
   CORAX_EXPORT int
   corax_core_likelihood_derivatives_avx(unsigned int        states,
-                                      unsigned int        states_padded,
-                                      unsigned int        rate_cats,
-                                      unsigned int        ef_sites,
-                                      const unsigned int *pattern_weights,
-                                      const double *      rate_weights,
-                                      const int *         invariant,
-                                      const double *      prop_invar,
-                                      double *const *     freqs,
-                                      const double *      sumtable,
-                                      const double *      diagptable,
-                                      double *            d_f,
-                                      double *            dd_f);
+                                        unsigned int        states_padded,
+                                        unsigned int        rate_cats,
+                                        unsigned int        ef_sites,
+                                        const unsigned int *pattern_weights,
+                                        const double *      rate_weights,
+                                        const int *         invariant,
+                                        const double *      prop_invar,
+                                        double *const *     freqs,
+                                        const double *      sumtable,
+                                        const double *      diagptable,
+                                        double *            d_f,
+                                        double *            dd_f);
 
   CORAX_EXPORT int corax_core_update_sumtable_repeats_generic_avx(
       unsigned int        states,
@@ -2292,23 +2318,23 @@ extern "C"
       unsigned int        inv,
       unsigned int        attrib);
   CORAX_EXPORT int
-                 corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
-                                                          unsigned int        sites,
-                                                          unsigned int        parent_sites,
-                                                          unsigned int        rate_cats,
-                                                          const double *      clvp,
-                                                          const double *      clvc,
-                                                          const unsigned int *parent_scaler,
-                                                          const unsigned int *child_scaler,
-                                                          double *const *     eigenvecs,
-                                                          double *const *     inv_eigenvecs,
-                                                          double *const *     freqs,
-                                                          double *            sumtable,
-                                                          const unsigned int *parent_site_id,
-                                                          const unsigned int *child_site_id,
-                                                          double *            bclv_buffer,
-                                                          unsigned int        inv,
-                                                          unsigned int        attrib);
+  corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
+                                             unsigned int        sites,
+                                             unsigned int        parent_sites,
+                                             unsigned int        rate_cats,
+                                             const double *      clvp,
+                                             const double *      clvc,
+                                             const unsigned int *parent_scaler,
+                                             const unsigned int *child_scaler,
+                                             double *const *     eigenvecs,
+                                             double *const *     inv_eigenvecs,
+                                             double *const *     freqs,
+                                             double *            sumtable,
+                                             const unsigned int *parent_site_id,
+                                             const unsigned int *child_site_id,
+                                             double *            bclv_buffer,
+                                             unsigned int        inv,
+                                             unsigned int        attrib);
   CORAX_EXPORT int corax_core_update_sumtable_repeatsbclv_4x4_avx(
       unsigned int        states,
       unsigned int        sites,
@@ -2335,47 +2361,48 @@ extern "C"
 
   CORAX_EXPORT int
   corax_core_update_sumtable_ii_avx2(unsigned int        states,
-                                   unsigned int        sites,
-                                   unsigned int        rate_cats,
-                                   const double *      clvp,
-                                   const double *      clvc,
-                                   const unsigned int *parent_scaler,
-                                   const unsigned int *child_scaler,
-                                   double *const *     eigenvecs,
-                                   double *const *     inv_eigenvecs,
-                                   double *const *     freqs,
-                                   double *            sumtable,
-                                   unsigned int        attrib);
+                                     unsigned int        sites,
+                                     unsigned int        rate_cats,
+                                     const double *      clvp,
+                                     const double *      clvc,
+                                     const unsigned int *parent_scaler,
+                                     const unsigned int *child_scaler,
+                                     double *const *     eigenvecs,
+                                     double *const *     inv_eigenvecs,
+                                     double *const *     freqs,
+                                     double *            sumtable,
+                                     unsigned int        attrib);
 
   CORAX_EXPORT int
   corax_core_update_sumtable_ti_avx2(unsigned int         states,
-                                   unsigned int         sites,
-                                   unsigned int         rate_cats,
-                                   const double *       parent_clv,
-                                   const unsigned char *left_tipchars,
-                                   const unsigned int * parent_scaler,
-                                   double *const *      eigenvecs,
-                                   double *const *      inv_eigenvecs,
-                                   double *const *      freqs,
-                                   const corax_state_t *  tipmap,
-                                   unsigned int         tipmap_size,
-                                   double *             sumtable,
-                                   unsigned int         attrib);
+                                     unsigned int         sites,
+                                     unsigned int         rate_cats,
+                                     const double *       parent_clv,
+                                     const unsigned char *left_tipchars,
+                                     const unsigned int * parent_scaler,
+                                     double *const *      eigenvecs,
+                                     double *const *      inv_eigenvecs,
+                                     double *const *      freqs,
+                                     const corax_state_t *tipmap,
+                                     unsigned int         tipmap_size,
+                                     double *             sumtable,
+                                     unsigned int         attrib);
 
   CORAX_EXPORT
-  int corax_core_likelihood_derivatives_avx2(unsigned int        states,
-                                           unsigned int        states_padded,
-                                           unsigned int        rate_cats,
-                                           unsigned int        ef_sites,
-                                           const unsigned int *pattern_weights,
-                                           const double *      rate_weights,
-                                           const int *         invariant,
-                                           const double *      prop_invar,
-                                           double *const *     freqs,
-                                           const double *      sumtable,
-                                           const double *      diagptable,
-                                           double *            d_f,
-                                           double *            dd_f);
+  int corax_core_likelihood_derivatives_avx2(
+      unsigned int        states,
+      unsigned int        states_padded,
+      unsigned int        rate_cats,
+      unsigned int        ef_sites,
+      const unsigned int *pattern_weights,
+      const double *      rate_weights,
+      const int *         invariant,
+      const double *      prop_invar,
+      double *const *     freqs,
+      const double *      sumtable,
+      const double *      diagptable,
+      double *            d_f,
+      double *            dd_f);
 
   CORAX_EXPORT int corax_core_update_sumtable_repeats_generic_avx2(
       unsigned int        states,
@@ -2401,117 +2428,119 @@ extern "C"
 
 #ifdef HAVE_SSE3
   CORAX_EXPORT
-  double corax_core_edge_loglikelihood_ii_sse(unsigned int        states,
+  double
+  corax_core_edge_loglikelihood_ii_sse(unsigned int        states,
+                                       unsigned int        sites,
+                                       unsigned int        rate_cats,
+                                       const double *      parent_clv,
+                                       const unsigned int *parent_scaler,
+                                       const double *      child_clv,
+                                       const unsigned int *child_scaler,
+                                       const double *      pmatrix,
+                                       double *const *     frequencies,
+                                       const double *      rate_weights,
+                                       const unsigned int *pattern_weights,
+                                       const double *      invar_proportion,
+                                       const int *         invar_indices,
+                                       const unsigned int *freqs_indices,
+                                       double *            persite_lnl,
+                                       unsigned int        attrib);
+
+  CORAX_EXPORT
+  double
+  corax_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
+                                           unsigned int        rate_cats,
+                                           const double *      parent_clv,
+                                           const unsigned int *parent_scaler,
+                                           const double *      child_clv,
+                                           const unsigned int *child_scaler,
+                                           const double *      pmatrix,
+                                           double *const *     frequencies,
+                                           const double *      rate_weights,
+                                           const unsigned int *pattern_weights,
+                                           const double *      invar_proportion,
+                                           const int *         invar_indices,
+                                           const unsigned int *freqs_indices,
+                                           double *            persite_lnl,
+                                           unsigned int        attrib);
+
+  CORAX_EXPORT
+  double
+  corax_core_edge_loglikelihood_ti_sse(unsigned int         states,
+                                       unsigned int         sites,
+                                       unsigned int         rate_cats,
+                                       const double *       parent_clv,
+                                       const unsigned int * parent_scaler,
+                                       const unsigned char *tipchars,
+                                       const corax_state_t *tipmap,
+                                       const double *       pmatrix,
+                                       double *const *      frequencies,
+                                       const double *       rate_weights,
+                                       const unsigned int * pattern_weights,
+                                       const double *       invar_proportion,
+                                       const int *          invar_indices,
+                                       const unsigned int * freqs_indices,
+                                       double *             persite_lnl,
+                                       unsigned int         attrib);
+
+  CORAX_EXPORT
+  double
+  corax_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
+                                           unsigned int         rate_cats,
+                                           const double *       parent_clv,
+                                           const unsigned int * parent_scaler,
+                                           const unsigned char *tipchars,
+                                           const double *       pmatrix,
+                                           double *const *      frequencies,
+                                           const double *       rate_weights,
+                                           const unsigned int * pattern_weights,
+                                           const double *      invar_proportion,
+                                           const int *         invar_indices,
+                                           const unsigned int *freqs_indices,
+                                           double *            persite_lnl,
+                                           unsigned int        attrib);
+
+  CORAX_EXPORT double
+  corax_core_root_loglikelihood_4x4_sse(unsigned int        sites,
+                                        unsigned int        rate_cats,
+                                        const double *      clv,
+                                        const unsigned int *scaler,
+                                        double *const *     frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl);
+
+  CORAX_EXPORT double
+  corax_core_root_loglikelihood_sse(unsigned int        states,
+                                    unsigned int        sites,
+                                    unsigned int        rate_cats,
+                                    const double *      clv,
+                                    const unsigned int *scaler,
+                                    double *const *     frequencies,
+                                    const double *      rate_weights,
+                                    const unsigned int *pattern_weights,
+                                    const double *      invar_proportion,
+                                    const int *         invar_indices,
+                                    const unsigned int *freqs_indices,
+                                    double *            persite_lnl);
+
+  CORAX_EXPORT double
+  corax_core_root_loglikelihood_repeats_sse(unsigned int        states,
                                             unsigned int        sites,
                                             unsigned int        rate_cats,
-                                            const double *      parent_clv,
-                                            const unsigned int *parent_scaler,
-                                            const double *      child_clv,
-                                            const unsigned int *child_scaler,
-                                            const double *      pmatrix,
+                                            const double *      clv,
+                                            const unsigned int *site_id,
+                                            const unsigned int *scaler,
                                             double *const *     frequencies,
                                             const double *      rate_weights,
                                             const unsigned int *pattern_weights,
                                             const double *invar_proportion,
                                             const int *   invar_indices,
                                             const unsigned int *freqs_indices,
-                                            double *            persite_lnl,
-                                            unsigned int        attrib);
-
-  CORAX_EXPORT
-  double
-  corax_core_edge_loglikelihood_ii_4x4_sse(unsigned int        sites,
-                                         unsigned int        rate_cats,
-                                         const double *      parent_clv,
-                                         const unsigned int *parent_scaler,
-                                         const double *      child_clv,
-                                         const unsigned int *child_scaler,
-                                         const double *      pmatrix,
-                                         double *const *     frequencies,
-                                         const double *      rate_weights,
-                                         const unsigned int *pattern_weights,
-                                         const double *      invar_proportion,
-                                         const int *         invar_indices,
-                                         const unsigned int *freqs_indices,
-                                         double *            persite_lnl,
-                                         unsigned int        attrib);
-
-  CORAX_EXPORT
-  double corax_core_edge_loglikelihood_ti_sse(unsigned int         states,
-                                            unsigned int         sites,
-                                            unsigned int         rate_cats,
-                                            const double *       parent_clv,
-                                            const unsigned int * parent_scaler,
-                                            const unsigned char *tipchars,
-                                            const corax_state_t *  tipmap,
-                                            const double *       pmatrix,
-                                            double *const *      frequencies,
-                                            const double *       rate_weights,
-                                            const unsigned int *pattern_weights,
-                                            const double *invar_proportion,
-                                            const int *   invar_indices,
-                                            const unsigned int *freqs_indices,
-                                            double *            persite_lnl,
-                                            unsigned int        attrib);
-
-  CORAX_EXPORT
-  double
-  corax_core_edge_loglikelihood_ti_4x4_sse(unsigned int         sites,
-                                         unsigned int         rate_cats,
-                                         const double *       parent_clv,
-                                         const unsigned int * parent_scaler,
-                                         const unsigned char *tipchars,
-                                         const double *       pmatrix,
-                                         double *const *      frequencies,
-                                         const double *       rate_weights,
-                                         const unsigned int * pattern_weights,
-                                         const double *       invar_proportion,
-                                         const int *          invar_indices,
-                                         const unsigned int * freqs_indices,
-                                         double *             persite_lnl,
-                                         unsigned int         attrib);
-
-  CORAX_EXPORT double
-  corax_core_root_loglikelihood_4x4_sse(unsigned int        sites,
-                                      unsigned int        rate_cats,
-                                      const double *      clv,
-                                      const unsigned int *scaler,
-                                      double *const *     frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl);
-
-  CORAX_EXPORT double
-  corax_core_root_loglikelihood_sse(unsigned int        states,
-                                  unsigned int        sites,
-                                  unsigned int        rate_cats,
-                                  const double *      clv,
-                                  const unsigned int *scaler,
-                                  double *const *     frequencies,
-                                  const double *      rate_weights,
-                                  const unsigned int *pattern_weights,
-                                  const double *      invar_proportion,
-                                  const int *         invar_indices,
-                                  const unsigned int *freqs_indices,
-                                  double *            persite_lnl);
-
-  CORAX_EXPORT double
-  corax_core_root_loglikelihood_repeats_sse(unsigned int        states,
-                                          unsigned int        sites,
-                                          unsigned int        rate_cats,
-                                          const double *      clv,
-                                          const unsigned int *site_id,
-                                          const unsigned int *scaler,
-                                          double *const *     frequencies,
-                                          const double *      rate_weights,
-                                          const unsigned int *pattern_weights,
-                                          const double *      invar_proportion,
-                                          const int *         invar_indices,
-                                          const unsigned int *freqs_indices,
-                                          double *            persite_lnl);
+                                            double *            persite_lnl);
 
   CORAX_EXPORT double corax_core_edge_loglikelihood_repeats_generic_sse(
       unsigned int        states,
@@ -2541,63 +2570,45 @@ extern "C"
 #ifdef HAVE_AVX
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ii_avx(unsigned int        states,
-                                     unsigned int        sites,
-                                     unsigned int        rate_cats,
-                                     const double *      parent_clv,
-                                     const unsigned int *parent_scaler,
-                                     const double *      child_clv,
-                                     const unsigned int *child_scaler,
-                                     const double *      pmatrix,
-                                     double *const *     frequencies,
-                                     const double *      rate_weights,
-                                     const unsigned int *pattern_weights,
-                                     const double *      invar_proportion,
-                                     const int *         invar_indices,
-                                     const unsigned int *freqs_indices,
-                                     double *            persite_lnl,
-                                     unsigned int        attrib);
+                                       unsigned int        sites,
+                                       unsigned int        rate_cats,
+                                       const double *      parent_clv,
+                                       const unsigned int *parent_scaler,
+                                       const double *      child_clv,
+                                       const unsigned int *child_scaler,
+                                       const double *      pmatrix,
+                                       double *const *     frequencies,
+                                       const double *      rate_weights,
+                                       const unsigned int *pattern_weights,
+                                       const double *      invar_proportion,
+                                       const int *         invar_indices,
+                                       const unsigned int *freqs_indices,
+                                       double *            persite_lnl,
+                                       unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int        sites,
-                                         unsigned int        rate_cats,
-                                         const double *      parent_clv,
-                                         const unsigned int *parent_scaler,
-                                         const double *      child_clv,
-                                         const unsigned int *child_scaler,
-                                         const double *      pmatrix,
-                                         double *const *     frequencies,
-                                         const double *      rate_weights,
-                                         const unsigned int *pattern_weights,
-                                         const double *      invar_proportion,
-                                         const int *         invar_indices,
-                                         const unsigned int *freqs_indices,
-                                         double *            persite_lnl,
-                                         unsigned int        attrib);
+                                           unsigned int        rate_cats,
+                                           const double *      parent_clv,
+                                           const unsigned int *parent_scaler,
+                                           const double *      child_clv,
+                                           const unsigned int *child_scaler,
+                                           const double *      pmatrix,
+                                           double *const *     frequencies,
+                                           const double *      rate_weights,
+                                           const unsigned int *pattern_weights,
+                                           const double *      invar_proportion,
+                                           const int *         invar_indices,
+                                           const unsigned int *freqs_indices,
+                                           double *            persite_lnl,
+                                           unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
-                                         unsigned int         rate_cats,
-                                         const double *       parent_clv,
-                                         const unsigned int * parent_scaler,
-                                         const unsigned char *tipchars,
-                                         const double *       pmatrix,
-                                         double *const *      frequencies,
-                                         const double *       rate_weights,
-                                         const unsigned int * pattern_weights,
-                                         const double *       invar_proportion,
-                                         const int *          invar_indices,
-                                         const unsigned int * freqs_indices,
-                                         double *             persite_lnl,
-                                         unsigned int         attrib);
-
-  CORAX_EXPORT double
-  corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
                                            unsigned int         rate_cats,
                                            const double *       parent_clv,
                                            const unsigned int * parent_scaler,
                                            const unsigned char *tipchars,
-                                           const corax_state_t *  tipmap,
-                                           unsigned int         tipmap_size,
                                            const double *       pmatrix,
                                            double *const *      frequencies,
                                            const double *       rate_weights,
@@ -2608,65 +2619,83 @@ extern "C"
                                            double *            persite_lnl,
                                            unsigned int        attrib);
 
+  CORAX_EXPORT double corax_core_edge_loglikelihood_ti_20x20_avx(
+      unsigned int         sites,
+      unsigned int         rate_cats,
+      const double *       parent_clv,
+      const unsigned int * parent_scaler,
+      const unsigned char *tipchars,
+      const corax_state_t *tipmap,
+      unsigned int         tipmap_size,
+      const double *       pmatrix,
+      double *const *      frequencies,
+      const double *       rate_weights,
+      const unsigned int * pattern_weights,
+      const double *       invar_proportion,
+      const int *          invar_indices,
+      const unsigned int * freqs_indices,
+      double *             persite_lnl,
+      unsigned int         attrib);
+
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
-                                     unsigned int         sites,
-                                     unsigned int         rate_cats,
-                                     const double *       parent_clv,
-                                     const unsigned int * parent_scaler,
-                                     const unsigned char *tipchars,
-                                     const corax_state_t *  tipmap,
-                                     const double *       pmatrix,
-                                     double *const *      frequencies,
-                                     const double *       rate_weights,
-                                     const unsigned int * pattern_weights,
-                                     const double *       invar_proportion,
-                                     const int *          invar_indices,
-                                     const unsigned int * freqs_indices,
-                                     double *             persite_lnl,
-                                     unsigned int         attrib);
+                                       unsigned int         sites,
+                                       unsigned int         rate_cats,
+                                       const double *       parent_clv,
+                                       const unsigned int * parent_scaler,
+                                       const unsigned char *tipchars,
+                                       const corax_state_t *tipmap,
+                                       const double *       pmatrix,
+                                       double *const *      frequencies,
+                                       const double *       rate_weights,
+                                       const unsigned int * pattern_weights,
+                                       const double *       invar_proportion,
+                                       const int *          invar_indices,
+                                       const unsigned int * freqs_indices,
+                                       double *             persite_lnl,
+                                       unsigned int         attrib);
 
   CORAX_EXPORT double
   corax_core_root_loglikelihood_4x4_avx(unsigned int        sites,
-                                      unsigned int        rate_cats,
-                                      const double *      clv,
-                                      const unsigned int *scaler,
-                                      double *const *     frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl);
+                                        unsigned int        rate_cats,
+                                        const double *      clv,
+                                        const unsigned int *scaler,
+                                        double *const *     frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl);
 
   CORAX_EXPORT double
   corax_core_root_loglikelihood_avx(unsigned int        states,
-                                  unsigned int        sites,
-                                  unsigned int        rate_cats,
-                                  const double *      clv,
-                                  const unsigned int *scaler,
-                                  double *const *     frequencies,
-                                  const double *      rate_weights,
-                                  const unsigned int *pattern_weights,
-                                  const double *      invar_proportion,
-                                  const int *         invar_indices,
-                                  const unsigned int *freqs_indices,
-                                  double *            persite_lnl);
+                                    unsigned int        sites,
+                                    unsigned int        rate_cats,
+                                    const double *      clv,
+                                    const unsigned int *scaler,
+                                    double *const *     frequencies,
+                                    const double *      rate_weights,
+                                    const unsigned int *pattern_weights,
+                                    const double *      invar_proportion,
+                                    const int *         invar_indices,
+                                    const unsigned int *freqs_indices,
+                                    double *            persite_lnl);
 
   CORAX_EXPORT double
   corax_core_root_loglikelihood_repeats_avx(unsigned int        states,
-                                          unsigned int        sites,
-                                          unsigned int        rate_cats,
-                                          const double *      clv,
-                                          const unsigned int *site_id,
-                                          const unsigned int *scaler,
-                                          double *const *     frequencies,
-                                          const double *      rate_weights,
-                                          const unsigned int *pattern_weights,
-                                          const double *      invar_proportion,
-                                          const int *         invar_indices,
-                                          const unsigned int *freqs_indices,
-                                          double *            persite_lnl);
+                                            unsigned int        sites,
+                                            unsigned int        rate_cats,
+                                            const double *      clv,
+                                            const unsigned int *site_id,
+                                            const unsigned int *scaler,
+                                            double *const *     frequencies,
+                                            const double *      rate_weights,
+                                            const unsigned int *pattern_weights,
+                                            const double *invar_proportion,
+                                            const int *   invar_indices,
+                                            const unsigned int *freqs_indices,
+                                            double *            persite_lnl);
 
   CORAX_EXPORT double corax_core_edge_loglikelihood_repeats_generic_avx(
       unsigned int        states,
@@ -2740,71 +2769,71 @@ extern "C"
 #ifdef HAVE_AVX2
   CORAX_EXPORT
   double corax_core_root_loglikelihood_avx2(unsigned int        states,
-                                          unsigned int        sites,
-                                          unsigned int        rate_cats,
-                                          const double *      clv,
-                                          const unsigned int *scaler,
-                                          double *const *     frequencies,
-                                          const double *      rate_weights,
-                                          const unsigned int *pattern_weights,
-                                          const double *      invar_proportion,
-                                          const int *         invar_indices,
-                                          const unsigned int *freqs_indices,
-                                          double *            persite_lnl);
-
-  CORAX_EXPORT
-  double
-  corax_core_edge_loglikelihood_ti_20x20_avx2(unsigned int         sites,
-                                            unsigned int         rate_cats,
-                                            const double *       parent_clv,
-                                            const unsigned int * parent_scaler,
-                                            const unsigned char *tipchars,
-                                            const corax_state_t *  tipmap,
-                                            unsigned int         tipmap_size,
-                                            const double *       pmatrix,
-                                            double *const *      frequencies,
-                                            const double *       rate_weights,
+                                            unsigned int        sites,
+                                            unsigned int        rate_cats,
+                                            const double *      clv,
+                                            const unsigned int *scaler,
+                                            double *const *     frequencies,
+                                            const double *      rate_weights,
                                             const unsigned int *pattern_weights,
                                             const double *invar_proportion,
                                             const int *   invar_indices,
                                             const unsigned int *freqs_indices,
-                                            double *            persite_lnl,
-                                            unsigned int        attrib);
+                                            double *            persite_lnl);
+
+  CORAX_EXPORT
+  double corax_core_edge_loglikelihood_ti_20x20_avx2(
+      unsigned int         sites,
+      unsigned int         rate_cats,
+      const double *       parent_clv,
+      const unsigned int * parent_scaler,
+      const unsigned char *tipchars,
+      const corax_state_t *tipmap,
+      unsigned int         tipmap_size,
+      const double *       pmatrix,
+      double *const *      frequencies,
+      const double *       rate_weights,
+      const unsigned int * pattern_weights,
+      const double *       invar_proportion,
+      const int *          invar_indices,
+      const unsigned int * freqs_indices,
+      double *             persite_lnl,
+      unsigned int         attrib);
 
   CORAX_EXPORT
   double
   corax_core_edge_loglikelihood_ii_avx2(unsigned int        states,
-                                      unsigned int        sites,
-                                      unsigned int        rate_cats,
-                                      const double *      parent_clv,
-                                      const unsigned int *parent_scaler,
-                                      const double *      child_clv,
-                                      const unsigned int *child_scaler,
-                                      const double *      pmatrix,
-                                      double *const *     frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl,
-                                      unsigned int        attrib);
+                                        unsigned int        sites,
+                                        unsigned int        rate_cats,
+                                        const double *      parent_clv,
+                                        const unsigned int *parent_scaler,
+                                        const double *      child_clv,
+                                        const unsigned int *child_scaler,
+                                        const double *      pmatrix,
+                                        double *const *     frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl,
+                                        unsigned int        attrib);
 
   CORAX_EXPORT
-  double
-  corax_core_root_loglikelihood_repeats_avx2(unsigned int        states,
-                                           unsigned int        sites,
-                                           unsigned int        rate_cats,
-                                           const double *      clv,
-                                           const unsigned int *site_id,
-                                           const unsigned int *scaler,
-                                           double *const *     frequencies,
-                                           const double *      rate_weights,
-                                           const unsigned int *pattern_weights,
-                                           const double *      invar_proportion,
-                                           const int *         invar_indices,
-                                           const unsigned int *freqs_indices,
-                                           double *            persite_lnl);
+  double corax_core_root_loglikelihood_repeats_avx2(
+      unsigned int        states,
+      unsigned int        sites,
+      unsigned int        rate_cats,
+      const double *      clv,
+      const unsigned int *site_id,
+      const unsigned int *scaler,
+      double *const *     frequencies,
+      const double *      rate_weights,
+      const unsigned int *pattern_weights,
+      const double *      invar_proportion,
+      const int *         invar_indices,
+      const unsigned int *freqs_indices,
+      double *            persite_lnl);
 
   CORAX_EXPORT
   double corax_core_edge_loglikelihood_repeats_generic_avx2(
@@ -2834,34 +2863,34 @@ extern "C"
   /* functions in core_pmatrix.c */
 
   CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
-                                         unsigned int        states,
-                                         unsigned int        rate_cats,
-                                         const double *      rates,
-                                         const double *      branch_lengths,
-                                         const unsigned int *matrix_indices,
-                                         const unsigned int *params_indices,
-                                         const double *      prop_invar,
-                                         double *const *     eigenvals,
-                                         double *const *     eigenvecs,
-                                         double *const *     inv_eigenvecs,
-                                         unsigned int        count,
-                                         unsigned int        attrib);
+                                             unsigned int        states,
+                                             unsigned int        rate_cats,
+                                             const double *      rates,
+                                             const double *      branch_lengths,
+                                             const unsigned int *matrix_indices,
+                                             const unsigned int *params_indices,
+                                             const double *      prop_invar,
+                                             double *const *     eigenvals,
+                                             double *const *     eigenvecs,
+                                             double *const *     inv_eigenvecs,
+                                             unsigned int        count,
+                                             unsigned int        attrib);
 
   /* functions in core_pmatrix_avx2.c */
 
 #ifdef HAVE_AVX2
   CORAX_EXPORT int
   corax_core_update_pmatrix_20x20_avx2(double **           pmatrix,
-                                     unsigned int        rate_cats,
-                                     const double *      rates,
-                                     const double *      branch_lengths,
-                                     const unsigned int *matrix_indices,
-                                     const unsigned int *params_indices,
-                                     const double *      prop_invar,
-                                     double *const *     eigenvals,
-                                     double *const *     eigenvecs,
-                                     double *const *     inv_eigenvecs,
-                                     unsigned int        count);
+                                       unsigned int        rate_cats,
+                                       const double *      rates,
+                                       const double *      branch_lengths,
+                                       const unsigned int *matrix_indices,
+                                       const unsigned int *params_indices,
+                                       const double *      prop_invar,
+                                       double *const *     eigenvals,
+                                       double *const *     eigenvecs,
+                                       double *const *     inv_eigenvecs,
+                                       unsigned int        count);
 #endif
 
   /* functions in core_pmatrix_avx.c */
@@ -2869,19 +2898,6 @@ extern "C"
 #ifdef HAVE_AVX
   CORAX_EXPORT int
   corax_core_update_pmatrix_4x4_avx(double **           pmatrix,
-                                  unsigned int        rate_cats,
-                                  const double *      rates,
-                                  const double *      branch_lengths,
-                                  const unsigned int *matrix_indices,
-                                  const unsigned int *params_indices,
-                                  const double *      prop_invar,
-                                  double *const *     eigenvals,
-                                  double *const *     eigenvecs,
-                                  double *const *     inv_eigenvecs,
-                                  unsigned int        count);
-
-  CORAX_EXPORT int
-  corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
                                     unsigned int        rate_cats,
                                     const double *      rates,
                                     const double *      branch_lengths,
@@ -2892,6 +2908,19 @@ extern "C"
                                     double *const *     eigenvecs,
                                     double *const *     inv_eigenvecs,
                                     unsigned int        count);
+
+  CORAX_EXPORT int
+  corax_core_update_pmatrix_20x20_avx(double **           pmatrix,
+                                      unsigned int        rate_cats,
+                                      const double *      rates,
+                                      const double *      branch_lengths,
+                                      const unsigned int *matrix_indices,
+                                      const unsigned int *params_indices,
+                                      const double *      prop_invar,
+                                      double *const *     eigenvals,
+                                      double *const *     eigenvecs,
+                                      double *const *     inv_eigenvecs,
+                                      unsigned int        count);
 #endif
 
   /* functions in core_pmatrix_sse.c */
@@ -2899,19 +2928,6 @@ extern "C"
 #ifdef HAVE_SSE3
   CORAX_EXPORT int
   corax_core_update_pmatrix_4x4_sse(double **           pmatrix,
-                                  unsigned int        rate_cats,
-                                  const double *      rates,
-                                  const double *      branch_lengths,
-                                  const unsigned int *matrix_indices,
-                                  const unsigned int *params_indices,
-                                  const double *      prop_invar,
-                                  double *const *     eigenvals,
-                                  double *const *     eigenvecs,
-                                  double *const *     inv_eigenvecs,
-                                  unsigned int        count);
-
-  CORAX_EXPORT int
-  corax_core_update_pmatrix_20x20_sse(double **           pmatrix,
                                     unsigned int        rate_cats,
                                     const double *      rates,
                                     const double *      branch_lengths,
@@ -2922,6 +2938,19 @@ extern "C"
                                     double *const *     eigenvecs,
                                     double *const *     inv_eigenvecs,
                                     unsigned int        count);
+
+  CORAX_EXPORT int
+  corax_core_update_pmatrix_20x20_sse(double **           pmatrix,
+                                      unsigned int        rate_cats,
+                                      const double *      rates,
+                                      const double *      branch_lengths,
+                                      const unsigned int *matrix_indices,
+                                      const unsigned int *params_indices,
+                                      const double *      prop_invar,
+                                      double *const *     eigenvals,
+                                      double *const *     eigenvecs,
+                                      double *const *     inv_eigenvecs,
+                                      unsigned int        count);
 #endif
 
   /* functions in compress.c */
@@ -2942,159 +2971,162 @@ extern "C"
    *
    * @ingroup corax_partition_t
    */
-  CORAX_EXPORT unsigned int *corax_compress_site_patterns(char **sequence,
-                                                      const corax_state_t *map,
-                                                      int                count,
-                                                      int *length);
+  CORAX_EXPORT unsigned int *corax_compress_site_patterns(
+      char **sequence, const corax_state_t *map, int count, int *length);
 
   CORAX_EXPORT
-  unsigned int *corax_compress_site_patterns_msa(corax_msa_t *        msa,
-                                               const corax_state_t *map,
-                                               unsigned int *site_pattern_map);
+  unsigned int *
+  corax_compress_site_patterns_msa(corax_msa_t *        msa,
+                                   const corax_state_t *map,
+                                   unsigned int *       site_pattern_map);
 
   /* functions in parsimony.c */
 
   CORAX_EXPORT int corax_set_parsimony_sequence(corax_parsimony_t *  pars,
-                                            unsigned int       tip_index,
-                                            const corax_state_t *map,
-                                            const char *       sequence);
+                                                unsigned int         tip_index,
+                                                const corax_state_t *map,
+                                                const char *         sequence);
 
   CORAX_EXPORT corax_parsimony_t *
-             corax_parsimony_create(unsigned int  tips,
-                                  unsigned int  states,
-                                  unsigned int  sites,
-                                  const double *score_matrix,
-                                  unsigned int  score_buffers,
-                                  unsigned int  ancestral_buffers);
+               corax_parsimony_create(unsigned int  tips,
+                                      unsigned int  states,
+                                      unsigned int  sites,
+                                      const double *score_matrix,
+                                      unsigned int  score_buffers,
+                                      unsigned int  ancestral_buffers);
 
-  CORAX_EXPORT double corax_parsimony_build(corax_parsimony_t *         pars,
-                                        const corax_pars_buildop_t *operations,
-                                        unsigned int              count);
+  CORAX_EXPORT double
+  corax_parsimony_build(corax_parsimony_t *         pars,
+                        const corax_pars_buildop_t *operations,
+                        unsigned int                count);
 
-  CORAX_EXPORT void corax_parsimony_reconstruct(corax_parsimony_t *       pars,
-                                            const corax_state_t *     map,
-                                            const corax_pars_recop_t *operations,
-                                            unsigned int            count);
+  CORAX_EXPORT void
+  corax_parsimony_reconstruct(corax_parsimony_t *       pars,
+                              const corax_state_t *     map,
+                              const corax_pars_recop_t *operations,
+                              unsigned int              count);
 
   CORAX_EXPORT double corax_parsimony_score(corax_parsimony_t *pars,
-                                        unsigned int     score_buffer_index);
+                                            unsigned int score_buffer_index);
 
   CORAX_EXPORT void corax_parsimony_destroy(corax_parsimony_t *pars);
 
   /* functions in fast_parsimony.c */
 
   CORAX_EXPORT corax_parsimony_t *
-             corax_fastparsimony_init(const corax_partition_t *partition);
+               corax_fastparsimony_init(const corax_partition_t *partition);
 
   CORAX_EXPORT void
   corax_fastparsimony_update_vectors(corax_parsimony_t *         parsimony,
-                                   const corax_pars_buildop_t *ops,
-                                   unsigned int              count);
+                                     const corax_pars_buildop_t *ops,
+                                     unsigned int                count);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_root_score(const corax_parsimony_t *parsimony,
-                               unsigned int           root_index);
+                                 unsigned int             root_index);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score(const corax_parsimony_t *parsimony,
-                               unsigned int           node1_score_index,
-                               unsigned int           node2_score_index);
+                                 unsigned int             node1_score_index,
+                                 unsigned int             node2_score_index);
 
   CORAX_EXPORT void
   corax_fastparsimony_update_vector_4x4(corax_parsimony_t *         parsimony,
-                                      const corax_pars_buildop_t *op);
+                                        const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_4x4(const corax_parsimony_t *parsimony,
-                                   unsigned int           node1_score_index,
-                                   unsigned int           node2_score_index);
+                                     unsigned int             node1_score_index,
+                                     unsigned int node2_score_index);
 
-  CORAX_EXPORT void corax_fastparsimony_update_vector(corax_parsimony_t *parsimony,
-                                                  const corax_pars_buildop_t *op);
+  CORAX_EXPORT void
+  corax_fastparsimony_update_vector(corax_parsimony_t *         parsimony,
+                                    const corax_pars_buildop_t *op);
 
   /* functions in fast_parsimony_sse.c */
 
   CORAX_EXPORT void
-  corax_fastparsimony_update_vector_4x4_sse(corax_parsimony_t *         parsimony,
-                                          const corax_pars_buildop_t *op);
+  corax_fastparsimony_update_vector_4x4_sse(corax_parsimony_t *parsimony,
+                                            const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_4x4_sse(const corax_parsimony_t *parsimony,
-                                       unsigned int           node1_score_index,
-                                       unsigned int node2_score_index);
+                                         unsigned int node1_score_index,
+                                         unsigned int node2_score_index);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_sse(const corax_parsimony_t *parsimony,
-                                   unsigned int           node1_score_index,
-                                   unsigned int           node2_score_index);
+                                     unsigned int             node1_score_index,
+                                     unsigned int node2_score_index);
 
   CORAX_EXPORT void
   corax_fastparsimony_update_vector_sse(corax_parsimony_t *         parsimony,
-                                      const corax_pars_buildop_t *op);
+                                        const corax_pars_buildop_t *op);
 
   /* functions in fast_parsimony_avx.c */
 
   CORAX_EXPORT void
-  corax_fastparsimony_update_vector_4x4_avx(corax_parsimony_t *         parsimony,
-                                          const corax_pars_buildop_t *op);
+  corax_fastparsimony_update_vector_4x4_avx(corax_parsimony_t *parsimony,
+                                            const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_4x4_avx(const corax_parsimony_t *parsimony,
-                                       unsigned int           node1_score_index,
-                                       unsigned int node2_score_index);
+                                         unsigned int node1_score_index,
+                                         unsigned int node2_score_index);
 
   CORAX_EXPORT void
   corax_fastparsimony_update_vector_avx(corax_parsimony_t *         parsimony,
-                                      const corax_pars_buildop_t *op);
+                                        const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_avx(const corax_parsimony_t *parsimony,
-                                   unsigned int           node1_score_index,
-                                   unsigned int           node2_score_index);
+                                     unsigned int             node1_score_index,
+                                     unsigned int node2_score_index);
 
   /* functions in fast_parsimony_avx2.c */
 
   CORAX_EXPORT void
-  corax_fastparsimony_update_vector_4x4_avx2(corax_parsimony_t *         parsimony,
-                                           const corax_pars_buildop_t *op);
+  corax_fastparsimony_update_vector_4x4_avx2(corax_parsimony_t *parsimony,
+                                             const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_4x4_avx2(const corax_parsimony_t *parsimony,
-                                        unsigned int node1_score_index,
-                                        unsigned int node2_score_index);
+                                          unsigned int node1_score_index,
+                                          unsigned int node2_score_index);
 
   CORAX_EXPORT void
   corax_fastparsimony_update_vector_avx2(corax_parsimony_t *         parsimony,
-                                       const corax_pars_buildop_t *op);
+                                         const corax_pars_buildop_t *op);
 
   CORAX_EXPORT unsigned int
   corax_fastparsimony_edge_score_avx2(const corax_parsimony_t *parsimony,
-                                    unsigned int           node1_score_index,
-                                    unsigned int           node2_score_index);
+                                      unsigned int node1_score_index,
+                                      unsigned int node2_score_index);
 
   /* functions in stepwise.c */
 
-  CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **list,
-                                                     char *const *     labels,
-                                                     unsigned int *    score,
-                                                     unsigned int      count,
-                                                     unsigned int      seed);
+  CORAX_EXPORT corax_utree_t *
+               corax_fastparsimony_stepwise(corax_parsimony_t **list,
+                                            char *const *       labels,
+                                            unsigned int *      score,
+                                            unsigned int        count,
+                                            unsigned int        seed);
 
   /* functions in random.c */
 
   CORAX_EXPORT extern int corax_random_r(struct corax_random_data *__buf,
-                                     int32_t *               __result);
+                                         int32_t *                 __result);
 
-  CORAX_EXPORT extern int corax_srandom_r(unsigned int            __seed,
-                                      struct corax_random_data *__buf);
+  CORAX_EXPORT extern int corax_srandom_r(unsigned int              __seed,
+                                          struct corax_random_data *__buf);
 
-  CORAX_EXPORT extern int corax_initstate_r(unsigned int            __seed,
-                                        char *                  __statebuf,
-                                        size_t                  __statelen,
-                                        struct corax_random_data *__buf);
+  CORAX_EXPORT extern int corax_initstate_r(unsigned int __seed,
+                                            char *       __statebuf,
+                                            size_t       __statelen,
+                                            struct corax_random_data *__buf);
 
-  CORAX_EXPORT extern int corax_setstate_r(char *                  __statebuf,
-                                       struct corax_random_data *__buf);
+  CORAX_EXPORT extern int corax_setstate_r(char *                    __statebuf,
+                                           struct corax_random_data *__buf);
 
   CORAX_EXPORT corax_random_state *corax_random_create(unsigned int seed);
 

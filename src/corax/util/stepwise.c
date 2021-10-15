@@ -47,8 +47,8 @@ static char *xstrdup(const char *s)
 /* Fisher-Yates shuffle */
 static unsigned int *create_shuffled(unsigned int n, unsigned int seed)
 {
-  unsigned int            i, j;
-  char *                  statebuf;
+  unsigned int              i, j;
+  char *                    statebuf;
   struct corax_random_data *buf;
 
   unsigned int *x = (unsigned int *)malloc(n * sizeof(unsigned int));
@@ -199,9 +199,9 @@ static corax_unode_t *utree_inner_create(unsigned int i, unsigned int tip_count)
 static corax_unode_t *utree_tip_create(unsigned int i)
 {
   corax_unode_t *node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
-  node->next        = NULL;
-  node->clv_index   = i;
-  node->node_index  = i;
+  node->next          = NULL;
+  node->clv_index     = i;
+  node->node_index    = i;
 
   return node;
 }
@@ -222,7 +222,8 @@ static void utree_link(corax_unode_t *a, corax_unode_t *b)
   b->back = a;
 }
 
-static void utree_edgesplit(corax_unode_t *a, corax_unode_t *b, corax_unode_t *c)
+static void
+utree_edgesplit(corax_unode_t *a, corax_unode_t *b, corax_unode_t *c)
 {
   /*
                 *                                      *
@@ -262,8 +263,8 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
                                   corax_unode_t **    edge_list,
                                   corax_unode_t *     inner_node,
                                   corax_unode_t *     tip_node,
-                                  unsigned int      edge_count,
-                                  unsigned int      partition_count)
+                                  unsigned int        edge_count,
+                                  unsigned int        partition_count)
 {
   unsigned int i, j;
   unsigned int min_cost   = 0;
@@ -284,16 +285,17 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
    * evaluating insertion branches in the loop below */
   for (i = 0; i < edge_count; ++i)
   {
-    corax_unode_t *root = edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
+    corax_unode_t *root =
+        edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
 
     if (root->back->next) continue;
 
     /* make a partial traversal */
     if (!corax_utree_traverse(root,
-                            CORAX_TREE_TRAVERSE_POSTORDER,
-                            cb_partial_traversal,
-                            travbuffer,
-                            &traversal_size))
+                              CORAX_TREE_TRAVERSE_POSTORDER,
+                              cb_partial_traversal,
+                              travbuffer,
+                              &traversal_size))
       assert(0);
 
     /* create parsimony operations */
@@ -367,10 +369,10 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
 
   /* re-validate CLVs that remain correct after new tip insertion */
   if (!corax_utree_traverse(tip_node->back,
-                          CORAX_TREE_TRAVERSE_POSTORDER,
-                          cb_validate,
-                          travbuffer,
-                          &traversal_size))
+                            CORAX_TREE_TRAVERSE_POSTORDER,
+                            cb_validate,
+                            travbuffer,
+                            &traversal_size))
     assert(0);
 
   /* reset direction for the newly placed inner node */
@@ -379,11 +381,12 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
   return min_cost;
 }
 
-CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **list,
-                                                   char *const *     labels,
-                                                   unsigned int *    cost,
-                                                   unsigned int      count,
-                                                   unsigned int      seed)
+CORAX_EXPORT corax_utree_t *
+             corax_fastparsimony_stepwise(corax_parsimony_t **list,
+                                          char *const *       labels,
+                                          unsigned int *      cost,
+                                          unsigned int        count,
+                                          unsigned int        seed)
 {
   unsigned int i, j;
 
@@ -393,15 +396,16 @@ CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **lis
   if (tips_count < 3)
   {
     corax_set_error(CORAX_ERROR_STEPWISE_TIPS,
-                  "Stepwise parsimony requires at least three tips.");
+                    "Stepwise parsimony requires at least three tips.");
     return NULL;
   }
 
   // if (tips_count != inner_nodes + 2)
   if (inner_nodes < tips_count - 2)
   {
-    corax_set_error(CORAX_ERROR_STEPWISE_UNSUPPORTED,
-                  "Stepwise parsimony currently supports only unrooted trees.");
+    corax_set_error(
+        CORAX_ERROR_STEPWISE_UNSUPPORTED,
+        "Stepwise parsimony currently supports only unrooted trees.");
     return NULL;
   }
 
@@ -417,7 +421,7 @@ CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **lis
     if ((list[i]->tips != tips_count) || (list[i]->inner_nodes != inner_nodes))
     {
       corax_set_error(CORAX_ERROR_STEPWISE_STRUCT,
-                    "Parsimony structures tips/inner nodes not equal.");
+                      "Parsimony structures tips/inner nodes not equal.");
       return NULL;
     }
   }
@@ -432,7 +436,7 @@ CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **lis
 
   /* allocate parsimony operations container */
   parsops = (corax_pars_buildop_t *)malloc((tips_count - 2)
-                                         * sizeof(corax_pars_buildop_t));
+                                           * sizeof(corax_pars_buildop_t));
 
   /* create tip node list with a terminating NULL element */
   corax_unode_t **tip_node_list =
@@ -465,10 +469,12 @@ CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **lis
       free(parsops);
       free(tip_node_list);
       free(travbuffer);
-      for (j = 0; j < i; ++j) corax_utree_graph_destroy(inner_node_list[j], NULL);
+      for (j = 0; j < i; ++j)
+        corax_utree_graph_destroy(inner_node_list[j], NULL);
       free(inner_node_list);
 
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       return NULL;
     }
   }
@@ -495,7 +501,8 @@ CORAX_EXPORT corax_utree_t *corax_fastparsimony_stepwise(corax_parsimony_t **lis
       for (j = 0; j < i; ++j) corax_utree_graph_destroy(tip_node_list[j], NULL);
       free(tip_node_list);
 
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       return NULL;
     }
   }

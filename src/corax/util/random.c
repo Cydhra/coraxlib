@@ -208,10 +208,10 @@ fail:
    Note: The first thing we do is save the current state, if any, just like
    setstate so that it doesn't matter when initstate is called.
    Returns 0 on success, non-zero on failure.  */
-int corax_initstate_r(unsigned int            seed,
-                    char *                  arg_state,
-                    size_t                  n,
-                    struct corax_random_data *buf)
+int corax_initstate_r(unsigned int              seed,
+                      char *                    arg_state,
+                      size_t                    n,
+                      struct corax_random_data *buf)
 {
   if (buf == NULL) goto fail;
 
@@ -311,7 +311,7 @@ int corax_setstate_r(char *arg_state, struct corax_random_data *buf)
 
 fail:
   corax_set_error(CORAX_ERROR_EINVAL,
-                "The statebuf or buf argument to setstate_r() was NULL.");
+                  "The statebuf or buf argument to setstate_r() was NULL.");
   return -1;
 }
 
@@ -369,7 +369,7 @@ int corax_random_r(struct corax_random_data *buf, int32_t *result)
 
 fail:
   corax_set_error(CORAX_ERROR_EINVAL,
-                "The buf or result argument to random_r() was NULL.");
+                  "The buf or result argument to random_r() was NULL.");
   return -1;
 }
 

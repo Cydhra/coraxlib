@@ -12,7 +12,7 @@ static int v_int_max(int *v, int n)
 struct cb_params
 {
   const unsigned int *params_indices;
-  corax_partition_t *   partition;
+  corax_partition_t * partition;
   int                 update_pmatrices;
   int                 update_clvs;
 };
@@ -34,10 +34,10 @@ static int cb_update_matrices_clvs(corax_unode_t *node, void *data)
     assert(node->pmatrix_index == node->back->pmatrix_index);
 
     corax_update_prob_matrices(st_data->partition,
-                             st_data->params_indices,
-                             &matrix_index,
-                             &branch_length,
-                             1);
+                               st_data->params_indices,
+                               &matrix_index,
+                               &branch_length,
+                               1);
   }
 
   if (st_data->update_clvs && !CORAX_UTREE_IS_TIP(node))
@@ -65,8 +65,8 @@ static int cb_update_matrices_clvs(corax_unode_t *node, void *data)
 
 static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
 {
-  corax_partition_t *   partition      = params->lk_params.partition;
-  corax_operation_t *   operations     = params->lk_params.operations;
+  corax_partition_t * partition      = params->lk_params.partition;
+  corax_operation_t * operations     = params->lk_params.operations;
   double *            branch_lengths = params->lk_params.branch_lengths;
   const unsigned int *matrix_indices = params->lk_params.matrix_indices;
   unsigned int        params_index   = params->params_index;
@@ -97,8 +97,9 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     if ((subst_rates = (double *)malloc((size_t)n_subst_rates * sizeof(double)))
         == NULL)
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for substitution rate parameters");
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
+          "Cannot allocate memory for substitution rate parameters");
       return CORAX_FAILURE;
     }
 
@@ -144,7 +145,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     if ((freqs = (double *)malloc((size_t)n_states * sizeof(double))) == NULL)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for frequencies");
+                      "Cannot allocate memory for frequencies");
       return CORAX_FAILURE;
     }
 
@@ -177,7 +178,9 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     {
       if (!corax_update_invariant_sites_proportion(
               partition, params_indices[i], xptr[0]))
-      { return CORAX_FAILURE; }
+      {
+        return CORAX_FAILURE;
+      }
     }
     xptr++;
   }
@@ -190,15 +193,18 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
     if ((rate_cats = malloc((size_t)partition->rate_cats * sizeof(double)))
         == NULL)
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for substitution rate categories");
+      corax_set_error(
+          CORAX_ERROR_MEM_ALLOC,
+          "Cannot allocate memory for substitution rate categories");
       return CORAX_FAILURE;
     }
 
     params->lk_params.alpha_value = xptr[0];
     if (!corax_compute_gamma_cats(
             xptr[0], partition->rate_cats, rate_cats, CORAX_GAMMA_RATES_MEAN))
-    { return CORAX_FAILURE; }
+    {
+      return CORAX_FAILURE;
+    }
     corax_set_category_rates(partition, rate_cats);
 
     free(rate_cats);
@@ -224,7 +230,7 @@ static int set_x_to_parameters(corax_optimize_options_t *params, double *x)
         == NULL)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for substitution rate weights");
+                      "Cannot allocate memory for substitution rate weights");
       return CORAX_FAILURE;
     }
 
@@ -284,7 +290,7 @@ static double compute_negative_lnl_unrooted(void *p, double *x)
 {
   corax_optimize_options_t *params    = (corax_optimize_options_t *)p;
   corax_partition_t *       partition = params->lk_params.partition;
-  double                  score;
+  double                    score;
 
   if (x && !set_x_to_parameters(params, x)) return (double)-INFINITY;
 
@@ -323,7 +329,7 @@ static double brent_target(void *p, double x)
 
 static unsigned int count_n_free_variables(corax_optimize_options_t *params)
 {
-  unsigned int     num_variables = 0;
+  unsigned int       num_variables = 0;
   corax_partition_t *partition     = params->lk_params.partition;
 
   /* count number of variables for dynamic allocation */
@@ -368,8 +374,8 @@ static unsigned int count_n_free_variables(corax_optimize_options_t *params)
  * @return    the negative likelihood score
  */
 CORAX_EXPORT double corax_opt_optimize_onedim(corax_optimize_options_t *params,
-                                             double                  umin,
-                                             double                  umax)
+                                              double                    umin,
+                                              double                    umax)
 {
   double score = 0;
 
@@ -402,13 +408,13 @@ CORAX_EXPORT double corax_opt_optimize_onedim(corax_optimize_options_t *params,
   }
 
   double xres = corax_opt_minimize_brent(xmin,
-                                          xguess,
-                                          xmax,
-                                          params->pgtol,
-                                          &score,
-                                          &f2x,
-                                          (void *)params,
-                                          &brent_target);
+                                         xguess,
+                                         xmax,
+                                         params->pgtol,
+                                         &score,
+                                         &f2x,
+                                         (void *)params,
+                                         &brent_target);
   set_x_to_parameters(params, &xres);
 
   return score;
@@ -431,11 +437,10 @@ CORAX_EXPORT double corax_opt_optimize_onedim(corax_optimize_options_t *params,
  *
  * @return        the negative likelihood score
  */
-CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params,
-                                               double *                umin,
-                                               double *                umax)
+CORAX_EXPORT double corax_opt_optimize_multidim(
+    corax_optimize_options_t *params, double *umin, double *umax)
 {
-  unsigned int     i;
+  unsigned int       i;
   corax_partition_t *partition = params->lk_params.partition;
 
   /* L-BFGS-B parameters */
@@ -459,7 +464,7 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
   if (!(x && lower_bounds && upper_bounds && bound_type))
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for l-bfgs-b parameters");
+                    "Cannot allocate memory for l-bfgs-b parameters");
     if (x) free(x);
     if (lower_bounds) free(lower_bounds);
     if (upper_bounds) free(upper_bounds);
@@ -558,8 +563,8 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
     {
       *nbd_ptr   = CORAX_OPT_LBFGSB_BOUND_BOTH;
       x[check_n] = partition->prop_invar[params->params_index];
-      *l_ptr     = ul_ptr ? (*(ul_ptr++))
-                      : CORAX_OPT_MIN_PINV + CORAX_ALGO_LBFGSB_ERROR;
+      *l_ptr =
+          ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_PINV + CORAX_ALGO_LBFGSB_ERROR;
       *u_ptr = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_PINV;
       check_n++;
       nbd_ptr++;
@@ -618,10 +623,8 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
           nbd_ptr[cur_index] = CORAX_OPT_LBFGSB_BOUND_BOTH;
           x[check_n + cur_index] =
               rate_weights[i] / rate_weights[params->highest_weight_state];
-          l_ptr[cur_index] =
-              ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_RATE_WEIGHT;
-          u_ptr[cur_index] =
-              uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_RATE_WEIGHT;
+          l_ptr[cur_index] = ul_ptr ? (*(ul_ptr++)) : CORAX_OPT_MIN_RATE_WEIGHT;
+          u_ptr[cur_index] = uu_ptr ? (*(uu_ptr++)) : CORAX_OPT_MAX_RATE_WEIGHT;
           cur_index++;
         }
       }
@@ -639,7 +642,7 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
       free(upper_bounds);
       free(bound_type);
       corax_set_error(CORAX_OPT_ERROR_LBFGSB_UNKNOWN,
-                    "Topology optimization is not implemented");
+                      "Topology optimization is not implemented");
 
       return (double)-INFINITY;
     }
@@ -679,14 +682,14 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
   }
 
   score = corax_opt_minimize_lbfgsb(x,
-                                     lower_bounds,
-                                     upper_bounds,
-                                     bound_type,
-                                     num_variables,
-                                     params->factr,
-                                     params->pgtol,
-                                     params,
-                                     compute_negative_lnl_unrooted);
+                                    lower_bounds,
+                                    upper_bounds,
+                                    bound_type,
+                                    num_variables,
+                                    params->factr,
+                                    params->pgtol,
+                                    params,
+                                    compute_negative_lnl_unrooted);
 
   free(x);
   free(lower_bounds);
@@ -710,11 +713,11 @@ CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *params
  * if update_pmatrices or update_partials are set, p-matrices and CLVs are
  * updated before computing the likelihood.
  */
-CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *   partition,
-                                        corax_unode_t *       tree,
-                                        const unsigned int *params_indices,
-                                        int                 update_pmatrices,
-                                        int                 update_partials)
+CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t * partition,
+                                         corax_unode_t *     tree,
+                                         const unsigned int *params_indices,
+                                         int                 update_pmatrices,
+                                         int                 update_partials)
 {
   struct cb_params parameters;
   assert(tree);
@@ -734,12 +737,12 @@ CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *   partition,
   }
 
   double logl = corax_compute_edge_loglikelihood(partition,
-                                               tree->clv_index,
-                                               tree->scaler_index,
-                                               tree->back->clv_index,
-                                               tree->back->scaler_index,
-                                               tree->pmatrix_index,
-                                               params_indices,
-                                               NULL);
+                                                 tree->clv_index,
+                                                 tree->scaler_index,
+                                                 tree->back->clv_index,
+                                                 tree->back->scaler_index,
+                                                 tree->pmatrix_index,
+                                                 params_indices,
+                                                 NULL);
   return logl;
 }

@@ -24,7 +24,7 @@
 #define CORAX_BITVECTOR_SIZE 32
 
 static int alloc_pars_structs(corax_parsimony_t *parsimony,
-                              unsigned int     bitvectors)
+                              unsigned int       bitvectors)
 {
   unsigned int i, j;
 
@@ -35,7 +35,8 @@ static int alloc_pars_structs(corax_parsimony_t *parsimony,
       (unsigned int *)calloc(nodes_count, sizeof(unsigned int));
   if (!parsimony->node_cost)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate parsimony cost array.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate parsimony cost array.");
     return CORAX_FAILURE;
   }
 
@@ -46,7 +47,7 @@ static int alloc_pars_structs(corax_parsimony_t *parsimony,
   {
     free(parsimony->node_cost);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate parsimony vector container.");
+                    "Cannot allocate parsimony vector container.");
     return CORAX_FAILURE;
   }
 
@@ -54,13 +55,14 @@ static int alloc_pars_structs(corax_parsimony_t *parsimony,
   unsigned int **vector = parsimony->packedvector;
   for (i = 0; i < nodes_count; ++i)
   {
-    vector[i] = (unsigned int *)corax_aligned_alloc(parsimony->states * bitvectors
-                                                      * sizeof(unsigned int),
-                                                  parsimony->alignment);
+    vector[i] = (unsigned int *)corax_aligned_alloc(
+        parsimony->states * bitvectors * sizeof(unsigned int),
+        parsimony->alignment);
     if (!vector[i])
     {
       free(parsimony->node_cost);
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate parsimony vector.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Cannot allocate parsimony vector.");
 
       /* free all allocated vectors */
       for (j = 0; j < i; ++j) corax_aligned_free(vector[i]);
@@ -73,8 +75,8 @@ static int alloc_pars_structs(corax_parsimony_t *parsimony,
 }
 
 static int check_informative_extended(const corax_partition_t *partition,
-                                      unsigned int           index,
-                                      unsigned int *         singleton)
+                                      unsigned int             index,
+                                      unsigned int *           singleton)
 {
   unsigned int  c;
   int           count = 0;
@@ -118,8 +120,8 @@ static int check_informative_extended(const corax_partition_t *partition,
 }
 
 static int check_informative(const corax_partition_t *partition,
-                             unsigned int           index,
-                             unsigned int *         singleton)
+                             unsigned int             index,
+                             unsigned int *           singleton)
 {
   unsigned int i, j;
   unsigned int map[256];
@@ -185,10 +187,10 @@ static int check_informative(const corax_partition_t *partition,
 static int fill_parsimony_vectors(const corax_partition_t *partition,
                                   corax_parsimony_t *      parsimony)
 {
-  corax_state_t  c;
-  unsigned int i, j, k;
-  unsigned int bitcount = 0;
-  unsigned int bitvectors;
+  corax_state_t c;
+  unsigned int  i, j, k;
+  unsigned int  bitcount = 0;
+  unsigned int  bitvectors;
 
   unsigned int states = parsimony->states;
 
@@ -233,8 +235,8 @@ static int fill_parsimony_vectors(const corax_partition_t *partition,
     if (parsimony->informative[i]) bitcount += partition->pattern_weights[i];
 
   /* number of 32-bit bit-vectors required */
-  bitvectors =
-      (bitcount / CORAX_BITVECTOR_SIZE) + (bitcount % CORAX_BITVECTOR_SIZE != 0);
+  bitvectors = (bitcount / CORAX_BITVECTOR_SIZE)
+               + (bitcount % CORAX_BITVECTOR_SIZE != 0);
 
 #ifdef HAVE_SSE3
   if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
@@ -247,7 +249,8 @@ static int fill_parsimony_vectors(const corax_partition_t *partition,
 #endif
 
 #ifdef HAVE_AVX2
-  if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX2
+      && CORAX_STAT(avx2_present))
     bitvectors = (bitvectors + 7) & 0xFFFFFFF8;
 #endif
 
@@ -344,7 +347,7 @@ static int fill_parsimony_vectors(const corax_partition_t *partition,
 }
 
 static int corax_set_informative(const corax_partition_t *partition,
-                               corax_parsimony_t *      parsimony)
+                                 corax_parsimony_t *      parsimony)
 {
   unsigned int i;
   unsigned int singletons = 0;
@@ -354,7 +357,8 @@ static int corax_set_informative(const corax_partition_t *partition,
   parsimony->informative = (int *)malloc(parsimony->sites * sizeof(int));
   if (!parsimony->informative)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate informative array.");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate informative array.");
     return CORAX_FAILURE;
   }
 
@@ -378,8 +382,8 @@ static int corax_set_informative(const corax_partition_t *partition,
 
 CORAX_EXPORT unsigned int
 corax_fastparsimony_edge_score_4x4(const corax_parsimony_t *parsimony,
-                                 unsigned int           node1_score_index,
-                                 unsigned int           node2_score_index)
+                                   unsigned int             node1_score_index,
+                                   unsigned int             node2_score_index)
 {
   unsigned int i;
 
@@ -432,7 +436,7 @@ corax_fastparsimony_edge_score_4x4(const corax_parsimony_t *parsimony,
 
 CORAX_EXPORT void
 corax_fastparsimony_update_vector_4x4(corax_parsimony_t *         parsimony,
-                                    const corax_pars_buildop_t *op)
+                                      const corax_pars_buildop_t *op)
 {
   unsigned int  i;
   unsigned int *parent[4];
@@ -497,7 +501,7 @@ corax_fastparsimony_update_vector_4x4(corax_parsimony_t *         parsimony,
 }
 
 CORAX_EXPORT corax_parsimony_t *
-           corax_fastparsimony_init(const corax_partition_t *partition)
+             corax_fastparsimony_init(const corax_partition_t *partition)
 {
   corax_parsimony_t *parsimony;
 
@@ -507,7 +511,7 @@ CORAX_EXPORT corax_parsimony_t *
       && ((partition->attributes & CORAX_ATTRIB_PATTERN_TIP) == 0))
   {
     corax_set_error(CORAX_ERROR_STEPWISE_UNSUPPORTED,
-                  "Use CORAX_ATTRIB_PATTERN_TIP for more than 20 states.");
+                    "Use CORAX_ATTRIB_PATTERN_TIP for more than 20 states.");
     return NULL;
   }
 
@@ -527,8 +531,9 @@ CORAX_EXPORT corax_parsimony_t *
   return parsimony;
 }
 
-CORAX_EXPORT void corax_fastparsimony_update_vector(corax_parsimony_t *parsimony,
-                                                const corax_pars_buildop_t *op)
+CORAX_EXPORT void
+corax_fastparsimony_update_vector(corax_parsimony_t *         parsimony,
+                                  const corax_pars_buildop_t *op)
 {
   unsigned int   i, j;
   unsigned int   states       = parsimony->states;
@@ -620,16 +625,17 @@ static unsigned int fastparsimony_edge_score(const corax_parsimony_t *parsimony,
 
 static void fastparsimony_update_vectors_4x4(corax_parsimony_t *parsimony,
                                              const corax_pars_buildop_t *ops,
-                                             unsigned int              count)
+                                             unsigned int                count)
 {
-  unsigned int              i;
+  unsigned int                i;
   const corax_pars_buildop_t *op;
 
   for (i = 0; i < count; ++i)
   {
     op = &(ops[i]);
 #ifdef HAVE_SSE3
-    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE
+        && CORAX_STAT(sse3_present))
       corax_fastparsimony_update_vector_4x4_sse(parsimony, op);
     else
 #endif
@@ -651,16 +657,17 @@ static void fastparsimony_update_vectors_4x4(corax_parsimony_t *parsimony,
 
 static int fastparsimony_update_vectors(corax_parsimony_t *         parsimony,
                                         const corax_pars_buildop_t *ops,
-                                        unsigned int              count)
+                                        unsigned int                count)
 {
-  unsigned int              i;
+  unsigned int                i;
   const corax_pars_buildop_t *op;
 
   for (i = 0; i < count; ++i)
   {
     op = &(ops[i]);
 #ifdef HAVE_SSE3
-    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE
+        && CORAX_STAT(sse3_present))
       corax_fastparsimony_update_vector_sse(parsimony, op);
     else
 #endif
@@ -681,9 +688,10 @@ static int fastparsimony_update_vectors(corax_parsimony_t *         parsimony,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT void corax_fastparsimony_update_vectors(corax_parsimony_t *parsimony,
-                                                 const corax_pars_buildop_t *ops,
-                                                 unsigned int count)
+CORAX_EXPORT void
+corax_fastparsimony_update_vectors(corax_parsimony_t *         parsimony,
+                                   const corax_pars_buildop_t *ops,
+                                   unsigned int                count)
 {
   if (parsimony->states == 4)
     fastparsimony_update_vectors_4x4(parsimony, ops, count);
@@ -693,23 +701,26 @@ CORAX_EXPORT void corax_fastparsimony_update_vectors(corax_parsimony_t *parsimon
 
 CORAX_EXPORT unsigned int
 corax_fastparsimony_edge_score(const corax_parsimony_t *parsimony,
-                             unsigned int           node1_score_index,
-                             unsigned int           node2_score_index)
+                               unsigned int             node1_score_index,
+                               unsigned int             node2_score_index)
 {
   if (parsimony->states == 4)
   {
 #ifdef HAVE_SSE3
-    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+    if (parsimony->attributes & CORAX_ATTRIB_ARCH_SSE
+        && CORAX_STAT(sse3_present))
       return corax_fastparsimony_edge_score_4x4_sse(
           parsimony, node1_score_index, node2_score_index);
 #endif
 #ifdef HAVE_AVX
-    if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+    if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX
+        && CORAX_STAT(avx_present))
       return corax_fastparsimony_edge_score_4x4_avx(
           parsimony, node1_score_index, node2_score_index);
 #endif
 #ifdef HAVE_AVX2
-    if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+    if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX2
+        && CORAX_STAT(avx2_present))
       return corax_fastparsimony_edge_score_4x4_avx2(
           parsimony, node1_score_index, node2_score_index);
 #endif
@@ -724,7 +735,8 @@ corax_fastparsimony_edge_score(const corax_parsimony_t *parsimony,
   else
 #endif
 #ifdef HAVE_AVX
-      if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+      if (parsimony->attributes & CORAX_ATTRIB_ARCH_AVX
+          && CORAX_STAT(avx_present))
     return corax_fastparsimony_edge_score_avx(
         parsimony, node1_score_index, node2_score_index);
   else
@@ -742,7 +754,7 @@ corax_fastparsimony_edge_score(const corax_parsimony_t *parsimony,
 
 CORAX_EXPORT unsigned int
 corax_fastparsimony_root_score(const corax_parsimony_t *parsimony,
-                             unsigned int           root_index)
+                               unsigned int             root_index)
 {
   return parsimony->node_cost[root_index] + parsimony->const_cost;
 }

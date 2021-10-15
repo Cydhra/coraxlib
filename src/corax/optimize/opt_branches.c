@@ -41,13 +41,13 @@ static void utree_derivative_func(void *  parameters,
 {
   corax_newton_tree_params_t *params = (corax_newton_tree_params_t *)parameters;
   corax_compute_likelihood_derivatives(params->partition,
-                                     params->tree->scaler_index,
-                                     params->tree->back->scaler_index,
-                                     proposal,
-                                     params->params_indices,
-                                     params->sumtable,
-                                     df,
-                                     ddf);
+                                       params->tree->scaler_index,
+                                       params->tree->back->scaler_index,
+                                       proposal,
+                                       params->params_indices,
+                                       params->sumtable,
+                                       df,
+                                       ddf);
 }
 
 /******************************************************************************/
@@ -55,13 +55,13 @@ static void utree_derivative_func(void *  parameters,
 /******************************************************************************/
 
 static void update_clvs_and_scalers(corax_partition_t **partitions,
-                                    size_t            partition_count,
+                                    size_t              partition_count,
                                     corax_unode_t *     parent,
                                     corax_unode_t *     right_child,
                                     corax_unode_t *     left_child)
 {
   corax_operation_t op;
-  size_t          p;
+  size_t            p;
 
   /* set CLV */
   op.parent_clv_index    = parent->clv_index;
@@ -84,17 +84,17 @@ static void update_clvs_and_scalers(corax_partition_t **partitions,
 
 /* if keep_update, P-matrices are updated after each branch length opt */
 static int recomp_iterative(corax_newton_tree_params_t *params,
-                            int                       radius,
-                            double *                  loglikelihood_score,
-                            int                       keep_update)
+                            int                         radius,
+                            double *                    loglikelihood_score,
+                            int                         keep_update)
 {
   corax_unode_t *tr_p, *tr_q, *tr_z;
-  double       xmin, /* min branch length */
-      xguess,        /* initial guess */
-      xmax,          /* max branch length */
-      xtol,          /* tolerance */
-      xres,          /* optimal found branch length */
-      xorig;         /* original branch length before optimization */
+  double         xmin, /* min branch length */
+      xguess,          /* initial guess */
+      xmax,            /* max branch length */
+      xtol,            /* tolerance */
+      xres,            /* optimal found branch length */
+      xorig;           /* original branch length before optimization */
 
   tr_p  = params->tree;
   tr_q  = params->tree->next;
@@ -106,12 +106,12 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
 
   /* prepare sumtable for current branch */
   corax_update_sumtable(params->partition,
-                      tr_p->clv_index,
-                      tr_p->back->clv_index,
-                      tr_p->scaler_index,
-                      tr_p->back->scaler_index,
-                      params->params_indices,
-                      params->sumtable);
+                        tr_p->clv_index,
+                        tr_p->back->clv_index,
+                        tr_p->scaler_index,
+                        tr_p->back->scaler_index,
+                        params->params_indices,
+                        params->sumtable);
 
   /* set N-R parameters */
   xmin   = params->branch_length_min;
@@ -121,12 +121,12 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
   if (xguess < xmin || xguess > xmax) xguess = CORAX_OPT_DEFAULT_BRANCH_LEN;
 
   xres = corax_opt_minimize_newton(xmin,
-                                    xguess,
-                                    xmax,
-                                    xtol,
-                                    params->max_newton_iters,
-                                    params,
-                                    utree_derivative_func);
+                                   xguess,
+                                   xmax,
+                                   xtol,
+                                   params->max_newton_iters,
+                                   params,
+                                   utree_derivative_func);
 
   if (corax_errno) return CORAX_FAILURE;
 
@@ -137,23 +137,23 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
   {
     /* update pmatrix for the new branch length */
     corax_update_prob_matrices(params->partition,
-                             params->params_indices,
-                             &(tr_p->pmatrix_index),
-                             &xres,
-                             1);
+                               params->params_indices,
+                               &(tr_p->pmatrix_index),
+                               &xres,
+                               1);
 
     if (check_loglh_improvement(params->opt_method))
     {
       /* check and compare likelihood */
       double eval_loglikelihood =
           corax_compute_edge_loglikelihood(params->partition,
-                                         tr_p->clv_index,
-                                         tr_p->scaler_index,
-                                         tr_p->back->clv_index,
-                                         tr_p->back->scaler_index,
-                                         tr_p->pmatrix_index,
-                                         params->params_indices,
-                                         NULL);
+                                           tr_p->clv_index,
+                                           tr_p->scaler_index,
+                                           tr_p->back->clv_index,
+                                           tr_p->back->scaler_index,
+                                           tr_p->pmatrix_index,
+                                           params->params_indices,
+                                           NULL);
 
       /* check if the optimal found value improves the likelihood score */
       if (eval_loglikelihood >= *loglikelihood_score)
@@ -171,10 +171,10 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
         tr_p->length = tr_p->back->length = xorig;
 
         corax_update_prob_matrices(params->partition,
-                                 params->params_indices,
-                                 &(tr_p->pmatrix_index),
-                                 &tr_p->length,
-                                 1);
+                                   params->params_indices,
+                                   &(tr_p->pmatrix_index),
+                                   &tr_p->length,
+                                   1);
       }
     }
   }
@@ -251,13 +251,13 @@ static void utree_derivative_func_multi(void *  parameters,
     double s       = params->brlen_scalers ? params->brlen_scalers[p] : 1.;
     double p_brlen = s * (unlinked ? proposal[p] : proposal[0]);
     corax_compute_likelihood_derivatives(params->partitions[p],
-                                       params->tree->scaler_index,
-                                       params->tree->back->scaler_index,
-                                       p_brlen,
-                                       params->params_indices[p],
-                                       params->precomp_buffers[p],
-                                       &p_df,
-                                       &p_ddf);
+                                         params->tree->scaler_index,
+                                         params->tree->back->scaler_index,
+                                         p_brlen,
+                                         params->params_indices[p],
+                                         params->precomp_buffers[p],
+                                         &p_df,
+                                         &p_ddf);
 
     /* chain rule! */
     if (unlinked)
@@ -297,10 +297,10 @@ static void utree_derivative_func_multi(void *  parameters,
 }
 
 static void update_prob_matrices(corax_partition_t **partitions,
-                                 size_t            partition_count,
-                                 unsigned int **   params_indices,
-                                 double **         brlen_buffers,
-                                 double *          brlen_scalers,
+                                 size_t              partition_count,
+                                 unsigned int **     params_indices,
+                                 double **           brlen_buffers,
+                                 double *            brlen_scalers,
                                  corax_unode_t *     node)
 {
   unsigned int p;
@@ -315,7 +315,8 @@ static void update_prob_matrices(corax_partition_t **partitions,
 
     if (brlen_scalers) p_brlen *= brlen_scalers[p];
 
-    corax_update_prob_matrices(partitions[p], params_indices[p], &m, &p_brlen, 1);
+    corax_update_prob_matrices(
+        partitions[p], params_indices[p], &m, &p_brlen, 1);
   }
 }
 
@@ -405,7 +406,7 @@ static int allocate_buffers(corax_newton_tree_params_multi_t *params)
  * @return                     the likelihood score at the given edge
  */
 static double compute_edge_loglikelihood_multi(
-    corax_partition_t **   partitions,
+    corax_partition_t ** partitions,
     size_t               partition_count,
     unsigned int         parent_clv_index,
     int                  parent_scaler_index,
@@ -426,13 +427,13 @@ static double compute_edge_loglikelihood_multi(
     if (!partitions[p]) continue;
 
     total_loglh += corax_compute_edge_loglikelihood(partitions[p],
-                                                  parent_clv_index,
-                                                  parent_scaler_index,
-                                                  child_clv_index,
-                                                  child_scaler_index,
-                                                  matrix_index,
-                                                  params_indices[p],
-                                                  NULL);
+                                                    parent_clv_index,
+                                                    parent_scaler_index,
+                                                    child_clv_index,
+                                                    child_scaler_index,
+                                                    matrix_index,
+                                                    params_indices[p],
+                                                    NULL);
   }
 
   if (parallel_reduce_cb)
@@ -443,19 +444,19 @@ static double compute_edge_loglikelihood_multi(
 
 /* if keep_update, P-matrices are updated after each branch length opt */
 static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
-                                  int                             radius,
+                                  int                               radius,
                                   double *loglikelihood_score,
                                   int     keep_update)
 {
   corax_unode_t *tr_p, *tr_q, *tr_z;
-  unsigned int p;
-  int          retval;
-  unsigned int xnum;
-  double       xmin, /* min branch length */
-      xorig_linked,  /* original branch length before optimization (linked) */
-      xguess_linked, /* initial guess (linked) */
-      xmax,          /* max branch length */
-      xtol;          /* tolerance */
+  unsigned int   p;
+  int            retval;
+  unsigned int   xnum;
+  double         xmin, /* min branch length */
+      xorig_linked,    /* original branch length before optimization (linked) */
+      xguess_linked,   /* initial guess (linked) */
+      xmax,            /* max branch length */
+      xtol;            /* tolerance */
 
   double *xorig, /* original branch length before optimization */
       *xguess;   /* initial guess / current branch length value */
@@ -514,12 +515,12 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
     if (!params->partitions[p]) continue;
 
     corax_update_sumtable(params->partitions[p],
-                        tr_p->clv_index,
-                        tr_p->back->clv_index,
-                        tr_p->scaler_index,
-                        tr_p->back->scaler_index,
-                        params->params_indices[p],
-                        params->precomp_buffers[p]);
+                          tr_p->clv_index,
+                          tr_p->back->clv_index,
+                          tr_p->scaler_index,
+                          tr_p->back->scaler_index,
+                          params->params_indices[p],
+                          params->precomp_buffers[p]);
   }
 
   /* set N-R parameters */
@@ -533,14 +534,14 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
   case CORAX_OPT_BLO_NEWTON_SAFE:
   {
     retval = corax_opt_minimize_newton_multi(xnum,
-                                              xmin,
-                                              xguess,
-                                              xmax,
-                                              xtol,
-                                              params->max_newton_iters,
-                                              params->converged,
-                                              params,
-                                              utree_derivative_func_multi);
+                                             xmin,
+                                             xguess,
+                                             xmax,
+                                             xtol,
+                                             params->max_newton_iters,
+                                             params->converged,
+                                             params,
+                                             utree_derivative_func_multi);
   }
   break;
   case CORAX_OPT_BLO_NEWTON_FALLBACK:
@@ -796,15 +797,15 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
  * lengths
  */
 CORAX_EXPORT double
-corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
-                                         corax_unode_t *       tree,
-                                         const unsigned int *params_indices,
-                                         double              branch_length_min,
-                                         double              branch_length_max,
-                                         double              tolerance,
-                                         int                 smoothings,
-                                         int                 radius,
-                                         int                 keep_update)
+corax_opt_optimize_branch_lengths_local(corax_partition_t * partition,
+                                        corax_unode_t *     tree,
+                                        const unsigned int *params_indices,
+                                        double              branch_length_min,
+                                        double              branch_length_max,
+                                        double              tolerance,
+                                        int                 smoothings,
+                                        int                 radius,
+                                        int                 keep_update)
 {
   unsigned int iters;
   double       loglikelihood = 0.0, new_loglikelihood;
@@ -821,19 +822,19 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
   if (radius < CORAX_OPT_BRLEN_OPTIMIZE_ALL)
   {
     corax_set_error(CORAX_OPT_ERROR_NEWTON_BAD_RADIUS,
-                  "Invalid radius for branch length optimization");
+                    "Invalid radius for branch length optimization");
     return (double)CORAX_FAILURE;
   }
 
   /* get the initial likelihood score */
   loglikelihood = corax_compute_edge_loglikelihood(partition,
-                                                 tree->back->clv_index,
-                                                 tree->back->scaler_index,
-                                                 tree->clv_index,
-                                                 tree->scaler_index,
-                                                 tree->pmatrix_index,
-                                                 params_indices,
-                                                 NULL);
+                                                   tree->back->clv_index,
+                                                   tree->back->scaler_index,
+                                                   tree->clv_index,
+                                                   tree->scaler_index,
+                                                   tree->pmatrix_index,
+                                                   params_indices,
+                                                   NULL);
 
   /* set parameters for N-R optimization */
   corax_newton_tree_params_t params;
@@ -844,8 +845,8 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
       (branch_length_min > 0) ? branch_length_min : CORAX_OPT_MIN_BRANCH_LEN;
   params.branch_length_max =
       (branch_length_max > 0) ? branch_length_max : CORAX_OPT_MAX_BRANCH_LEN;
-  params.tolerance = (branch_length_min > 0) ? branch_length_min / 10.0
-                                             : CORAX_OPT_TOL_BRANCH_LEN;
+  params.tolerance        = (branch_length_min > 0) ? branch_length_min / 10.0
+                                                    : CORAX_OPT_TOL_BRANCH_LEN;
   params.sumtable         = 0;
   params.opt_method       = CORAX_OPT_BLO_NEWTON_FAST;
   params.max_newton_iters = 30;
@@ -862,7 +863,7 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
       == NULL)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for bl opt variables");
+                    "Cannot allocate memory for bl opt variables");
     return CORAX_FAILURE;
   }
 
@@ -891,14 +892,15 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
       }
     }
     /* compute likelihood after optimization */
-    new_loglikelihood = corax_compute_edge_loglikelihood(partition,
-                                                       tree->back->clv_index,
-                                                       tree->back->scaler_index,
-                                                       tree->clv_index,
-                                                       tree->scaler_index,
-                                                       tree->pmatrix_index,
-                                                       params_indices,
-                                                       NULL);
+    new_loglikelihood =
+        corax_compute_edge_loglikelihood(partition,
+                                         tree->back->clv_index,
+                                         tree->back->scaler_index,
+                                         tree->clv_index,
+                                         tree->scaler_index,
+                                         tree->pmatrix_index,
+                                         params_indices,
+                                         NULL);
 
     DBG("corax_opt_optimize_branch_lengths_local: iters %u, old: %f, new: "
         "%f\n",
@@ -957,26 +959,26 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t *   partition,
  * lengths
  */
 CORAX_EXPORT double
-corax_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
-                                             corax_unode_t *       tree,
-                                             const unsigned int *params_indices,
-                                             double branch_length_min,
-                                             double branch_length_max,
-                                             double tolerance,
-                                             int    smoothings,
-                                             int    keep_update)
+corax_opt_optimize_branch_lengths_iterative(corax_partition_t * partition,
+                                            corax_unode_t *     tree,
+                                            const unsigned int *params_indices,
+                                            double branch_length_min,
+                                            double branch_length_max,
+                                            double tolerance,
+                                            int    smoothings,
+                                            int    keep_update)
 {
   double loglikelihood;
   loglikelihood =
       corax_opt_optimize_branch_lengths_local(partition,
-                                               tree,
-                                               params_indices,
-                                               branch_length_min,
-                                               branch_length_max,
-                                               tolerance,
-                                               smoothings,
-                                               CORAX_OPT_BRLEN_OPTIMIZE_ALL,
-                                               keep_update);
+                                              tree,
+                                              params_indices,
+                                              branch_length_min,
+                                              branch_length_max,
+                                              tolerance,
+                                              smoothings,
+                                              CORAX_OPT_BRLEN_OPTIMIZE_ALL,
+                                              keep_update);
   return loglikelihood;
 } /* corax_opt_optimize_branch_lengths_iterative */
 
@@ -989,9 +991,9 @@ corax_opt_optimize_branch_lengths_iterative(corax_partition_t *   partition,
  * @param ddf[out]        second derivative of the likelihood function
  */
 CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
-                                           double  proposal,
-                                           double *df,
-                                           double *ddf)
+                                            double  proposal,
+                                            double *df,
+                                            double *ddf)
 {
   corax_optimize_options_t *params = (corax_optimize_options_t *)parameters;
   corax_compute_likelihood_derivatives(
@@ -1040,21 +1042,21 @@ CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
  */
 CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
     corax_partition_t **partitions,
-    size_t            partition_count,
+    size_t              partition_count,
     corax_unode_t *     tree,
-    unsigned int **   params_indices,
-    double **         precomp_buffers,
-    double **         brlen_buffers,
-    double *          brlen_scalers,
-    double            branch_length_min,
-    double            branch_length_max,
-    double            lh_epsilon,
-    int               max_iters,
-    int               radius,
-    int               keep_update,
-    int               opt_method,
-    int               brlen_linkage,
-    void *            parallel_context,
+    unsigned int **     params_indices,
+    double **           precomp_buffers,
+    double **           brlen_buffers,
+    double *            brlen_scalers,
+    double              branch_length_min,
+    double              branch_length_max,
+    double              lh_epsilon,
+    int                 max_iters,
+    int                 radius,
+    int                 keep_update,
+    int                 opt_method,
+    int                 brlen_linkage,
+    void *              parallel_context,
     void (*parallel_reduce_cb)(void *, double *, size_t, int))
 {
   unsigned int iters;
@@ -1074,15 +1076,15 @@ CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
       || opt_method == CORAX_OPT_BLO_NEWTON_GLOBAL)
   {
     corax_set_error(CORAX_ERROR_NOT_IMPLEMENTED,
-                  "Optimization method not implemented: "
-                  "NEWTON_FALLBACK, NEWTON_GLOBAL");
+                    "Optimization method not implemented: "
+                    "NEWTON_FALLBACK, NEWTON_GLOBAL");
     return (double)CORAX_FAILURE;
   }
 
   if (radius < CORAX_OPT_BRLEN_OPTIMIZE_ALL)
   {
     corax_set_error(CORAX_OPT_ERROR_NEWTON_BAD_RADIUS,
-                  "Invalid radius for branch length optimization");
+                    "Invalid radius for branch length optimization");
     return (double)CORAX_FAILURE;
   }
 
@@ -1124,8 +1126,8 @@ CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
       (branch_length_min > 0) ? branch_length_min : CORAX_OPT_MIN_BRANCH_LEN;
   params.branch_length_max =
       (branch_length_max > 0) ? branch_length_max : CORAX_OPT_MAX_BRANCH_LEN;
-  params.tolerance = (branch_length_min > 0) ? branch_length_min / 10.0
-                                             : CORAX_OPT_TOL_BRANCH_LEN;
+  params.tolerance       = (branch_length_min > 0) ? branch_length_min / 10.0
+                                                   : CORAX_OPT_TOL_BRANCH_LEN;
   params.precomp_buffers = precomp_buffers;
   params.brlen_buffers   = brlen_buffers;
   params.brlen_scalers   = brlen_scalers;
@@ -1145,7 +1147,7 @@ CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
   if (!allocate_buffers(&params))
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for brlen opt variables");
+                    "Cannot allocate memory for brlen opt variables");
     goto cleanup;
   }
 

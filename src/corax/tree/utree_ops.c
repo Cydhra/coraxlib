@@ -72,8 +72,8 @@ CORAX_EXPORT void corax_utree_set_length(corax_unode_t *edge, double length)
 }
 
 CORAX_EXPORT void corax_utree_set_length_recursive(corax_utree_t *tree,
-                                               double       length,
-                                               int          missing_only)
+                                                   double         length,
+                                                   int            missing_only)
 {
   /* set branch lengths */
   unsigned int i;
@@ -94,12 +94,12 @@ CORAX_EXPORT void corax_utree_set_length_recursive(corax_utree_t *tree,
 }
 
 CORAX_EXPORT void corax_utree_scale_branches(corax_utree_t *tree,
-                                         double       branch_length_scaler)
+                                             double branch_length_scaler)
 {
   /* scale branch lengths */
-  unsigned int  i;
-  unsigned int  tip_count   = tree->tip_count;
-  unsigned int  inner_count = tree->inner_count;
+  unsigned int    i;
+  unsigned int    tip_count   = tree->tip_count;
+  unsigned int    inner_count = tree->inner_count;
   corax_unode_t **nodes       = tree->nodes;
   for (i = 0; i < tip_count; ++i) { nodes[i]->length *= branch_length_scaler; }
   for (i = tip_count; i < tip_count + inner_count; ++i)
@@ -111,7 +111,7 @@ CORAX_EXPORT void corax_utree_scale_branches(corax_utree_t *tree,
 }
 
 CORAX_EXPORT void corax_utree_scale_branches_all(corax_unode_t *root,
-                                             double       branch_length_scaler)
+                                                 double branch_length_scaler)
 {
   double root_length;
 
@@ -124,8 +124,9 @@ CORAX_EXPORT void corax_utree_scale_branches_all(corax_unode_t *root,
   root->length = root->back->length = root_length;
 }
 
-CORAX_EXPORT void corax_utree_scale_subtree_branches(corax_unode_t *root,
-                                                 double branch_length_scaler)
+CORAX_EXPORT void
+corax_utree_scale_subtree_branches(corax_unode_t *root,
+                                   double         branch_length_scaler)
 {
   /* scale all branches in a subtree rooted at node */
   root->length *= branch_length_scaler;
@@ -135,11 +136,12 @@ CORAX_EXPORT void corax_utree_scale_subtree_branches(corax_unode_t *root,
   {
     corax_utree_scale_subtree_branches(root->next->back, branch_length_scaler);
     corax_utree_scale_subtree_branches(root->next->next->back,
-                                     branch_length_scaler);
+                                       branch_length_scaler);
   }
 }
 
-CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree, double min_brlen)
+CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
+                                               double         min_brlen)
 {
   if (!tree || !tree->vroot)
   {
@@ -158,7 +160,7 @@ CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree, double min_b
   if (!clv2pos_map)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for clv2pos map!");
+                    "Cannot allocate memory for clv2pos map!");
     return CORAX_FAILURE;
   }
 
@@ -180,8 +182,7 @@ CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree, double min_b
     assert(!CORAX_UTREE_IS_TIP(node));
 
     corax_unode_t *start_node = NULL;
-    do
-    {
+    do {
       corax_unode_t *anode = node->back;
       if (CORAX_UTREE_IS_TIP(anode) || node->length > brlen_cutoff)
       {
@@ -241,7 +242,8 @@ CORAX_EXPORT corax_unode_t *corax_utree_unroot_inplace(corax_unode_t *root)
   {
     if (root->next == root)
     {
-      corax_set_error(CORAX_ERROR_NEWICK_SYNTAX, "Unifurcation detected at root");
+      corax_set_error(CORAX_ERROR_NEWICK_SYNTAX,
+                      "Unifurcation detected at root");
       return CORAX_FAILURE;
     }
     corax_unode_t *left  = root->back;
@@ -276,14 +278,14 @@ CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree)
   if (tree->vroot->next && tree->vroot->next->next == tree->vroot)
     return CORAX_SUCCESS;
 
-  corax_unode_t *root           = tree->vroot;
-  corax_unode_t *root_back      = root->back;
-  corax_unode_t *root_left      = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
-  corax_unode_t *root_right     = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
-  root_left->next             = root_right;
-  root_right->next            = root_left;
-  double       root_brlen     = root->length / 2.;
-  unsigned int last_clv_index = 0;
+  corax_unode_t *root       = tree->vroot;
+  corax_unode_t *root_back  = root->back;
+  corax_unode_t *root_left  = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+  corax_unode_t *root_right = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+  root_left->next           = root_right;
+  root_right->next          = root_left;
+  double       root_brlen   = root->length / 2.;
+  unsigned int last_clv_index     = 0;
   int          last_scaler_index  = 0;
   unsigned int last_node_index    = 0;
   unsigned int last_pmatrix_index = 0;
@@ -292,10 +294,9 @@ CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree)
   for (unsigned int i = 0; i < node_count; ++i)
   {
     const corax_unode_t *node = tree->nodes[i];
-    last_clv_index          = CORAX_MAX(last_clv_index, node->clv_index);
-    last_scaler_index       = CORAX_MAX(last_scaler_index, node->scaler_index);
-    do
-    {
+    last_clv_index            = CORAX_MAX(last_clv_index, node->clv_index);
+    last_scaler_index = CORAX_MAX(last_scaler_index, node->scaler_index);
+    do {
       last_node_index    = CORAX_MAX(last_node_index, node->node_index);
       last_pmatrix_index = CORAX_MAX(last_pmatrix_index, node->pmatrix_index);
       node               = node->next;
@@ -316,28 +317,28 @@ CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree)
   tree->edge_count++;
   node_count++;
 
-  tree->nodes =
-      (corax_unode_t **)realloc(tree->nodes, node_count * sizeof(corax_unode_t *));
+  tree->nodes                 = (corax_unode_t **)realloc(tree->nodes,
+                                          node_count * sizeof(corax_unode_t *));
   tree->nodes[node_count - 1] = root_left;
 
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
-                                       unsigned int *outgroup_tip_ids,
-                                       unsigned int  outgroup_size,
-                                       int           add_root_node)
+CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t *tree,
+                                           unsigned int * outgroup_tip_ids,
+                                           unsigned int   outgroup_size,
+                                           int            add_root_node)
 {
   corax_unode_t **split_to_node_map = NULL;
   corax_split_t * tree_splits       = NULL;
   corax_unode_t * new_root          = NULL;
-  unsigned int  tip_count;
-  unsigned int  split_count;
+  unsigned int    tip_count;
+  unsigned int    split_count;
 
   if (!tree || !outgroup_tip_ids || !outgroup_size)
   {
     corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                  "Empty tree and/or outgroup specified!");
+                    "Empty tree and/or outgroup specified!");
     return CORAX_FAILURE;
   }
 
@@ -365,7 +366,7 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
     if (!split_to_node_map)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for split->node map!");
+                      "Cannot allocate memory for split->node map!");
       return CORAX_FAILURE;
     }
 
@@ -380,8 +381,8 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
     }
 
     // create outgroup split
-    corax_split_t outgroup_split = corax_utree_split_from_tips(
-        outgroup_tip_ids, outgroup_size, tip_count);
+    corax_split_t outgroup_split =
+        corax_utree_split_from_tips(outgroup_tip_ids, outgroup_size, tip_count);
 
     // check if this split is in the tree
     int root_idx =
@@ -405,15 +406,15 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t * tree,
   else
   {
     corax_set_error(CORAX_TREE_ERROR_POLYPHYL_OUTGROUP,
-                  "Outgroup is not monophyletic!");
+                    "Outgroup is not monophyletic!");
     return CORAX_FAILURE;
   }
 }
 
 CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
-                                         const double *support,
-                                         corax_unode_t **node_map,
-                                         char *(*cb_serialize)(double))
+                                          const double *  support,
+                                          corax_unode_t **node_map,
+                                          char *(*cb_serialize)(double))
 {
   if (!ref_tree || !support)
   {
@@ -441,19 +442,19 @@ CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
 }
 
 /* auxiliary structure for the callback function below */
-struct serial_tree_s {
-  corax_unode_t * serialized_tree;
-  unsigned int node_count;
-  unsigned int max_nodes;
+struct serial_tree_s
+{
+  corax_unode_t *serialized_tree;
+  unsigned int   node_count;
+  unsigned int   max_nodes;
 };
 
 /* callback function to fill the serialized tree */
-static int cb_serialize(corax_unode_t * tree,
-                        void * data)
+static int cb_serialize(corax_unode_t *tree, void *data)
 {
-  struct serial_tree_s * list = (struct serial_tree_s *) data;
-  corax_unode_t * serialized_tree = list->serialized_tree;
-  unsigned int cur_pos = list->node_count;
+  struct serial_tree_s *list            = (struct serial_tree_s *)data;
+  corax_unode_t *       serialized_tree = list->serialized_tree;
+  unsigned int          cur_pos         = list->node_count;
 
   assert(cur_pos < list->max_nodes);
 
@@ -463,25 +464,25 @@ static int cb_serialize(corax_unode_t * tree,
   if (!CORAX_UTREE_IS_TIP(tree))
   {
     /* set to arbitrary non-junk value */
-    serialized_tree[cur_pos].next = (corax_unode_t *) 1;
+    serialized_tree[cur_pos].next = (corax_unode_t *)1;
   }
 
   ++list->node_count;
   return 1;
 }
 
-//TODO: serialize/expand using a compressed format instead of corax_unode_t
-CORAX_EXPORT corax_unode_t * corax_utree_serialize(corax_unode_t * tree,
-                                                unsigned int tip_count)
+// TODO: serialize/expand using a compressed format instead of corax_unode_t
+CORAX_EXPORT corax_unode_t *corax_utree_serialize(corax_unode_t *tree,
+                                                  unsigned int   tip_count)
 {
-  unsigned int node_count;
-  corax_unode_t * serialized_tree;
+  unsigned int         node_count;
+  corax_unode_t *      serialized_tree;
   struct serial_tree_s data;
 
-  node_count = 2*tip_count - 2;
+  node_count = 2 * tip_count - 2;
 
   /* allocate the serialized structure */
-  serialized_tree = (corax_unode_t *) malloc(node_count * sizeof (corax_unode_t));
+  serialized_tree = (corax_unode_t *)malloc(node_count * sizeof(corax_unode_t));
 
   /* fill data for callback function */
   data.serialized_tree = serialized_tree;
@@ -492,17 +493,13 @@ CORAX_EXPORT corax_unode_t * corax_utree_serialize(corax_unode_t * tree,
   if (CORAX_UTREE_IS_TIP(tree)) tree = tree->back;
 
   /* apply callback function to serialize */
-  corax_utree_traverse_apply(tree,
-                           NULL,
-                           NULL,
-                           cb_serialize,
-                           &data);
+  corax_utree_traverse_apply(tree, NULL, NULL, cb_serialize, &data);
 
   if (data.node_count != data.max_nodes)
   {
     /* if the number of serialized nodes is not correct, return error */
     corax_set_error(CORAX_ERROR_INVALID_TREE,
-                  "tree structure ot tip_count are invalid");
+                    "tree structure ot tip_count are invalid");
     free(serialized_tree);
     serialized_tree = NULL;
   }
@@ -510,57 +507,59 @@ CORAX_EXPORT corax_unode_t * corax_utree_serialize(corax_unode_t * tree,
   return serialized_tree;
 }
 
-CORAX_EXPORT corax_utree_t * corax_utree_expand(corax_unode_t * serialized_tree,
-                                             unsigned int tip_count)
+CORAX_EXPORT corax_utree_t *corax_utree_expand(corax_unode_t *serialized_tree,
+                                               unsigned int   tip_count)
 {
-  unsigned int i, node_count, next_node_index;
-  corax_unode_t ** tree_stack;
+  unsigned int    i, node_count, next_node_index;
+  corax_unode_t **tree_stack;
   corax_unode_t * tree;
-  unsigned int tree_stack_top;
+  unsigned int    tree_stack_top;
 
   corax_reset_error();
 
-  node_count  = 2*tip_count - 2;
+  node_count = 2 * tip_count - 2;
 
   /* allocate stack for at most 'n_tips' nodes */
-  tree_stack = (corax_unode_t **) malloc(tip_count * sizeof (corax_unode_t *));
+  tree_stack = (corax_unode_t **)malloc(tip_count * sizeof(corax_unode_t *));
   tree_stack_top = 0;
 
   next_node_index = tip_count;
 
   /* read nodes */
-  for (i=0; i<node_count; ++i)
+  for (i = 0; i < node_count; ++i)
   {
-    corax_unode_t * t = 0;                   /* new node */
-    corax_unode_t t_s = serialized_tree[i];  /* serialized node */
+    corax_unode_t *t   = 0;                  /* new node */
+    corax_unode_t  t_s = serialized_tree[i]; /* serialized node */
     if (t_s.next)
     {
       /* build inner node and connect */
       corax_unode_t *t_cr, *t_r, *t_cl, *t_l;
-      t = corax_utree_create_node(t_s.clv_index,
-                                t_s.scaler_index,
-                                0,  /* label */
-                                0); /* data */
+      t   = corax_utree_create_node(t_s.clv_index,
+                                  t_s.scaler_index,
+                                  0,  /* label */
+                                  0); /* data */
       t_l = t->next;
       t_r = t->next->next;
 
-      t->node_index = next_node_index++;
+      t->node_index   = next_node_index++;
       t_r->node_index = next_node_index++;
       t_l->node_index = next_node_index++;
 
       /* pop and connect */
-      t_cr = tree_stack[--tree_stack_top];
-      t_r->back = t_cr; t_cr->back = t_r;
-      t_cl = tree_stack[--tree_stack_top];
-      t_l->back = t_cl; t_cl->back = t_l;
+      t_cr       = tree_stack[--tree_stack_top];
+      t_r->back  = t_cr;
+      t_cr->back = t_r;
+      t_cl       = tree_stack[--tree_stack_top];
+      t_l->back  = t_cl;
+      t_cl->back = t_l;
 
       /* set branch attributes */
-      t->length = t_s.length;
-      t->pmatrix_index = t_s.pmatrix_index;
+      t->length          = t_s.length;
+      t->pmatrix_index   = t_s.pmatrix_index;
       t_r->pmatrix_index = t_cr->pmatrix_index;
-      t_r->length = t_cr->length;
+      t_r->length        = t_cr->length;
       t_l->pmatrix_index = t_cl->pmatrix_index;
-      t_l->length = t_cl->length;
+      t_l->length        = t_cl->length;
     }
     else
     {
@@ -574,28 +573,28 @@ CORAX_EXPORT corax_utree_t * corax_utree_expand(corax_unode_t * serialized_tree,
   }
 
   /* root vertices must be in the stack */
-  assert (tree_stack_top == 2);
-  assert (next_node_index == (4*tip_count - 6));
+  assert(tree_stack_top == 2);
+  assert(next_node_index == (4 * tip_count - 6));
 
-  tree = tree_stack[--tree_stack_top];
-  tree->back = tree_stack[--tree_stack_top];
+  tree             = tree_stack[--tree_stack_top];
+  tree->back       = tree_stack[--tree_stack_top];
   tree->back->back = tree;
 
-  if(tree->pmatrix_index != tree->back->pmatrix_index)
+  if (tree->pmatrix_index != tree->back->pmatrix_index)
   {
     /* if pmatrix indices differ, connecting branch must be a tip */
-    if(tree->back->next)
+    if (tree->back->next)
     {
       corax_set_error(CORAX_ERROR_INVALID_TREE,
-                       "pmatrix indices do not match in serialized tree");
+                      "pmatrix indices do not match in serialized tree");
     }
     tree->pmatrix_index = tree->back->pmatrix_index;
   }
 
-  if(tree->length != tree->back->length)
+  if (tree->length != tree->back->length)
   {
     corax_set_error(CORAX_ERROR_INVALID_TREE,
-                     "branch lengths do not matchin serialized tree");
+                    "branch lengths do not matchin serialized tree");
   }
 
   if (corax_errno)
@@ -608,4 +607,3 @@ CORAX_EXPORT corax_utree_t * corax_utree_expand(corax_unode_t * serialized_tree,
 
   return corax_utree_wraptree(tree, tip_count);
 }
-

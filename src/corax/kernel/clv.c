@@ -21,7 +21,8 @@
 
 #include "corax/corax.h"
 
-static void case_tiptip(corax_partition_t *partition, const corax_operation_t *op)
+static void case_tiptip(corax_partition_t *      partition,
+                        const corax_operation_t *op)
 {
   const double *left_matrix  = partition->pmatrix[op->child1_matrix_index];
   const double *right_matrix = partition->pmatrix[op->child2_matrix_index];
@@ -40,29 +41,30 @@ static void case_tiptip(corax_partition_t *partition, const corax_operation_t *o
 
   /* precompute lookup table */
   corax_core_create_lookup(partition->states,
-                         partition->rate_cats,
-                         partition->ttlookup,
-                         left_matrix,
-                         right_matrix,
-                         partition->tipmap,
-                         partition->maxstates,
-                         partition->attributes);
+                           partition->rate_cats,
+                           partition->ttlookup,
+                           left_matrix,
+                           right_matrix,
+                           partition->tipmap,
+                           partition->maxstates,
+                           partition->attributes);
 
   /* and update CLV at inner node */
   corax_core_update_clv_tt(partition->states,
-                         sites,
-                         partition->rate_cats,
-                         parent_clv,
-                         parent_scaler,
-                         partition->tipchars[op->child1_clv_index],
-                         partition->tipchars[op->child2_clv_index],
-                         partition->tipmap,
-                         partition->maxstates,
-                         partition->ttlookup,
-                         partition->attributes);
+                           sites,
+                           partition->rate_cats,
+                           parent_clv,
+                           parent_scaler,
+                           partition->tipchars[op->child1_clv_index],
+                           partition->tipchars[op->child2_clv_index],
+                           partition->tipmap,
+                           partition->maxstates,
+                           partition->ttlookup,
+                           partition->attributes);
 }
 
-static void case_tipinner(corax_partition_t *partition, const corax_operation_t *op)
+static void case_tipinner(corax_partition_t *      partition,
+                          const corax_operation_t *op)
 {
   double *      parent_clv = partition->clv[op->parent_clv_index];
   unsigned int  tip_clv_index;
@@ -107,18 +109,18 @@ static void case_tipinner(corax_partition_t *partition, const corax_operation_t 
   }
 
   corax_core_update_clv_ti(partition->states,
-                         sites,
-                         partition->rate_cats,
-                         parent_clv,
-                         parent_scaler,
-                         partition->tipchars[tip_clv_index],
-                         partition->clv[inner_clv_index],
-                         partition->pmatrix[tip_matrix_index],
-                         partition->pmatrix[inner_matrix_index],
-                         right_scaler,
-                         partition->tipmap,
-                         partition->maxstates,
-                         partition->attributes);
+                           sites,
+                           partition->rate_cats,
+                           parent_clv,
+                           parent_scaler,
+                           partition->tipchars[tip_clv_index],
+                           partition->clv[inner_clv_index],
+                           partition->pmatrix[tip_matrix_index],
+                           partition->pmatrix[inner_matrix_index],
+                           right_scaler,
+                           partition->tipmap,
+                           partition->maxstates,
+                           partition->attributes);
 }
 
 static void case_innerinner(corax_partition_t *      partition,
@@ -155,20 +157,21 @@ static void case_innerinner(corax_partition_t *      partition,
     right_scaler = NULL;
 
   corax_core_update_clv_ii(partition->states,
-                         sites,
-                         partition->rate_cats,
-                         parent_clv,
-                         parent_scaler,
-                         left_clv,
-                         right_clv,
-                         left_matrix,
-                         right_matrix,
-                         left_scaler,
-                         right_scaler,
-                         partition->attributes);
+                           sites,
+                           partition->rate_cats,
+                           parent_clv,
+                           parent_scaler,
+                           left_clv,
+                           right_clv,
+                           left_matrix,
+                           right_matrix,
+                           left_scaler,
+                           right_scaler,
+                           partition->attributes);
 }
 
-static void case_repeats(corax_partition_t *partition, const corax_operation_t *op)
+static void case_repeats(corax_partition_t *      partition,
+                         const corax_operation_t *op)
 {
   const double *left_matrix  = partition->pmatrix[op->child1_matrix_index];
   const double *right_matrix = partition->pmatrix[op->child2_matrix_index];
@@ -214,38 +217,38 @@ static void case_repeats(corax_partition_t *partition, const corax_operation_t *
 
   /* call the function with the shortest clv on the left */
   corax_core_update_clv_repeats(partition->states,
-                              parent_sites,
-                              inv ? left_sites : right_sites,
-                              !inv ? left_sites : right_sites,
-                              partition->rate_cats,
-                              parent_clv,
-                              parent_scaler,
-                              inv ? left_clv : right_clv,
-                              !inv ? left_clv : right_clv,
-                              inv ? left_matrix : right_matrix,
-                              !inv ? left_matrix : right_matrix,
-                              inv ? left_scaler : right_scaler,
-                              !inv ? left_scaler : right_scaler,
-                              parent_id_site,
-                              inv ? left_site_id : right_site_id,
-                              !inv ? left_site_id : right_site_id,
-                              bclv_buffer,
-                              partition->attributes);
+                                parent_sites,
+                                inv ? left_sites : right_sites,
+                                !inv ? left_sites : right_sites,
+                                partition->rate_cats,
+                                parent_clv,
+                                parent_scaler,
+                                inv ? left_clv : right_clv,
+                                !inv ? left_clv : right_clv,
+                                inv ? left_matrix : right_matrix,
+                                !inv ? left_matrix : right_matrix,
+                                inv ? left_scaler : right_scaler,
+                                !inv ? left_scaler : right_scaler,
+                                parent_id_site,
+                                inv ? left_site_id : right_site_id,
+                                !inv ? left_site_id : right_site_id,
+                                bclv_buffer,
+                                partition->attributes);
 }
 
 CORAX_EXPORT void corax_update_clvs(corax_partition_t *      partition,
-                                const corax_operation_t *operations,
-                                unsigned int           count)
+                                    const corax_operation_t *operations,
+                                    unsigned int             count)
 {
   corax_update_clvs_rep(partition, operations, count, 1);
 }
 
 CORAX_EXPORT void corax_update_clvs_rep(corax_partition_t *      partition,
-                                    const corax_operation_t *operations,
-                                    unsigned int           count,
-                                    unsigned int           update_repeats)
+                                        const corax_operation_t *operations,
+                                        unsigned int             count,
+                                        unsigned int             update_repeats)
 {
-  unsigned int           i;
+  unsigned int             i;
   const corax_operation_t *op;
 
   for (i = 0; i < count; ++i)

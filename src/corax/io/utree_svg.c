@@ -122,7 +122,7 @@ static void utree_set_offset(corax_unode_t *           node,
 
   /* scale node's branch length (edge towards parent) */
   corax_svg_data_t *data = (corax_svg_data_t *)(node->data);
-  data->x              = node->length * aux->scaler;
+  data->x                = node->length * aux->scaler;
 
   /* did we reach the root ? */
   corax_svg_data_t *parent_data = (corax_svg_data_t *)(node->back->data);
@@ -146,7 +146,7 @@ static void utree_set_offset(corax_unode_t *           node,
   if (!parent) utree_set_offset(node->back, attr, aux);
 }
 
-static void utree_plot(FILE *                  fp,
+static void utree_plot(FILE *                    fp,
                        corax_unode_t *           node,
                        const corax_svg_attrib_t *attr,
                        corax_svg_aux_t *         aux)
@@ -213,7 +213,7 @@ static void utree_plot(FILE *                  fp,
   }
   else
   {
-    double          ly, ry, x;
+    double            ly, ry, x;
     corax_svg_data_t *nb_data = (corax_svg_data_t *)(node->next->back->data);
 
     ly = nb_data->y;
@@ -278,7 +278,7 @@ static void utree_scaler_init(const corax_svg_attrib_t *attr,
   }
 }
 
-static void print_header(FILE *                  fp,
+static void print_header(FILE *                    fp,
                          corax_utree_t *           tree,
                          const corax_svg_attrib_t *attr,
                          corax_svg_aux_t *         aux)
@@ -337,7 +337,7 @@ static void print_header(FILE *                  fp,
   */
 }
 
-static void svg_make(FILE *                  fp,
+static void svg_make(FILE *                    fp,
                      corax_utree_t *           tree,
                      corax_unode_t *           root,
                      const corax_svg_attrib_t *attr)
@@ -394,9 +394,9 @@ CORAX_EXPORT void corax_svg_attrib_destroy(corax_svg_attrib_t *attrib)
 }
 
 CORAX_EXPORT int corax_utree_export_svg(corax_utree_t *           tree,
-                                    corax_unode_t *           root,
-                                    const corax_svg_attrib_t *attribs,
-                                    const char *            filename)
+                                        corax_unode_t *           root,
+                                        const corax_svg_attrib_t *attribs,
+                                        const char *              filename)
 {
   unsigned int i;
 

@@ -41,11 +41,11 @@ static void fill_weights(double *      weights,
                          unsigned int  n_weights);
 
 CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
-                                              corax_unode_t *    tree,
-                                              unsigned int     params_index,
-                                              unsigned int *   params_indices,
-                                              double           bfgs_factor,
-                                              double           tolerance)
+                                               corax_unode_t *    tree,
+                                               unsigned int       params_index,
+                                               unsigned int *params_indices,
+                                               double        bfgs_factor,
+                                               double        tolerance)
 {
   double              cur_logl;
   double *            x, *lb, *ub;
@@ -96,14 +96,14 @@ CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
   }
 
   cur_logl = corax_opt_minimize_lbfgsb(x,
-                                        lb,
-                                        ub,
-                                        bt,
-                                        states - 1,
-                                        factor,
-                                        tolerance,
-                                        (void *)&opt_params,
-                                        &target_freqs_func);
+                                       lb,
+                                       ub,
+                                       bt,
+                                       states - 1,
+                                       factor,
+                                       tolerance,
+                                       (void *)&opt_params,
+                                       &target_freqs_func);
 
   /* update frequencies */
   target_freqs_func((void *)&opt_params, x);
@@ -117,14 +117,14 @@ CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
-                                              corax_unode_t *    tree,
-                                              unsigned int     params_index,
-                                              unsigned int *   params_indices,
-                                              int *            symmetries,
-                                              double           min_rate,
-                                              double           max_rate,
-                                              double           bfgs_factor,
-                                              double           tolerance)
+                                               corax_unode_t *    tree,
+                                               unsigned int       params_index,
+                                               unsigned int *params_indices,
+                                               int *         symmetries,
+                                               double        min_rate,
+                                               double        max_rate,
+                                               double        bfgs_factor,
+                                               double        tolerance)
 {
   double       cur_logl;
   double *     x, *lb, *ub;
@@ -210,14 +210,14 @@ CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
   }
 
   cur_logl = corax_opt_minimize_lbfgsb(x,
-                                        lb,
-                                        ub,
-                                        bt,
-                                        subst_free_params,
-                                        factor,
-                                        tolerance,
-                                        (void *)&opt_params,
-                                        target_subst_params_func);
+                                       lb,
+                                       ub,
+                                       bt,
+                                       subst_free_params,
+                                       factor,
+                                       tolerance,
+                                       (void *)&opt_params,
+                                       target_subst_params_func);
 
   free(x);
   free(lb);
@@ -228,12 +228,12 @@ CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
-                                        corax_unode_t *    tree,
-                                        unsigned int *   params_indices,
-                                        double           min_alpha,
-                                        double           max_alpha,
-                                        double *         alpha,
-                                        double           tolerance)
+                                         corax_unode_t *    tree,
+                                         unsigned int *     params_indices,
+                                         double             min_alpha,
+                                         double             max_alpha,
+                                         double *           alpha,
+                                         double             tolerance)
 {
   double cur_logl;
   double f2x;
@@ -246,13 +246,13 @@ CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
   opt_params.gamma_mode     = CORAX_GAMMA_RATES_MEAN; // for now
 
   xres = corax_opt_minimize_brent(min_alpha,
-                                   *alpha,
-                                   max_alpha,
-                                   tolerance,
-                                   &cur_logl,
-                                   &f2x,
-                                   (void *)&opt_params,
-                                   &target_alpha_func);
+                                  *alpha,
+                                  max_alpha,
+                                  tolerance,
+                                  &cur_logl,
+                                  &f2x,
+                                  (void *)&opt_params,
+                                  &target_alpha_func);
 
   cur_logl = target_alpha_func(&opt_params, xres);
   *alpha   = xres;
@@ -261,11 +261,11 @@ CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
-                                       corax_unode_t *    tree,
-                                       unsigned int *   params_indices,
-                                       double           min_pinv,
-                                       double           max_pinv,
-                                       double           tolerance)
+                                        corax_unode_t *    tree,
+                                        unsigned int *     params_indices,
+                                        double             min_pinv,
+                                        double             max_pinv,
+                                        double             tolerance)
 {
   double                cur_logl;
   double                f2x;
@@ -278,13 +278,13 @@ CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
   start_pinv                = partition->prop_invar[params_indices[0]];
 
   xres = corax_opt_minimize_brent(min_pinv,
-                                   start_pinv,
-                                   max_pinv,
-                                   tolerance,
-                                   &cur_logl,
-                                   &f2x,
-                                   (void *)&opt_params,
-                                   &target_pinv_func);
+                                  start_pinv,
+                                  max_pinv,
+                                  tolerance,
+                                  &cur_logl,
+                                  &f2x,
+                                  (void *)&opt_params,
+                                  &target_pinv_func);
 
   cur_logl = target_pinv_func(&opt_params, xres);
 
@@ -292,15 +292,15 @@ CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
-                                             corax_unode_t *    tree,
-                                             unsigned int *   params_indices,
-                                             double           min_alpha,
-                                             double           max_alpha,
-                                             double *         alpha,
-                                             double           min_pinv,
-                                             double           max_pinv,
-                                             double           bfgs_factor,
-                                             double           tolerance)
+                                              corax_unode_t *    tree,
+                                              unsigned int *     params_indices,
+                                              double             min_alpha,
+                                              double             max_alpha,
+                                              double *           alpha,
+                                              double             min_pinv,
+                                              double             max_pinv,
+                                              double             bfgs_factor,
+                                              double             tolerance)
 {
   double cur_logl;
   double x[2], lb[2], ub[2];
@@ -329,14 +329,14 @@ CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
   bt[1] = CORAX_OPT_LBFGSB_BOUND_BOTH;
 
   cur_logl = corax_opt_minimize_lbfgsb(x,
-                                        lb,
-                                        ub,
-                                        bt,
-                                        2,
-                                        factor,
-                                        tolerance,
-                                        (void *)&opt_params,
-                                        &target_alpha_pinv_func);
+                                       lb,
+                                       ub,
+                                       bt,
+                                       2,
+                                       factor,
+                                       tolerance,
+                                       (void *)&opt_params,
+                                       &target_alpha_pinv_func);
 
   /* save optimal alpha (p-inv is stored in the partition) */
   *alpha = x[0];
@@ -345,12 +345,12 @@ CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
-                                               corax_unode_t *    root,
-                                               unsigned int *   params_indices,
-                                               double *         scaler,
-                                               double           min_scaler,
-                                               double           max_scaler,
-                                               double           tolerance)
+                                                corax_unode_t *    root,
+                                                unsigned int *params_indices,
+                                                double *      scaler,
+                                                double        min_scaler,
+                                                double        max_scaler,
+                                                double        tolerance)
 {
   double                     cur_logl;
   double                     f2x;
@@ -367,13 +367,13 @@ CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
   opt_params.old_scaler     = *scaler;
 
   xres = corax_opt_minimize_brent(min_scaler,
-                                   *scaler,
-                                   max_scaler,
-                                   tolerance,
-                                   &cur_logl,
-                                   &f2x,
-                                   (void *)&opt_params,
-                                   &target_brlen_scaler_func);
+                                  *scaler,
+                                  max_scaler,
+                                  tolerance,
+                                  &cur_logl,
+                                  &f2x,
+                                  (void *)&opt_params,
+                                  &target_brlen_scaler_func);
 
   cur_logl = target_brlen_scaler_func(&opt_params, xres);
 
@@ -385,14 +385,14 @@ CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
 }
 
 CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
-                                                corax_unode_t *    tree,
-                                                unsigned int *   params_indices,
-                                                double           min_rate,
-                                                double           max_rate,
-                                                double           bfgs_factor,
-                                                double           tolerance,
-                                                double *         brlen_scaler,
-                                                int              scale_branches)
+                                                 corax_unode_t *    tree,
+                                                 unsigned int *params_indices,
+                                                 double        min_rate,
+                                                 double        max_rate,
+                                                 double        bfgs_factor,
+                                                 double        tolerance,
+                                                 double *      brlen_scaler,
+                                                 int           scale_branches)
 {
   double       cur_logl, prev_logl;
   double       sum_weightrates, rate_scaler;
@@ -419,8 +419,7 @@ CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
   /* 2 step BFGS */
 
   cur_logl = 0;
-  do
-  {
+  do {
     prev_logl = cur_logl;
 
     /* optimize mixture weights */
@@ -430,28 +429,28 @@ CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
 
     cur_logl = 1
                * corax_opt_minimize_lbfgsb(x,
-                                            lb,
-                                            ub,
-                                            bt,
-                                            rate_cats - 1,
-                                            factor,
-                                            tolerance,
-                                            (void *)&opt_params,
-                                            target_weights_func);
+                                           lb,
+                                           ub,
+                                           bt,
+                                           rate_cats - 1,
+                                           factor,
+                                           tolerance,
+                                           (void *)&opt_params,
+                                           target_weights_func);
 
     /* optimize mixture rates */
 
     fill_rates(rates, x, bt, lb, ub, min_rate, max_rate, rate_cats);
 
     cur_logl = corax_opt_minimize_lbfgsb(x,
-                                          lb,
-                                          ub,
-                                          bt,
-                                          rate_cats,
-                                          factor,
-                                          tolerance,
-                                          (void *)&opt_params,
-                                          target_rates_func);
+                                         lb,
+                                         ub,
+                                         bt,
+                                         rate_cats,
+                                         factor,
+                                         tolerance,
+                                         (void *)&opt_params,
+                                         target_rates_func);
 
   } while (!prev_logl || prev_logl - cur_logl > tolerance);
 
@@ -472,10 +471,10 @@ CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
     /* update pmatrices and partials according to the new branches */
     cur_logl = -1
                * corax_opt_compute_lk(partition,
-                                       tree,
-                                       params_indices,
-                                       1,  /* update pmatrices */
-                                       1); /* update partials */
+                                      tree,
+                                      params_indices,
+                                      1,  /* update pmatrices */
+                                      1); /* update partials */
   }
 
   free(x);

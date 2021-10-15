@@ -24,8 +24,8 @@
 CORAX_EXPORT
 unsigned int
 corax_fastparsimony_edge_score_4x4_sse(const corax_parsimony_t *parsimony,
-                                     unsigned int           node1_score_index,
-                                     unsigned int           node2_score_index)
+                                       unsigned int node1_score_index,
+                                       unsigned int node2_score_index)
 {
   unsigned int i;
 
@@ -102,7 +102,7 @@ corax_fastparsimony_edge_score_4x4_sse(const corax_parsimony_t *parsimony,
 
 CORAX_EXPORT
 void corax_fastparsimony_update_vector_4x4_sse(corax_parsimony_t *parsimony,
-                                             const corax_pars_buildop_t *op)
+                                               const corax_pars_buildop_t *op)
 {
   unsigned int i;
 
@@ -202,8 +202,8 @@ void corax_fastparsimony_update_vector_4x4_sse(corax_parsimony_t *parsimony,
 }
 
 CORAX_EXPORT
-void corax_fastparsimony_update_vector_sse(corax_parsimony_t *         parsimony,
-                                         const corax_pars_buildop_t *op)
+void corax_fastparsimony_update_vector_sse(corax_parsimony_t *parsimony,
+                                           const corax_pars_buildop_t *op)
 {
   unsigned int i, j;
   unsigned int states = parsimony->states;
@@ -282,9 +282,10 @@ void corax_fastparsimony_update_vector_sse(corax_parsimony_t *         parsimony
 }
 
 CORAX_EXPORT
-unsigned int corax_fastparsimony_edge_score_sse(const corax_parsimony_t *parsimony,
-                                              unsigned int node1_score_index,
-                                              unsigned int node2_score_index)
+unsigned int
+corax_fastparsimony_edge_score_sse(const corax_parsimony_t *parsimony,
+                                   unsigned int             node1_score_index,
+                                   unsigned int             node2_score_index)
 {
   unsigned int i, j;
   unsigned int states = parsimony->states;

@@ -37,9 +37,9 @@ static char *xstrchrnul(char *s, int c)
 }
 
 CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
-                                       const unsigned int *map)
+                                             const unsigned int *map)
 {
-  int          i;
+  int            i;
   corax_fasta_t *fd = (corax_fasta_t *)malloc(sizeof(corax_fasta_t));
   if (!fd)
   {
@@ -59,7 +59,8 @@ CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
   fd->fp = fopen(filename, "r");
   if (!(fd->fp))
   {
-    corax_set_error(CORAX_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
+    corax_set_error(
+        CORAX_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
     free(fd);
     return NULL;
   }
@@ -67,7 +68,8 @@ CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
   /* get filesize */
   if (fseek(fd->fp, 0, SEEK_END))
   {
-    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
+    corax_set_error(
+        CORAX_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -83,7 +85,8 @@ CORAX_EXPORT corax_fasta_t *corax_fasta_open(const char *        filename,
   fd->line[0] = 0;
   if (!fgets(fd->line, CORAX_LINEALLOC, fd->fp))
   {
-    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to read file (%s)", filename);
+    corax_set_error(
+        CORAX_ERROR_FILE_SEEK, "Unable to read file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -121,11 +124,11 @@ CORAX_EXPORT void corax_fasta_close(corax_fasta_t *fd)
 }
 
 CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
-                                 char **      head,
-                                 long *       head_len,
-                                 char **      seq,
-                                 long *       seq_len,
-                                 long *       seqno)
+                                     char **        head,
+                                     long *         head_len,
+                                     char **        seq,
+                                     long *         seq_len,
+                                     long *         seqno)
 {
   void *mem;
   long  head_alloc = MEMCHUNK;
@@ -159,7 +162,7 @@ CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
     if (fd->line[0] != '>')
     {
       corax_set_error(CORAX_ERROR_FASTA_INVALIDHEADER,
-                    "Illegal header line in query fasta file");
+                      "Illegal header line in query fasta file");
       free(*head);
       free(*seq);
       return CORAX_FAILURE;
@@ -179,7 +182,8 @@ CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
       mem        = realloc(*head, (size_t)(head_alloc));
       if (!mem)
       {
-        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                        "Unable to allocate enough memory.");
         free(*head);
         free(*seq);
         return CORAX_FAILURE;
@@ -228,7 +232,7 @@ CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
             if (!mem)
             {
               corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                            "Unable to allocate enough memory.");
+                              "Unable to allocate enough memory.");
               free(*head);
               free(*seq);
               return CORAX_FAILURE;
@@ -245,19 +249,19 @@ CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
           if (c >= 32)
           {
             corax_set_error(CORAX_ERROR_FASTA_ILLEGALCHAR,
-                          "illegal character '%c' "
-                          "on line %ld in the fasta file",
-                          c,
-                          fd->lineno);
+                            "illegal character '%c' "
+                            "on line %ld in the fasta file",
+                            c,
+                            fd->lineno);
           }
           else
           {
             corax_set_error(CORAX_ERROR_FASTA_UNPRINTABLECHAR,
-                          "illegal unprintable character "
-                          "%#.2x (hexadecimal) on line %ld "
-                          "in the fasta file",
-                          c,
-                          fd->lineno);
+                            "illegal unprintable character "
+                            "%#.2x (hexadecimal) on line %ld "
+                            "in the fasta file",
+                            c,
+                            fd->lineno);
           }
           return CORAX_FAILURE;
 
@@ -282,7 +286,8 @@ CORAX_EXPORT int corax_fasta_getnext(corax_fasta_t *fd,
       mem = realloc(*seq, (size_t)seq_alloc);
       if (!mem)
       {
-        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                        "Unable to allocate enough memory.");
         free(*head);
         free(*seq);
         return CORAX_FAILURE;
@@ -308,7 +313,10 @@ CORAX_EXPORT long corax_fasta_getfilesize(const corax_fasta_t *fd)
   return fd->filesize;
 }
 
-CORAX_EXPORT long corax_fasta_getfilepos(corax_fasta_t *fd) { return ftell(fd->fp); }
+CORAX_EXPORT long corax_fasta_getfilepos(corax_fasta_t *fd)
+{
+  return ftell(fd->fp);
+}
 
 CORAX_EXPORT corax_msa_t *corax_fasta_load(const char *fname)
 {
@@ -342,7 +350,8 @@ CORAX_EXPORT corax_msa_t *corax_fasta_load(const char *fname)
   /* read FASTA sequences and make sure they are all of the same length */
   msa->length = -1;
   msa->count  = 0;
-  for (i = 0; corax_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno); ++i)
+  for (i = 0; corax_fasta_getnext(fp, &hdr, &hdrlen, &seq, &seqlen, &seqno);
+       ++i)
   {
     if (msa->length == -1)
     {
@@ -358,11 +367,11 @@ CORAX_EXPORT corax_msa_t *corax_fasta_load(const char *fname)
       corax_msa_destroy(msa);
       corax_fasta_close(fp);
       corax_set_error(CORAX_ERROR_FASTA_NONALIGNED,
-                    "FASTA file does not contain equal size sequences: "
-                    "sequence %d has length of %ld (expected: %d)",
-                    i,
-                    seqlen,
-                    msa->length);
+                      "FASTA file does not contain equal size sequences: "
+                      "sequence %d has length of %ld (expected: %d)",
+                      i,
+                      seqlen,
+                      msa->length);
       return NULL;
     }
 

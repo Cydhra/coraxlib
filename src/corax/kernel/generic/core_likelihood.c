@@ -24,18 +24,18 @@
 
 CORAX_EXPORT double
 corax_core_root_loglikelihood(unsigned int        states,
-                            unsigned int        sites,
-                            unsigned int        rate_cats,
-                            const double *      clv,
-                            const unsigned int *scaler,
-                            double *const *     frequencies,
-                            const double *      rate_weights,
-                            const unsigned int *pattern_weights,
-                            const double *      invar_proportion,
-                            const int *         invar_indices,
-                            const unsigned int *freqs_indices,
-                            double *            persite_lnl,
-                            unsigned int        attrib)
+                              unsigned int        sites,
+                              unsigned int        rate_cats,
+                              const double *      clv,
+                              const unsigned int *scaler,
+                              double *const *     frequencies,
+                              const double *      rate_weights,
+                              const unsigned int *pattern_weights,
+                              const double *      invar_proportion,
+                              const int *         invar_indices,
+                              const unsigned int *freqs_indices,
+                              double *            persite_lnl,
+                              unsigned int        attrib)
 {
   unsigned int  i, j, k;
   double        logl  = 0;
@@ -54,31 +54,31 @@ corax_core_root_loglikelihood(unsigned int        states,
     if (states == 4)
     {
       return corax_core_root_loglikelihood_4x4_sse(sites,
-                                                 rate_cats,
-                                                 clv,
-                                                 scaler,
-                                                 frequencies,
-                                                 rate_weights,
-                                                 pattern_weights,
-                                                 invar_proportion,
-                                                 invar_indices,
-                                                 freqs_indices,
-                                                 persite_lnl);
+                                                   rate_cats,
+                                                   clv,
+                                                   scaler,
+                                                   frequencies,
+                                                   rate_weights,
+                                                   pattern_weights,
+                                                   invar_proportion,
+                                                   invar_indices,
+                                                   freqs_indices,
+                                                   persite_lnl);
     }
     else
     {
       return corax_core_root_loglikelihood_sse(states,
-                                             sites,
-                                             rate_cats,
-                                             clv,
-                                             scaler,
-                                             frequencies,
-                                             rate_weights,
-                                             pattern_weights,
-                                             invar_proportion,
-                                             invar_indices,
-                                             freqs_indices,
-                                             persite_lnl);
+                                               sites,
+                                               rate_cats,
+                                               clv,
+                                               scaler,
+                                               frequencies,
+                                               rate_weights,
+                                               pattern_weights,
+                                               invar_proportion,
+                                               invar_indices,
+                                               freqs_indices,
+                                               persite_lnl);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -91,31 +91,31 @@ corax_core_root_loglikelihood(unsigned int        states,
     if (states == 4)
     {
       return corax_core_root_loglikelihood_4x4_avx(sites,
-                                                 rate_cats,
-                                                 clv,
-                                                 scaler,
-                                                 frequencies,
-                                                 rate_weights,
-                                                 pattern_weights,
-                                                 invar_proportion,
-                                                 invar_indices,
-                                                 freqs_indices,
-                                                 persite_lnl);
+                                                   rate_cats,
+                                                   clv,
+                                                   scaler,
+                                                   frequencies,
+                                                   rate_weights,
+                                                   pattern_weights,
+                                                   invar_proportion,
+                                                   invar_indices,
+                                                   freqs_indices,
+                                                   persite_lnl);
     }
     else
     {
       return corax_core_root_loglikelihood_avx(states,
-                                             sites,
-                                             rate_cats,
-                                             clv,
-                                             scaler,
-                                             frequencies,
-                                             rate_weights,
-                                             pattern_weights,
-                                             invar_proportion,
-                                             invar_indices,
-                                             freqs_indices,
-                                             persite_lnl);
+                                               sites,
+                                               rate_cats,
+                                               clv,
+                                               scaler,
+                                               frequencies,
+                                               rate_weights,
+                                               pattern_weights,
+                                               invar_proportion,
+                                               invar_indices,
+                                               freqs_indices,
+                                               persite_lnl);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -128,31 +128,31 @@ corax_core_root_loglikelihood(unsigned int        states,
     if (states == 4)
     {
       return corax_core_root_loglikelihood_4x4_avx(sites,
-                                                 rate_cats,
-                                                 clv,
-                                                 scaler,
-                                                 frequencies,
-                                                 rate_weights,
-                                                 pattern_weights,
-                                                 invar_proportion,
-                                                 invar_indices,
-                                                 freqs_indices,
-                                                 persite_lnl);
+                                                   rate_cats,
+                                                   clv,
+                                                   scaler,
+                                                   frequencies,
+                                                   rate_weights,
+                                                   pattern_weights,
+                                                   invar_proportion,
+                                                   invar_indices,
+                                                   freqs_indices,
+                                                   persite_lnl);
     }
     else
     {
       return corax_core_root_loglikelihood_avx2(states,
-                                              sites,
-                                              rate_cats,
-                                              clv,
-                                              scaler,
-                                              frequencies,
-                                              rate_weights,
-                                              pattern_weights,
-                                              invar_proportion,
-                                              invar_indices,
-                                              freqs_indices,
-                                              persite_lnl);
+                                                sites,
+                                                rate_cats,
+                                                clv,
+                                                scaler,
+                                                frequencies,
+                                                rate_weights,
+                                                pattern_weights,
+                                                invar_proportion,
+                                                invar_indices,
+                                                freqs_indices,
+                                                persite_lnl);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -202,20 +202,20 @@ corax_core_root_loglikelihood(unsigned int        states,
   return logl;
 }
 
-CORAX_EXPORT double
-corax_core_root_loglikelihood_repeats_generic(unsigned int        states,
-                                            unsigned int        sites,
-                                            unsigned int        rate_cats,
-                                            const double *      clv,
-                                            const unsigned int *site_id,
-                                            const unsigned int *scaler,
-                                            double *const *     frequencies,
-                                            const double *      rate_weights,
-                                            const unsigned int *pattern_weights,
-                                            const double *invar_proportion,
-                                            const int *   invar_indices,
-                                            const unsigned int *freqs_indices,
-                                            double *            persite_lnl)
+CORAX_EXPORT double corax_core_root_loglikelihood_repeats_generic(
+    unsigned int        states,
+    unsigned int        sites,
+    unsigned int        rate_cats,
+    const double *      clv,
+    const unsigned int *site_id,
+    const unsigned int *scaler,
+    double *const *     frequencies,
+    const double *      rate_weights,
+    const unsigned int *pattern_weights,
+    const double *      invar_proportion,
+    const int *         invar_indices,
+    const unsigned int *freqs_indices,
+    double *            persite_lnl)
 {
   unsigned int  i, j, k;
   double        logl  = 0;
@@ -261,7 +261,8 @@ corax_core_root_loglikelihood_repeats_generic(unsigned int        states,
 
     /* compute site log-likelihood and scale if necessary */
     site_lk = log(site_lk);
-    if (scaler && scaler[id]) site_lk += scaler[id] * log(CORAX_SCALE_THRESHOLD);
+    if (scaler && scaler[id])
+      site_lk += scaler[id] * log(CORAX_SCALE_THRESHOLD);
 
     site_lk *= pattern_weights[i];
 
@@ -275,19 +276,19 @@ corax_core_root_loglikelihood_repeats_generic(unsigned int        states,
 
 CORAX_EXPORT double
 corax_core_root_loglikelihood_repeats(unsigned int        states,
-                                    unsigned int        sites,
-                                    unsigned int        rate_cats,
-                                    const double *      clv,
-                                    const unsigned int *site_id,
-                                    const unsigned int *scaler,
-                                    double *const *     frequencies,
-                                    const double *      rate_weights,
-                                    const unsigned int *pattern_weights,
-                                    const double *      invar_proportion,
-                                    const int *         invar_indices,
-                                    const unsigned int *freqs_indices,
-                                    double *            persite_lnl,
-                                    unsigned int        attrib)
+                                      unsigned int        sites,
+                                      unsigned int        rate_cats,
+                                      const double *      clv,
+                                      const unsigned int *site_id,
+                                      const unsigned int *scaler,
+                                      double *const *     frequencies,
+                                      const double *      rate_weights,
+                                      const unsigned int *pattern_weights,
+                                      const double *      invar_proportion,
+                                      const int *         invar_indices,
+                                      const unsigned int *freqs_indices,
+                                      double *            persite_lnl,
+                                      unsigned int        attrib)
 {
   double (*core_root_loglikelihood)(unsigned int        states,
                                     unsigned int        sites,
@@ -340,19 +341,19 @@ corax_core_root_loglikelihood_repeats(unsigned int        states,
 
 CORAX_EXPORT
 double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
-                                          unsigned int         rate_cats,
-                                          const double *       parent_clv,
-                                          const unsigned int * parent_scaler,
-                                          const unsigned char *tipchars,
-                                          const double *       pmatrix,
-                                          double *const *      frequencies,
-                                          const double *       rate_weights,
-                                          const unsigned int * pattern_weights,
-                                          const double *       invar_proportion,
-                                          const int *          invar_indices,
-                                          const unsigned int * freqs_indices,
-                                          double *             persite_lnl,
-                                          unsigned int         attrib)
+                                            unsigned int         rate_cats,
+                                            const double *       parent_clv,
+                                            const unsigned int * parent_scaler,
+                                            const unsigned char *tipchars,
+                                            const double *       pmatrix,
+                                            double *const *      frequencies,
+                                            const double *       rate_weights,
+                                            const unsigned int *pattern_weights,
+                                            const double *invar_proportion,
+                                            const int *   invar_indices,
+                                            const unsigned int *freqs_indices,
+                                            double *            persite_lnl,
+                                            unsigned int        attrib)
 {
   unsigned int n, i, j, k;
   double       logl = 0;
@@ -374,57 +375,57 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
   if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_sse(sites,
-                                                  rate_cats,
-                                                  parent_clv,
-                                                  parent_scaler,
-                                                  tipchars,
-                                                  pmatrix,
-                                                  frequencies,
-                                                  rate_weights,
-                                                  pattern_weights,
-                                                  invar_proportion,
-                                                  invar_indices,
-                                                  freqs_indices,
-                                                  persite_lnl,
-                                                  attrib);
+                                                    rate_cats,
+                                                    parent_clv,
+                                                    parent_scaler,
+                                                    tipchars,
+                                                    pmatrix,
+                                                    frequencies,
+                                                    rate_weights,
+                                                    pattern_weights,
+                                                    invar_proportion,
+                                                    invar_indices,
+                                                    freqs_indices,
+                                                    persite_lnl,
+                                                    attrib);
   }
 #endif
 #ifdef HAVE_AVX
   if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
-                                                  rate_cats,
-                                                  parent_clv,
-                                                  parent_scaler,
-                                                  tipchars,
-                                                  pmatrix,
-                                                  frequencies,
-                                                  rate_weights,
-                                                  pattern_weights,
-                                                  invar_proportion,
-                                                  invar_indices,
-                                                  freqs_indices,
-                                                  persite_lnl,
-                                                  attrib);
+                                                    rate_cats,
+                                                    parent_clv,
+                                                    parent_scaler,
+                                                    tipchars,
+                                                    pmatrix,
+                                                    frequencies,
+                                                    rate_weights,
+                                                    pattern_weights,
+                                                    invar_proportion,
+                                                    invar_indices,
+                                                    freqs_indices,
+                                                    persite_lnl,
+                                                    attrib);
   }
 #endif
 #ifdef HAVE_AVX2
   if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
-                                                  rate_cats,
-                                                  parent_clv,
-                                                  parent_scaler,
-                                                  tipchars,
-                                                  pmatrix,
-                                                  frequencies,
-                                                  rate_weights,
-                                                  pattern_weights,
-                                                  invar_proportion,
-                                                  invar_indices,
-                                                  freqs_indices,
-                                                  persite_lnl,
-                                                  attrib);
+                                                    rate_cats,
+                                                    parent_clv,
+                                                    parent_scaler,
+                                                    tipchars,
+                                                    pmatrix,
+                                                    frequencies,
+                                                    rate_weights,
+                                                    pattern_weights,
+                                                    invar_proportion,
+                                                    invar_indices,
+                                                    freqs_indices,
+                                                    persite_lnl,
+                                                    attrib);
   }
 #endif
 
@@ -450,7 +451,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -475,8 +476,8 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -568,22 +569,22 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
 
 CORAX_EXPORT
 double corax_core_edge_loglikelihood_ti(unsigned int         states,
-                                      unsigned int         sites,
-                                      unsigned int         rate_cats,
-                                      const double *       parent_clv,
-                                      const unsigned int * parent_scaler,
-                                      const unsigned char *tipchars,
-                                      const corax_state_t *  tipmap,
-                                      unsigned int         tipmap_size,
-                                      const double *       pmatrix,
-                                      double *const *      frequencies,
-                                      const double *       rate_weights,
-                                      const unsigned int * pattern_weights,
-                                      const double *       invar_proportion,
-                                      const int *          invar_indices,
-                                      const unsigned int * freqs_indices,
-                                      double *             persite_lnl,
-                                      unsigned int         attrib)
+                                        unsigned int         sites,
+                                        unsigned int         rate_cats,
+                                        const double *       parent_clv,
+                                        const unsigned int * parent_scaler,
+                                        const unsigned char *tipchars,
+                                        const corax_state_t *tipmap,
+                                        unsigned int         tipmap_size,
+                                        const double *       pmatrix,
+                                        double *const *      frequencies,
+                                        const double *       rate_weights,
+                                        const unsigned int * pattern_weights,
+                                        const double *       invar_proportion,
+                                        const int *          invar_indices,
+                                        const unsigned int * freqs_indices,
+                                        double *             persite_lnl,
+                                        unsigned int         attrib)
 {
   unsigned int n, i, j, k;
   double       logl = 0;
@@ -606,73 +607,10 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
     if (states == 4)
     {
       return corax_core_edge_loglikelihood_ti_4x4_sse(sites,
-                                                    rate_cats,
-                                                    parent_clv,
-                                                    parent_scaler,
-                                                    tipchars,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
-    }
-    else
-    {
-      return corax_core_edge_loglikelihood_ti_sse(states,
-                                                sites,
-                                                rate_cats,
-                                                parent_clv,
-                                                parent_scaler,
-                                                tipchars,
-                                                tipmap,
-                                                pmatrix,
-                                                frequencies,
-                                                rate_weights,
-                                                pattern_weights,
-                                                invar_proportion,
-                                                invar_indices,
-                                                freqs_indices,
-                                                persite_lnl,
-                                                attrib);
-    }
-    /* this line is never called, but should we disable the else case above,
-       then states_padded must be set to this value */
-    states_padded = (states + 1) & 0xFFFFFFFE;
-  }
-#endif
-#ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
-  {
-    if (states == 4)
-    {
-      return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
-                                                    rate_cats,
-                                                    parent_clv,
-                                                    parent_scaler,
-                                                    tipchars,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
-    }
-    else if (states == 20)
-    {
-      return corax_core_edge_loglikelihood_ti_20x20_avx(sites,
                                                       rate_cats,
                                                       parent_clv,
                                                       parent_scaler,
                                                       tipchars,
-                                                      tipmap,
-                                                      tipmap_size,
                                                       pmatrix,
                                                       frequencies,
                                                       rate_weights,
@@ -685,22 +623,85 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
     }
     else
     {
+      return corax_core_edge_loglikelihood_ti_sse(states,
+                                                  sites,
+                                                  rate_cats,
+                                                  parent_clv,
+                                                  parent_scaler,
+                                                  tipchars,
+                                                  tipmap,
+                                                  pmatrix,
+                                                  frequencies,
+                                                  rate_weights,
+                                                  pattern_weights,
+                                                  invar_proportion,
+                                                  invar_indices,
+                                                  freqs_indices,
+                                                  persite_lnl,
+                                                  attrib);
+    }
+    /* this line is never called, but should we disable the else case above,
+       then states_padded must be set to this value */
+    states_padded = (states + 1) & 0xFFFFFFFE;
+  }
+#endif
+#ifdef HAVE_AVX
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  {
+    if (states == 4)
+    {
+      return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
+                                                      rate_cats,
+                                                      parent_clv,
+                                                      parent_scaler,
+                                                      tipchars,
+                                                      pmatrix,
+                                                      frequencies,
+                                                      rate_weights,
+                                                      pattern_weights,
+                                                      invar_proportion,
+                                                      invar_indices,
+                                                      freqs_indices,
+                                                      persite_lnl,
+                                                      attrib);
+    }
+    else if (states == 20)
+    {
+      return corax_core_edge_loglikelihood_ti_20x20_avx(sites,
+                                                        rate_cats,
+                                                        parent_clv,
+                                                        parent_scaler,
+                                                        tipchars,
+                                                        tipmap,
+                                                        tipmap_size,
+                                                        pmatrix,
+                                                        frequencies,
+                                                        rate_weights,
+                                                        pattern_weights,
+                                                        invar_proportion,
+                                                        invar_indices,
+                                                        freqs_indices,
+                                                        persite_lnl,
+                                                        attrib);
+    }
+    else
+    {
       return corax_core_edge_loglikelihood_ti_avx(states,
-                                                sites,
-                                                rate_cats,
-                                                parent_clv,
-                                                parent_scaler,
-                                                tipchars,
-                                                tipmap,
-                                                pmatrix,
-                                                frequencies,
-                                                rate_weights,
-                                                pattern_weights,
-                                                invar_proportion,
-                                                invar_indices,
-                                                freqs_indices,
-                                                persite_lnl,
-                                                attrib);
+                                                  sites,
+                                                  rate_cats,
+                                                  parent_clv,
+                                                  parent_scaler,
+                                                  tipchars,
+                                                  tipmap,
+                                                  pmatrix,
+                                                  frequencies,
+                                                  rate_weights,
+                                                  pattern_weights,
+                                                  invar_proportion,
+                                                  invar_indices,
+                                                  freqs_indices,
+                                                  persite_lnl,
+                                                  attrib);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -713,57 +714,57 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
     if (states == 4)
     {
       return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
-                                                    rate_cats,
-                                                    parent_clv,
-                                                    parent_scaler,
-                                                    tipchars,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
+                                                      rate_cats,
+                                                      parent_clv,
+                                                      parent_scaler,
+                                                      tipchars,
+                                                      pmatrix,
+                                                      frequencies,
+                                                      rate_weights,
+                                                      pattern_weights,
+                                                      invar_proportion,
+                                                      invar_indices,
+                                                      freqs_indices,
+                                                      persite_lnl,
+                                                      attrib);
     }
     else if (states == 20)
     {
       return corax_core_edge_loglikelihood_ti_20x20_avx2(sites,
-                                                       rate_cats,
-                                                       parent_clv,
-                                                       parent_scaler,
-                                                       tipchars,
-                                                       tipmap,
-                                                       tipmap_size,
-                                                       pmatrix,
-                                                       frequencies,
-                                                       rate_weights,
-                                                       pattern_weights,
-                                                       invar_proportion,
-                                                       invar_indices,
-                                                       freqs_indices,
-                                                       persite_lnl,
-                                                       attrib);
+                                                         rate_cats,
+                                                         parent_clv,
+                                                         parent_scaler,
+                                                         tipchars,
+                                                         tipmap,
+                                                         tipmap_size,
+                                                         pmatrix,
+                                                         frequencies,
+                                                         rate_weights,
+                                                         pattern_weights,
+                                                         invar_proportion,
+                                                         invar_indices,
+                                                         freqs_indices,
+                                                         persite_lnl,
+                                                         attrib);
     }
     else
     {
       return corax_core_edge_loglikelihood_ti_avx(states,
-                                                sites,
-                                                rate_cats,
-                                                parent_clv,
-                                                parent_scaler,
-                                                tipchars,
-                                                tipmap,
-                                                pmatrix,
-                                                frequencies,
-                                                rate_weights,
-                                                pattern_weights,
-                                                invar_proportion,
-                                                invar_indices,
-                                                freqs_indices,
-                                                persite_lnl,
-                                                attrib);
+                                                  sites,
+                                                  rate_cats,
+                                                  parent_clv,
+                                                  parent_scaler,
+                                                  tipchars,
+                                                  tipmap,
+                                                  pmatrix,
+                                                  frequencies,
+                                                  rate_weights,
+                                                  pattern_weights,
+                                                  invar_proportion,
+                                                  invar_indices,
+                                                  freqs_indices,
+                                                  persite_lnl,
+                                                  attrib);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -793,7 +794,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -814,8 +815,8 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -909,26 +910,27 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
 }
 
 CORAX_EXPORT
-double corax_core_edge_loglikelihood_repeats(unsigned int        states,
-                                           unsigned int        sites,
-                                           const unsigned int  child_sites,
-                                           unsigned int        rate_cats,
-                                           const double *      parent_clv,
-                                           const unsigned int *parent_scaler,
-                                           const double *      child_clv,
-                                           const unsigned int *child_scaler,
-                                           const double *      pmatrix,
-                                           double **           frequencies,
-                                           const double *      rate_weights,
-                                           const unsigned int *pattern_weights,
-                                           const double *      invar_proportion,
-                                           const int *         invar_indices,
-                                           const unsigned int *freqs_indices,
-                                           double *            persite_lnl,
-                                           const unsigned int *parent_site_id,
-                                           const unsigned int *child_site_id,
-                                           double *            bclv,
-                                           unsigned int        attrib)
+double
+corax_core_edge_loglikelihood_repeats(unsigned int        states,
+                                      unsigned int        sites,
+                                      const unsigned int  child_sites,
+                                      unsigned int        rate_cats,
+                                      const double *      parent_clv,
+                                      const unsigned int *parent_scaler,
+                                      const double *      child_clv,
+                                      const unsigned int *child_scaler,
+                                      const double *      pmatrix,
+                                      double **           frequencies,
+                                      const double *      rate_weights,
+                                      const unsigned int *pattern_weights,
+                                      const double *      invar_proportion,
+                                      const int *         invar_indices,
+                                      const unsigned int *freqs_indices,
+                                      double *            persite_lnl,
+                                      const unsigned int *parent_site_id,
+                                      const unsigned int *child_site_id,
+                                      double *            bclv,
+                                      unsigned int        attrib)
 {
   double (*core_edge_loglikelihood)(unsigned int        states,
                                     unsigned int        sites,
@@ -977,7 +979,8 @@ double corax_core_edge_loglikelihood_repeats(unsigned int        states,
 #ifdef HAVE_AVX2
   if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
   {
-    core_edge_loglikelihood = corax_core_edge_loglikelihood_repeats_generic_avx2;
+    core_edge_loglikelihood =
+        corax_core_edge_loglikelihood_repeats_generic_avx2;
   }
 #endif
   return core_edge_loglikelihood(states,
@@ -1004,27 +1007,27 @@ double corax_core_edge_loglikelihood_repeats(unsigned int        states,
 }
 
 CORAX_EXPORT
-double
-corax_core_edge_loglikelihood_repeats_generic(unsigned int        states,
-                                            unsigned int        sites,
-                                            const unsigned int  child_sites,
-                                            unsigned int        rate_cats,
-                                            const double *      parent_clv,
-                                            const unsigned int *parent_scaler,
-                                            const double *      child_clv,
-                                            const unsigned int *child_scaler,
-                                            const double *      pmatrix,
-                                            double **           frequencies,
-                                            const double *      rate_weights,
-                                            const unsigned int *pattern_weights,
-                                            const double *invar_proportion,
-                                            const int *   invar_indices,
-                                            const unsigned int *freqs_indices,
-                                            double *            persite_lnl,
-                                            const unsigned int *parent_site_id,
-                                            const unsigned int *child_site_id,
-                                            double *            bclv,
-                                            unsigned int        attrib)
+double corax_core_edge_loglikelihood_repeats_generic(
+    unsigned int        states,
+    unsigned int        sites,
+    const unsigned int  child_sites,
+    unsigned int        rate_cats,
+    const double *      parent_clv,
+    const unsigned int *parent_scaler,
+    const double *      child_clv,
+    const unsigned int *child_scaler,
+    const double *      pmatrix,
+    double **           frequencies,
+    const double *      rate_weights,
+    const unsigned int *pattern_weights,
+    const double *      invar_proportion,
+    const int *         invar_indices,
+    const unsigned int *freqs_indices,
+    double *            persite_lnl,
+    const unsigned int *parent_site_id,
+    const unsigned int *child_site_id,
+    double *            bclv,
+    unsigned int        attrib)
 {
   unsigned int n, i, j, k;
   double       logl = 0;
@@ -1059,7 +1062,7 @@ corax_core_edge_loglikelihood_repeats_generic(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -1086,8 +1089,8 @@ corax_core_edge_loglikelihood_repeats_generic(unsigned int        states,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else
@@ -1178,21 +1181,21 @@ corax_core_edge_loglikelihood_repeats_generic(unsigned int        states,
 
 CORAX_EXPORT
 double corax_core_edge_loglikelihood_ii(unsigned int        states,
-                                      unsigned int        sites,
-                                      unsigned int        rate_cats,
-                                      const double *      parent_clv,
-                                      const unsigned int *parent_scaler,
-                                      const double *      child_clv,
-                                      const unsigned int *child_scaler,
-                                      const double *      pmatrix,
-                                      double *const *     frequencies,
-                                      const double *      rate_weights,
-                                      const unsigned int *pattern_weights,
-                                      const double *      invar_proportion,
-                                      const int *         invar_indices,
-                                      const unsigned int *freqs_indices,
-                                      double *            persite_lnl,
-                                      unsigned int        attrib)
+                                        unsigned int        sites,
+                                        unsigned int        rate_cats,
+                                        const double *      parent_clv,
+                                        const unsigned int *parent_scaler,
+                                        const double *      child_clv,
+                                        const unsigned int *child_scaler,
+                                        const double *      pmatrix,
+                                        double *const *     frequencies,
+                                        const double *      rate_weights,
+                                        const unsigned int *pattern_weights,
+                                        const double *      invar_proportion,
+                                        const int *         invar_indices,
+                                        const unsigned int *freqs_indices,
+                                        double *            persite_lnl,
+                                        unsigned int        attrib)
 {
   unsigned int n, i, j, k;
   double       logl = 0;
@@ -1216,39 +1219,39 @@ double corax_core_edge_loglikelihood_ii(unsigned int        states,
     if (states == 4)
     {
       return corax_core_edge_loglikelihood_ii_4x4_sse(sites,
-                                                    rate_cats,
-                                                    clvp,
-                                                    parent_scaler,
-                                                    clvc,
-                                                    child_scaler,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
+                                                      rate_cats,
+                                                      clvp,
+                                                      parent_scaler,
+                                                      clvc,
+                                                      child_scaler,
+                                                      pmatrix,
+                                                      frequencies,
+                                                      rate_weights,
+                                                      pattern_weights,
+                                                      invar_proportion,
+                                                      invar_indices,
+                                                      freqs_indices,
+                                                      persite_lnl,
+                                                      attrib);
     }
     else
     {
       return corax_core_edge_loglikelihood_ii_sse(states,
-                                                sites,
-                                                rate_cats,
-                                                clvp,
-                                                parent_scaler,
-                                                clvc,
-                                                child_scaler,
-                                                pmatrix,
-                                                frequencies,
-                                                rate_weights,
-                                                pattern_weights,
-                                                invar_proportion,
-                                                invar_indices,
-                                                freqs_indices,
-                                                persite_lnl,
-                                                attrib);
+                                                  sites,
+                                                  rate_cats,
+                                                  clvp,
+                                                  parent_scaler,
+                                                  clvc,
+                                                  child_scaler,
+                                                  pmatrix,
+                                                  frequencies,
+                                                  rate_weights,
+                                                  pattern_weights,
+                                                  invar_proportion,
+                                                  invar_indices,
+                                                  freqs_indices,
+                                                  persite_lnl,
+                                                  attrib);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -1261,39 +1264,39 @@ double corax_core_edge_loglikelihood_ii(unsigned int        states,
     if (states == 4)
     {
       return corax_core_edge_loglikelihood_ii_4x4_avx(sites,
-                                                    rate_cats,
-                                                    clvp,
-                                                    parent_scaler,
-                                                    clvc,
-                                                    child_scaler,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
+                                                      rate_cats,
+                                                      clvp,
+                                                      parent_scaler,
+                                                      clvc,
+                                                      child_scaler,
+                                                      pmatrix,
+                                                      frequencies,
+                                                      rate_weights,
+                                                      pattern_weights,
+                                                      invar_proportion,
+                                                      invar_indices,
+                                                      freqs_indices,
+                                                      persite_lnl,
+                                                      attrib);
     }
     else
     {
       return corax_core_edge_loglikelihood_ii_avx(states,
-                                                sites,
-                                                rate_cats,
-                                                clvp,
-                                                parent_scaler,
-                                                clvc,
-                                                child_scaler,
-                                                pmatrix,
-                                                frequencies,
-                                                rate_weights,
-                                                pattern_weights,
-                                                invar_proportion,
-                                                invar_indices,
-                                                freqs_indices,
-                                                persite_lnl,
-                                                attrib);
+                                                  sites,
+                                                  rate_cats,
+                                                  clvp,
+                                                  parent_scaler,
+                                                  clvc,
+                                                  child_scaler,
+                                                  pmatrix,
+                                                  frequencies,
+                                                  rate_weights,
+                                                  pattern_weights,
+                                                  invar_proportion,
+                                                  invar_indices,
+                                                  freqs_indices,
+                                                  persite_lnl,
+                                                  attrib);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -1306,39 +1309,39 @@ double corax_core_edge_loglikelihood_ii(unsigned int        states,
     if (states == 4)
     {
       return corax_core_edge_loglikelihood_ii_4x4_avx(sites,
-                                                    rate_cats,
-                                                    clvp,
-                                                    parent_scaler,
-                                                    clvc,
-                                                    child_scaler,
-                                                    pmatrix,
-                                                    frequencies,
-                                                    rate_weights,
-                                                    pattern_weights,
-                                                    invar_proportion,
-                                                    invar_indices,
-                                                    freqs_indices,
-                                                    persite_lnl,
-                                                    attrib);
+                                                      rate_cats,
+                                                      clvp,
+                                                      parent_scaler,
+                                                      clvc,
+                                                      child_scaler,
+                                                      pmatrix,
+                                                      frequencies,
+                                                      rate_weights,
+                                                      pattern_weights,
+                                                      invar_proportion,
+                                                      invar_indices,
+                                                      freqs_indices,
+                                                      persite_lnl,
+                                                      attrib);
     }
     else
     {
       return corax_core_edge_loglikelihood_ii_avx2(states,
-                                                 sites,
-                                                 rate_cats,
-                                                 clvp,
-                                                 parent_scaler,
-                                                 clvc,
-                                                 child_scaler,
-                                                 pmatrix,
-                                                 frequencies,
-                                                 rate_weights,
-                                                 pattern_weights,
-                                                 invar_proportion,
-                                                 invar_indices,
-                                                 freqs_indices,
-                                                 persite_lnl,
-                                                 attrib);
+                                                   sites,
+                                                   rate_cats,
+                                                   clvp,
+                                                   parent_scaler,
+                                                   clvc,
+                                                   child_scaler,
+                                                   pmatrix,
+                                                   frequencies,
+                                                   rate_weights,
+                                                   pattern_weights,
+                                                   invar_proportion,
+                                                   invar_indices,
+                                                   freqs_indices,
+                                                   persite_lnl,
+                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -1368,7 +1371,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for rate scalers.");
+                      "Cannot allocate space for rate scalers.");
       return -INFINITY;
     }
   }
@@ -1391,8 +1394,8 @@ double corax_core_edge_loglikelihood_ii(unsigned int        states,
       /* compute relative capped per-rate scalers */
       for (i = 0; i < rate_cats; ++i)
       {
-        rate_scalings[i] =
-            CORAX_MIN(rate_scalings[i] - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
       }
     }
     else

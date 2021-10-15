@@ -51,9 +51,11 @@ static void reverse_split(corax_split_t split, unsigned int tip_count)
   split[split_len - 1] &= mask;
 }
 
-static corax_split_t clone_split(const corax_split_t from, unsigned int split_len)
+static corax_split_t clone_split(const corax_split_t from,
+                                 unsigned int        split_len)
 {
-  corax_split_t to = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
+  corax_split_t to =
+      (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
   memcpy(to, from, sizeof(corax_split_base_t) * split_len);
 
   return to;
@@ -73,10 +75,10 @@ static int sort_by_weight(const void *a, const void *b)
     return ((ca < cb) ? 1 : -1);
 }
 
-static void mre(bitv_hashtable_t *  h,
+static void mre(bitv_hashtable_t *    h,
                 corax_split_system_t *consensus,
-                unsigned int        split_len,
-                unsigned int        max_splits)
+                unsigned int          split_len,
+                unsigned int          max_splits)
 {
   bitv_hash_entry_t **split_list;
 
@@ -113,9 +115,9 @@ static void mre(bitv_hashtable_t *  h,
     {
       corax_split_t split_consolidated = consensus->splits[j - 1];
       if (!corax_utree_split_compatible(split_candidate->bit_vector,
-                                         split_consolidated,
-                                         split_len,
-                                         h->bit_count))
+                                        split_consolidated,
+                                        split_len,
+                                        h->bit_count))
       {
         compatible = 0;
         break;
@@ -171,8 +173,8 @@ static int get_split_id(corax_split_t split, unsigned int split_len)
 }
 
 static void build_tips_recurse(corax_unode_t *tree,
-                               char *const *tip_labels,
-                               unsigned int split_len)
+                               char *const *  tip_labels,
+                               unsigned int   split_len)
 {
   corax_consensus_data_t *data = (corax_consensus_data_t *)tree->data;
   corax_unode_t *         next_root;
@@ -210,8 +212,8 @@ static void build_tips_recurse(corax_unode_t *tree,
 }
 
 static corax_unode_t *find_splitnode_recurse(corax_split_t  split,
-                                           corax_unode_t *root,
-                                           unsigned int split_len)
+                                             corax_unode_t *root,
+                                             unsigned int   split_len)
 {
   corax_unode_t *         next_root, *ret_node;
   corax_consensus_data_t *data = (corax_consensus_data_t *)root->data;
@@ -224,7 +226,9 @@ static corax_unode_t *find_splitnode_recurse(corax_split_t  split,
     {
       if ((ret_node = find_splitnode_recurse(split, next_root->back, split_len))
           != NULL)
-      { return ret_node; }
+      {
+        return ret_node;
+      }
       next_root = next_root->next;
     }
     return root;
@@ -237,8 +241,8 @@ static corax_unode_t *find_splitnode_recurse(corax_split_t  split,
 
 static void connect_consensus_node(corax_unode_t *parent,
                                    corax_unode_t *child,
-                                   unsigned int split_len,
-                                   int          auto_rearrange)
+                                   unsigned int   split_len,
+                                   int            auto_rearrange)
 {
   corax_consensus_data_t *data_p, *data_c, *data_aux;
   corax_unode_t *         new_node, *aux_node, *aux_node2;
@@ -271,7 +275,9 @@ static void connect_consensus_node(corax_unode_t *parent,
       aux_node2 = aux_node->next;
       data_aux  = (corax_consensus_data_t *)aux_node->back->data;
       if (is_subsplit(data_aux->split, data_c->split, split_len))
-      { connect_consensus_node(child, aux_node->back, split_len, 0); }
+      {
+        connect_consensus_node(child, aux_node->back, split_len, 0);
+      }
       aux_node = aux_node2;
     }
   }
@@ -287,17 +293,17 @@ static void connect_consensus_node(corax_unode_t *parent,
 }
 
 static corax_unode_t *create_consensus_node(corax_unode_t *parent,
-                                          corax_split_t  split,
-                                          double       support,
-                                          unsigned int split_len)
+                                            corax_split_t  split,
+                                            double         support,
+                                            unsigned int   split_len)
 {
-  corax_unode_t *         new_node = (corax_unode_t *)malloc(sizeof(corax_unode_t));
-  corax_consensus_data_t *data     = 0;
+  corax_unode_t *new_node      = (corax_unode_t *)malloc(sizeof(corax_unode_t));
+  corax_consensus_data_t *data = 0;
 
   if (support > 0)
   {
-    data        = (corax_consensus_data_t *)malloc(sizeof(corax_consensus_data_t));
-    data->split = split;
+    data = (corax_consensus_data_t *)malloc(sizeof(corax_consensus_data_t));
+    data->split   = split;
     data->support = support;
   }
 
@@ -313,10 +319,10 @@ static corax_unode_t *create_consensus_node(corax_unode_t *parent,
   return new_node;
 }
 
-static void recursive_assign_indices(corax_unode_t * node,
-                                     unsigned int *inner_clv_index,
-                                     int *         inner_scaler_index,
-                                     unsigned int *inner_node_index)
+static void recursive_assign_indices(corax_unode_t *node,
+                                     unsigned int * inner_clv_index,
+                                     int *          inner_scaler_index,
+                                     unsigned int * inner_node_index)
 {
   if (!node) return;
 
@@ -410,14 +416,14 @@ static void consensus_data_destroy(void *data, int destroy_split)
 
 static void fill_consensus_recurse(corax_consensus_utree_t *consensus_tree,
                                    corax_unode_t *          node,
-                                   unsigned int *         cur_branch)
+                                   unsigned int *           cur_branch)
 {
   assert(consensus_tree);
   assert(cur_branch);
   assert(node);
 
   corax_unode_t *child;
-  unsigned int max_degree = consensus_tree->tip_count;
+  unsigned int   max_degree = consensus_tree->tip_count;
 
   if (CORAX_UTREE_IS_TIP(node))
   {
@@ -457,7 +463,7 @@ static void fill_consensus(corax_consensus_utree_t *consensus_tree)
   assert(consensus_tree->tree);
 
   corax_unode_t *root       = consensus_tree->tree;
-  unsigned int cur_branch = 0;
+  unsigned int   cur_branch = 0;
 
   free(root->data);
   root->data = 0;
@@ -486,19 +492,20 @@ static void fill_consensus(corax_consensus_utree_t *consensus_tree)
  * @return CORAX_SUCCESS if node indices are consistent,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1, corax_utree_t *t2)
+CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1,
+                                               corax_utree_t *t2)
 {
-  unsigned int  i;
-  unsigned int  node_id;
-  int           retval = CORAX_SUCCESS;
+  unsigned int    i;
+  unsigned int    node_id;
+  int             retval = CORAX_SUCCESS;
   corax_unode_t **tipnodes;
-  char **       tipnames;
-  unsigned int  tip_count;
+  char **         tipnames;
+  unsigned int    tip_count;
 
   if (!t1 || !t2 || t1->tip_count != t2->tip_count)
   {
     corax_set_error(CORAX_ERROR_INVALID_TREE,
-                  "Trees do not have the same number of tips\n");
+                    "Trees do not have the same number of tips\n");
     return CORAX_FAILURE;
   }
 
@@ -509,7 +516,7 @@ CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1, corax_utree_t 
   if (!tipnames)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tipnodes and tipnames\n");
+                    "Cannot allocate memory for tipnodes and tipnames\n");
     return CORAX_FAILURE;
   }
 
@@ -546,19 +553,20 @@ CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1, corax_utree_t 
  * @return CORAX_SUCCESS if the operation was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t2)
+CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1,
+                                             corax_utree_t *t2)
 {
-  unsigned int  i, j;
-  unsigned int  node_id;
-  int           retval = CORAX_SUCCESS, checkval;
+  unsigned int    i, j;
+  unsigned int    node_id;
+  int             retval = CORAX_SUCCESS, checkval;
   corax_unode_t **tipnodes;
-  char **       tipnames;
-  unsigned int  tip_count;
+  char **         tipnames;
+  unsigned int    tip_count;
 
   if (!t1 || !t2 || t1->tip_count != t2->tip_count)
   {
     corax_set_error(CORAX_ERROR_INVALID_TREE,
-                  "Trees do not have the same number of tips\n");
+                    "Trees do not have the same number of tips\n");
     return CORAX_FAILURE;
   }
 
@@ -568,7 +576,8 @@ CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t
   tipnames = (char **)malloc(tip_count * sizeof(char *));
   if (!tipnames)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for tipnames\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory for tipnames\n");
     return CORAX_FAILURE;
   }
 
@@ -585,7 +594,7 @@ CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t
   {
     // node_id = get_utree_node_id(tipnodes[i]);
     corax_unode_t *tipnode = tipnodes[i];
-    checkval             = 0;
+    checkval               = 0;
     for (j = 0; j < tip_count; ++j)
     {
       if (!strcmp(tipnames[j], tipnode->label))
@@ -607,8 +616,8 @@ CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1, corax_utree_t *t
 }
 
 CORAX_EXPORT unsigned int corax_utree_rf_distance(corax_unode_t *t1,
-                                                 corax_unode_t *t2,
-                                                 unsigned int tip_count)
+                                                  corax_unode_t *t2,
+                                                  unsigned int   tip_count)
 {
   unsigned int rf_distance;
 
@@ -633,26 +642,27 @@ CORAX_EXPORT unsigned int corax_utree_rf_distance(corax_unode_t *t1,
 /* Consensus */
 
 CORAX_EXPORT corax_consensus_utree_t *
-           corax_utree_from_splits(const corax_split_system_t *split_system,
-                                    unsigned int              tip_count,
-                                    char *const *             tip_labels)
+             corax_utree_from_splits(const corax_split_system_t *split_system,
+                                     unsigned int                tip_count,
+                                     char *const *               tip_labels)
 {
   const corax_split_t *    splits     = split_system->splits;
-  unsigned int           split_size = sizeof(corax_split_base_t) * 8;
-  unsigned int           split_len  = bitv_length(tip_count);
-  unsigned int           i;
+  unsigned int             split_size = sizeof(corax_split_base_t) * 8;
+  unsigned int             split_len  = bitv_length(tip_count);
+  unsigned int             i;
   corax_unode_t *          tree, *next_parent;
   corax_consensus_utree_t *return_tree;
   corax_split_t            rootsplit1, rootsplit2, next_split;
-  double *               support_values;
+  double *                 support_values;
   corax_split_t *          all_splits;
 
-  return_tree = (corax_consensus_utree_t *)malloc(sizeof(corax_consensus_utree_t));
+  return_tree =
+      (corax_consensus_utree_t *)malloc(sizeof(corax_consensus_utree_t));
 
   if (!return_tree)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for consensus tree!");
+                    "Cannot allocate memory for consensus tree!");
     return NULL;
   }
 
@@ -665,14 +675,14 @@ CORAX_EXPORT corax_consensus_utree_t *
   {
     free(return_tree);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for consensus tree!");
+                    "Cannot allocate memory for consensus tree!");
     return NULL;
   }
 
   if (split_system->split_count == 0)
   {
     // build star tree
-    rootsplit1    = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
+    rootsplit1 = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
     rootsplit1[0] = 1;
     rootsplit2    = clone_split(rootsplit1, split_len);
     reverse_split(rootsplit1, tip_count);
@@ -696,10 +706,11 @@ CORAX_EXPORT corax_consensus_utree_t *
   else
   {
     all_splits = (corax_split_t *)malloc((split_system->split_count + tip_count)
-                                       * sizeof(corax_split_t));
+                                         * sizeof(corax_split_t));
     support_values = (double *)malloc((split_system->split_count + tip_count)
                                       * sizeof(double));
-    memcpy(all_splits, splits, split_system->split_count * sizeof(corax_split_t));
+    memcpy(
+        all_splits, splits, split_system->split_count * sizeof(corax_split_t));
 
     /* fill trivial splits */
     for (i = 0; i < tip_count; ++i)
@@ -795,25 +806,27 @@ CORAX_EXPORT corax_consensus_utree_t *
 CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
     bitv_hashtable_t *splits_hash, unsigned int tip_count, double threshold)
 {
-  unsigned int        i;
-  unsigned int        max_splits = tip_count - 3;
-  unsigned int        split_len  = bitv_length(tip_count);
+  unsigned int          i;
+  unsigned int          max_splits = tip_count - 3;
+  unsigned int          split_len  = bitv_length(tip_count);
   corax_split_system_t *split_system;
-  double              min_support = threshold;
-  double              max_support = 1.0;
-  double              thr_support = CORAX_MAX(min_support, .5);
+  double                min_support = threshold;
+  double                max_support = 1.0;
+  double                thr_support = CORAX_MAX(min_support, .5);
   if (thr_support == max_support) thr_support -= EPSILON;
 
-  split_system = (corax_split_system_t *)calloc(1, sizeof(corax_split_system_t));
+  split_system =
+      (corax_split_system_t *)calloc(1, sizeof(corax_split_system_t));
 
   if (!split_system)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for split system!");
+                    "Cannot allocate memory for split system!");
     return NULL;
   }
 
-  split_system->splits = (corax_split_t *)calloc(max_splits, sizeof(corax_split_t));
+  split_system->splits =
+      (corax_split_t *)calloc(max_splits, sizeof(corax_split_t));
   split_system->support     = (double *)calloc(max_splits, sizeof(double));
   split_system->split_count = 0;
   split_system->max_support = max_support;
@@ -824,7 +837,7 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
     if (split_system->splits) free(split_system->splits);
     if (split_system->support) free(split_system->support);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for split system!");
+                    "Cannot allocate memory for split system!");
     return NULL;
   }
 
@@ -863,7 +876,9 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
   }
 
   if (min_support < .5 && splits_hash->entry_count > 0)
-  { mre(splits_hash, split_system, split_len, max_splits); }
+  {
+    mre(splits_hash, split_system, split_len, max_splits);
+  }
 
   return split_system;
 }
@@ -881,20 +896,20 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
  * @return                  consensus unrooted tree structure
  */
 CORAX_EXPORT corax_consensus_utree_t *
-           corax_utree_weight_consensus(corax_utree_t *const *trees,
-                                         const double *      weights,
-                                         double              threshold,
-                                         unsigned int        tree_count)
+             corax_utree_weight_consensus(corax_utree_t *const *trees,
+                                          const double *        weights,
+                                          double                threshold,
+                                          unsigned int          tree_count)
 {
 
   const corax_utree_t *reference_tree =
       trees[0]; /* reference tree for consistency */
   corax_consensus_utree_t *consensus_tree = NULL; /* final consensus tree */
   corax_unode_t **         tipnodes;              /* tips from reference tree */
-  bitv_hashtable_t *     splits_hash      = NULL;
-  string_hashtable_t *   string_hashtable = NULL;
+  bitv_hashtable_t *       splits_hash      = NULL;
+  string_hashtable_t *     string_hashtable = NULL;
   corax_split_t *          tree_splits;
-  unsigned int           i, j, tip_count = reference_tree->tip_count,
+  unsigned int             i, j, tip_count = reference_tree->tip_count,
                      n_splits = tip_count - 3;
 
   /* validate threshold */
@@ -920,7 +935,8 @@ CORAX_EXPORT corax_consensus_utree_t *
   }
   if (fabs(1.0 - sum_weights) > EPSILON)
   {
-    corax_set_error(CORAX_ERROR_INVALID_TREE, "Invalid tree weights", threshold);
+    corax_set_error(
+        CORAX_ERROR_INVALID_TREE, "Invalid tree weights", threshold);
     return NULL;
   }
 

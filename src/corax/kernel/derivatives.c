@@ -21,7 +21,7 @@
 
 #include "corax/corax.h"
 
-static int sumtable_tipinner(corax_partition_t *   partition,
+static int sumtable_tipinner(corax_partition_t * partition,
                              unsigned int        parent_clv_index,
                              unsigned int        child_clv_index,
                              const unsigned int *parent_scaler,
@@ -76,18 +76,18 @@ static int sumtable_tipinner(corax_partition_t *   partition,
   }
 
   retval = corax_core_update_sumtable_ti(partition->states,
-                                       sites,
-                                       partition->rate_cats,
-                                       partition->clv[inner_clv_index],
-                                       partition->tipchars[tip_clv_index],
-                                       scaler,
-                                       eigenvecs,
-                                       inv_eigenvecs,
-                                       freqs,
-                                       partition->tipmap,
-                                       partition->maxstates,
-                                       sumtable,
-                                       partition->attributes);
+                                         sites,
+                                         partition->rate_cats,
+                                         partition->clv[inner_clv_index],
+                                         partition->tipchars[tip_clv_index],
+                                         scaler,
+                                         eigenvecs,
+                                         inv_eigenvecs,
+                                         freqs,
+                                         partition->tipmap,
+                                         partition->maxstates,
+                                         sumtable,
+                                         partition->attributes);
 
   free(freqs);
   free(eigenvecs);
@@ -96,7 +96,7 @@ static int sumtable_tipinner(corax_partition_t *   partition,
   return retval;
 }
 
-static int sumtable_innerinner(corax_partition_t *   partition,
+static int sumtable_innerinner(corax_partition_t * partition,
                                unsigned int        parent_clv_index,
                                unsigned int        child_clv_index,
                                const unsigned int *parent_scaler,
@@ -135,17 +135,17 @@ static int sumtable_innerinner(corax_partition_t *   partition,
   }
 
   retval = corax_core_update_sumtable_ii(partition->states,
-                                       sites,
-                                       partition->rate_cats,
-                                       partition->clv[parent_clv_index],
-                                       partition->clv[child_clv_index],
-                                       parent_scaler,
-                                       child_scaler,
-                                       eigenvecs,
-                                       inv_eigenvecs,
-                                       freqs,
-                                       sumtable,
-                                       partition->attributes);
+                                         sites,
+                                         partition->rate_cats,
+                                         partition->clv[parent_clv_index],
+                                         partition->clv[child_clv_index],
+                                         parent_scaler,
+                                         child_scaler,
+                                         eigenvecs,
+                                         inv_eigenvecs,
+                                         freqs,
+                                         sumtable,
+                                         partition->attributes);
 
   free(freqs);
   free(eigenvecs);
@@ -154,7 +154,7 @@ static int sumtable_innerinner(corax_partition_t *   partition,
   return retval;
 }
 
-static int sumtable_repeats(corax_partition_t *   partition,
+static int sumtable_repeats(corax_partition_t * partition,
                             unsigned int        parent_clv_index,
                             unsigned int        child_clv_index,
                             const unsigned int *parent_scaler,
@@ -230,13 +230,13 @@ static int sumtable_repeats(corax_partition_t *   partition,
  * partial derivatives on the branch lengths.
  * sumtable: [output] must be allocated for storing (rates x states_padded)
  * values */
-CORAX_EXPORT int corax_update_sumtable(corax_partition_t *   partition,
-                                   unsigned int        parent_clv_index,
-                                   unsigned int        child_clv_index,
-                                   int                 parent_scaler_index,
-                                   int                 child_scaler_index,
-                                   const unsigned int *params_indices,
-                                   double *            sumtable)
+CORAX_EXPORT int corax_update_sumtable(corax_partition_t * partition,
+                                       unsigned int        parent_clv_index,
+                                       unsigned int        child_clv_index,
+                                       int                 parent_scaler_index,
+                                       int                 child_scaler_index,
+                                       const unsigned int *params_indices,
+                                       double *            sumtable)
 {
   int retval;
 
@@ -272,8 +272,9 @@ CORAX_EXPORT int corax_update_sumtable(corax_partition_t *   partition,
         && (child_clv_index < partition->tips))
     {
       /* tip-tip case */
-      corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                    "corax_update_sumtable() was called for the tip-tip case!");
+      corax_set_error(
+          CORAX_ERROR_INVALID_PARAM,
+          "corax_update_sumtable() was called for the tip-tip case!");
       retval = CORAX_FAILURE;
     }
     else if ((parent_clv_index < partition->tips)
@@ -323,14 +324,14 @@ CORAX_EXPORT int corax_update_sumtable(corax_partition_t *   partition,
  * dd_f: [output] second derivative
  */
 CORAX_EXPORT int
-corax_compute_likelihood_derivatives(corax_partition_t *   partition,
-                                   int                 parent_scaler_index,
-                                   int                 child_scaler_index,
-                                   double              branch_length,
-                                   const unsigned int *params_indices,
-                                   const double *      sumtable,
-                                   double *            d_f,
-                                   double *            dd_f)
+corax_compute_likelihood_derivatives(corax_partition_t * partition,
+                                     int                 parent_scaler_index,
+                                     int                 child_scaler_index,
+                                     double              branch_length,
+                                     const unsigned int *params_indices,
+                                     const double *      sumtable,
+                                     double *            d_f,
+                                     double *            dd_f)
 {
   unsigned int *parent_scaler;
   unsigned int *child_scaler;
@@ -382,24 +383,24 @@ corax_compute_likelihood_derivatives(corax_partition_t *   partition,
     child_ids  = child_ids ? child_ids : partition->sites;
   }
   int retval = corax_core_likelihood_derivatives(partition->states,
-                                               partition->sites,
-                                               partition->rate_cats,
-                                               partition->rate_weights,
-                                               parent_scaler,
-                                               child_scaler,
-                                               parent_ids,
-                                               child_ids,
-                                               partition->invariant,
-                                               partition->pattern_weights,
-                                               branch_length,
-                                               prop_invar,
-                                               freqs,
-                                               partition->rates,
-                                               eigenvals,
-                                               sumtable,
-                                               d_f,
-                                               dd_f,
-                                               partition->attributes);
+                                                 partition->sites,
+                                                 partition->rate_cats,
+                                                 partition->rate_weights,
+                                                 parent_scaler,
+                                                 child_scaler,
+                                                 parent_ids,
+                                                 child_ids,
+                                                 partition->invariant,
+                                                 partition->pattern_weights,
+                                                 branch_length,
+                                                 prop_invar,
+                                                 freqs,
+                                                 partition->rates,
+                                                 eigenvals,
+                                                 sumtable,
+                                                 d_f,
+                                                 dd_f,
+                                                 partition->attributes);
 
   free(freqs);
   free(prop_invar);

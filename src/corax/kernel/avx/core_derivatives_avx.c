@@ -59,7 +59,7 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -80,7 +80,7 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -209,22 +209,22 @@ static int core_update_sumtable_ii_4x4_avx(unsigned int        sites,
 
 CORAX_EXPORT int
 corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
-                                         unsigned int        sites,
-                                         unsigned int        parent_sites,
-                                         unsigned int        rate_cats,
-                                         const double *      clvp,
-                                         const double *      clvc,
-                                         const unsigned int *parent_scaler,
-                                         const unsigned int *child_scaler,
-                                         double *const *     eigenvecs,
-                                         double *const *     inv_eigenvecs,
-                                         double *const *     freqs,
-                                         double *            sumtable,
-                                         const unsigned int *parent_site_id,
-                                         const unsigned int *child_site_id,
-                                         double *            bclv_buffer,
-                                         unsigned int        inv,
-                                         unsigned int        attrib)
+                                           unsigned int        sites,
+                                           unsigned int        parent_sites,
+                                           unsigned int        rate_cats,
+                                           const double *      clvp,
+                                           const double *      clvc,
+                                           const unsigned int *parent_scaler,
+                                           const unsigned int *child_scaler,
+                                           double *const *     eigenvecs,
+                                           double *const *     inv_eigenvecs,
+                                           double *const *     freqs,
+                                           double *            sumtable,
+                                           const unsigned int *parent_site_id,
+                                           const unsigned int *child_site_id,
+                                           double *            bclv_buffer,
+                                           unsigned int        inv,
+                                           unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -249,7 +249,7 @@ corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -269,7 +269,7 @@ corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
   {
     if (rate_scalings) free(rate_scalings);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -400,24 +400,24 @@ corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int
-corax_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
-                                             unsigned int        sites,
-                                             unsigned int        parent_sites,
-                                             unsigned int        rate_cats,
-                                             const double *      clvp,
-                                             const double *      clvc,
-                                             const unsigned int *parent_scaler,
-                                             const unsigned int *child_scaler,
-                                             double *const *     eigenvecs,
-                                             double *const *     inv_eigenvecs,
-                                             double *const *     freqs,
-                                             double *            sumtable,
-                                             const unsigned int *parent_site_id,
-                                             const unsigned int *child_site_id,
-                                             double *            bclv_buffer,
-                                             unsigned int        inv,
-                                             unsigned int        attrib)
+CORAX_EXPORT int corax_core_update_sumtable_repeatsbclv_4x4_avx(
+    unsigned int        states,
+    unsigned int        sites,
+    unsigned int        parent_sites,
+    unsigned int        rate_cats,
+    const double *      clvp,
+    const double *      clvc,
+    const unsigned int *parent_scaler,
+    const unsigned int *child_scaler,
+    double *const *     eigenvecs,
+    double *const *     inv_eigenvecs,
+    double *const *     freqs,
+    double *            sumtable,
+    const unsigned int *parent_site_id,
+    const unsigned int *child_site_id,
+    double *            bclv_buffer,
+    unsigned int        inv,
+    unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -447,7 +447,7 @@ corax_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -470,7 +470,7 @@ corax_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
     if (tt_inv_eigenvecs_ptr) free(tt_inv_eigenvecs_ptr);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -646,24 +646,24 @@ corax_core_update_sumtable_repeatsbclv_4x4_avx(unsigned int        states,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int
-corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
-                                             unsigned int        sites,
-                                             unsigned int        parent_sites,
-                                             unsigned int        rate_cats,
-                                             const double *      clvp,
-                                             const double *      clvc,
-                                             const unsigned int *parent_scaler,
-                                             const unsigned int *child_scaler,
-                                             double *const *     eigenvecs,
-                                             double *const *     inv_eigenvecs,
-                                             double *const *     freqs,
-                                             double *            sumtable,
-                                             const unsigned int *parent_site_id,
-                                             const unsigned int *child_site_id,
-                                             double *            bclv_buffer,
-                                             unsigned int        inv,
-                                             unsigned int        attrib)
+CORAX_EXPORT int corax_core_update_sumtable_repeats_generic_avx(
+    unsigned int        states,
+    unsigned int        sites,
+    unsigned int        parent_sites,
+    unsigned int        rate_cats,
+    const double *      clvp,
+    const double *      clvc,
+    const unsigned int *parent_scaler,
+    const unsigned int *child_scaler,
+    double *const *     eigenvecs,
+    double *const *     inv_eigenvecs,
+    double *const *     freqs,
+    double *            sumtable,
+    const unsigned int *parent_site_id,
+    const unsigned int *child_site_id,
+    double *            bclv_buffer,
+    unsigned int        inv,
+    unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -689,7 +689,7 @@ corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -711,7 +711,7 @@ corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_eigenvecs");
+                    "Cannot allocate memory for tt_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -723,7 +723,7 @@ corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
   if (!tt_inv_eigenvecs)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -900,17 +900,17 @@ corax_core_update_sumtable_repeats_generic_avx(unsigned int        states,
 }
 CORAX_EXPORT int
 corax_core_update_sumtable_ii_avx(unsigned int        states,
-                                unsigned int        sites,
-                                unsigned int        rate_cats,
-                                const double *      clvp,
-                                const double *      clvc,
-                                const unsigned int *parent_scaler,
-                                const unsigned int *child_scaler,
-                                double *const *     eigenvecs,
-                                double *const *     inv_eigenvecs,
-                                double *const *     freqs,
-                                double *            sumtable,
-                                unsigned int        attrib)
+                                  unsigned int        sites,
+                                  unsigned int        rate_cats,
+                                  const double *      clvp,
+                                  const double *      clvc,
+                                  const unsigned int *parent_scaler,
+                                  const unsigned int *child_scaler,
+                                  double *const *     eigenvecs,
+                                  double *const *     inv_eigenvecs,
+                                  double *const *     freqs,
+                                  double *            sumtable,
+                                  unsigned int        attrib)
 {
   unsigned int i, j, k, n;
 
@@ -953,7 +953,7 @@ corax_core_update_sumtable_ii_avx(unsigned int        states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -975,7 +975,7 @@ corax_core_update_sumtable_ii_avx(unsigned int        states,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_eigenvecs");
+                    "Cannot allocate memory for tt_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -987,7 +987,7 @@ corax_core_update_sumtable_ii_avx(unsigned int        states,
   if (!tt_inv_eigenvecs)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -1195,7 +1195,7 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -1220,7 +1220,7 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -1348,18 +1348,18 @@ static int core_update_sumtable_ti_4x4_avx(unsigned int         sites,
 
 CORAX_EXPORT int
 corax_core_update_sumtable_ti_avx(unsigned int         states,
-                                unsigned int         sites,
-                                unsigned int         rate_cats,
-                                const double *       parent_clv,
-                                const unsigned char *left_tipchars,
-                                const unsigned int * parent_scaler,
-                                double *const *      eigenvecs,
-                                double *const *      inv_eigenvecs,
-                                double *const *      freqs,
-                                const corax_state_t *  tipmap,
-                                unsigned int         tipmap_size,
-                                double *             sumtable,
-                                unsigned int         attrib)
+                                  unsigned int         sites,
+                                  unsigned int         rate_cats,
+                                  const double *       parent_clv,
+                                  const unsigned char *left_tipchars,
+                                  const unsigned int * parent_scaler,
+                                  double *const *      eigenvecs,
+                                  double *const *      inv_eigenvecs,
+                                  double *const *      freqs,
+                                  const corax_state_t *tipmap,
+                                  unsigned int         tipmap_size,
+                                  double *             sumtable,
+                                  unsigned int         attrib)
 {
   if (states == 4)
   {
@@ -1403,7 +1403,7 @@ corax_core_update_sumtable_ti_avx(unsigned int         states,
     if (!rate_scalings)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for rate scalers");
+                      "Cannot allocate memory for rate scalers");
       return CORAX_FAILURE;
     }
 
@@ -1430,7 +1430,7 @@ corax_core_update_sumtable_ti_avx(unsigned int         states,
     if (rate_scalings) free(rate_scalings);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for tt_inv_eigenvecs");
+                    "Cannot allocate memory for tt_inv_eigenvecs");
     return CORAX_FAILURE;
   }
 
@@ -1608,18 +1608,18 @@ corax_core_update_sumtable_ti_avx(unsigned int         states,
 
 CORAX_EXPORT int
 corax_core_likelihood_derivatives_avx(unsigned int        states,
-                                    unsigned int        states_padded,
-                                    unsigned int        rate_cats,
-                                    unsigned int        ef_sites,
-                                    const unsigned int *pattern_weights,
-                                    const double *      rate_weights,
-                                    const int *         invariant,
-                                    const double *      prop_invar,
-                                    double *const *     freqs,
-                                    const double *      sumtable,
-                                    const double *      diagptable,
-                                    double *            d_f,
-                                    double *            dd_f)
+                                      unsigned int        states_padded,
+                                      unsigned int        rate_cats,
+                                      unsigned int        ef_sites,
+                                      const unsigned int *pattern_weights,
+                                      const double *      rate_weights,
+                                      const int *         invariant,
+                                      const double *      prop_invar,
+                                      double *const *     freqs,
+                                      const double *      sumtable,
+                                      const double *      diagptable,
+                                      double *            d_f,
+                                      double *            dd_f)
 {
   unsigned int i, j, k, n;
   unsigned int span_padded = rate_cats * states_padded;
@@ -1642,12 +1642,13 @@ corax_core_likelihood_derivatives_avx(unsigned int        states,
 
   if (use_pinv)
   {
-    invar_lk = (double *)corax_aligned_alloc(rate_cats * states * sizeof(double),
-                                           CORAX_ALIGNMENT_AVX);
+    invar_lk = (double *)corax_aligned_alloc(
+        rate_cats * states * sizeof(double), CORAX_ALIGNMENT_AVX);
 
     if (!invar_lk)
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       return CORAX_FAILURE;
     }
 
@@ -1665,11 +1666,12 @@ corax_core_likelihood_derivatives_avx(unsigned int        states,
   else
   {
     t_diagp = (double *)corax_aligned_alloc(3 * span_padded * sizeof(double),
-                                          CORAX_ALIGNMENT_AVX);
+                                            CORAX_ALIGNMENT_AVX);
 
     if (!t_diagp)
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       return CORAX_FAILURE;
     }
 

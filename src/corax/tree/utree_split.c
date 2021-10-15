@@ -32,7 +32,7 @@ merge_split(corax_split_t to, const corax_split_t from, unsigned int split_len)
   according to the node id.
  */
 static unsigned int get_utree_splitmap_id(corax_unode_t *node,
-                                          unsigned int tip_count)
+                                          unsigned int   tip_count)
 {
   unsigned int node_id = node->node_index;
   assert(node_id >= tip_count);
@@ -47,7 +47,7 @@ static unsigned int get_utree_splitmap_id(corax_unode_t *node,
 static int cb_get_splits(corax_unode_t *node, void *data)
 {
   struct cb_split_params *split_data = (struct cb_split_params *)data;
-  corax_split_t             current_split;
+  corax_split_t           current_split;
 
   unsigned int tip_count  = split_data->tip_count;
   unsigned int split_size = split_data->split_size;
@@ -147,8 +147,8 @@ static int _cmp_splits(const void *a, const void *b)
 {
   const corax_split_t *s1    = (const corax_split_t *)a;
   const corax_split_t *s2    = (const corax_split_t *)b;
-  unsigned int       limit = 10000; /* max_taxa = split_size * 10^4 */
-  int                i     = 0;
+  unsigned int         limit = 10000; /* max_taxa = split_size * 10^4 */
+  int                  i     = 0;
   for (; ((*s1)[i] == (*s2)[i]) && limit; --limit, ++i)
     ;
   assert(limit);
@@ -168,7 +168,7 @@ static int _cmp_split_node_pair(const void *a, const void *b)
  * returns 0 otherwise
  * */
 static int split_is_valid_and_normalized(const corax_split_t bitv,
-                                         unsigned int      tip_count)
+                                         unsigned int        tip_count)
 {
   // this will also automatically check for all-0s case
   if (!bitv_is_normalized(bitv)) return 0;
@@ -194,13 +194,14 @@ static int split_is_valid_and_normalized(const corax_split_t bitv,
 
 CORAX_EXPORT corax_split_t
 corax_utree_split_from_tips(unsigned int *subtree_tip_ids,
-                             unsigned int  subtree_size,
-                             unsigned int  tip_count)
+                            unsigned int  subtree_size,
+                            unsigned int  tip_count)
 {
   size_t split_size = (sizeof(corax_split_base_t) * 8);
   size_t split_len  = (tip_count / split_size)
                      + (tip_count % (sizeof(corax_split_base_t) * 8) > 0);
-  corax_split_t split = (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
+  corax_split_t split =
+      (corax_split_t)calloc(split_len, sizeof(corax_split_base_t));
 
   for (unsigned int i = 0; i < subtree_size; ++i)
   {
@@ -219,16 +220,16 @@ corax_utree_split_from_tips(unsigned int *subtree_tip_ids,
  * split_to_node_map can be NULL
  */
 CORAX_EXPORT corax_split_t *
-           corax_utree_split_create(const corax_unode_t *tree,
-                                     unsigned int       tip_count,
-                                     corax_unode_t **     split_to_node_map)
+             corax_utree_split_create(const corax_unode_t *tree,
+                                      unsigned int         tip_count,
+                                      corax_unode_t **     split_to_node_map)
 {
-  unsigned int i;
-  unsigned int split_count, split_len, split_size;
+  unsigned int   i;
+  unsigned int   split_count, split_len, split_size;
   corax_split_t *split_list; /* array with ordered split pointers */
   corax_split_t  splits;     /* contiguous array of splits, as size is known */
   struct split_node_pair *split_nodes;
-  corax_split_t             first_split;
+  corax_split_t           first_split;
 
   /* as many non-trivial splits as inner branches */
   split_count = tip_count - 3;
@@ -240,7 +241,7 @@ CORAX_EXPORT corax_split_t *
   if (!split_list)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for split list\n");
+                    "Cannot allocate memory for split list\n");
     return NULL;
   }
 
@@ -249,16 +250,17 @@ CORAX_EXPORT corax_split_t *
   if (!split_nodes)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate memory for split-node pairs\n");
+                    "Cannot allocate memory for split-node pairs\n");
     free(split_list);
     return NULL;
   }
 
-  splits =
-      (corax_split_t)calloc(split_count * split_len, sizeof(corax_split_base_t));
+  splits = (corax_split_t)calloc(split_count * split_len,
+                                 sizeof(corax_split_base_t));
   if (!splits)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for splits\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory for splits\n");
     free(split_list);
     free(split_nodes);
     return NULL;
@@ -282,7 +284,8 @@ CORAX_EXPORT corax_split_t *
 
   if (!split_data.id_to_split)
   {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for splits\n");
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory for splits\n");
     free(split_list);
     free(split_nodes);
     return NULL;
@@ -324,7 +327,7 @@ CORAX_EXPORT corax_split_t *
     if (!aux_mem)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for auxiliary array\n");
+                      "Cannot allocate memory for auxiliary array\n");
       free(split_list);
       free(split_nodes);
       return NULL;
@@ -334,7 +337,8 @@ CORAX_EXPORT corax_split_t *
     memcpy(first_split,
            split_nodes[0].split,
            sizeof(corax_split_base_t) * split_len);
-    memcpy(split_nodes[0].split, aux_mem, sizeof(corax_split_base_t) * split_len);
+    memcpy(
+        split_nodes[0].split, aux_mem, sizeof(corax_split_base_t) * split_len);
     free(aux_mem);
     split_nodes[i].split = split_nodes[0].split;
     split_nodes[0].split = first_split;
@@ -371,8 +375,8 @@ CORAX_EXPORT void corax_utree_split_destroy(corax_split_t *split_list)
   free(split_list);
 }
 
-CORAX_EXPORT unsigned int corax_utree_split_lightside(corax_split_t  split,
-                                                     unsigned int tip_count)
+CORAX_EXPORT unsigned int corax_utree_split_lightside(corax_split_t split,
+                                                      unsigned int  tip_count)
 {
   return bitv_lightside(split, tip_count, 0);
 }
@@ -391,8 +395,8 @@ CORAX_EXPORT unsigned int corax_utree_split_hamming_distance(
   return CORAX_MIN(hdist, tip_count - hdist);
 }
 
-CORAX_EXPORT void corax_utree_split_show(corax_split_t  split,
-                                        unsigned int tip_count)
+CORAX_EXPORT void corax_utree_split_show(corax_split_t split,
+                                         unsigned int  tip_count)
 {
   unsigned int split_size   = sizeof(corax_split_base_t) * 8;
   unsigned int split_offset = tip_count % split_size;
@@ -427,9 +431,9 @@ CORAX_EXPORT void corax_utree_split_show(corax_split_t  split,
  * the future.
  */
 CORAX_EXPORT void corax_utree_split_normalize_and_sort(corax_split_t *s,
-                                                      unsigned int tip_count,
-                                                      unsigned int split_count,
-                                                      int          keep_first)
+                                                       unsigned int   tip_count,
+                                                       unsigned int split_count,
+                                                       int          keep_first)
 {
   unsigned int i;
   unsigned int split_len;
@@ -456,7 +460,7 @@ CORAX_EXPORT void corax_utree_split_normalize_and_sort(corax_split_t *s,
     if (!aux_mem)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate memory for auxiliary array\n");
+                      "Cannot allocate memory for auxiliary array\n");
       return;
     }
 
@@ -473,8 +477,8 @@ CORAX_EXPORT void corax_utree_split_normalize_and_sort(corax_split_t *s,
  * Precondition: splits must be normalized and sorted!
  */
 CORAX_EXPORT unsigned int corax_utree_split_rf_distance(corax_split_t *s1,
-                                                       corax_split_t *s2,
-                                                       unsigned int tip_count)
+                                                        corax_split_t *s2,
+                                                        unsigned int tip_count)
 {
   unsigned int split_count = tip_count - 3;
   unsigned int split_len   = bitv_length(tip_count);
@@ -511,8 +515,8 @@ CORAX_EXPORT unsigned int corax_utree_split_rf_distance(corax_split_t *s1,
 }
 
 CORAX_EXPORT int corax_utree_split_find(corax_split_t *split_list,
-                                       corax_split_t  split,
-                                       unsigned int tip_count)
+                                        corax_split_t  split,
+                                        unsigned int   tip_count)
 {
   unsigned int split_count = tip_count - 3;
   unsigned int split_len   = bitv_length(tip_count);
@@ -525,9 +529,9 @@ CORAX_EXPORT int corax_utree_split_find(corax_split_t *split_list,
 }
 
 CORAX_EXPORT int corax_utree_split_compatible(const corax_split_t s1,
-                                             const corax_split_t s2,
-                                             unsigned int      split_len,
-                                             unsigned int      tip_count)
+                                              const corax_split_t s2,
+                                              unsigned int        split_len,
+                                              unsigned int        tip_count)
 {
   unsigned int i;
   unsigned int split_size   = sizeof(corax_split_base_t) * 8;
@@ -566,7 +570,7 @@ CORAX_EXPORT int corax_utree_split_compatible(const corax_split_t s1,
 
 CORAX_EXPORT
 bitv_hashtable_t *corax_utree_split_hashtable_create(unsigned int tip_count,
-                                                      unsigned int slot_count)
+                                                     unsigned int slot_count)
 {
   if (!slot_count) slot_count = tip_count * 10;
 
@@ -599,12 +603,12 @@ CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
  * @returns hashtable with splits
  */
 CORAX_EXPORT bitv_hashtable_t *
-           corax_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
-                                               corax_split_t *     splits,
-                                               unsigned int      tip_count,
-                                               unsigned int      split_count,
-                                               const double *    support,
-                                               int               update_only)
+             corax_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
+                                                corax_split_t *   splits,
+                                                unsigned int      tip_count,
+                                                unsigned int      split_count,
+                                                const double *    support,
+                                                int               update_only)
 {
   unsigned int i;
 

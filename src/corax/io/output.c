@@ -24,8 +24,8 @@
 static void unscale(double *prob, unsigned int times);
 
 CORAX_EXPORT void corax_show_pmatrix(const corax_partition_t *partition,
-                                 unsigned int           index,
-                                 unsigned int           float_precision)
+                                     unsigned int             index,
+                                     unsigned int             float_precision)
 {
   unsigned int i, j, k;
   double *     pmatrix;
@@ -53,16 +53,16 @@ static void unscale(double *prob, unsigned int times)
 }
 
 CORAX_EXPORT void corax_show_clv(const corax_partition_t *partition,
-                             unsigned int           clv_index,
-                             int                    scaler_index,
-                             unsigned int           float_precision)
+                                 unsigned int             clv_index,
+                                 int                      scaler_index,
+                                 unsigned int             float_precision)
 {
   unsigned int s, i, j, k;
 
-  double *      clv    = partition->clv[clv_index];
-  unsigned int *scaler = (scaler_index == CORAX_SCALE_BUFFER_NONE)
-                             ? NULL
-                             : partition->scale_buffer[scaler_index];
+  double *      clv           = partition->clv[clv_index];
+  unsigned int *scaler        = (scaler_index == CORAX_SCALE_BUFFER_NONE)
+                                    ? NULL
+                                    : partition->scale_buffer[scaler_index];
   unsigned int  states        = partition->states;
   unsigned int  states_padded = partition->states_padded;
   unsigned int  rates         = partition->rate_cats;
@@ -70,7 +70,9 @@ CORAX_EXPORT void corax_show_clv(const corax_partition_t *partition,
   unsigned int *site_id = 0;
   if (corax_repeats_enabled(partition)
       && partition->repeats->pernode_ids[clv_index])
-  { site_id = partition->repeats->pernode_site_id[clv_index]; }
+  {
+    site_id = partition->repeats->pernode_site_id[clv_index];
+  }
 
   if ((clv_index < partition->tips)
       && (partition->attributes & CORAX_ATTRIB_PATTERN_TIP))

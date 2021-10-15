@@ -34,41 +34,41 @@ typedef struct cutoff_info
 } cutoff_info_t;
 
 typedef int (*treeinfo_param_set_cb)(corax_treeinfo_t *treeinfo,
-                                     unsigned int       part_num,
-                                     const double *     param_vals,
-                                     unsigned int       param_count);
+                                     unsigned int      part_num,
+                                     const double *    param_vals,
+                                     unsigned int      param_count);
 
 typedef int (*treeinfo_param_get_cb)(const corax_treeinfo_t *treeinfo,
-                                     unsigned int             part_num,
-                                     double *                 param_vals,
-                                     unsigned int             param_count);
+                                     unsigned int            part_num,
+                                     double *                param_vals,
+                                     unsigned int            param_count);
 
 /* functions to optimize multiple partitions in parallel, using treeinfo struct
  */
 
 CORAX_EXPORT double corax_algo_opt_onedim_treeinfo(corax_treeinfo_t *treeinfo,
-                                                  int    param_to_optimize,
-                                                  double min_value,
-                                                  double max_value,
-                                                  double tolerance);
+                                                   int    param_to_optimize,
+                                                   double min_value,
+                                                   double max_value,
+                                                   double tolerance);
 
 CORAX_EXPORT
 double
-corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
-                                       int                   param_to_optimize,
-                                       treeinfo_param_get_cb params_getter,
-                                       treeinfo_param_set_cb params_setter,
-                                       double                min_value,
-                                       double                max_value,
-                                       double                tolerance);
+corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *    treeinfo,
+                                      int                   param_to_optimize,
+                                      treeinfo_param_get_cb params_getter,
+                                      treeinfo_param_set_cb params_setter,
+                                      double                min_value,
+                                      double                max_value,
+                                      double                tolerance);
 
 /** @defgroup treeinfo_opt_algs Treeinfo Optimization Algorithms
  * These functions more or less have the same arguments and optimize their
  * particular parameter. They all use similar algorithms.
  *
- * @param bfgs_factor: A value that should be greater than 0. An opaque quantity,
- * but typical values are 1e12 for inaccurate but fast searches, or 1e1 for a
- * more complete and slow search.
+ * @param bfgs_factor: A value that should be greater than 0. An opaque
+ * quantity, but typical values are 1e12 for inaccurate but fast searches, or
+ * 1e1 for a more complete and slow search.
  *
  * @param tolerance This controls the pgtol threshold. If the largest entry of
  * the projected gradient is larger than this value, optimization will stop.
@@ -79,55 +79,55 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *   treeinfo,
  */
 CORAX_EXPORT
 double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
-                                            unsigned int       params_index,
-                                            double             min_rate,
-                                            double             max_rate,
-                                            double             bfgs_factor,
-                                            double             tolerance);
+                                           unsigned int      params_index,
+                                           double            min_rate,
+                                           double            max_rate,
+                                           double            bfgs_factor,
+                                           double            tolerance);
 
 CORAX_EXPORT
 double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
-                                            unsigned int       params_index,
-                                            double             min_freq,
-                                            double             max_freq,
-                                            double             bfgs_factor,
-                                            double             tolerance);
+                                           unsigned int      params_index,
+                                           double            min_freq,
+                                           double            max_freq,
+                                           double            bfgs_factor,
+                                           double            tolerance);
 
 CORAX_EXPORT
 double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
-                                              double             min_rate,
-                                              double             max_rate,
-                                              double             min_brlen,
-                                              double             max_brlen,
-                                              double             bfgs_factor,
-                                              double             tolerance);
+                                             double            min_rate,
+                                             double            max_rate,
+                                             double            min_brlen,
+                                             double            max_brlen,
+                                             double            bfgs_factor,
+                                             double            tolerance);
 
 CORAX_EXPORT
 double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
-                                           unsigned int       params_index,
-                                           double             min_alpha,
-                                           double             max_alpha,
-                                           double             min_pinv,
-                                           double             max_pinv,
-                                           double             bfgs_factor,
-                                           double             tolerance);
+                                          unsigned int      params_index,
+                                          double            min_alpha,
+                                          double            max_alpha,
+                                          double            min_pinv,
+                                          double            max_pinv,
+                                          double            bfgs_factor,
+                                          double            tolerance);
 
 CORAX_EXPORT
 double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
-                                              double             min_scaler,
-                                              double             max_scaler,
-                                              double             min_brlen,
-                                              double             max_brlen,
-                                              double             lh_epsilon);
+                                             double            min_scaler,
+                                             double            max_scaler,
+                                             double            min_brlen,
+                                             double            max_brlen,
+                                             double            lh_epsilon);
 
 CORAX_EXPORT
 double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
-                                      double             min_brlen,
-                                      double             max_brlen,
-                                      double             lh_epsilon,
-                                      int                max_iters,
-                                      int                opt_method,
-                                      int                radius);
+                                     double            min_brlen,
+                                     double            max_brlen,
+                                     double            lh_epsilon,
+                                     int               max_iters,
+                                     int               opt_method,
+                                     int               radius);
 /** @} */
 
 /* search */
@@ -159,16 +159,16 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
  *
  */
 CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
-                                        unsigned int       radius_min,
-                                        unsigned int       radius_max,
-                                        unsigned int       ntopol_keep,
-                                        corax_bool_t         thorough,
-                                        int                brlen_opt_method,
-                                        double             bl_min,
-                                        double             bl_max,
-                                        int                smoothings,
-                                        double             epsilon,
-                                        cutoff_info_t *    cutoff_info,
-                                        double             subtree_cutoff);
+                                         unsigned int      radius_min,
+                                         unsigned int      radius_max,
+                                         unsigned int      ntopol_keep,
+                                         corax_bool_t      thorough,
+                                         int               brlen_opt_method,
+                                         double            bl_min,
+                                         double            bl_max,
+                                         int               smoothings,
+                                         double            epsilon,
+                                         cutoff_info_t *   cutoff_info,
+                                         double            subtree_cutoff);
 
 #endif /* CORAX_OPTIMIZE_TREEINFO_H_ */

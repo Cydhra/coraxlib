@@ -49,9 +49,9 @@ dfa_parse(corax_phylip_t *fd, corax_msa_t *msa, char *p, int seqno, int offset)
       if (offset + j >= msa->length)
       {
         corax_set_error(CORAX_ERROR_PHYLIP_LONGSEQ,
-                      "Sequence %d (%.100s) longer than expected",
-                      seqno + 1,
-                      msa->label[seqno]);
+                        "Sequence %d (%.100s) longer than expected",
+                        seqno + 1,
+                        msa->label[seqno]);
         return -1;
       }
       seqdata[j++] = c;
@@ -62,19 +62,19 @@ dfa_parse(corax_phylip_t *fd, corax_msa_t *msa, char *p, int seqno, int offset)
       if (c >= 32)
       {
         corax_set_error(CORAX_ERROR_PHYLIP_ILLEGALCHAR,
-                      "illegal character '%c' "
-                      "on line %ld in the fasta file",
-                      c,
-                      fd->lineno);
+                        "illegal character '%c' "
+                        "on line %ld in the fasta file",
+                        c,
+                        fd->lineno);
       }
       else
       {
         corax_set_error(CORAX_ERROR_PHYLIP_UNPRINTABLECHAR,
-                      "illegal unprintable character "
-                      "%#.2x (hexadecimal) on line %ld "
-                      "in the fasta file",
-                      c,
-                      fd->lineno);
+                        "illegal unprintable character "
+                        "%#.2x (hexadecimal) on line %ld "
+                        "in the fasta file",
+                        c,
+                        fd->lineno);
       }
       return -1;
 
@@ -190,7 +190,7 @@ parse_header(const char *line, int *seq_count, int *seq_len, int format)
   if (!(*seq_count = args_getint(line, &len)))
   {
     corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                  "Invalid number of sequences in header");
+                    "Invalid number of sequences in header");
     return CORAX_FAILURE;
   }
 
@@ -199,7 +199,8 @@ parse_header(const char *line, int *seq_count, int *seq_len, int format)
   /* read sequence length */
   if (!(*seq_len = args_getint(line, &len)))
   {
-    corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX, "Invalid sequence length in header");
+    corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
+                    "Invalid sequence length in header");
     return CORAX_FAILURE;
   }
 
@@ -227,11 +228,11 @@ parse_header(const char *line, int *seq_count, int *seq_len, int format)
 
 static char *parse_oneline_sequence(corax_phylip_t *fd,
                                     corax_msa_t *   msa,
-                                    char *        p,
-                                    int           seqno,
-                                    int           offset,
-                                    int *         aln_len,
-                                    int *         error)
+                                    char *          p,
+                                    int             seqno,
+                                    int             offset,
+                                    int *           aln_len,
+                                    int *           error)
 {
   int j = 0;
 
@@ -251,9 +252,9 @@ static char *parse_oneline_sequence(corax_phylip_t *fd,
       {
         *error = 1;
         corax_set_error(CORAX_ERROR_PHYLIP_NONALIGNED,
-                      "Sequence %d (%.100s) data out of alignment",
-                      seqno + 1,
-                      msa->label[seqno]);
+                        "Sequence %d (%.100s) data out of alignment",
+                        seqno + 1,
+                        msa->label[seqno]);
         return NULL;
       }
     }
@@ -265,7 +266,7 @@ static char *parse_oneline_sequence(corax_phylip_t *fd,
 }
 
 CORAX_EXPORT corax_phylip_t *corax_phylip_open(const char *        filename,
-                                         const unsigned int *map)
+                                               const unsigned int *map)
 {
   int i;
 
@@ -291,7 +292,8 @@ CORAX_EXPORT corax_phylip_t *corax_phylip_open(const char *        filename,
   fd->fp = fopen(filename, "r");
   if (!(fd->fp))
   {
-    corax_set_error(CORAX_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
+    corax_set_error(
+        CORAX_ERROR_FILE_OPEN, "Unable to open file (%s)", filename);
     free(fd);
     return NULL;
   }
@@ -299,7 +301,8 @@ CORAX_EXPORT corax_phylip_t *corax_phylip_open(const char *        filename,
   /* get filesize */
   if (fseek(fd->fp, 0, SEEK_END))
   {
-    corax_set_error(CORAX_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
+    corax_set_error(
+        CORAX_ERROR_FILE_SEEK, "Unable to seek in file (%s)", filename);
     fclose(fd->fp);
     free(fd);
     return NULL;
@@ -393,7 +396,8 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_interleaved(corax_phylip_t *fd)
     msa->sequence[i] = (char *)malloc((size_t)(msa->length + 1) * sizeof(char));
     if (!msa->sequence[i])
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -428,9 +432,9 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_interleaved(corax_phylip_t *fd)
     if (seqno == msa->count)
     {
       corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                    "Found at least %d sequences but expected %d",
-                    seqno + 1,
-                    msa->count);
+                      "Found at least %d sequences but expected %d",
+                      seqno + 1,
+                      msa->count);
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -445,7 +449,8 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_interleaved(corax_phylip_t *fd)
     msa->label[seqno] = (char *)malloc((size_t)(headerlen + 1) * sizeof(char));
     if (!msa->label[seqno])
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -473,9 +478,9 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_interleaved(corax_phylip_t *fd)
   if (seqno != msa->count)
   {
     corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                  "Found %d sequence(s) but expected %d",
-                  seqno,
-                  msa->count);
+                    "Found %d sequence(s) but expected %d",
+                    seqno,
+                    msa->count);
     corax_msa_destroy(msa);
     return NULL;
   }
@@ -520,19 +525,19 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_interleaved(corax_phylip_t *fd)
   if (seqno)
   {
     corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                  "Found %d sequences in block %d but expected %d",
-                  seqno,
-                  block_count,
-                  msa->count);
+                    "Found %d sequences in block %d but expected %d",
+                    seqno,
+                    block_count,
+                    msa->count);
     corax_msa_destroy(msa);
     return NULL;
   }
   if (sumlen != msa->length)
   {
     corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                  "Sequence length is %d but expected %d",
-                  sumlen,
-                  msa->length);
+                    "Sequence length is %d but expected %d",
+                    sumlen,
+                    msa->length);
     corax_msa_destroy(msa);
     return NULL;
   }
@@ -574,7 +579,8 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd)
     msa->sequence[i] = (char *)malloc((size_t)(msa->length + 1) * sizeof(char));
     if (!msa->sequence[i])
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -607,9 +613,9 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd)
     if (seqno == msa->count)
     {
       corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                    "Found at least %d sequences but expected %d",
-                    seqno + 1,
-                    msa->count);
+                      "Found at least %d sequences but expected %d",
+                      seqno + 1,
+                      msa->count);
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -624,7 +630,8 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd)
     msa->label[seqno] = (char *)malloc((size_t)(headerlen + 1) * sizeof(char));
     if (!msa->label[seqno])
     {
-      corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Unable to allocate enough memory.");
       corax_msa_destroy(msa);
       return NULL;
     }
@@ -654,12 +661,13 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd)
 
       if (!p)
       {
-        corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                      "Sequence %d (%.100s) has %d characters but expected %d",
-                      seqno + 1,
-                      msa->label[seqno],
-                      j,
-                      msa->length);
+        corax_set_error(
+            CORAX_ERROR_PHYLIP_SYNTAX,
+            "Sequence %d (%.100s) has %d characters but expected %d",
+            seqno + 1,
+            msa->label[seqno],
+            j,
+            msa->length);
         corax_msa_destroy(msa);
         return NULL;
       }
@@ -671,9 +679,9 @@ CORAX_EXPORT corax_msa_t *corax_phylip_parse_sequential(corax_phylip_t *fd)
   if (seqno != msa->count)
   {
     corax_set_error(CORAX_ERROR_PHYLIP_SYNTAX,
-                  "Found %d sequence(s) but expected %d",
-                  seqno,
-                  msa->count);
+                    "Found %d sequence(s) but expected %d",
+                    seqno,
+                    msa->count);
     corax_msa_destroy(msa);
     return NULL;
   }
@@ -687,14 +695,15 @@ corax_msa_t *corax_phylip_load(const char *fname, corax_bool_t interleaved)
   if (!fd) return NULL;
 
   corax_msa_t *msa = interleaved ? corax_phylip_parse_interleaved(fd)
-                               : corax_phylip_parse_sequential(fd);
+                                 : corax_phylip_parse_sequential(fd);
 
   corax_phylip_close(fd);
 
   return msa;
 }
 
-CORAX_EXPORT int corax_phylip_save(const char *out_fname, const corax_msa_t *msa)
+CORAX_EXPORT int corax_phylip_save(const char *       out_fname,
+                                   const corax_msa_t *msa)
 {
   if (!msa)
   {
@@ -721,7 +730,9 @@ CORAX_EXPORT int corax_phylip_save(const char *out_fname, const corax_msa_t *msa
 
   unsigned long i;
   for (i = 0; i < (unsigned long)msa->count; ++i)
-  { fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]); }
+  {
+    fprintf(f, "%s    %s\n", msa->label[i], msa->sequence[i]);
+  }
 
   fclose(f);
 

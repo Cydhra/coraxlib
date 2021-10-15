@@ -439,14 +439,14 @@ brent_opt_alt(unsigned int xnum,
  * [xmin,xmax]
  */
 CORAX_EXPORT double corax_opt_minimize_brent(double  xmin,
-                                            double  xguess,
-                                            double  xmax,
-                                            double  xtol,
-                                            double *fx,
-                                            double *f2x,
-                                            void *  params,
-                                            double (*target_funk)(void *,
-                                                                  double))
+                                             double  xguess,
+                                             double  xmax,
+                                             double  xtol,
+                                             double *fx,
+                                             double *f2x,
+                                             void *  params,
+                                             double (*target_funk)(void *,
+                                                                   double))
 {
   double optx = xguess;
 

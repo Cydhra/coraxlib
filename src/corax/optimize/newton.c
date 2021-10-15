@@ -51,14 +51,14 @@ CORAX_EXPORT double corax_opt_minimize_newton(
   double xres = xguess;
 
   int retval = corax_opt_minimize_newton_multi(1,
-                                                xmin,
-                                                &xres,
-                                                xmax,
-                                                tolerance,
-                                                max_iters,
-                                                NULL,
-                                                (void *)&wrapper_params,
-                                                newton_wrapper_func);
+                                               xmin,
+                                               &xres,
+                                               xmax,
+                                               tolerance,
+                                               max_iters,
+                                               NULL,
+                                               (void *)&wrapper_params,
+                                               newton_wrapper_func);
 
   if (retval)
     return xres;
@@ -136,7 +136,7 @@ CORAX_EXPORT int corax_opt_minimize_newton_multi(
     if (iter++ > max_iters)
     {
       corax_set_error(CORAX_OPT_ERROR_NEWTON_LIMIT,
-                    "Exceeded maximum number of iterations");
+                      "Exceeded maximum number of iterations");
       error_flag = 1;
       break;
     }
@@ -161,7 +161,7 @@ CORAX_EXPORT int corax_opt_minimize_newton_multi(
             f[i],
             df[i]);
         corax_set_error(CORAX_OPT_ERROR_NEWTON_DERIV,
-                      "Wrong likelihood derivatives");
+                        "Wrong likelihood derivatives");
         error_flag = 1;
         break;
       }

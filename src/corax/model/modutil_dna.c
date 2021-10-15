@@ -227,7 +227,7 @@ CORAX_EXPORT int corax_util_model_exists_dna(const char *model_name)
  * @return model info structure, or NULL if model doesn't exist
  */
 CORAX_EXPORT corax_subst_model_t *
-           corax_util_model_info_dna(const char *model_name)
+             corax_util_model_info_dna(const char *model_name)
 {
   const int model_index = get_model_index(model_name);
   if (model_index >= 0)

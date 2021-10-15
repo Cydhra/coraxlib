@@ -28,12 +28,12 @@ double target_freqs_func(void *p, double *x)
 
   corax_partition_t *partition        = params->partition;
   corax_unode_t *    root             = params->tree;
-  unsigned int *   params_indices   = params->params_indices;
-  unsigned int     params_index     = params->params_index;
-  unsigned int     fixed_freq_state = params->fixed_freq_state;
-  unsigned int     states           = partition->states;
-  double *         freqs            = partition->frequencies[params_index];
-  double           sum_ratios       = 1.0;
+  unsigned int *     params_indices   = params->params_indices;
+  unsigned int       params_index     = params->params_index;
+  unsigned int       fixed_freq_state = params->fixed_freq_state;
+  unsigned int       states           = partition->states;
+  double *           freqs            = partition->frequencies[params_index];
+  double             sum_ratios       = 1.0;
 
   unsigned int i, cur_index;
   double       score;
@@ -61,10 +61,10 @@ double target_freqs_func(void *p, double *x)
   /* compute negative score */
   score = -1
           * corax_opt_compute_lk(partition,
-                                  root,
-                                  params_indices,
-                                  1,  /* update pmatrices */
-                                  1); /* update partials */
+                                 root,
+                                 params_indices,
+                                 1,  /* update pmatrices */
+                                 1); /* update partials */
   return score;
 }
 
@@ -72,13 +72,13 @@ double target_subst_params_func(void *p, double *x)
 {
   struct algo_subst_params *params = (struct algo_subst_params *)p;
 
-  unsigned int     i, j, k;
+  unsigned int       i, j, k;
   corax_partition_t *partition         = params->partition;
   corax_unode_t *    root              = params->tree;
-  unsigned int *   params_indices    = params->params_indices;
-  unsigned int     params_index      = params->params_index;
-  unsigned int     subst_free_params = params->subst_free_params;
-  int *            symmetries        = params->symmetries;
+  unsigned int *     params_indices    = params->params_indices;
+  unsigned int       params_index      = params->params_index;
+  unsigned int       subst_free_params = params->subst_free_params;
+  int *              symmetries        = params->symmetries;
 
   unsigned int states       = partition->states;
   unsigned int subst_params = (states * (states - 1)) / 2;
@@ -109,40 +109,42 @@ double target_subst_params_func(void *p, double *x)
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
 double target_alpha_func(void *p, double x)
 {
   struct default_params *params         = (struct default_params *)p;
-  corax_partition_t *      partition      = params->partition;
-  corax_unode_t *          root           = params->tree;
+  corax_partition_t *    partition      = params->partition;
+  corax_unode_t *        root           = params->tree;
   unsigned int *         params_indices = params->params_indices;
 
   /* update rate categories */
   if (!corax_compute_gamma_cats(
           x, partition->rate_cats, partition->rates, params->gamma_mode))
-  { return CORAX_FAILURE; }
+  {
+    return CORAX_FAILURE;
+  }
 
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
 double target_pinv_func(void *p, double x)
 {
   struct default_params *params         = (struct default_params *)p;
-  corax_partition_t *      partition      = params->partition;
-  corax_unode_t *          root           = params->tree;
+  corax_partition_t *    partition      = params->partition;
+  corax_unode_t *        root           = params->tree;
   unsigned int *         params_indices = params->params_indices;
   unsigned int           i;
 
@@ -153,25 +155,27 @@ double target_pinv_func(void *p, double x)
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
 double target_alpha_pinv_func(void *p, double *x)
 {
   struct default_params *params         = (struct default_params *)p;
-  corax_partition_t *      partition      = params->partition;
-  corax_unode_t *          root           = params->tree;
+  corax_partition_t *    partition      = params->partition;
+  corax_unode_t *        root           = params->tree;
   unsigned int *         params_indices = params->params_indices;
   unsigned int           i;
 
   /* update rate categories */
   if (!corax_compute_gamma_cats(
           x[0], partition->rate_cats, partition->rates, params->gamma_mode))
-  { return CORAX_FAILURE; }
+  {
+    return CORAX_FAILURE;
+  }
 
   /* update proportion of invariant sites */
   for (i = 0; i < partition->rate_cats; ++i)
@@ -180,18 +184,18 @@ double target_alpha_pinv_func(void *p, double *x)
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
 double target_rates_func(void *p, double *x)
 {
   struct rate_weights_params *params         = (struct rate_weights_params *)p;
-  corax_partition_t *           partition      = params->partition;
-  corax_unode_t *               root           = params->tree;
+  corax_partition_t *         partition      = params->partition;
+  corax_unode_t *             root           = params->tree;
   unsigned int *              params_indices = params->params_indices;
 
   /* update rate categories */
@@ -200,10 +204,10 @@ double target_rates_func(void *p, double *x)
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
@@ -213,10 +217,10 @@ double target_weights_func(void *p, double *x)
 
   corax_partition_t *partition          = params->partition;
   corax_unode_t *    root               = params->tree;
-  unsigned int *   params_indices     = params->params_indices;
-  unsigned int     fixed_weight_state = params->fixed_weight_state;
-  unsigned int     n_weights          = partition->rate_cats;
-  double           sum_ratios         = 1.0;
+  unsigned int *     params_indices     = params->params_indices;
+  unsigned int       fixed_weight_state = params->fixed_weight_state;
+  unsigned int       n_weights          = partition->rate_cats;
+  double             sum_ratios         = 1.0;
 
   double *     weights = partition->rate_weights;
   unsigned int i, cur_weight;
@@ -236,10 +240,10 @@ double target_weights_func(void *p, double *x)
   /* compute negative score */
   score = -1
           * corax_opt_compute_lk(partition,
-                                  root,
-                                  params_indices,
-                                  0,  /* update pmatrices */
-                                  0); /* update partials */
+                                 root,
+                                 params_indices,
+                                 0,  /* update pmatrices */
+                                 0); /* update partials */
 
   return score;
 }
@@ -247,8 +251,8 @@ double target_weights_func(void *p, double *x)
 double target_brlen_scaler_func(void *p, double x)
 {
   struct brlen_scaler_params *params         = (struct brlen_scaler_params *)p;
-  corax_partition_t *           partition      = params->partition;
-  corax_unode_t *               root           = params->tree;
+  corax_partition_t *         partition      = params->partition;
+  corax_unode_t *             root           = params->tree;
   unsigned int *              params_indices = params->params_indices;
 
   /* scale branches according to the new factor */
@@ -260,10 +264,10 @@ double target_brlen_scaler_func(void *p, double x)
   /* compute negative score */
   double score = -1
                  * corax_opt_compute_lk(partition,
-                                         root,
-                                         params_indices,
-                                         1,  /* update pmatrices */
-                                         1); /* update partials */
+                                        root,
+                                        params_indices,
+                                        1,  /* update pmatrices */
+                                        1); /* update partials */
   return score;
 }
 
@@ -272,7 +276,7 @@ target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged)
 {
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
-  corax_treeinfo_t *   treeinfo          = params->treeinfo;
+  corax_treeinfo_t *    treeinfo          = params->treeinfo;
   int                   param_to_optimize = params->param_to_optimize;
   unsigned int          num_parts         = params->num_opt_partitions;
   treeinfo_param_set_cb param_setter      = params->param_set_cb;
@@ -342,9 +346,9 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
   corax_treeinfo_t *treeinfo           = params->treeinfo;
-  unsigned int       num_parts          = params->num_opt_partitions;
-  unsigned int *     fixed_var_index    = params->fixed_var_index;
-  int                params_to_optimize = params->param_to_optimize;
+  unsigned int      num_parts          = params->num_opt_partitions;
+  unsigned int *    fixed_var_index    = params->fixed_var_index;
+  int               params_to_optimize = params->param_to_optimize;
 
   double score = -INFINITY;
 
@@ -382,9 +386,9 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
         /* update GAMMA rate categories */
         treeinfo->alphas[i] = x[part][0];
         if (!corax_compute_gamma_cats(treeinfo->alphas[i],
-                                    partition->rate_cats,
-                                    partition->rates,
-                                    params->treeinfo->gamma_mode[i]))
+                                      partition->rate_cats,
+                                      partition->rates,
+                                      params->treeinfo->gamma_mode[i]))
         {
           assert(corax_errno);
           return CORAX_FAILURE;
@@ -420,7 +424,9 @@ target_func_multidim_treeinfo(void *p, double **x, double *fx, int *converged)
         cur_weight = 0;
         for (i = 0; i < (n_weights); ++i)
           if (i != fixed_weight_state)
-          { weights[i] = x[part][cur_weight++] / sum_ratios; }
+          {
+            weights[i] = x[part][cur_weight++] / sum_ratios;
+          }
         weights[fixed_weight_state] = 1.0 / sum_ratios;
         break;
       }
@@ -467,9 +473,9 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
   corax_treeinfo_t *treeinfo          = params->treeinfo;
-  unsigned int       num_parts         = params->num_opt_partitions;
-  unsigned int       params_index      = params->params_index;
-  unsigned int *     subst_free_params = params->num_free_params;
+  unsigned int      num_parts         = params->num_opt_partitions;
+  unsigned int      params_index      = params->params_index;
+  unsigned int *    subst_free_params = params->num_free_params;
 
   double score = -INFINITY;
 
@@ -518,7 +524,9 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
           for (j = 0; j < subst_params; j++)
           {
             if ((unsigned int)symmetries[j] == l)
-            { subst_rates[j] = next_value; }
+            {
+              subst_rates[j] = next_value;
+            }
           }
         }
       }
@@ -566,9 +574,9 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   struct treeinfo_opt_params *params = (struct treeinfo_opt_params *)p;
 
   corax_treeinfo_t *treeinfo         = params->treeinfo;
-  unsigned int       num_parts        = params->num_opt_partitions;
-  unsigned int       params_index     = params->params_index;
-  unsigned int *     fixed_freq_state = params->fixed_var_index;
+  unsigned int      num_parts        = params->num_opt_partitions;
+  unsigned int      params_index     = params->params_index;
+  unsigned int *    fixed_freq_state = params->fixed_var_index;
 
   double score = -INFINITY;
 

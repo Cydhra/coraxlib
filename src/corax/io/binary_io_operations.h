@@ -27,7 +27,7 @@ int bin_fread(void *data, size_t size, size_t count, FILE *file);
 
 int bin_fwrite(void *data, size_t size, size_t count, FILE *file);
 
-int binary_block_header_apply(FILE *              bin_file,
+int binary_block_header_apply(FILE *                bin_file,
                               corax_block_header_t *block_header,
                               int (*bin_func)(void *, size_t, size_t, FILE *));
 
@@ -35,39 +35,39 @@ int binary_update_header(FILE *bin_file, corax_block_header_t *header);
 
 long int binary_get_offset(FILE *bin_file, int block_id);
 
-int binary_partition_apply(FILE *           bin_file,
+int binary_partition_apply(FILE *             bin_file,
                            corax_partition_t *partition,
-                           unsigned int     attributes,
+                           unsigned int       attributes,
                            int (*bin_func)(void *, size_t, size_t, FILE *));
 
 int binary_partition_body_apply(
-    FILE *           bin_file,
+    FILE *             bin_file,
     corax_partition_t *partition,
-    unsigned int     attributes,
+    unsigned int       attributes,
     int (*bin_func)(void *, size_t, size_t, FILE *));
 
 int binary_partition_desc_apply(
-    FILE *           bin_file,
+    FILE *             bin_file,
     corax_partition_t *partition,
-    unsigned int     attributes,
+    unsigned int       attributes,
     int (*bin_func)(void *, size_t, size_t, FILE *));
 
-int binary_repeats_apply(FILE *           bin_file,
+int binary_repeats_apply(FILE *             bin_file,
                          corax_partition_t *partition,
-                         unsigned int     attributes,
-                         size_t           nodes,
+                         unsigned int       attributes,
+                         size_t             nodes,
                          int (*bin_func)(void *, size_t, size_t, FILE *));
 
-int binary_clv_apply(FILE *           bin_file,
+int binary_clv_apply(FILE *             bin_file,
                      corax_partition_t *partition,
-                     unsigned int     clv_index,
-                     unsigned int     attributes,
-                     size_t           clv_size,
+                     unsigned int       clv_index,
+                     unsigned int       attributes,
+                     size_t             clv_size,
                      int (*bin_func)(void *, size_t, size_t, FILE *));
 
-int binary_node_apply(FILE *       bin_file,
+int binary_node_apply(FILE *         bin_file,
                       corax_unode_t *node,
-                      int          write,
+                      int            write,
                       int (*bin_func)(void *, size_t, size_t, FILE *));
 
 void file_io_error(FILE *bin_file, long int setp, const char *msg);

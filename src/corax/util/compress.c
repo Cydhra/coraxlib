@@ -37,10 +37,10 @@ static void vecswap(int i, int j, int n, char **x, unsigned int *sort_backmap)
   }
 }
 
-static void ssort1(char **           x,
-                   int               n,
-                   int               depth,
-                   unsigned int *    sort_backmap,
+static void ssort1(char **             x,
+                   int                 n,
+                   int                 depth,
+                   unsigned int *      sort_backmap,
                    corax_random_state *rstate)
 {
   int a, b, c, d, r, v;
@@ -105,7 +105,7 @@ static void ssort1(char **           x,
 
 static void remap_range(const corax_state_t *map, unsigned char *charmap)
 {
-  corax_state_t   oldmap[CORAX_ASCII_SIZE];
+  corax_state_t oldmap[CORAX_ASCII_SIZE];
   unsigned int  i, j;
   unsigned char k = 1;
 
@@ -130,7 +130,7 @@ static void remap_range(const corax_state_t *map, unsigned char *charmap)
 
 static corax_state_t findmax(const corax_state_t *map)
 {
-  int         i;
+  int           i;
   corax_state_t max = 0;
 
   for (i = 0; i < CORAX_ASCII_SIZE; ++i)
@@ -157,11 +157,12 @@ static int encode(char **sequence, const unsigned char *map, int count, int len)
       c = map[(int)(*p)];
       if (!c)
       {
-        corax_set_error(CORAX_ERROR_TIPDATA_ILLEGALSTATE,
-                      "Cannot encode character %c at sequence %d position %d.",
-                      *p,
-                      i + 1,
-                      len - j);
+        corax_set_error(
+            CORAX_ERROR_TIPDATA_ILLEGALSTATE,
+            "Cannot encode character %c at sequence %d position %d.",
+            *p,
+            i + 1,
+            len - j);
         return CORAX_FAILURE;
       }
       *p = c;
@@ -172,17 +173,17 @@ static int encode(char **sequence, const unsigned char *map, int count, int len)
   return CORAX_SUCCESS;
 }
 
-static unsigned int *compress_site_patterns(char **            sequence,
+static unsigned int *compress_site_patterns(char **              sequence,
                                             const corax_state_t *map,
-                                            int                count,
-                                            int *              length,
-                                            unsigned int *     site_pattern_map)
+                                            int                  count,
+                                            int *                length,
+                                            unsigned int *site_pattern_map)
 {
-  int               i, j;
-  char *            memptr;
-  char **           column;
-  unsigned int *    weight;
-  unsigned int *    sort_backmap;
+  int                 i, j;
+  char *              memptr;
+  char **             column;
+  unsigned int *      weight;
+  unsigned int *      sort_backmap;
   corax_random_state *rnd_state;
 
   unsigned char charmap[CORAX_ASCII_SIZE];
@@ -192,7 +193,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
   if (!count)
   {
     corax_set_error(CORAX_ERROR_MSA_EMPTY,
-                  "Number of sequences must be greater than 0.");
+                    "Number of sequences must be greater than 0.");
     return NULL;
   }
 
@@ -206,7 +207,8 @@ static unsigned int *compress_site_patterns(char **            sequence,
   /* a zero can never be used as a state */
   if (map[0])
   {
-    corax_set_error(CORAX_ERROR_MSA_MAP_INVALID, "'0' cannot be used as a state.");
+    corax_set_error(CORAX_ERROR_MSA_MAP_INVALID,
+                    "'0' cannot be used as a state.");
     return NULL;
   }
 
@@ -243,7 +245,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
     if (!sort_backmap)
     {
       corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                    "Cannot allocate space for sort backmap.");
+                      "Cannot allocate space for sort backmap.");
       return NULL;
     }
     for (i = 0; i < *length; ++i) sort_backmap[i] = i;
@@ -256,7 +258,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
   if (!column)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for matrix columns.");
+                    "Cannot allocate space for matrix columns.");
     free(sort_backmap);
     return NULL;
   }
@@ -267,7 +269,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
   if (!memptr)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for matrix data.");
+                    "Cannot allocate space for matrix data.");
     free(sort_backmap);
     free(column);
     return NULL;
@@ -281,7 +283,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
   if (!weight)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for storing site weights.");
+                    "Cannot allocate space for storing site weights.");
     free(sort_backmap);
     free(column);
     free(memptr);
@@ -300,7 +302,7 @@ static unsigned int *compress_site_patterns(char **            sequence,
   if (!rnd_state)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate space for storing RNG state.");
+                    "Cannot allocate space for storing RNG state.");
     free(weight);
     free(sort_backmap);
     free(column);
@@ -371,18 +373,16 @@ static unsigned int *compress_site_patterns(char **            sequence,
   return weight;
 }
 
-CORAX_EXPORT unsigned int *corax_compress_site_patterns(char **            sequence,
-                                                    const corax_state_t *map,
-                                                    int                count,
-                                                    int *              length)
+CORAX_EXPORT unsigned int *corax_compress_site_patterns(
+    char **sequence, const corax_state_t *map, int count, int *length)
 {
   return compress_site_patterns(sequence, map, count, length, NULL);
 }
 
 CORAX_EXPORT
 unsigned int *corax_compress_site_patterns_msa(corax_msa_t *        msa,
-                                             const corax_state_t *map,
-                                             unsigned int *site_pattern_map)
+                                               const corax_state_t *map,
+                                               unsigned int *site_pattern_map)
 {
   return compress_site_patterns(
       msa->sequence, map, msa->count, &msa->length, site_pattern_map);

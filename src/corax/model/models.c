@@ -283,7 +283,7 @@ CORAX_EXPORT unsigned int corax_subst_rate_count(unsigned int states)
 }
 
 CORAX_EXPORT int corax_update_eigen(corax_partition_t *partition,
-                                unsigned int     params_index)
+                                    unsigned int       params_index)
 {
   unsigned int i, j;
   double *     e, *d;
@@ -398,11 +398,11 @@ CORAX_EXPORT int corax_update_eigen(corax_partition_t *partition,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t *   partition,
-                                        const unsigned int *params_indices,
-                                        const unsigned int *matrix_indices,
-                                        const double *      branch_lengths,
-                                        unsigned int        count)
+CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t * partition,
+                                            const unsigned int *params_indices,
+                                            const unsigned int *matrix_indices,
+                                            const double *      branch_lengths,
+                                            unsigned int        count)
 {
   unsigned int n;
 
@@ -411,28 +411,29 @@ CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t *   partition,
   {
     if (!partition->eigen_decomp_valid[params_indices[n]])
     {
-      if (!corax_update_eigen(partition, params_indices[n])) return CORAX_FAILURE;
+      if (!corax_update_eigen(partition, params_indices[n]))
+        return CORAX_FAILURE;
     }
   }
 
   return corax_core_update_pmatrix(partition->pmatrix,
-                                 partition->states,
-                                 partition->rate_cats,
-                                 partition->rates,
-                                 branch_lengths,
-                                 matrix_indices,
-                                 params_indices,
-                                 partition->prop_invar,
-                                 partition->eigenvals,
-                                 partition->eigenvecs,
-                                 partition->inv_eigenvecs,
-                                 count,
-                                 partition->attributes);
+                                   partition->states,
+                                   partition->rate_cats,
+                                   partition->rates,
+                                   branch_lengths,
+                                   matrix_indices,
+                                   params_indices,
+                                   partition->prop_invar,
+                                   partition->eigenvals,
+                                   partition->eigenvecs,
+                                   partition->inv_eigenvecs,
+                                   count,
+                                   partition->attributes);
 }
 
 CORAX_EXPORT void corax_set_frequencies(corax_partition_t *partition,
-                                    unsigned int     freqs_index,
-                                    const double *   frequencies)
+                                        unsigned int       freqs_index,
+                                        const double *     frequencies)
 {
   unsigned int i;
   double       sum = 0.;
@@ -455,13 +456,13 @@ CORAX_EXPORT void corax_set_frequencies(corax_partition_t *partition,
 }
 
 CORAX_EXPORT void corax_set_category_rates(corax_partition_t *partition,
-                                       const double *   rates)
+                                           const double *     rates)
 {
   memcpy(partition->rates, rates, partition->rate_cats * sizeof(double));
 }
 
 CORAX_EXPORT void corax_set_category_weights(corax_partition_t *partition,
-                                         const double *   rate_weights)
+                                             const double *     rate_weights)
 {
   memcpy(partition->rate_weights,
          rate_weights,
@@ -469,8 +470,8 @@ CORAX_EXPORT void corax_set_category_weights(corax_partition_t *partition,
 }
 
 CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
-                                     unsigned int     params_index,
-                                     const double *   params)
+                                         unsigned int       params_index,
+                                         const double *     params)
 {
   unsigned int count = corax_subst_rate_count(partition->states);
 
@@ -480,9 +481,8 @@ CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
   /* NOTE: For protein models PLL/RAxML do a rate scaling by 10.0/max_rate */
 }
 
-CORAX_EXPORT int corax_update_invariant_sites_proportion(corax_partition_t *partition,
-                                                     unsigned int params_index,
-                                                     double       prop_invar)
+CORAX_EXPORT int corax_update_invariant_sites_proportion(
+    corax_partition_t *partition, unsigned int params_index, double prop_invar)
 {
 
   /* check that there is no ascertainment bias correction */
@@ -498,15 +498,16 @@ CORAX_EXPORT int corax_update_invariant_sites_proportion(corax_partition_t *part
   if (prop_invar < 0 || prop_invar >= 1)
   {
     corax_set_error(CORAX_ERROR_INVAR_PROPORTION,
-                  "Invalid proportion of invariant sites (%f)",
-                  prop_invar);
+                    "Invalid proportion of invariant sites (%f)",
+                    prop_invar);
     return CORAX_FAILURE;
   }
 
   if (params_index > partition->rate_matrices)
   {
-    corax_set_error(
-        CORAX_ERROR_INVAR_PARAMINDEX, "Invalid params index (%u)", params_index);
+    corax_set_error(CORAX_ERROR_INVAR_PARAMINDEX,
+                    "Invalid params index (%u)",
+                    params_index);
     return CORAX_FAILURE;
   }
 
@@ -524,18 +525,19 @@ CORAX_EXPORT int corax_update_invariant_sites_proportion(corax_partition_t *part
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT unsigned int corax_count_invariant_sites(corax_partition_t *partition,
-                                                  unsigned int *state_inv_count)
+CORAX_EXPORT unsigned int
+corax_count_invariant_sites(corax_partition_t *partition,
+                            unsigned int *     state_inv_count)
 {
-  unsigned int i, j, k;
-  unsigned int invariant_count = 0;
-  unsigned int tips            = partition->tips;
-  unsigned int sites           = partition->sites;
-  unsigned int states          = partition->states;
-  corax_state_t  gap_state       = 0;
-  corax_state_t  cur_state;
-  int *        invariant = partition->invariant;
-  double *     tipclv;
+  unsigned int  i, j, k;
+  unsigned int  invariant_count = 0;
+  unsigned int  tips            = partition->tips;
+  unsigned int  sites           = partition->sites;
+  unsigned int  states          = partition->states;
+  corax_state_t gap_state       = 0;
+  corax_state_t cur_state;
+  int *         invariant = partition->invariant;
+  double *      tipclv;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -598,7 +600,7 @@ CORAX_EXPORT unsigned int corax_count_invariant_sites(corax_partition_t *partiti
       {
         unsigned int clv_shift = j * span_padded;
         tipclv                 = partition->clv[0] + clv_shift;
-        corax_state_t state      = gap_state;
+        corax_state_t state    = gap_state;
         for (i = 0; i < tips; ++i)
         {
           tipclv    = partition->clv[i] + clv_shift;
@@ -623,16 +625,16 @@ CORAX_EXPORT unsigned int corax_count_invariant_sites(corax_partition_t *partiti
 
 CORAX_EXPORT int corax_update_invariant_sites(corax_partition_t *partition)
 {
-  unsigned int i, j, k;
+  unsigned int   i, j, k;
   corax_state_t  state;
-  unsigned int states        = partition->states;
-  unsigned int states_padded = partition->states_padded;
-  unsigned int sites         = partition->sites;
-  unsigned int tips          = partition->tips;
-  unsigned int rate_cats     = partition->rate_cats;
+  unsigned int   states        = partition->states;
+  unsigned int   states_padded = partition->states_padded;
+  unsigned int   sites         = partition->sites;
+  unsigned int   tips          = partition->tips;
+  unsigned int   rate_cats     = partition->rate_cats;
   corax_state_t  gap_state     = 0;
   corax_state_t *invariant;
-  double *     tipclv;
+  double *       tipclv;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -653,7 +655,7 @@ CORAX_EXPORT int corax_update_invariant_sites(corax_partition_t *partition)
   if (!invariant || !partition->invariant)
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
-                  "Cannot allocate charmap for invariant sites array.");
+                    "Cannot allocate charmap for invariant sites array.");
     return CORAX_FAILURE;
   }
 
@@ -698,7 +700,10 @@ CORAX_EXPORT int corax_update_invariant_sites(corax_partition_t *partition)
         unsigned int site = site_id ? site_id[j] : j;
         tipclv            = partition->clv[i] + span_padded * site;
         state             = 0;
-        for (k = 0; k < states; ++k) { state |= ((corax_state_t)tipclv[k] << k); }
+        for (k = 0; k < states; ++k)
+        {
+          state |= ((corax_state_t)tipclv[k] << k);
+        }
         invariant[j] &= state;
       }
     }
