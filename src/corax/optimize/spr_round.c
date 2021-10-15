@@ -1344,7 +1344,7 @@ error_exit:
   algo_bestnode_list_destroy(bestnode_list);
   algo_rollback_list_destroy(rollback_list);
 
-  /* make sure libpll error code is set and exit */
+  /* make sure coraxlib error code is set and exit */
   assert(corax_errno);
   return 0;
 }

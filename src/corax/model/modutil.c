@@ -322,7 +322,7 @@ corax_util_model_mixture_destroy(corax_mixture_model_t *mixture)
 }
 
 /**
- * @brief Creates a custom libpll character map (ASCII code -> bit-encoded
+ * @brief Creates a custom coraxlib character map (ASCII code -> bit-encoded
  * state)
  *
  * @param states number of states
@@ -401,7 +401,7 @@ CORAX_EXPORT corax_state_t *corax_util_charmap_create(unsigned int states,
 }
 
 /**
- * @brief Parses a custom libpll character map (ASCII code -> bit-encoded state)
+ * @brief Parses a custom coraxlib character map (ASCII code -> bit-encoded state)
  *        from a file
  *
  * @param states number of states

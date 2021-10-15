@@ -49,7 +49,7 @@
  *	@(#)random.c	5.5 (Berkeley) 7/6/88
  * It was reworked for the GNU C Library by Roland McGrath.
  * Rewritten to be reentrant by Ulrich Drepper, 1995
- * Modified for libpll by Tomas Flouri, 2017
+ * Modified for coraxlib (libpll) by Tomas Flouri, 2017
  */
 
 #include "corax/corax.h"

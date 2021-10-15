@@ -787,7 +787,7 @@ CORAX_EXPORT void corax_treeinfo_destroy(corax_treeinfo_t *treeinfo)
   free(treeinfo->operations);
   free(treeinfo->subnodes);
 
-  /* destroy all structures allocated for the concrete PLL partition instance */
+  /*destroy all structures allocated for the concrete CORAX partition instance*/
   unsigned int p;
   for (p = 0; p < treeinfo->partition_count; ++p)
   {

@@ -24,7 +24,7 @@
 
 #include "corax/corax_common.h"
 
-/* error codes for UTIL libpll module (5001-6000)*/
+/* error codes for UTIL coraxlib module (5001-6000)*/
 #define CORAX_UTIL_ERROR_MODEL_UNKNOWN 5001
 #define CORAX_UTIL_ERROR_MODEL_INVALID_DEF 5002
 #define CORAX_UTIL_ERROR_MODEL_INVALID_MAPSTRING 5003

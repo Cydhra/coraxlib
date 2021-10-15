@@ -112,7 +112,7 @@
 
 /* Structure with information necessary for evaluating the likelihood */
 
-/* Custom parameters structures provided by PLL for the
+/* Custom parameters structures provided by CORAX for the
  * high level optimization functions (L-BFGS-B + Brent). */
 typedef struct
 {

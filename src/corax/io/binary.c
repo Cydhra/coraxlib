@@ -22,7 +22,7 @@
 /**
  * @file corax_binary.c
  *
- * @brief Binary I/O operations for PLL
+ * @brief Binary I/O operations for coraxlib
  *
  * @author Diego Darriba
  * @author Pierre Barbera

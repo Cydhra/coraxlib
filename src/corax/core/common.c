@@ -6,7 +6,7 @@ __thread int  corax_errno;
 __thread char corax_errmsg[200] = {0};
 
 /**
- * @brief Set pll error (corax_errno and corax_errmsg)
+ * @brief Set corax error (corax_errno and corax_errmsg)
  *
  * @param[in] errno the error code
  * @param[in] errmsg_fmt formatted error message
@@ -23,7 +23,7 @@ corax_set_error(int _errno, const char *errmsg_fmt, ...)
 }
 
 /**
- * Reset pll error and messages.
+ * Reset corax error and messages.
  *
  * Call this function within operations whose error status depends on
  * `corax_errno` such that no error leaks in from previous operations.

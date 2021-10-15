@@ -519,7 +519,7 @@ const double corax_aa_rates_mtmam[190] =
 
 /*
  * WARNING:
- *    This matrix is different in PhyML and PAML/PLL
+ *    This matrix is different in PhyML and PAML/CORAX
  */
 const double corax_aa_rates_mtart[190] =
  {
@@ -1070,20 +1070,21 @@ const double corax_aa_rates_lg4x[4][190] =
  *    sum up to one because of rounding errors.
  *    The discrepancy is typically very small (+-.000001)
  *
- *    In RAxML/ExaML and earlier libpll versions, this problem has been solved
- *    by adjusting the last frequency (e.g. for LG: .069146 -> .069147)
- *    However, this lead to (small) differences in likelihood scores with
- *    tools such as PhyML which use the original published frequencies.
+ *    In RAxML/ExaML and earlier corax(libpll) versions, this problem has been
+ *    solved by adjusting the last frequency (e.g. for LG: .069146 -> .069147)
+ *    However, this lead to (small) differences in likelihood scores with tools
+ *    such as PhyML which use the original published frequencies.
  *
  *    Therefore, from now on we will set the original frequencies here,
  *    and re-normalize them later on in corax_set_frequencies() function.
  *    (cf. https://github.com/amkozlov/raxml-ng/issues/46)
  *
  * IMPORTANT:
- *    The new solution could lead to slight likelihood score differences compared
- *    to earlier libpll and RAxML/ExaML/RAxML-NG versions. Furthermore, if frequencies
- *    are set directly (i.e. without calling corax_set_frequencies()), it is user's
- *    responsibility to perform normalization as needed.
+ *    The new solution could lead to slight likelihood score differences
+ *    compared to earlier coraxlib (libpll) and RAxML/ExaML/RAxML-NG versions.
+ *    Furthermore, if frequencies are set directly (i.e. without calling
+ *    corax_set_frequencies()), it is user's responsibility to perform
+ *    normalization as needed.
  *
  *    (Alexey Kozlov  10.10.2018)
  */

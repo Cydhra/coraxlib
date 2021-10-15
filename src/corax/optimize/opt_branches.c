@@ -781,8 +781,8 @@ static int recomp_iterative_multi(corax_newton_tree_params_multi_t *params,
  * iteration. In general, `keep_update` provides better fitness, but the results
  * may not be reproducible if several branches are optimized in parallel.
  *
- * @param[in,out]  partition         the PLL partition structure
- * @param[in,out]  tree              the PLL unrooted tree structure
+ * @param[in,out]  partition         the coraxlib partition structure
+ * @param[in,out]  tree              the coraxlib unrooted tree structure
  * @param  params_indices    the indices of the parameter sets
  * @param  branch_length_min lower bound for branch lengths
  * @param  branch_length_max upper bound for branch lengths
