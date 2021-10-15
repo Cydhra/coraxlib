@@ -2,7 +2,7 @@ Tutorial: How to run an SPR round on a tree.
 ===============================================================================
 
 1. Read a MSA in
-2. Set up the `pll_partition_t`.
+2. Set up the `corax_partition_t`.
     1. (Optional) compress the site patterns
     2. Create partition with appropriate variables.
     3. Set the tip states.
@@ -12,7 +12,7 @@ Tutorial: How to run an SPR round on a tree.
         3. `p_inv`
         4. Rate categories, and associated rates
 3. Make an initial tree
-4. Make a `pllmod_treeinfo_t`
+4. Make a `corax_treeinfo_t`
 5. Initialize the partitions for the treeinfo struct
 
 ## 1: Read MSA
@@ -20,13 +20,13 @@ Tutorial: How to run an SPR round on a tree.
 There is a data structure to hold an MSA. It has the following definition
 
 ```
-struct pll_msa_s{
+struct corax_msa_s{
     int count;
     int length;
 
     char** sequence;
     char** label;
-}pll_msa_t;
+}corax_msa_t;
 ```
 
 Where the parameters are as follows:
@@ -37,24 +37,24 @@ Where the parameters are as follows:
 - `sequence`: The sequences. Not null terminated.
 - `label`: sequence label. Is null terminated.
 
-To produce this structure, `pll_phylip_parse_interleaved`, `pll_phylip_parse_sequential` or `pll_fasta_load` should be
+To produce this structure, `corax_phylip_parse_interleaved`, `corax_phylip_parse_sequential` or `corax_fasta_load` should be
 used. These functions all take a filename and handle the parsing for you.
 
 ## 2: Create a Partition
 
-A partition is a set of sites that all evolve using the same model. This means that the partition structure in `libpll`
+A partition is a set of sites that all evolve using the same model. This means that the partition structure in `coraxlib`
 contains all the parameters _except_ for the tree and branch lengths. For many analyses, a single partition will contain
 all the sites in the alignment, but in others multiple will be required. Therefore, it is always important to write
 whatever tool to support multiple partitions.
 
-To accomplish steps 2.1 to 2.4, I would recommend reading [pll_partition_t](pll_partition_t.md).
+To accomplish steps 2.1 to 2.4, I would recommend reading [corax_partition_t](corax_partition_t.md).
 
 ### 3: Make an initial tree
 
 There are two easy methods to create an initial tree. The first is to make a random tree using
 
 ```
-pll_utree_t* pllmod_utree_create_random(unsigned int taxa_count,
+corax_utree_t* coraxmod_utree_create_random(unsigned int taxa_count,
                            const char* const* names,
                            unsigned int random_seed);
 ```
@@ -71,12 +71,12 @@ tree.
 The other method is to use a parsimony tree. This can be created using
 
 ```
-pll_utree_t* pllmod_utree_create_parsimony(unsigned int taxon_count,
+corax_utree_t* coraxmod_utree_create_parsimony(unsigned int taxon_count,
                                            unsigned int seq_length,
                                            char* const* names,
                                            char* const* sequences,
                                            const unsigned int* site_weights,
-                                           const pll_state_t* map,
+                                           const corax_state_t* map,
                                            unsigned int states,
                                            unsigned int attributes,
                                            unsigned int random_seed,
@@ -94,9 +94,9 @@ This will create a tree under a parsimony method. The arguments are
 - `site_weights`: An array that is `seq_length` long of site weights. Can be
     `nullptr` which means that all sites have equal weight.
 - `map`: A predefined map from `char` to `int`. The choices are:
-    - `pll_map_bin`: For an alphabet of ${0,1}$.
-    - `pll_map_nt`: For nucleotide data.
-    - `pll_map_aa`: For amino acid data.
+    - `corax_map_bin`: For an alphabet of ${0,1}$.
+    - `corax_map_nt`: For nucleotide data.
+    - `corax_map_aa`: For amino acid data.
 - `states`: Number of states in the data.
 - `attributes`: Exactly one of the following.
     - `PLL_ATTRIB_ARCH_CPU`: No special extensions,
@@ -108,10 +108,10 @@ This will create a tree under a parsimony method. The arguments are
 - `random_seed`: Seed to pass to the random number generator
 - `score`: output parameter that contains the score of the tree.
 
-### 4: Make a `pllmod_treeinfo_t`
+### 4: Make a `corax_treeinfo_t`
 
-Please see the relevant section in [pllmod_treeinfo_t](pllmod_treeinfo_t.md)
+Please see the relevant section in [corax_treeinfo_t](corax_treeinfo_t.md)
 
 ### 5: Initialize the partitions for the treeinfo struct
 
-Please see the relevant section in [pllmod_treeinfo_t](pllmod_treeinfo_t.md)
+Please see the relevant section in [corax_treeinfo_t](corax_treeinfo_t.md)

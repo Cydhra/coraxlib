@@ -9,7 +9,7 @@ Structure
 ================================================================================
 
 ```
-typedef struct pll_partition
+typedef struct corax_partition
 {
   unsigned int tips;
   unsigned int clv_buffers;
@@ -48,15 +48,15 @@ typedef struct pll_partition
   unsigned char ** tipchars;
   unsigned char * charmap;
   double * ttlookup;
-  pll_state_t * tipmap;
+  corax_state_t * tipmap;
 
   /* ascertainment bias correction */
   int asc_bias_alloc;
   int asc_additional_sites; // partition->asc_bias_alloc ? states : 0
 
   /* site repeats */
-  struct pll_repeats *repeats;
-} pll_partition_t;
+  struct corax_repeats *repeats;
+} corax_partition_t;
 ```
 
 This is generally organized into the following sections:
@@ -80,15 +80,15 @@ This is generally organized into the following sections:
   number of edges
 - `scale_buffers`: The number of scale buffers.
 
-None of these parameters are calculated in any way. Instead, they are specified in the `pll_partition_create` function.
+None of these parameters are calculated in any way. Instead, they are specified in the `corax_partition_create` function.
 This means that even non-binary trees can be (ostensibly) represented by this structure.
 
 ## Memory Alignment State Variables
 
 - `alignment`: One of three constants depending on what architecture is being used. At the time of writing these are:
-    - `PLL_ALIGNMENT_CPU`
-    - `PLL_ALIGNMENT_SSE`
-    - `PLL_ALIGNMENT_AVX`
+    - `CORAX_ALIGNMENT_CPU`
+    - `CORAX_ALIGNMENT_SSE`
+    - `CORAX_ALIGNMENT_AVX`
 - `states_padded`: How many states are used, after padding. This is also the size an individual CLV buffer.
 
 ## Attributes
@@ -96,28 +96,28 @@ This means that even non-binary trees can be (ostensibly) represented by this st
 The `attributes` field is a bitset that has the is combination of the following flags.
 
 - Architecture attributes: Only one may be set
-  - `PLL_ATTRIB_ARCH_CPU`
-  - `PLL_ATTRIB_ARCH_SSE`
-  - `PLL_ATTRIB_ARCH_AVX`
-  - `PLL_ATTRIB_ARCH_AVX2`
+  - `CORAX_ATTRIB_ARCH_CPU`
+  - `CORAX_ATTRIB_ARCH_SSE`
+  - `CORAX_ATTRIB_ARCH_AVX`
+  - `CORAX_ATTRIB_ARCH_AVX2`
 - Ascertainment Bias: Only one of the "types" may be set, and if they are,
-  `PLL_ATTRIB_AB_FLAG` must also be set
-  - `PLL_ATTRIB_AB_LEWIS`
-  - `PLL_ATTRIB_AB_FELSENSTEIN`
-  - `PLL_ATTRIB_AB_STAMATAKIS`
-  - `PLL_ATTRIB_AB_FLAG`
+  `CORAX_ATTRIB_AB_FLAG` must also be set
+  - `CORAX_ATTRIB_AB_LEWIS`
+  - `CORAX_ATTRIB_AB_FELSENSTEIN`
+  - `CORAX_ATTRIB_AB_STAMATAKIS`
+  - `CORAX_ATTRIB_AB_FLAG`
 - Scalers
-  - `PLL_ATTRIB_RATE_SCALERS`
+  - `CORAX_ATTRIB_RATE_SCALERS`
 - Optimizations: Only one may be set
-  - `PLL_ATTRIB_PATTERN_TIP`
-  - `PLL_ATTRIB_SITE_REPEATS`
+  - `CORAX_ATTRIB_PATTERN_TIP`
+  - `CORAX_ATTRIB_SITE_REPEATS`
 
 ## `clv`
 
 In any given run, this will probably be the biggest allocation of memory, and will be involved in almost all of the
-computation that `libpll` performs. As such, it can be useful to understand what CLVs are, and how the `clv` buffer
+computation that `coraxlib` performs. As such, it can be useful to understand what CLVs are, and how the `clv` buffer
 relates to them.
 
 A conditional likelihood vector (CLV) is an intermediate calculation which informally represents the likelihood of a
-subtree. Conceptually, every node (not a `pll_unode_t`) has a CLV, which is oriented with respect to the virtual root.
-For more information please see the general documentation [here](./libpll.md).
+subtree. Conceptually, every node (not a `corax_unode_t`) has a CLV, which is oriented with respect to the virtual root.
+For more information please see the general documentation [here](./coraxlib.md).
