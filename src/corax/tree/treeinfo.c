@@ -22,7 +22,8 @@
 #include "treeinfo.h"
 #include "corax/corax.h"
 
-static int treeinfo_check_tree(corax_treeinfo_t *treeinfo, corax_utree_t *tree);
+static int treeinfo_check_tree(const corax_treeinfo_t *treeinfo,
+                               const corax_utree_t *   tree);
 static int treeinfo_init_tree(corax_treeinfo_t *treeinfo);
 
 /* a callback function for performing a full traversal */
@@ -58,8 +59,8 @@ static int cb_partial_traversal(corax_unode_t *node)
             == 0);
 }
 
-static int treeinfo_partition_active(corax_treeinfo_t *treeinfo,
-                                     unsigned int      partition_index)
+static int treeinfo_partition_active(const corax_treeinfo_t *treeinfo,
+                                     unsigned int            partition_index)
 {
   return (treeinfo->active_partition == CORAX_TREEINFO_PARTITION_ALL
           || treeinfo->active_partition == (int)partition_index);
@@ -1008,13 +1009,14 @@ static double treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
   }
 
   /* create operations based on partial traversal obtained above */
-  corax_utree_create_operations(treeinfo->travbuffer,
-                                traversal_size,
-                                NULL,
-                                NULL,
-                                treeinfo->operations,
-                                NULL,
-                                &ops_count);
+  corax_utree_create_operations(
+      (const corax_unode_t *const *)treeinfo->travbuffer,
+      traversal_size,
+      NULL,
+      NULL,
+      treeinfo->operations,
+      NULL,
+      &ops_count);
 
   treeinfo->counter += ops_count;
 
@@ -1187,7 +1189,8 @@ int corax_treeinfo_normalize_brlen_scalers(corax_treeinfo_t *treeinfo)
   return CORAX_SUCCESS;
 }
 
-static int treeinfo_check_tree(corax_treeinfo_t *treeinfo, corax_utree_t *tree)
+static int treeinfo_check_tree(const corax_treeinfo_t *treeinfo,
+                               const corax_utree_t *   tree)
 {
   if (!treeinfo || !tree)
   {
@@ -1407,9 +1410,9 @@ corax_treeinfo_set_constraint_tree(corax_treeinfo_t *   treeinfo,
   return retval;
 }
 
-static unsigned int find_cons_id(corax_unode_t *     node,
-                                 const unsigned int *constraint,
-                                 unsigned int        s)
+static unsigned int find_cons_id(const corax_unode_t *node,
+                                 const unsigned int * constraint,
+                                 unsigned int         s)
 {
   unsigned int cons_group_id = constraint[node->clv_index];
   if (!node->next || cons_group_id > 0)

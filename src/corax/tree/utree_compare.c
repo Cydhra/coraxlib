@@ -172,9 +172,9 @@ static int get_split_id(corax_split_t split, unsigned int split_len)
   return id;
 }
 
-static void build_tips_recurse(corax_unode_t *tree,
-                               char *const *  tip_labels,
-                               unsigned int   split_len)
+static void build_tips_recurse(corax_unode_t *    tree,
+                               const char *const *tip_labels,
+                               unsigned int       split_len)
 {
   corax_consensus_data_t *data = (corax_consensus_data_t *)tree->data;
   corax_unode_t *         next_root;
@@ -492,8 +492,8 @@ static void fill_consensus(corax_consensus_utree_t *consensus_tree)
  * @return CORAX_SUCCESS if node indices are consistent,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int corax_utree_consistency_check(corax_utree_t *t1,
-                                               corax_utree_t *t2)
+CORAX_EXPORT int corax_utree_consistency_check(const corax_utree_t *t1,
+                                               const corax_utree_t *t2)
 {
   unsigned int    i;
   unsigned int    node_id;
@@ -615,9 +615,9 @@ CORAX_EXPORT int corax_utree_consistency_set(corax_utree_t *t1,
   return retval;
 }
 
-CORAX_EXPORT unsigned int corax_utree_rf_distance(corax_unode_t *t1,
-                                                  corax_unode_t *t2,
-                                                  unsigned int   tip_count)
+CORAX_EXPORT unsigned int corax_utree_rf_distance(const corax_unode_t *t1,
+                                                  const corax_unode_t *t2,
+                                                  unsigned int tip_count)
 {
   unsigned int rf_distance;
 
@@ -644,7 +644,7 @@ CORAX_EXPORT unsigned int corax_utree_rf_distance(corax_unode_t *t1,
 CORAX_EXPORT corax_consensus_utree_t *
              corax_utree_from_splits(const corax_split_system_t *split_system,
                                      unsigned int                tip_count,
-                                     char *const *               tip_labels)
+                                     const char *const *const    tip_labels)
 {
   const corax_split_t *    splits     = split_system->splits;
   unsigned int             split_size = sizeof(corax_split_base_t) * 8;
@@ -896,10 +896,10 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
  * @return                  consensus unrooted tree structure
  */
 CORAX_EXPORT corax_consensus_utree_t *
-             corax_utree_weight_consensus(corax_utree_t *const *trees,
-                                          const double *        weights,
-                                          double                threshold,
-                                          unsigned int          tree_count)
+             corax_utree_weight_consensus(const corax_utree_t *const *trees,
+                                          const double *              weights,
+                                          double                      threshold,
+                                          unsigned int                tree_count)
 {
 
   const corax_utree_t *reference_tree =
@@ -1000,7 +1000,15 @@ CORAX_EXPORT corax_consensus_utree_t *
 
   /* buld tree from splits */
   consensus_tree = corax_utree_from_splits(
-      split_system, tip_count, string_hashtable->labels);
+      split_system, tip_count, (const char **)string_hashtable->labels);
+  /*
+   * The cast here is to silence a warning about
+   *   char** -> const char *const *const.
+   * This should be a safe conversion, but gcc and clange will warn about it
+   * anyways. The problem is that pointers to pointers can be weird in the case
+   * of concurrent code. However, this part should be fine, because it had no
+   * const before.
+   */
 
   /* cleanup */
   string_hash_destroy(string_hashtable);

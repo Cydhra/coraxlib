@@ -46,7 +46,7 @@ int cb_full_traversal(corax_unode_t *node)
   return 1;
 }
 
-void postorder_init_recursive(corax_unode_t *      node,
+void postorder_init_recursive(const corax_unode_t *node,
                               unsigned int *       index,
                               unsigned int *       subtree_size,
                               index_information_t *idx_infos)
@@ -71,7 +71,7 @@ void postorder_init_recursive(corax_unode_t *      node,
   *index            = *index + 1;
 }
 
-void postorder_init(corax_unode_t *      root,
+void postorder_init(const corax_unode_t *root,
                     unsigned int *       trav_size,
                     unsigned int *       subtree_size,
                     index_information_t *idx_infos)

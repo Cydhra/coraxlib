@@ -140,7 +140,7 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
         partition->clv[clv_index],
         partition->repeats->pernode_site_id[clv_index],
         scaler,
-        partition->frequencies,
+        (const double **)partition->frequencies,
         partition->rate_weights,
         partition->pattern_weights,
         partition->prop_invar,
@@ -152,19 +152,20 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
   else
   {
     /* compute log-likelihood via the core function */
-    logl = corax_core_root_loglikelihood(partition->states,
-                                         partition->sites,
-                                         partition->rate_cats,
-                                         partition->clv[clv_index],
-                                         scaler,
-                                         partition->frequencies,
-                                         partition->rate_weights,
-                                         partition->pattern_weights,
-                                         partition->prop_invar,
-                                         partition->invariant,
-                                         freqs_indices,
-                                         persite_lnl,
-                                         partition->attributes);
+    logl =
+        corax_core_root_loglikelihood(partition->states,
+                                      partition->sites,
+                                      partition->rate_cats,
+                                      partition->clv[clv_index],
+                                      scaler,
+                                      (const double **)partition->frequencies,
+                                      partition->rate_weights,
+                                      partition->pattern_weights,
+                                      partition->prop_invar,
+                                      partition->invariant,
+                                      freqs_indices,
+                                      persite_lnl,
+                                      partition->attributes);
   }
 
   /* ascertainment bias correction */
@@ -287,7 +288,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
         parent_scaler,
         partition->tipchars[child_clv_index],
         partition->pmatrix[matrix_index],
-        partition->frequencies,
+        (const double **)partition->frequencies,
         partition->rate_weights,
         partition->pattern_weights,
         partition->prop_invar,
@@ -298,24 +299,24 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
   }
   else
   {
-    logl =
-        corax_core_edge_loglikelihood_ti(partition->states,
-                                         partition->sites,
-                                         partition->rate_cats,
-                                         partition->clv[parent_clv_index],
-                                         parent_scaler,
-                                         partition->tipchars[child_clv_index],
-                                         partition->tipmap,
-                                         partition->maxstates,
-                                         partition->pmatrix[matrix_index],
-                                         partition->frequencies,
-                                         partition->rate_weights,
-                                         partition->pattern_weights,
-                                         partition->prop_invar,
-                                         partition->invariant,
-                                         freqs_indices,
-                                         persite_lnl,
-                                         partition->attributes);
+    logl = corax_core_edge_loglikelihood_ti(
+        partition->states,
+        partition->sites,
+        partition->rate_cats,
+        partition->clv[parent_clv_index],
+        parent_scaler,
+        partition->tipchars[child_clv_index],
+        partition->tipmap,
+        partition->maxstates,
+        partition->pmatrix[matrix_index],
+        (const double **)partition->frequencies,
+        partition->rate_weights,
+        partition->pattern_weights,
+        partition->prop_invar,
+        partition->invariant,
+        freqs_indices,
+        persite_lnl,
+        partition->attributes);
   }
 
   /* ascertainment bias correction */
@@ -452,22 +453,23 @@ static double edge_loglikelihood(corax_partition_t * partition,
     parent_scaler = partition->scale_buffer[parent_scaler_index];
 
   /* compute log-likelihood via the core function */
-  logl = corax_core_edge_loglikelihood_ii(partition->states,
-                                          partition->sites,
-                                          partition->rate_cats,
-                                          clvp,
-                                          parent_scaler,
-                                          clvc,
-                                          child_scaler,
-                                          partition->pmatrix[matrix_index],
-                                          partition->frequencies,
-                                          partition->rate_weights,
-                                          partition->pattern_weights,
-                                          partition->prop_invar,
-                                          partition->invariant,
-                                          freqs_indices,
-                                          persite_lnl,
-                                          partition->attributes);
+  logl =
+      corax_core_edge_loglikelihood_ii(partition->states,
+                                       partition->sites,
+                                       partition->rate_cats,
+                                       clvp,
+                                       parent_scaler,
+                                       clvc,
+                                       child_scaler,
+                                       partition->pmatrix[matrix_index],
+                                       (const double **)partition->frequencies,
+                                       partition->rate_weights,
+                                       partition->pattern_weights,
+                                       partition->prop_invar,
+                                       partition->invariant,
+                                       freqs_indices,
+                                       persite_lnl,
+                                       partition->attributes);
 
   /* ascertainment bias correction */
   if (partition->attributes & CORAX_ATTRIB_AB_MASK)
@@ -535,7 +537,7 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
       !inv ? clvp : clvc,
       !inv ? parent_scaler : child_scaler,
       partition->pmatrix[matrix_index],
-      partition->frequencies,
+      (const double **)partition->frequencies,
       partition->rate_weights,
       partition->pattern_weights,
       partition->prop_invar,

@@ -411,9 +411,9 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t *tree,
   }
 }
 
-CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
-                                          const double *  support,
-                                          corax_unode_t **node_map,
+CORAX_EXPORT int corax_utree_draw_support(const corax_utree_t *ref_tree,
+                                          const double *       support,
+                                          corax_unode_t **     node_map,
                                           char *(*cb_serialize)(double))
 {
   if (!ref_tree || !support)

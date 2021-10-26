@@ -33,9 +33,9 @@ CORAX_EXPORT int corax_utree_outgroup_root(corax_utree_t *tree,
                                            unsigned int   outgroup_size,
                                            int            add_root_node);
 
-CORAX_EXPORT int corax_utree_draw_support(corax_utree_t * ref_tree,
-                                          const double *  support,
-                                          corax_unode_t **node_map,
+CORAX_EXPORT int corax_utree_draw_support(const corax_utree_t *ref_tree,
+                                          const double *       support,
+                                          corax_unode_t **     node_map,
                                           char *(*cb_serialize)(double));
 
 CORAX_EXPORT corax_unode_t *corax_utree_serialize(corax_unode_t *tree,

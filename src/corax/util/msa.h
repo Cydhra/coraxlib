@@ -71,9 +71,9 @@ typedef struct msa_errors
 } corax_msa_errors_t;
 
 CORAX_EXPORT double *
-corax_msa_empirical_frequencies(corax_partition_t *partition);
+corax_msa_empirical_frequencies(const corax_partition_t *partition);
 CORAX_EXPORT double *
-corax_msa_empirical_subst_rates(corax_partition_t *partition);
+corax_msa_empirical_subst_rates(const corax_partition_t *partition);
 CORAX_EXPORT double
 corax_msa_empirical_invariant_sites(corax_partition_t *partition);
 

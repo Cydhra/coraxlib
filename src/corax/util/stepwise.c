@@ -32,7 +32,7 @@ typedef struct
 static corax_unode_t **      travbuffer;
 static corax_pars_buildop_t *parsops;
 
-static char *xstrdup(const char *s)
+static char *xstrdup(const char *const s)
 {
   size_t len = strlen(s);
   char * p   = (char *)malloc(len + 1);
@@ -383,7 +383,7 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
 
 CORAX_EXPORT corax_utree_t *
              corax_fastparsimony_stepwise(corax_parsimony_t **list,
-                                          char *const *       labels,
+                                          const char *const * labels,
                                           unsigned int *      cost,
                                           unsigned int        count,
                                           unsigned int        seed)

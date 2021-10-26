@@ -313,7 +313,7 @@ CORAX_EXPORT long corax_fasta_getfilesize(const corax_fasta_t *fd)
   return fd->filesize;
 }
 
-CORAX_EXPORT long corax_fasta_getfilepos(corax_fasta_t *fd)
+CORAX_EXPORT long corax_fasta_getfilepos(const corax_fasta_t *fd)
 {
   return ftell(fd->fp);
 }

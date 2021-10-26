@@ -59,13 +59,13 @@ static void dealloc_graph_recursive(corax_unode_t *node,
 }
 
 CORAX_EXPORT void
-corax_utree_create_operations(corax_unode_t *const *trav_buffer,
-                              unsigned int          trav_buffer_size,
-                              double *              branches,
-                              unsigned int *        pmatrix_indices,
-                              corax_operation_t *   ops,
-                              unsigned int *        matrix_count,
-                              unsigned int *        ops_count)
+corax_utree_create_operations(const corax_unode_t *const *trav_buffer,
+                              unsigned int                trav_buffer_size,
+                              double *                    branches,
+                              unsigned int *              pmatrix_indices,
+                              corax_operation_t *         ops,
+                              unsigned int *              matrix_count,
+                              unsigned int *              ops_count)
 {
   const corax_unode_t *node;
   unsigned int         i;

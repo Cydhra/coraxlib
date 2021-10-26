@@ -35,7 +35,7 @@
 #include "msa.h"
 
 CORAX_EXPORT double *
-corax_msa_empirical_frequencies(corax_partition_t *partition)
+corax_msa_empirical_frequencies(const corax_partition_t *partition)
 {
   unsigned int         i, j, k, n;
   unsigned int         states        = partition->states;
@@ -172,7 +172,7 @@ void compute_pair_rates(unsigned int         states,
 }
 
 CORAX_EXPORT double *
-corax_msa_empirical_subst_rates(corax_partition_t *partition)
+corax_msa_empirical_subst_rates(const corax_partition_t *partition)
 {
   unsigned int         i, j, k, n;
   unsigned int         states        = partition->states;

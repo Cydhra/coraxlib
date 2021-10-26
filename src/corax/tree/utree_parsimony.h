@@ -12,8 +12,8 @@ corax_utree_create_pars_buildops(corax_unode_t *const *trav_buffer,
 CORAX_EXPORT
 corax_utree_t *corax_utree_create_parsimony(unsigned int         taxon_count,
                                             unsigned int         seq_length,
-                                            char *const *        names,
-                                            char *const *        sequences,
+                                            const char *const *  names,
+                                            const char *const *  sequences,
                                             const unsigned int * site_weights,
                                             const corax_state_t *map,
                                             unsigned int         states,
@@ -23,9 +23,9 @@ corax_utree_t *corax_utree_create_parsimony(unsigned int         taxon_count,
 
 CORAX_EXPORT
 corax_utree_t *
-corax_utree_create_parsimony_multipart(unsigned int taxon_count,
-                                       char *const *taxon_names,
-                                       unsigned int partition_count,
+corax_utree_create_parsimony_multipart(unsigned int       taxon_count,
+                                       const char *const *taxon_names,
+                                       unsigned int       partition_count,
                                        corax_partition_t *const *partitions,
                                        unsigned int              random_seed,
                                        unsigned int *            score);

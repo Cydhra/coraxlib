@@ -168,8 +168,9 @@ static void mytred2(double **a, const unsigned int n, double *d, double *e)
 
 /* TODO: Add code for SSE/AVX. Perhaps allocate qmatrix in one chunk to avoid
 the complex checking when to dealloc */
-static double **
-create_ratematrix(double *params, double *freqs, unsigned int states)
+static double **create_ratematrix(const double *params,
+                                  const double *freqs,
+                                  unsigned int  states)
 {
   unsigned int i, j, k, success;
 
@@ -241,10 +242,10 @@ create_ratematrix(double *params, double *freqs, unsigned int states)
   return qmatrix;
 }
 
-static unsigned int eliminate_zero_states(double **    mat,
-                                          double *     forg,
-                                          unsigned int states,
-                                          double *     new_forg)
+static unsigned int eliminate_zero_states(double **     mat,
+                                          const double *forg,
+                                          unsigned int  states,
+                                          double *      new_forg)
 {
   unsigned int i, j, inew, jnew;
   unsigned int new_states = 0;
@@ -526,8 +527,8 @@ CORAX_EXPORT int corax_update_invariant_sites_proportion(
 }
 
 CORAX_EXPORT unsigned int
-corax_count_invariant_sites(corax_partition_t *partition,
-                            unsigned int *     state_inv_count)
+corax_count_invariant_sites(const corax_partition_t *partition,
+                            unsigned int *           state_inv_count)
 {
   unsigned int  i, j, k;
   unsigned int  invariant_count = 0;

@@ -1607,19 +1607,19 @@ corax_core_update_sumtable_ti_avx(unsigned int         states,
 }
 
 CORAX_EXPORT int
-corax_core_likelihood_derivatives_avx(unsigned int        states,
-                                      unsigned int        states_padded,
-                                      unsigned int        rate_cats,
-                                      unsigned int        ef_sites,
-                                      const unsigned int *pattern_weights,
-                                      const double *      rate_weights,
-                                      const int *         invariant,
-                                      const double *      prop_invar,
-                                      double *const *     freqs,
-                                      const double *      sumtable,
-                                      const double *      diagptable,
-                                      double *            d_f,
-                                      double *            dd_f)
+corax_core_likelihood_derivatives_avx(unsigned int         states,
+                                      unsigned int         states_padded,
+                                      unsigned int         rate_cats,
+                                      unsigned int         ef_sites,
+                                      const unsigned int * pattern_weights,
+                                      const double *       rate_weights,
+                                      const int *          invariant,
+                                      const double *       prop_invar,
+                                      const double *const *freqs,
+                                      const double *       sumtable,
+                                      const double *       diagptable,
+                                      double *             d_f,
+                                      double *             dd_f)
 {
   unsigned int i, j, k, n;
   unsigned int span_padded = rate_cats * states_padded;

@@ -81,13 +81,13 @@ CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
  * @ingroup corax_operation_t
  */
 CORAX_EXPORT void
-corax_utree_create_operations(corax_unode_t *const *trav_buffer,
-                              unsigned int          trav_buffer_size,
-                              double *              branches,
-                              unsigned int *        pmatrix_indices,
-                              corax_operation_t *   ops,
-                              unsigned int *        matrix_count,
-                              unsigned int *        ops_count);
+corax_utree_create_operations(const corax_unode_t *const *trav_buffer,
+                              unsigned int                trav_buffer_size,
+                              double *                    branches,
+                              unsigned int *              pmatrix_indices,
+                              corax_operation_t *         ops,
+                              unsigned int *              matrix_count,
+                              unsigned int *              ops_count);
 
 CORAX_EXPORT int corax_utree_check_integrity(const corax_utree_t *root);
 
