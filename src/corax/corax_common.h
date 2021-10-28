@@ -243,6 +243,8 @@
 #define CORAX_UTREE_SHOW_PMATRIX_INDEX (1 << 4)
 #define CORAX_UTREE_SHOW_DATA (1 << 5)
 
+#define CORAX_UTREE_WEIGHT_EPSILON 1e-12
+
 /* GAMMA discretization modes */
 #define CORAX_GAMMA_RATES_MEAN 0
 #define CORAX_GAMMA_RATES_MEDIAN 1

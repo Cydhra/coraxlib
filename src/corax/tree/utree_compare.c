@@ -1,8 +1,6 @@
 #include "corax/corax.h"
 #include "hashtable.h"
 
-#define EPSILON 1e-12
-
 static void dealloc_graph_recursive(corax_unode_t *node)
 {
   if (node->label) free(node->label);
@@ -813,7 +811,7 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
   double                min_support = threshold;
   double                max_support = 1.0;
   double                thr_support = CORAX_MAX(min_support, .5);
-  if (thr_support == max_support) thr_support -= EPSILON;
+  if (thr_support == max_support) thr_support -= CORAX_UTREE_WEIGHT_EPSILON;
 
   split_system =
       (corax_split_system_t *)calloc(1, sizeof(corax_split_system_t));
@@ -933,7 +931,7 @@ CORAX_EXPORT corax_consensus_utree_t *
     }
     sum_weights += weights[i];
   }
-  if (fabs(1.0 - sum_weights) > EPSILON)
+  if (fabs(1.0 - sum_weights) > CORAX_UTREE_WEIGHT_EPSILON)
   {
     corax_set_error(
         CORAX_ERROR_INVALID_TREE, "Invalid tree weights", threshold);
