@@ -438,7 +438,7 @@ CORAX_EXPORT double corax_opt_optimize_onedim(corax_optimize_options_t *params,
  * @return        the negative likelihood score
  */
 CORAX_EXPORT double corax_opt_optimize_multidim(
-    corax_optimize_options_t *params, double *umin, double *umax)
+    corax_optimize_options_t *params, const double *umin, const double *umax)
 {
   unsigned int       i;
   corax_partition_t *partition = params->lk_params.partition;
@@ -477,7 +477,7 @@ CORAX_EXPORT double corax_opt_optimize_multidim(
     /* effective boundaries */
     double *l_ptr = lower_bounds, *u_ptr = upper_bounds;
     /* user defined boundaries */
-    double *     ul_ptr = umin, *uu_ptr = umax;
+    const double *     ul_ptr = umin, *uu_ptr = umax;
     unsigned int check_n = 0;
 
     /* substitution rate parameters */

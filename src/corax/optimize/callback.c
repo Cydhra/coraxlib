@@ -26,14 +26,14 @@ double target_freqs_func(void *p, double *x)
 {
   struct freqs_params *params = (struct freqs_params *)p;
 
-  corax_partition_t *partition        = params->partition;
-  corax_unode_t *    root             = params->tree;
-  unsigned int *     params_indices   = params->params_indices;
-  unsigned int       params_index     = params->params_index;
-  unsigned int       fixed_freq_state = params->fixed_freq_state;
-  unsigned int       states           = partition->states;
-  double *           freqs            = partition->frequencies[params_index];
-  double             sum_ratios       = 1.0;
+  corax_partition_t *  partition        = params->partition;
+  corax_unode_t *      root             = params->tree;
+  const unsigned int * params_indices   = params->params_indices;
+  unsigned int         params_index     = params->params_index;
+  unsigned int         fixed_freq_state = params->fixed_freq_state;
+  unsigned int         states           = partition->states;
+  double *             freqs            = partition->frequencies[params_index];
+  double               sum_ratios       = 1.0;
 
   unsigned int i, cur_index;
   double       score;
@@ -73,12 +73,12 @@ double target_subst_params_func(void *p, double *x)
   struct algo_subst_params *params = (struct algo_subst_params *)p;
 
   unsigned int       i, j, k;
-  corax_partition_t *partition         = params->partition;
-  corax_unode_t *    root              = params->tree;
-  unsigned int *     params_indices    = params->params_indices;
-  unsigned int       params_index      = params->params_index;
-  unsigned int       subst_free_params = params->subst_free_params;
-  int *              symmetries        = params->symmetries;
+  corax_partition_t *  partition         = params->partition;
+  corax_unode_t *      root              = params->tree;
+  const unsigned int * params_indices    = params->params_indices;
+  unsigned int         params_index      = params->params_index;
+  unsigned int         subst_free_params = params->subst_free_params;
+  const int *          symmetries        = params->symmetries;
 
   unsigned int states       = partition->states;
   unsigned int subst_params = (states * (states - 1)) / 2;
@@ -121,7 +121,7 @@ double target_alpha_func(void *p, double x)
   struct default_params *params         = (struct default_params *)p;
   corax_partition_t *    partition      = params->partition;
   corax_unode_t *        root           = params->tree;
-  unsigned int *         params_indices = params->params_indices;
+  const unsigned int *   params_indices = params->params_indices;
 
   /* update rate categories */
   if (!corax_compute_gamma_cats(
@@ -145,7 +145,7 @@ double target_pinv_func(void *p, double x)
   struct default_params *params         = (struct default_params *)p;
   corax_partition_t *    partition      = params->partition;
   corax_unode_t *        root           = params->tree;
-  unsigned int *         params_indices = params->params_indices;
+  const unsigned int *   params_indices = params->params_indices;
   unsigned int           i;
 
   /* update proportion of invariant sites */
@@ -167,7 +167,7 @@ double target_alpha_pinv_func(void *p, double *x)
   struct default_params *params         = (struct default_params *)p;
   corax_partition_t *    partition      = params->partition;
   corax_unode_t *        root           = params->tree;
-  unsigned int *         params_indices = params->params_indices;
+  const unsigned int *   params_indices = params->params_indices;
   unsigned int           i;
 
   /* update rate categories */
@@ -196,7 +196,7 @@ double target_rates_func(void *p, double *x)
   struct rate_weights_params *params         = (struct rate_weights_params *)p;
   corax_partition_t *         partition      = params->partition;
   corax_unode_t *             root           = params->tree;
-  unsigned int *              params_indices = params->params_indices;
+  const unsigned int *        params_indices = params->params_indices;
 
   /* update rate categories */
   memcpy(partition->rates, x, partition->rate_cats * sizeof(double));
@@ -217,7 +217,7 @@ double target_weights_func(void *p, double *x)
 
   corax_partition_t *partition          = params->partition;
   corax_unode_t *    root               = params->tree;
-  unsigned int *     params_indices     = params->params_indices;
+  const unsigned int * params_indices   = params->params_indices;
   unsigned int       fixed_weight_state = params->fixed_weight_state;
   unsigned int       n_weights          = partition->rate_cats;
   double             sum_ratios         = 1.0;
@@ -253,7 +253,7 @@ double target_brlen_scaler_func(void *p, double x)
   struct brlen_scaler_params *params         = (struct brlen_scaler_params *)p;
   corax_partition_t *         partition      = params->partition;
   corax_unode_t *             root           = params->tree;
-  unsigned int *              params_indices = params->params_indices;
+  const unsigned int *        params_indices = params->params_indices;
 
   /* scale branches according to the new factor */
   corax_utree_scale_branches_all(root, x / params->old_scaler);

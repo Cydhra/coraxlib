@@ -5,12 +5,12 @@
 /* Wang, Li, Susko, and Roger (2008) */
 /******************************************************************************/
 CORAX_EXPORT void
-corax_opt_minimize_em(double *      w,
-                      unsigned int  w_count,
-                      double *      sitecat_lh,
-                      unsigned int *site_w,
-                      unsigned int  l,
-                      void *        params,
+corax_opt_minimize_em(double *             w,
+                      unsigned int         w_count,
+                      double *             sitecat_lh,
+                      const unsigned int * site_w,
+                      unsigned int         l,
+                      void *               params,
                       double (*update_sitecatlk_funk)(void *, double *))
 {
   unsigned int i, c;

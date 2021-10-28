@@ -30,12 +30,12 @@
 /*
  * Optimize stationary frequencies for parameters `params_index`.
  */
-CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
-                                               corax_unode_t *    tree,
-                                               unsigned int       params_index,
-                                               unsigned int *params_indices,
-                                               double        bfgs_factor,
-                                               double        tolerance);
+CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *  partition,
+                                               corax_unode_t *      tree,
+                                               unsigned int         params_index,
+                                               const unsigned int * params_indices,
+                                               double               bfgs_factor,
+                                               double               tolerance);
 
 /*
  * Optimize substitution rates for parameters `params_index`.
@@ -44,62 +44,62 @@ CORAX_EXPORT double corax_algo_opt_frequencies(corax_partition_t *partition,
  *            Must be sorted and start with '0'.
  *            e.g., 000000 = JC/F81, 010010 = K80/HKY, 012314 = TrN
  */
-CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *partition,
-                                               corax_unode_t *    tree,
-                                               unsigned int       params_index,
-                                               unsigned int *params_indices,
-                                               int *         symmetries,
-                                               double        min_rate,
-                                               double        max_rate,
-                                               double        bfgs_factor,
-                                               double        tolerance);
+CORAX_EXPORT double corax_algo_opt_subst_rates(corax_partition_t *  partition,
+                                               corax_unode_t *      tree,
+                                               unsigned int         params_index,
+                                               const unsigned int * params_indices,
+                                               const int *          symmetries,
+                                               double               min_rate,
+                                               double               max_rate,
+                                               double               bfgs_factor,
+                                               double               tolerance);
 
-CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t *partition,
-                                         corax_unode_t *    tree,
-                                         unsigned int *     params_indices,
-                                         double             min_alpha,
-                                         double             max_alpha,
-                                         double *           alpha,
-                                         double             tolerance);
+CORAX_EXPORT double corax_algo_opt_alpha(corax_partition_t  * partition,
+                                         corax_unode_t      * tree,
+                                         const unsigned int * params_indices,
+                                         double               min_alpha,
+                                         double               max_alpha,
+                                         double *             alpha,
+                                         double               tolerance);
 
-CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *partition,
-                                        corax_unode_t *    tree,
-                                        unsigned int *     params_indices,
-                                        double             min_pinv,
-                                        double             max_pinv,
-                                        double             tolerance);
+CORAX_EXPORT double corax_algo_opt_pinv(corax_partition_t *  partition,
+                                        corax_unode_t *      tree,
+                                        const unsigned int * params_indices,
+                                        double               min_pinv,
+                                        double               max_pinv,
+                                        double               tolerance);
 
-CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *partition,
-                                              corax_unode_t *    tree,
-                                              unsigned int *     params_indices,
-                                              double             min_alpha,
-                                              double             max_alpha,
-                                              double *           alpha,
-                                              double             min_pinv,
-                                              double             max_pinv,
-                                              double             bfgs_factor,
-                                              double             tolerance);
+CORAX_EXPORT double corax_algo_opt_alpha_pinv(corax_partition_t *  partition,
+                                              corax_unode_t *      tree,
+                                              const unsigned int * params_indices,
+                                              double               min_alpha,
+                                              double               max_alpha,
+                                              double *             alpha,
+                                              double               min_pinv,
+                                              double               max_pinv,
+                                              double               bfgs_factor,
+                                              double               tolerance);
 
 /*
  * Optimize free rates and rate weights together, linked to
  * `partition->rate_cats`. Uses 2 step L-BFGS-B algorithm.
  */
-CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *partition,
-                                                 corax_unode_t *    tree,
-                                                 unsigned int *params_indices,
-                                                 double        min_rate,
-                                                 double        max_rate,
-                                                 double        bfgs_factor,
-                                                 double        tolerance,
-                                                 double *      brlen_scaler,
-                                                 int           scale_branches);
+CORAX_EXPORT double corax_algo_opt_rates_weights(corax_partition_t *  partition,
+                                                 corax_unode_t *      tree,
+                                                 const unsigned int * params_indices,
+                                                 double               min_rate,
+                                                 double               max_rate,
+                                                 double               bfgs_factor,
+                                                 double               tolerance,
+                                                 double *             brlen_scaler,
+                                                 int                  scale_branches);
 
-CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *partition,
-                                                corax_unode_t *    tree,
-                                                unsigned int *params_indices,
-                                                double *      scaler,
-                                                double        min_scaler,
-                                                double        max_scaler,
-                                                double        tolerance);
+CORAX_EXPORT double corax_algo_opt_brlen_scaler(corax_partition_t *  partition,
+                                                corax_unode_t *      tree,
+                                                const unsigned int * params_indices,
+                                                double *             scaler,
+                                                double               min_scaler,
+                                                double               max_scaler,
+                                                double               tolerance);
 
 #endif /* CORAX_OPTIMIZE_MODEL_H_ */

@@ -139,23 +139,23 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
  * lengths. Options are:
  * - CORAX_OPT_BLO_NEWTON_FAST: Standard.
  * - CORAX_OPT_BLO_NEWTON_SAFE: Adds a per branch likelihood check.
- * - CORAX_OPT_BLO_NEWTON_FALLBACK: Starts fast, but fallsback to safe.
- * - CORAX_OPT_BLO_NEWTON_GLOBAL: Newton, but with addtional searches to find
+ * - CORAX_OPT_BLO_NEWTON_FALLBACK: Starts fast, but fallback to safe.
+ * - CORAX_OPT_BLO_NEWTON_GLOBAL: Newton, but with additional searches to find
  *   more optima
  * - CORAX_OPT_BLO_NEWTON_OLDFAST
  * - CORAX_OPT_BLO_NEWTON_OLDSAFE
  *
- * @param smoothings: Number of iterations for branch length optimization. Will
- * operate if negative. I don't know what happens in this case.
+ * @param smoothings: Maximum number of iterations for branch length optimization.
+ * Negative = no limit (iterate until LH improvement < epsilon)
  *
  * @epsilon: Likelihood threshold to terminate the optimization. Also known as
  * the tolerance.
  *
- * @param[out] cutoff_info A struct that contains some cutoff information. It
- * seems to be a return parameter.
+ * @param[out] cutoff_info A struct that contains subtree descent cutoff information. It
+ * is in/out parameter since cutoff info has to be preserved between subsequent SPR rounds.
  *
- * @subtree_cutoff Used to calculate a likelihood cutoff. A larger value means
- * that lestt trees are cutoff.
+ * @subtree_cutoff relative likelihood cutoff for descending into subtrees. A larger value means
+ * higher cutoff, i.e. deeper descent into subtrees.
  *
  */
 CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,

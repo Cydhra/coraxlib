@@ -242,12 +242,12 @@ CORAX_EXPORT int corax_opt_minimize_brent_multi(
 
 /* core Expectation-Maximization (EM) function */
 CORAX_EXPORT void
-corax_opt_minimize_em(double *      w,
-                      unsigned int  w_count,
-                      double *      sitecat_lh,
-                      unsigned int *site_w,
-                      unsigned int  l,
-                      void *        params,
+corax_opt_minimize_em(double *             w,
+                      unsigned int         w_count,
+                      double *             sitecat_lh,
+                      const unsigned int * site_w,
+                      unsigned int         l,
+                      void *               params,
                       double (*update_sitecatlk_funk)(void *, double *));
 
 /* functions in opt_generic.c */
@@ -255,14 +255,14 @@ corax_opt_minimize_em(double *      w,
 CORAX_EXPORT double
 corax_opt_optimize_onedim(corax_optimize_options_t *p, double min, double max);
 
-CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t *p,
-                                                double *                  umin,
-                                                double *                  umax);
+CORAX_EXPORT double corax_opt_optimize_multidim(corax_optimize_options_t * p,
+                                                const double *             umin,
+                                                const double *             umax);
 
-CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t * partition,
-                                         corax_unode_t *     tree,
-                                         const unsigned int *params_indices,
-                                         int                 update_pmatrices,
-                                         int                 update_partials);
+CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t *  partition,
+                                         corax_unode_t *      tree,
+                                         const unsigned int * params_indices,
+                                         int                  update_pmatrices,
+                                         int                  update_partials);
 
 #endif /* CORAX_OPTIMIZE_GENERIC_H_ */
