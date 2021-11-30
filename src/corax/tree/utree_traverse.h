@@ -49,6 +49,13 @@ CORAX_EXPORT int corax_utree_traverse(corax_unode_t *root,
                                       corax_unode_t **outbuffer,
                                       unsigned int *  trav_size);
 
+CORAX_EXPORT int corax_utree_traverse_const(const corax_unode_t *root,
+                                      int            traversal,
+                                      int (*cbtrav)(const corax_unode_t *),
+                                      corax_unode_t const ** outbuffer,
+                                      unsigned int *  trav_size);
+
+
 CORAX_EXPORT int corax_utree_traverse_subtree(corax_unode_t *root,
                                               int            traversal,
                                               int (*cbtrav)(corax_unode_t *),

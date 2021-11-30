@@ -57,6 +57,39 @@ static void utree_traverse_recursive(corax_unode_t *node,
   }
 }
 
+// const version of utree_traverse_recursive()
+static void utree_traverse_recursive_const(const corax_unode_t *node,
+                                     int            traversal,
+                                     int (*cbtrav)(const corax_unode_t *),
+                                     unsigned int *  index,
+                                     corax_unode_t const ** outbuffer)
+{
+  if (!cbtrav(node)) return;
+
+  if (traversal == CORAX_TREE_TRAVERSE_PREORDER)
+  {
+    outbuffer[*index] = node;
+    *index            = *index + 1;
+  }
+
+  if (node->next)
+  {
+    corax_unode_t *snode = node->next;
+    do {
+      utree_traverse_recursive_const(
+          snode->back, traversal, cbtrav, index, outbuffer);
+      snode = snode->next;
+    } while (snode && snode != node);
+  }
+
+  if (traversal == CORAX_TREE_TRAVERSE_POSTORDER)
+  {
+    outbuffer[*index] = node;
+    *index            = *index + 1;
+  }
+}
+
+
 CORAX_EXPORT int corax_utree_traverse_subtree(corax_unode_t *root,
                                               int            traversal,
                                               int (*cbtrav)(corax_unode_t *),
@@ -119,6 +152,44 @@ CORAX_EXPORT int corax_utree_traverse(corax_unode_t *root,
     utree_traverse_recursive(
         root->back, traversal, cbtrav, trav_size, outbuffer);
     utree_traverse_recursive(root, traversal, cbtrav, trav_size, outbuffer);
+  }
+  else
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Invalid traversal value.");
+    return CORAX_FAILURE;
+  }
+
+  return CORAX_SUCCESS;
+}
+
+// const version of corax_utree_traverse_const
+CORAX_EXPORT int corax_utree_traverse_const(const corax_unode_t *root,
+                                      int            traversal,
+                                      int (*cbtrav)(const corax_unode_t *),
+                                      corax_unode_t const ** outbuffer,
+                                      unsigned int *  trav_size)
+{
+  *trav_size = 0;
+  if (!root->next) return CORAX_FAILURE;
+
+  if (traversal == CORAX_TREE_TRAVERSE_POSTORDER
+      || traversal == CORAX_TREE_TRAVERSE_PREORDER)
+  {
+
+    /* we will traverse an unrooted tree in the following way
+
+                2
+              /
+        1  --*
+              \
+                3
+
+       at each node the callback function is called to decide whether we
+       are going to traversing the subtree rooted at the specific node */
+
+    utree_traverse_recursive_const(
+        root->back, traversal, cbtrav, trav_size, outbuffer);
+    utree_traverse_recursive_const(root, traversal, cbtrav, trav_size, outbuffer);
   }
   else
   {
