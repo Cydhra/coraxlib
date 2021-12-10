@@ -33,3 +33,26 @@ void corax_reset_error()
   corax_errno = 0;
   strcpy(corax_errmsg, "");
 }
+
+CORAX_EXPORT void *corax_aligned_alloc(size_t size, size_t alignment)
+{
+  void *mem;
+
+#if (defined(__WIN32__) || defined(__WIN64__))
+  mem = _aligned_malloc(size, alignment);
+#else
+  if (posix_memalign(&mem, alignment, size)) mem = NULL;
+#endif
+
+  return mem;
+}
+
+CORAX_EXPORT void corax_aligned_free(void *ptr)
+{
+#if (defined(__WIN32__) || defined(__WIN64__))
+  _aligned_free(ptr);
+#else
+  free(ptr);
+#endif
+}
+

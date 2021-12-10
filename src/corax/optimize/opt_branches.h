@@ -40,50 +40,60 @@ typedef struct
   void (*parallel_reduce_cb)(void *, double *, size_t, int);
 } corax_newton_tree_params_multi_t;
 
-CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
-                                            double  proposal,
-                                            double *df,
-                                            double *ddf);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-/* high level optimization functions */
+  CORAX_EXPORT void corax_opt_derivative_func(void *  parameters,
+                                              double  proposal,
+                                              double *df,
+                                              double *ddf);
 
-CORAX_EXPORT double
-corax_opt_optimize_branch_lengths_iterative(corax_partition_t * partition,
-                                            corax_unode_t *     tree,
-                                            const unsigned int *params_indices,
-                                            double branch_length_min,
-                                            double branch_length_max,
-                                            double tolerance,
-                                            int    smoothings,
-                                            int    keep_update);
+  /* high level optimization functions */
 
-CORAX_EXPORT double
-corax_opt_optimize_branch_lengths_local(corax_partition_t * partition,
-                                        corax_unode_t *     tree,
-                                        const unsigned int *params_indices,
-                                        double              branch_length_min,
-                                        double              branch_length_max,
-                                        double              tolerance,
-                                        int                 smoothings,
-                                        int                 radius,
-                                        int                 keep_update);
+  CORAX_EXPORT double
+  corax_opt_optimize_branch_lengths_iterative(corax_partition_t * partition,
+                                              corax_unode_t *     tree,
+                                              const unsigned int *params_indices,
+                                              double branch_length_min,
+                                              double branch_length_max,
+                                              double tolerance,
+                                              int    smoothings,
+                                              int    keep_update);
 
-CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
-    corax_partition_t **partitions,
-    size_t              partition_count,
-    corax_unode_t *     tree,
-    unsigned int **     params_indices,
-    double **           sumtable_buffers,
-    double **           brlen_buffers,
-    double *            brlen_scalers,
-    double              branch_length_min,
-    double              branch_length_max,
-    double              lh_epsilon,
-    int                 max_iters,
-    int                 radius,
-    int                 keep_update,
-    int                 opt_method,
-    int                 brlen_linkage,
-    void *              parallel_context,
-    void (*parallel_reduce_cb)(void *, double *, size_t, int));
+  CORAX_EXPORT double
+  corax_opt_optimize_branch_lengths_local(corax_partition_t * partition,
+                                          corax_unode_t *     tree,
+                                          const unsigned int *params_indices,
+                                          double              branch_length_min,
+                                          double              branch_length_max,
+                                          double              tolerance,
+                                          int                 smoothings,
+                                          int                 radius,
+                                          int                 keep_update);
+
+  CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi(
+      corax_partition_t **partitions,
+      size_t              partition_count,
+      corax_unode_t *     tree,
+      unsigned int **     params_indices,
+      double **           sumtable_buffers,
+      double **           brlen_buffers,
+      double *            brlen_scalers,
+      double              branch_length_min,
+      double              branch_length_max,
+      double              lh_epsilon,
+      int                 max_iters,
+      int                 radius,
+      int                 keep_update,
+      int                 opt_method,
+      int                 brlen_linkage,
+      void *              parallel_context,
+      void (*parallel_reduce_cb)(void *, double *, size_t, int));
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 #endif /* CORAX_OPTIMIZE_BRANCHES_H_ */

@@ -34,6 +34,10 @@
 
 #include "msa.h"
 
+#include "corax/corax_core.h"
+#include "corax/corax_model.h"
+
+
 CORAX_EXPORT double *
 corax_msa_empirical_frequencies(const corax_partition_t *partition)
 {
@@ -640,7 +644,7 @@ CORAX_EXPORT corax_msa_stats_t *
   /* compute empirical substitution rates */
   if (stats_mask & CORAX_MSA_STATS_SUBST_RATES)
   {
-    size_t n_subst_rates = corax_subst_rate_count(states);
+    size_t n_subst_rates = CORAX_SUBST_RATE_COUNT(states);
     stats->subst_rates   = (double *)calloc(n_subst_rates, sizeof(double));
     pair_rates           = (size_t *)calloc(states * states, sizeof(size_t));
     col_state_freq       = (size_t *)calloc(states, sizeof(size_t));

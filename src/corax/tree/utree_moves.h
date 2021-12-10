@@ -1,13 +1,16 @@
 #ifndef CORAX_TREE_UTREE_MOVES_H_
 #define CORAX_TREE_UTREE_MOVES_H_
 
-#include "corax/corax_common.h"
+#include "corax/tree/utree.h"
 
 /* structures for handling topological rearrangement move rollbacks */
 
 #define CORAX_TREE_REARRANGE_SPR 0
 #define CORAX_TREE_REARRANGE_NNI 1
 #define CORAX_TREE_REARRANGE_TBR 2
+
+#define CORAX_UTREE_MOVE_NNI_LEFT 1
+#define CORAX_UTREE_MOVE_NNI_RIGHT 2
 
 /* error codes (for this module, 3000-4000) ; B = 2^10+2^11*/
 /* TBR errors (B + {2^2,2^1,2^0}) */
@@ -73,41 +76,52 @@ typedef struct
   };
 } corax_tree_rollback_t;
 
-CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
-                                           corax_unode_t *child,
-                                           double         length);
 
-CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
-                                    corax_unode_t **parent_subtree,
-                                    corax_unode_t **child_subtree);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-CORAX_EXPORT corax_utree_edge_t
-corax_utree_reconnect(corax_utree_edge_t *edge, corax_unode_t *pruned_edge);
+  CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
+                                             corax_unode_t *child,
+                                             double         length);
 
-CORAX_EXPORT corax_unode_t *corax_utree_prune(corax_unode_t *edge);
+  CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
+                                      corax_unode_t **parent_subtree,
+                                      corax_unode_t **child_subtree);
 
-CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree);
+  CORAX_EXPORT corax_utree_edge_t
+  corax_utree_reconnect(corax_utree_edge_t *edge, corax_unode_t *pruned_edge);
 
-CORAX_EXPORT int corax_utree_interchange(corax_unode_t *edge1,
-                                         corax_unode_t *edge2);
+  CORAX_EXPORT corax_unode_t *corax_utree_prune(corax_unode_t *edge);
 
-CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
-                                 corax_utree_edge_t *   r_edge,
-                                 corax_tree_rollback_t *rollback_info);
+  CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree);
 
-CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
-                                 corax_unode_t *        r_edge,
-                                 corax_tree_rollback_t *rollback_info);
+  CORAX_EXPORT int corax_utree_interchange(corax_unode_t *edge1,
+                                           corax_unode_t *edge2);
 
-CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
-                                      corax_unode_t *        r,
-                                      corax_tree_rollback_t *rollback_info);
+  CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
+                                   corax_utree_edge_t *   r_edge,
+                                   corax_tree_rollback_t *rollback_info);
 
-/* type = {CORAX_NNI_NEXT, CORAX_NNI_NEXTNEXT} */
-CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
-                                 int                    type,
-                                 corax_tree_rollback_t *rollback_info);
+  CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
+                                   corax_unode_t *        r_edge,
+                                   corax_tree_rollback_t *rollback_info);
 
-CORAX_EXPORT int corax_tree_rollback(corax_tree_rollback_t *rollback_info);
+  CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
+                                        corax_unode_t *        r,
+                                        corax_tree_rollback_t *rollback_info);
+
+  /* type = {CORAX_NNI_NEXT, CORAX_NNI_NEXTNEXT} */
+  CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
+                                   int                    type,
+                                   corax_tree_rollback_t *rollback_info);
+
+  CORAX_EXPORT int corax_tree_rollback(corax_tree_rollback_t *rollback_info);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* CORAX_TREE_UTREE_MOVES_H_ */

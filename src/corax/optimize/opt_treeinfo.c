@@ -552,7 +552,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
     if (treeinfo->partitions[i])
     {
       unsigned int subst_params =
-          corax_subst_rate_count(treeinfo->partitions[i]->states);
+          CORAX_SUBST_RATE_COUNT(treeinfo->partitions[i]->states);
       int *        symmetries       = treeinfo->subst_matrix_symmetries[i];
       unsigned int part_free_params = 0;
 
@@ -616,7 +616,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
     corax_partition_t *partition    = treeinfo->partitions[i];
     double *           subst_rates  = partition->subst_params[params_index];
     unsigned int       states       = partition->states;
-    unsigned int       subst_params = corax_subst_rate_count(states);
+    unsigned int       subst_params = CORAX_SUBST_RATE_COUNT(states);
     int *              symmetries   = treeinfo->subst_matrix_symmetries[i];
 
     x[part]  = (double *)malloc(sizeof(double) * (subst_free_params[part]));
