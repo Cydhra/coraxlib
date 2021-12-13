@@ -91,20 +91,45 @@ CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree);
 CORAX_EXPORT int corax_utree_interchange(corax_unode_t *edge1,
                                          corax_unode_t *edge2);
 
-CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
-                                 corax_utree_edge_t *   r_edge,
+CORAX_EXPORT int corax_utree_tbr(corax_unode_t         *b_edge,
+                                 corax_utree_edge_t    *r_edge,
                                  corax_tree_rollback_t *rollback_info);
 
-CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
-                                 corax_unode_t *        r_edge,
+CORAX_EXPORT int corax_utree_spr(corax_unode_t         *p_edge,
+                                 corax_unode_t         *r_edge,
                                  corax_tree_rollback_t *rollback_info);
 
-CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
-                                      corax_unode_t *        r,
+CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t         *p,
+                                      corax_unode_t         *r,
                                       corax_tree_rollback_t *rollback_info);
 
-/* type = {CORAX_NNI_NEXT, CORAX_NNI_NEXTNEXT} */
-CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
+/**
+ * Performs an NNI move on the tree. There are two options for moves here:
+ *
+ * - CORAX_NNI_NEXT,
+ * - CORAX_NNI_NEXTNETX.
+ *
+ * This controls which of the two possible topology modifications that can be
+ * done. If `CORAX_NNI_NEXT` is given, then the `edge->back->next` subtree is
+ * swapped with `edge->next`. This means that `edge->back->next` becomes sister
+ * to `edge`. If `CORAX_NNI_NEXTNEXT` is given, then `edge->back->next->next` is
+ * used instead.
+ *
+ * The CLV, scaler and pmatrix indices are updated.
+ *
+ * @param[in] edge Node whos back pointer will be the "pivot" for the NNI move.
+ *
+ * @param[in] type One of either: `CORAX_NNI_NEXT` or `CORAX_NNI_NEXTNEXT`.
+ *
+ * @param[out] rollback_info Rollback information for undoing this move.
+ *                           If it is NULL, rollback information is ignored.
+ *
+ * @return CORAX_SUCCESS if the move was applied correctly,
+ *         CORAX_FAILURE otherwise (check corax_errmsg for details)
+ *
+ * @ingroup corax_utree_t
+ */
+CORAX_EXPORT int corax_utree_nni(corax_unode_t         *edge,
                                  int                    type,
                                  corax_tree_rollback_t *rollback_info);
 

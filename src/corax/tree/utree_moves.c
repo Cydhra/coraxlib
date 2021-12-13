@@ -636,19 +636,7 @@ CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
   return corax_utree_spr(p, r, rollback_info);
 }
 
-/**
- * Performs one NNI move
- * The CLV, scaler and pmatrix indices are updated.
- *
- * @param[in] edge NNI interchange edge
- * @param[in] type move type: CORAX_NNI_LEFT, CORAX_NNI_RIGHT
- * @param[out] rollback_info Rollback information for undoing this move.
- *                           If it is NULL, rollback information is ignored.
- *
- * @return CORAX_SUCCESS if the move was applied correctly,
- *         CORAX_FAILURE otherwise (check corax_errmsg for details)
- */
-CORAX_EXPORT int corax_utree_nni(corax_unode_t *        edge,
+CORAX_EXPORT int corax_utree_nni(corax_unode_t         *edge,
                                  int                    type,
                                  corax_tree_rollback_t *rollback_info)
 {
