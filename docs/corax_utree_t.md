@@ -4,25 +4,23 @@ the concepts and design around the tree data structure in [`coraxlib`](coraxlib.
 Concepts
 ================================================================================
 
-Throughout this documentation, there is an intended difference between the terms
-`corax_unode_t` and *node*. The former refers to the actual data structure that is used to
-represent a vertex in a phylogenetic tree, while a *node* refers to that actual
-vertex.  Each node in a phylogenetic tree is made up of 1 or more
-`corax_unode_t`s. 
+Throughout this documentation, there is an important difference between the terms `corax_unode_t` and *node*. The former
+refers to the actual data structure that is used to represent a vertex in a phylogenetic tree, while a *node* refers to
+that actual vertex. Each node in a phylogenetic tree is made up of 1 or more `corax_unode_t`s. Typically, a leaf node
+will be a single `corax_unode_t` with a `null` `next` pointer, and an inner node will be 3 `corax_unode_t`s.
 
-Each `corax_unode_t` is a collection of two pointers and some associated data. The
-two pointers are the `next` and `back` pointers. If a `corax_unode_t` is an inner
-node, then the `next` pointer points to the next `corax_unode_t` in the node. If
-the `next` pointer is `null`, then that `corax_unode_t` represents a tip.
+Each `corax_unode_t` is a collection of two pointers and some associated data. The two pointers are the `next` and
+`back` pointers. If a `corax_unode_t` is an inner node, then the `next` pointer points to the next `corax_unode_t` in
+the node. If the `next` pointer is `null`, then that `corax_unode_t` represents a tip.
 
-The `back` pointer represents edges. It points to a `corax_unode_t` associated
-with another node. Suppose that we have the tree `((a,b),c,d)`, then the coraxlib
-representation of that would what is shown in the following figure.
+The `back` pointer represents edges. It points to a `corax_unode_t` associated with another node. Suppose that we have
+the tree `((a,b),c,d)`, then the `coraxlib` representation of that would what is shown in the following figure.
 
 ![Figure explaining back and next pointers](images/coraxlib_utree_figure.png)
 
-Here, the dotted arcs indicate `next` pointers, and the solid lines represent
-`back` pointers.
+Here, the dotted arcs indicate `next` pointers, and the solid lines represent `back` pointers. Please note that `back`
+pointers are always mirrored, and that a mirrored pair of `back` pointers corresponds to a single edge in the tree.
+Other values
 
 Structures
 ================================================================================
@@ -84,13 +82,13 @@ typedef struct corax_unode_s
 Fields:
 
 - `label`: The label of the node. Optional.
-- `length`: The length of the edge represented by the `back` pointer.
+- `length`: The length of the edge represented by the `back` pointer. This should be equal to `back->length`.
 - `node_index`: Index of this node in the `nodes` buffer in a `corax_utree_t`. Each "super"-node shares an index. I.E.
   the index is on the "tree node" level, not on the `corax_unode_t` level.
 - `clv_index`: Index of the CLVs to use when calculating a likelihood
 - `scaler_index`: Index into the scaler array to represent the CLV scaler
-- `pmatrix_index`: index into the array of probability matrices. These probability matrices need to be
-  computed based on the length of the branch
+- `pmatrix_index`: index into the array of probability matrices. These probability matrices need to be computed based on
+  the length of the branch. Should be equal to `back->pmatrix_index`.
 - `next`, `back`: See the explanation in the concepts section.
 - `data`: An extra pointer to store "user data". In practice, this can be used
   for any task, but existing functions might also use it, so be careful.
