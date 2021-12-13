@@ -1,23 +1,20 @@
 Scope
 ================================================================================
 
-The goal of this documentation is to explain how to interact with `coraxlib`,
-as long as the reader already knows the broad strokes of phylogenetic inference.
-As such, there will be some terms which are present in the text, but explaining
+The goal of this documentation is to explain how to interact with `coraxlib`, as long as the reader already knows the
+broad strokes of phylogenetic inference. As such, there will be some terms which are present in the text, but explaining
 the terms completely is outside of the scope of this documentation.
 
-This documentation is _not_ intended to teach phylogenetic inference, HPC, or
-programming in general. Basic knowledge of these topics is assumed. Instead,
-this will explain how `coraxlib` does phylogenetic inference, not how it is done
-in general.
+This documentation is _not_ intended to teach phylogenetic inference, HPC, or programming in general. Basic knowledge of
+these topics is assumed. Instead, this will explain how `coraxlib` does phylogenetic inference, not how it is done in
+general.
 
 High level design
 ================================================================================
 
-At a high level, `coraxlib` exists to implement efficient versions of core
-functions that take up the majority of the runtime during phylogenetic
-inference. To do this, `coraxlib` has a few important data structures which
-contain most of the data required for likelihood computation:
+At a high level, `coraxlib` exists to implement efficient versions of core functions that take up the majority of the
+runtime during phylogenetic inference. To do this, `coraxlib` has a few important data structures which contain most of
+the data required for likelihood computation:
 
 - [`corax_utree_t`](corax_utree_t.md)
 - [`corax_partition_t`](corax_partition_t.md)
@@ -29,9 +26,8 @@ conditional likelihood vectors ([CLVs][clvs]), and information about the state o
 
 [clvs]: corax_partition_t.md#clv
 
-For most use cases (especially those involving likelihood calculations) of
-`coraxlib`, both a `corax_utree_t` and a `corax_partition_t` will be required.
-Information on how to create and interact with this data structures can be found
+For most use cases (especially those involving likelihood calculations) of `coraxlib`, both a `corax_utree_t` and a
+`corax_partition_t` will be required. Information on how to create and interact with this data structures can be found
 in their respective pages.
 
 Likelihood Evaluation
@@ -140,10 +136,8 @@ In terms of calculations, `coraxlib` has optimized routines for 4 main tasks:
 - Likelihood
 - Probability Matrices (P-matrices)
 
-In order to calculate the likelihood of a tree from scratch only Probability
-Matrices, Partials, and Likelihood routines are required. The Derivatives
-portion of calculation is used for optimization of the branch lengths of the
-tree.
+In order to calculate the likelihood of a tree from scratch only Probability Matrices, CLVS, and Likelihood routines
+are required. The Derivatives portion of calculation is used for optimization of the branch lengths of the tree.
 
 A sample tree inference cycle might be:
 
@@ -325,3 +319,9 @@ the same regardless of the error.
 The _type_ of error is stored in `corax_errno`, and the message is stored in
 `corax_errmsg`. `corax_errno` is an `int`, while `corax_errmsg` is a `char[200]`. Both
 of these are present at the global scope.
+
+Examples
+===============================================================================
+
+Some example programs are present in `examples/` and in `test/regression/src`. These cover the topics dicussed above, as
+well as some additional tasks.

@@ -101,8 +101,8 @@ static int utree_nni(corax_unode_t *p, int type)
 
 static int utree_spr(corax_unode_t *p,
                      corax_unode_t *r,
-                     double *       branch_lengths,
-                     unsigned int * matrix_indices)
+                     double        *branch_lengths,
+                     unsigned int  *matrix_indices)
 {
   /* given nodes p and r, perform an SPR move in the following way,
      i.e. prune subtree C and make it adjacent to subtree D:
@@ -283,7 +283,7 @@ CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
  * @param[out] child_subtree  edge corresponding to the 'edge->back' subtree
  * @return CORAX_SUCCESS if OK
  */
-CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
+CORAX_EXPORT int corax_utree_bisect(corax_unode_t  *edge,
                                     corax_unode_t **parent_subtree,
                                     corax_unode_t **child_subtree)
 {
@@ -477,8 +477,8 @@ CORAX_EXPORT int corax_utree_regraft(corax_unode_t *edge, corax_unode_t *tree)
  * @return CORAX_SUCCESS if the move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
-                                 corax_utree_edge_t *   r_edge,
+CORAX_EXPORT int corax_utree_tbr(corax_unode_t         *b_edge,
+                                 corax_utree_edge_t    *r_edge,
                                  corax_tree_rollback_t *rollback_info)
 {
   corax_unode_t *parent, *child;
@@ -557,8 +557,8 @@ CORAX_EXPORT int corax_utree_tbr(corax_unode_t *        b_edge,
  * @return CORAX_SUCCESS if the move was applied correctly,
  *         CORAX_FAILURE otherwise (check corax_errmsg for details)
  */
-CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
-                                 corax_unode_t *        r_edge,
+CORAX_EXPORT int corax_utree_spr(corax_unode_t         *p_edge,
+                                 corax_unode_t         *r_edge,
                                  corax_tree_rollback_t *rollback_info)
 {
   int retval;
@@ -592,8 +592,8 @@ CORAX_EXPORT int corax_utree_spr(corax_unode_t *        p_edge,
 /* this is a safer (but slower) function for performing an spr move, than
    corax_utree_spr(). See the last paragraph in the comments section of the
    corax_utree_spr() function for more details */
-CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t *        p,
-                                      corax_unode_t *        r,
+CORAX_EXPORT int corax_utree_spr_safe(corax_unode_t         *p,
+                                      corax_unode_t         *r,
                                       corax_tree_rollback_t *rollback_info)
 {
   /* check all possible scenarios of failure */

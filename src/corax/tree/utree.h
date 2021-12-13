@@ -46,8 +46,8 @@ CORAX_EXPORT corax_utree_t *corax_utree_wraptree_multi(
 
 CORAX_EXPORT corax_unode_t *corax_utree_create_node(unsigned int clv_index,
                                                     int          scaler_index,
-                                                    char *       label,
-                                                    void *       data);
+                                                    char        *label,
+                                                    void        *data);
 
 CORAX_EXPORT int corax_unode_is_rooted(const corax_unode_t *root);
 
@@ -69,7 +69,7 @@ CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
  *
  * @param[out] ops Buffer to store the created ops. For a full traversal, the
  * allocated size should be equal to the number of the number of branches in the
- * tree.
+ * tree. On an unrooted tree, this is `n-3`.
  *
  * @param[out] matrix_count Out parameter indicating the number matrices
  * required to perform the operations
@@ -77,17 +77,16 @@ CORAX_EXPORT int corax_utree_is_rooted(const corax_utree_t *tree);
  * @param[out] ops_count Out parameter indicating the actual number of
  * operations.
  *
- * @ingroup corax_utree_t
  * @ingroup corax_operation_t
  */
 CORAX_EXPORT void
 corax_utree_create_operations(const corax_unode_t *const *trav_buffer,
                               unsigned int                trav_buffer_size,
-                              double *                    branches,
-                              unsigned int *              pmatrix_indices,
-                              corax_operation_t *         ops,
-                              unsigned int *              matrix_count,
-                              unsigned int *              ops_count);
+                              double                     *branches,
+                              unsigned int               *pmatrix_indices,
+                              corax_operation_t          *ops,
+                              unsigned int               *matrix_count,
+                              unsigned int               *ops_count);
 
 CORAX_EXPORT int corax_utree_check_integrity(const corax_utree_t *root);
 

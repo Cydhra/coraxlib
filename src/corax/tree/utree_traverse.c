@@ -29,7 +29,7 @@ CORAX_EXPORT int corax_utree_every_const(const corax_utree_t *tree,
 static void utree_traverse_recursive(corax_unode_t *node,
                                      int            traversal,
                                      int (*cbtrav)(corax_unode_t *),
-                                     unsigned int *  index,
+                                     unsigned int   *index,
                                      corax_unode_t **outbuffer)
 {
   if (!cbtrav(node)) return;
@@ -59,10 +59,10 @@ static void utree_traverse_recursive(corax_unode_t *node,
 
 // const version of utree_traverse_recursive()
 static void utree_traverse_recursive_const(const corax_unode_t *node,
-                                     int            traversal,
-                                     int (*cbtrav)(const corax_unode_t *),
-                                     unsigned int *  index,
-                                     corax_unode_t const ** outbuffer)
+                                           int                  traversal,
+                                           int (*cbtrav)(const corax_unode_t *),
+                                           unsigned int         *index,
+                                           corax_unode_t const **outbuffer)
 {
   if (!cbtrav(node)) return;
 
@@ -89,12 +89,11 @@ static void utree_traverse_recursive_const(const corax_unode_t *node,
   }
 }
 
-
 CORAX_EXPORT int corax_utree_traverse_subtree(corax_unode_t *root,
                                               int            traversal,
                                               int (*cbtrav)(corax_unode_t *),
                                               corax_unode_t **outbuffer,
-                                              unsigned int *  trav_size)
+                                              unsigned int   *trav_size)
 {
   *trav_size = 0;
   if (!root->next) return CORAX_FAILURE;
@@ -129,7 +128,7 @@ CORAX_EXPORT int corax_utree_traverse(corax_unode_t *root,
                                       int            traversal,
                                       int (*cbtrav)(corax_unode_t *),
                                       corax_unode_t **outbuffer,
-                                      unsigned int *  trav_size)
+                                      unsigned int   *trav_size)
 {
   *trav_size = 0;
   if (!root->next) return CORAX_FAILURE;
@@ -163,11 +162,12 @@ CORAX_EXPORT int corax_utree_traverse(corax_unode_t *root,
 }
 
 // const version of corax_utree_traverse_const
-CORAX_EXPORT int corax_utree_traverse_const(const corax_unode_t *root,
-                                      int            traversal,
-                                      int (*cbtrav)(const corax_unode_t *),
-                                      corax_unode_t const ** outbuffer,
-                                      unsigned int *  trav_size)
+CORAX_EXPORT int
+corax_utree_traverse_const(const corax_unode_t *root,
+                           int                  traversal,
+                           int (*cbtrav)(const corax_unode_t *),
+                           corax_unode_t const **outbuffer,
+                           unsigned int         *trav_size)
 {
   *trav_size = 0;
   if (!root->next) return CORAX_FAILURE;
@@ -189,7 +189,8 @@ CORAX_EXPORT int corax_utree_traverse_const(const corax_unode_t *root,
 
     utree_traverse_recursive_const(
         root->back, traversal, cbtrav, trav_size, outbuffer);
-    utree_traverse_recursive_const(root, traversal, cbtrav, trav_size, outbuffer);
+    utree_traverse_recursive_const(
+        root, traversal, cbtrav, trav_size, outbuffer);
   }
   else
   {
@@ -256,9 +257,9 @@ corax_utree_traverse_apply(corax_unode_t *root,
   return retval;
 }
 
-static void utree_nodes_at_dist(corax_unode_t * node,
+static void utree_nodes_at_dist(corax_unode_t  *node,
                                 corax_unode_t **outbuffer,
-                                unsigned int *  index,
+                                unsigned int   *index,
                                 unsigned int    min_distance,
                                 unsigned int    max_distance,
                                 unsigned int    depth)
@@ -290,14 +291,14 @@ static void utree_nodes_at_dist(corax_unode_t * node,
  * \p max_distance from a specified node
  *
  * @param[in] node the root node
- * @param[out] outbuffer the list of nodes. Outbuffer should be allocated
+ * @param[out] outbuffer the list of nodes.
  * @param[out] node_count the number of nodes returned in \p outbuffer
  * @param[in] min_distance the minimum distance to check
  * @param[in] max_distance the maximum distance to check
  */
-CORAX_EXPORT int corax_utree_nodes_at_node_dist(corax_unode_t * node,
+CORAX_EXPORT int corax_utree_nodes_at_node_dist(corax_unode_t  *node,
                                                 corax_unode_t **outbuffer,
-                                                unsigned int *  node_count,
+                                                unsigned int   *node_count,
                                                 unsigned int    min_distance,
                                                 unsigned int    max_distance)
 {
@@ -346,9 +347,9 @@ CORAX_EXPORT int corax_utree_nodes_at_node_dist(corax_unode_t * node,
  * @param[in] max_distance the maximum distance to check
  */
 
-CORAX_EXPORT int corax_utree_nodes_at_edge_dist(corax_unode_t * edge,
+CORAX_EXPORT int corax_utree_nodes_at_edge_dist(corax_unode_t  *edge,
                                                 corax_unode_t **outbuffer,
-                                                unsigned int *  node_count,
+                                                unsigned int   *node_count,
                                                 unsigned int    min_distance,
                                                 unsigned int    max_distance)
 {

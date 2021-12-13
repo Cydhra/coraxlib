@@ -61,7 +61,7 @@ typedef struct
     } NNI;
     struct
     {
-      corax_unode_t *    bisect_edge;
+      corax_unode_t     *bisect_edge;
       corax_utree_edge_t reconn_edge;
       double             bisect_left_bl;
       double             bisect_right_bl;
@@ -77,7 +77,7 @@ CORAX_EXPORT int corax_utree_connect_nodes(corax_unode_t *parent,
                                            corax_unode_t *child,
                                            double         length);
 
-CORAX_EXPORT int corax_utree_bisect(corax_unode_t * edge,
+CORAX_EXPORT int corax_utree_bisect(corax_unode_t  *edge,
                                     corax_unode_t **parent_subtree,
                                     corax_unode_t **child_subtree);
 
