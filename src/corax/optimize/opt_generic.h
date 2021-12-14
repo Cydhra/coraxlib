@@ -97,6 +97,11 @@
 #define CORAX_OPT_BLO_NEWTON_GLOBAL                                            \
   3 /* NR variant which looks for local optima */
 
+/** @} */
+
+/** @ingroup corax_errors
+ * @{
+ */
 /* error codes (for this module, 2000-3000) */
 #define CORAX_OPT_ERROR_PARAMETER 2000
 #define CORAX_OPT_ERROR_TAXA_MISMATCH 2010
@@ -109,11 +114,10 @@
 #define CORAX_OPT_ERROR_NEWTON_WORSE_LK 2240
 #define CORAX_OPT_ERROR_NEWTON_BAD_RADIUS 2250
 #define CORAX_OPT_ERROR_BRENT_INIT 2310
+/** @} */
 
 /* special options */
 #define CORAX_OPT_BRLEN_OPTIMIZE_ALL -1
-
-/** @} */
 
 /* Structure with information necessary for evaluating the likelihood */
 
