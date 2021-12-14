@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "corax/model/modutil.h"
+#include "corax/model/aa_rates.h"
 
 /* general single-matrix models */
 const corax_subst_model_t M_DAYHOFF = {"DAYHOFF",

@@ -21,7 +21,7 @@
 #ifndef CORAX_UTIL_MSA_H_
 #define CORAX_UTIL_MSA_H_
 
-#include "corax/corax_common.h"
+#include "corax/core/partition.h"
 
 #define CORAX_MSA_STATS_NONE (0ul)
 #define CORAX_MSA_STATS_DUP_TAXA (1ul << 0)
@@ -36,6 +36,16 @@
 #define CORAX_MSA_STATS_ALL (~0ul)
 
 #define CORAX_MSA_MAX_ERRORS 100
+
+/* multiple sequence alignment */
+typedef struct corax_msa_s
+{
+  int count;
+  int length;
+
+  char **sequence;
+  char **label;
+} corax_msa_t;
 
 typedef struct msa_stats
 {
@@ -70,36 +80,46 @@ typedef struct msa_errors
   int            status;
 } corax_msa_errors_t;
 
-CORAX_EXPORT double *
-corax_msa_empirical_frequencies(const corax_partition_t *partition);
-CORAX_EXPORT double *
-corax_msa_empirical_subst_rates(const corax_partition_t *partition);
-CORAX_EXPORT double
-corax_msa_empirical_invariant_sites(corax_partition_t *partition);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t *  msa,
-                                                 const corax_state_t *tipmap);
+  CORAX_EXPORT double *
+  corax_msa_empirical_frequencies(const corax_partition_t *partition);
+  CORAX_EXPORT double *
+  corax_msa_empirical_subst_rates(const corax_partition_t *partition);
+  CORAX_EXPORT double
+  corax_msa_empirical_invariant_sites(corax_partition_t *partition);
 
-CORAX_EXPORT void corax_msa_destroy_errors(corax_msa_errors_t *errs);
+  CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t *  msa,
+                                                   const corax_state_t *tipmap);
 
-CORAX_EXPORT corax_msa_stats_t *
-             corax_msa_compute_stats(const corax_msa_t *  msa,
-                                     unsigned int         states,
-                                     const corax_state_t *tipmap,
-                                     const unsigned int * weights,
-                                     unsigned long        stats_mask);
+  CORAX_EXPORT void corax_msa_destroy_errors(corax_msa_errors_t *errs);
 
-CORAX_EXPORT void corax_msa_destroy_stats(corax_msa_stats_t *stats);
+  CORAX_EXPORT corax_msa_stats_t *
+               corax_msa_compute_stats(const corax_msa_t *  msa,
+                                       unsigned int         states,
+                                       const corax_state_t *tipmap,
+                                       const unsigned int * weights,
+                                       unsigned long        stats_mask);
 
-CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t *  msa,
-                                           unsigned long *remove_seqs,
-                                           unsigned long  remove_seqs_count,
-                                           unsigned long *remove_cols,
-                                           unsigned long  remove_cols_count,
-                                           unsigned int   inplace);
+  CORAX_EXPORT void corax_msa_destroy_stats(corax_msa_stats_t *stats);
 
-CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t * msa,
-                                           const unsigned int *site_part,
-                                           unsigned int        part_count);
+  CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t *  msa,
+                                             unsigned long *remove_seqs,
+                                             unsigned long  remove_seqs_count,
+                                             unsigned long *remove_cols,
+                                             unsigned long  remove_cols_count,
+                                             unsigned int   inplace);
+
+  CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t * msa,
+                                             const unsigned int *site_part,
+                                             unsigned int        part_count);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* CORAX_UTIL_MSA_H_ */

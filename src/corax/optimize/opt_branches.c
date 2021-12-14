@@ -20,6 +20,8 @@
  */
 
 #include "opt_branches.h"
+#include "corax/corax_kernel.h"
+
 
 #define BETTER_LL_TRESHOLD 1e-13
 

@@ -55,7 +55,7 @@ double *corax_util_get_equal_freqs(unsigned int states)
 
 double *corax_util_get_equal_rates(unsigned int states)
 {
-  const unsigned int rates      = corax_subst_rate_count(states);
+  const unsigned int rates      = CORAX_SUBST_RATE_COUNT(states);
   double *           substrates = calloc(rates, sizeof(double));
   if (!substrates)
   {

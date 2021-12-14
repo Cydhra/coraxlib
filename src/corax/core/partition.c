@@ -122,28 +122,6 @@ static void dealloc_partition_data(corax_partition_t *partition)
   free(partition);
 }
 
-CORAX_EXPORT void *corax_aligned_alloc(size_t size, size_t alignment)
-{
-  void *mem;
-
-#if (defined(__WIN32__) || defined(__WIN64__))
-  mem = _aligned_malloc(size, alignment);
-#else
-  if (posix_memalign(&mem, alignment, size)) mem = NULL;
-#endif
-
-  return mem;
-}
-
-CORAX_EXPORT void corax_aligned_free(void *ptr)
-{
-#if (defined(__WIN32__) || defined(__WIN64__))
-  _aligned_free(ptr);
-#else
-  free(ptr);
-#endif
-}
-
 static int update_charmap(corax_partition_t *  partition,
                           const corax_state_t *map)
 {
@@ -1093,6 +1071,56 @@ CORAX_EXPORT void corax_set_pattern_weights(corax_partition_t * partition,
   partition->pattern_weight_sum = 0;
   for (i = 0; i < partition->sites; ++i)
     partition->pattern_weight_sum += pattern_weights[i];
+}
+
+CORAX_EXPORT void corax_set_frequencies(corax_partition_t *partition,
+                                        unsigned int       freqs_index,
+                                        const double *     frequencies)
+{
+  unsigned int i;
+  double       sum = 0.;
+
+  memcpy(partition->frequencies[freqs_index],
+         frequencies,
+         partition->states * sizeof(double));
+
+  /* make sure frequencies sum up to 1.0 */
+  for (i = 0; i < partition->states; ++i)
+    sum += partition->frequencies[freqs_index][i];
+
+  if (fabs(sum - 1.0) > CORAX_MISC_EPSILON)
+  {
+    for (i = 0; i < partition->states; ++i)
+      partition->frequencies[freqs_index][i] /= sum;
+  }
+
+  partition->eigen_decomp_valid[freqs_index] = 0;
+}
+
+CORAX_EXPORT void corax_set_category_rates(corax_partition_t *partition,
+                                           const double *     rates)
+{
+  memcpy(partition->rates, rates, partition->rate_cats * sizeof(double));
+}
+
+CORAX_EXPORT void corax_set_category_weights(corax_partition_t *partition,
+                                             const double *     rate_weights)
+{
+  memcpy(partition->rate_weights,
+         rate_weights,
+         partition->rate_cats * sizeof(double));
+}
+
+CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
+                                         unsigned int       params_index,
+                                         const double *     params)
+{
+  unsigned int count = CORAX_SUBST_RATE_COUNT(partition->states);
+
+  memcpy(partition->subst_params[params_index], params, count * sizeof(double));
+  partition->eigen_decomp_valid[params_index] = 0;
+
+  /* NOTE: For protein models PLL/RAxML do a rate scaling by 10.0/max_rate */
 }
 
 CORAX_EXPORT int corax_set_asc_bias_type(corax_partition_t *partition,

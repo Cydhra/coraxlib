@@ -21,7 +21,8 @@
 #ifndef CORAX_IO_BINARY_H_
 #define CORAX_IO_BINARY_H_
 
-#include "corax/corax_common.h"
+#include "corax/corax_core.h"
+#include "corax/corax_tree.h"
 
 #define CORAX_BIN_BLOCK_PARTITION 0
 #define CORAX_BIN_BLOCK_CLV 1
@@ -89,93 +90,103 @@ typedef struct
   size_t       block_len;  //! block length
 } corax_block_header_t;
 
-CORAX_EXPORT FILE *corax_binary_create(const char *           filename,
-                                       corax_binary_header_t *header,
-                                       unsigned int           access_type,
-                                       unsigned int           n_blocks);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-CORAX_EXPORT FILE *corax_binary_open(const char *           filename,
-                                     corax_binary_header_t *header);
+  CORAX_EXPORT FILE *corax_binary_create(const char *           filename,
+                                         corax_binary_header_t *header,
+                                         unsigned int           access_type,
+                                         unsigned int           n_blocks);
 
-CORAX_EXPORT FILE *corax_binary_append_open(const char *           filename,
-                                            corax_binary_header_t *header);
+  CORAX_EXPORT FILE *corax_binary_open(const char *           filename,
+                                       corax_binary_header_t *header);
 
-CORAX_EXPORT int corax_binary_close(FILE *bin_file);
+  CORAX_EXPORT FILE *corax_binary_append_open(const char *           filename,
+                                              corax_binary_header_t *header);
 
-CORAX_EXPORT corax_block_map_t *corax_binary_get_map(FILE *        bin_file,
-                                                     unsigned int *n_blocks);
+  CORAX_EXPORT int corax_binary_close(FILE *bin_file);
 
-CORAX_EXPORT int corax_binary_partition_dump(FILE *             bin_file,
-                                             int                block_id,
-                                             corax_partition_t *partition,
-                                             unsigned int       attributes);
+  CORAX_EXPORT corax_block_map_t *corax_binary_get_map(FILE *        bin_file,
+                                                       unsigned int *n_blocks);
 
-CORAX_EXPORT corax_partition_t *
-             corax_binary_partition_load(FILE *             bin_file,
-                                         int                block_id,
-                                         corax_partition_t *partition,
-                                         unsigned int *     attributes,
-                                         long int           offset);
+  CORAX_EXPORT int corax_binary_partition_dump(FILE *             bin_file,
+                                               int                block_id,
+                                               corax_partition_t *partition,
+                                               unsigned int       attributes);
 
-CORAX_EXPORT int corax_binary_repeats_dump(FILE *             bin_file,
-                                           int                block_id,
-                                           corax_partition_t *partition,
-                                           unsigned int       attributes);
-
-CORAX_EXPORT int corax_binary_repeats_load(FILE *             bin_file,
+  CORAX_EXPORT corax_partition_t *
+               corax_binary_partition_load(FILE *             bin_file,
                                            int                block_id,
                                            corax_partition_t *partition,
                                            unsigned int *     attributes,
                                            long int           offset);
 
-CORAX_EXPORT int corax_binary_pernoderepeats_dump(FILE *             bin_file,
-                                                  int                block_id,
-                                                  corax_partition_t *partition,
-                                                  unsigned int       clv_index,
-                                                  unsigned int attributes);
+  CORAX_EXPORT int corax_binary_repeats_dump(FILE *             bin_file,
+                                             int                block_id,
+                                             corax_partition_t *partition,
+                                             unsigned int       attributes);
 
-CORAX_EXPORT int corax_binary_pernoderepeats_load(FILE *             bin_file,
-                                                  int                block_id,
-                                                  corax_partition_t *partition,
-                                                  unsigned int       clv_index,
-                                                  unsigned int *     attributes,
-                                                  long int           offset);
+  CORAX_EXPORT int corax_binary_repeats_load(FILE *             bin_file,
+                                             int                block_id,
+                                             corax_partition_t *partition,
+                                             unsigned int *     attributes,
+                                             long int           offset);
 
-CORAX_EXPORT int corax_binary_clv_dump(FILE *             bin_file,
-                                       int                block_id,
-                                       corax_partition_t *partition,
-                                       unsigned int       clv_index,
-                                       unsigned int       attributes);
+  CORAX_EXPORT int corax_binary_pernoderepeats_dump(FILE *             bin_file,
+                                                    int                block_id,
+                                                    corax_partition_t *partition,
+                                                    unsigned int       clv_index,
+                                                    unsigned int attributes);
 
-CORAX_EXPORT int corax_binary_clv_load(FILE *             bin_file,
-                                       int                block_id,
-                                       corax_partition_t *partition,
-                                       unsigned int       clv_index,
-                                       unsigned int *     attributes,
-                                       long int           offset);
+  CORAX_EXPORT int corax_binary_pernoderepeats_load(FILE *             bin_file,
+                                                    int                block_id,
+                                                    corax_partition_t *partition,
+                                                    unsigned int       clv_index,
+                                                    unsigned int *     attributes,
+                                                    long int           offset);
 
-CORAX_EXPORT int corax_binary_utree_dump(FILE *         bin_file,
-                                         int            block_id,
-                                         corax_unode_t *tree,
-                                         unsigned int   tip_count,
-                                         unsigned int   attributes);
+  CORAX_EXPORT int corax_binary_clv_dump(FILE *             bin_file,
+                                         int                block_id,
+                                         corax_partition_t *partition,
+                                         unsigned int       clv_index,
+                                         unsigned int       attributes);
 
-CORAX_EXPORT corax_unode_t *corax_binary_utree_load(FILE *        bin_file,
-                                                    int           block_id,
-                                                    unsigned int *attributes,
-                                                    long int      offset);
+  CORAX_EXPORT int corax_binary_clv_load(FILE *             bin_file,
+                                         int                block_id,
+                                         corax_partition_t *partition,
+                                         unsigned int       clv_index,
+                                         unsigned int *     attributes,
+                                         long int           offset);
 
-CORAX_EXPORT int corax_binary_custom_dump(FILE *       bin_file,
-                                          int          block_id,
-                                          void *       data,
-                                          size_t       size,
-                                          unsigned int attributes);
+  CORAX_EXPORT int corax_binary_utree_dump(FILE *         bin_file,
+                                           int            block_id,
+                                           corax_unode_t *tree,
+                                           unsigned int   tip_count,
+                                           unsigned int   attributes);
 
-CORAX_EXPORT void *corax_binary_custom_load(FILE *        bin_file,
-                                            int           block_id,
-                                            size_t *      size,
-                                            unsigned int *type,
-                                            unsigned int *attributes,
-                                            long int      offset);
+  CORAX_EXPORT corax_unode_t *corax_binary_utree_load(FILE *        bin_file,
+                                                      int           block_id,
+                                                      unsigned int *attributes,
+                                                      long int      offset);
+
+  CORAX_EXPORT int corax_binary_custom_dump(FILE *       bin_file,
+                                            int          block_id,
+                                            void *       data,
+                                            size_t       size,
+                                            unsigned int attributes);
+
+  CORAX_EXPORT void *corax_binary_custom_load(FILE *        bin_file,
+                                              int           block_id,
+                                              size_t *      size,
+                                              unsigned int *type,
+                                              unsigned int *attributes,
+                                              long int      offset);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* CORAX_IO_BINARY_H_ */

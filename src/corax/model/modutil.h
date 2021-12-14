@@ -22,7 +22,7 @@
 #ifndef CORAX_MODEL_MODUTIL_H_
 #define CORAX_MODEL_MODUTIL_H_
 
-#include "corax/corax_common.h"
+#include "corax/corax_core.h"
 
 /* error codes for UTIL coraxlib module (5001-6000)*/
 #define CORAX_UTIL_ERROR_MODEL_UNKNOWN 5001

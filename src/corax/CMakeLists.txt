@@ -41,10 +41,9 @@ file(GLOB CORAX_OPTIMIZE_SOURCES ${CORAX_SRC_DIR_OPTIMIZE}/*.c
 file(GLOB CORAX_TREE_SOURCES ${CORAX_SRC_DIR_TREE}/*.c)
 
 set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
+  ${CORAX_SRC_DIR_CORE}/parsimony.c
   ${CORAX_SRC_DIR_CORE}/partition.c
   ${CORAX_SRC_DIR_CORE}/repeats.c
-
-  ${CORAX_SRC_DIR_IO}/fasta.c
 
   ${CORAX_SRC_DIR_IO}/binary.c
   ${CORAX_SRC_DIR_IO}/binary_io_operations.c
@@ -62,13 +61,16 @@ set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_clv.c
   ${CORAX_SRC_DIR_KERNEL_GENERIC}/core_pmatrix.c
   ${CORAX_SRC_DIR_KERNEL_GENERIC}/fast_parsimony.c
+  ${CORAX_SRC_DIR_KERNEL_GENERIC}/weighted_parsimony.c
   ${CORAX_SRC_DIR_KERNEL}/clv.c
   ${CORAX_SRC_DIR_KERNEL}/derivatives.c
   ${CORAX_SRC_DIR_KERNEL}/likelihood.c
-  ${CORAX_SRC_DIR_KERNEL}/parsimony.c
+  ${CORAX_SRC_DIR_KERNEL}/pmatrix.c
 
+  ${CORAX_SRC_DIR_MODEL}/aa_rates.c
+  ${CORAX_SRC_DIR_MODEL}/eigen.c
   ${CORAX_SRC_DIR_MODEL}/gamma.c
-  ${CORAX_SRC_DIR_MODEL}/models.c
+  ${CORAX_SRC_DIR_MODEL}/invariant.c
   ${CORAX_SRC_DIR_MODEL}/modutil.c
   ${CORAX_SRC_DIR_MODEL}/modutil_aa.c
   ${CORAX_SRC_DIR_MODEL}/modutil_dna.c
