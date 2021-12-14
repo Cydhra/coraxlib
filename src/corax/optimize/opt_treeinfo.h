@@ -133,7 +133,7 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
 /* search */
 
 /**
- * Perform an SPR round
+ * Perform an SPR round.
  *
  * @param radius_min
  * @param radius_max Minimum and maximum thresholds for the SPR reinsertion
@@ -161,7 +161,8 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
  *
  * @param subtree_cutoff relative likelihood cutoff for descending into
  * subtrees. A larger value means higher cutoff, i.e. deeper descent into
- * subtrees.
+ * subtrees. For more information, see
+ * https://cme.h-its.org/exelixis/pubs/VLSI2007.pdf
  *
  * @ingroup corax_treeinfo_t
  */
