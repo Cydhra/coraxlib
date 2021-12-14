@@ -148,6 +148,13 @@ corax_algo_spr_round(my_treeinfo,
                      1,                  /* Number of BL optimization rounds */
                      CORAX_MISC_EPSILON, /* Default optimization threshold */
                      my_cutoff_info,     /* Pointer to some cutoff info */
-                     CORAX_MISC_EPSILON  /* Default subtree cutoff threshold */
+                     1.0  /* Default subtree cutoff threshold */
                      )
+```
+
+The cutoff information should be initalized as:
+
+```{.c}
+cutoff_info_t* my_cutoff_info = (cutoff_info_t*)calloc(sizeof(cutoff_info_t), 1);
+my_cutoff_info->lh_cutoff = 1.0;
 ```
