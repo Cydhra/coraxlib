@@ -35,12 +35,12 @@ typedef struct cutoff_info
 
 typedef int (*treeinfo_param_set_cb)(corax_treeinfo_t *treeinfo,
                                      unsigned int      part_num,
-                                     const double *    param_vals,
+                                     const double     *param_vals,
                                      unsigned int      param_count);
 
 typedef int (*treeinfo_param_get_cb)(const corax_treeinfo_t *treeinfo,
                                      unsigned int            part_num,
-                                     double *                param_vals,
+                                     double                 *param_vals,
                                      unsigned int            param_count);
 
 /* functions to optimize multiple partitions in parallel, using treeinfo struct
@@ -54,7 +54,7 @@ CORAX_EXPORT double corax_algo_opt_onedim_treeinfo(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT
 double
-corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t *    treeinfo,
+corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                       int                   param_to_optimize,
                                       treeinfo_param_get_cb params_getter,
                                       treeinfo_param_set_cb params_setter,
@@ -135,6 +135,10 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
 /**
  * Perform an SPR round
  *
+ * @param radius_min
+ * @param radius_max Minimum and maximum thresholds for the SPR reinsertion
+ * distance.
+ *
  * @param brlen_opt_method The optimization method to use when optimizing branch
  * lengths. Options are:
  * - CORAX_OPT_BLO_NEWTON_FAST: Standard.
@@ -145,18 +149,21 @@ double corax_algo_opt_brlen_treeinfo(corax_treeinfo_t *treeinfo,
  * - CORAX_OPT_BLO_NEWTON_OLDFAST
  * - CORAX_OPT_BLO_NEWTON_OLDSAFE
  *
- * @param smoothings: Maximum number of iterations for branch length optimization.
- * Negative = no limit (iterate until LH improvement < epsilon)
+ * @param smoothings: Maximum number of iterations for branch length
+ * optimization. Negative = no limit (iterate until LH improvement < epsilon)
  *
- * @epsilon: Likelihood threshold to terminate the optimization. Also known as
- * the tolerance.
+ * @param epsilon Likelihood threshold to terminate the optimization. Also known
+ * as the tolerance.
  *
- * @param[out] cutoff_info A struct that contains subtree descent cutoff information. It
- * is in/out parameter since cutoff info has to be preserved between subsequent SPR rounds.
+ * @param[out] cutoff_info A struct that contains subtree descent cutoff
+ * information. It is in/out parameter since cutoff info has to be preserved
+ * between subsequent SPR rounds.
  *
- * @subtree_cutoff relative likelihood cutoff for descending into subtrees. A larger value means
- * higher cutoff, i.e. deeper descent into subtrees.
+ * @param subtree_cutoff relative likelihood cutoff for descending into
+ * subtrees. A larger value means higher cutoff, i.e. deeper descent into
+ * subtrees.
  *
+ * @ingroup corax_treeinfo_t
  */
 CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
                                          unsigned int      radius_min,
@@ -168,7 +175,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
                                          double            bl_max,
                                          int               smoothings,
                                          double            epsilon,
-                                         cutoff_info_t *   cutoff_info,
+                                         cutoff_info_t    *cutoff_info,
                                          double            subtree_cutoff);
 
 #endif /* CORAX_OPTIMIZE_TREEINFO_H_ */
