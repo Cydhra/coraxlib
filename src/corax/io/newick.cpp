@@ -87,11 +87,11 @@ inline bool unode_is_rooted(const corax_unode_t *root)
   return (root->next && root->next->next == root) ? 1 : 0;
 }
 
-static void fill_nodes_recursive(corax_unode_t * node,
+static void fill_nodes_recursive(corax_unode_t  *node,
                                  corax_unode_t **array,
                                  unsigned int    array_size,
-                                 unsigned int *  tip_index,
-                                 unsigned int *  inner_index,
+                                 unsigned int   *tip_index,
+                                 unsigned int   *inner_index,
                                  unsigned int    level)
 {
   unsigned int index;
@@ -418,7 +418,7 @@ private:
   void           parse_length(corax_unode_t *current_node);
   void           parse_name(corax_unode_t *current_node);
   std::string    parse_string();
-  char *         parse_cstring();
+  char          *parse_cstring();
   double         parse_number();
   void           parse_comment();
 
@@ -594,6 +594,7 @@ corax_unode_t *newick_parser_t::parse_node_set()
 void newick_parser_t::parse_node_attrs(corax_unode_t *current_node)
 {
   parse_name(current_node);
+  parse_comment();
   parse_length(current_node);
   parse_comment();
 }
@@ -706,14 +707,14 @@ CORAX_EXPORT corax_utree_t *corax_utree_parse_newick(const char *filename)
 }
 
 CORAX_EXPORT corax_utree_t *
-             corax_utree_parse_newick_rooted(const char *filename)
+corax_utree_parse_newick_rooted(const char *filename)
 {
   return utree_parse_newick(
       filename, /*auto_unroot=*/false, /*allow_rooted=*/true);
 }
 
 CORAX_EXPORT corax_utree_t *
-             corax_utree_parse_newick_unroot(const char *filename)
+corax_utree_parse_newick_unroot(const char *filename)
 {
   return utree_parse_newick(
       filename, /*auto_unroot=*/true, /*allow_rooted=*/false);
@@ -727,7 +728,7 @@ CORAX_EXPORT corax_utree_t *corax_utree_parse_newick_string(const char *s)
 }
 
 CORAX_EXPORT corax_utree_t *
-             corax_utree_parse_newick_string_rooted(const char *s)
+corax_utree_parse_newick_string_rooted(const char *s)
 {
   return utree_parse_newick_string(std::string(s),
                                    /*auto_unroot=*/false,
@@ -735,7 +736,7 @@ CORAX_EXPORT corax_utree_t *
 }
 
 CORAX_EXPORT corax_utree_t *
-             corax_utree_parse_newick_string_unroot(const char *s)
+corax_utree_parse_newick_string_unroot(const char *s)
 {
   return utree_parse_newick_string(std::string(s),
                                    /*auto_unroot=*/true,
