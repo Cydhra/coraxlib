@@ -19,10 +19,16 @@
  Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
  */
 
+#include "corax/corax_core.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef CORAX_MODEL_MODUTIL_H_
 #define CORAX_MODEL_MODUTIL_H_
 
-#include "corax/corax_core.h"
 
 /* error codes for UTIL coraxlib module (5001-6000)*/
 #define CORAX_UTIL_ERROR_MODEL_UNKNOWN 5001
@@ -146,5 +152,9 @@ CORAX_EXPORT     corax_subst_model_t *
 
 CORAX_EXPORT int corax_util_model_exists_genotype10(const char *model_name);
 CORAX_EXPORT int corax_util_model_exists_genotype16(const char *model_name);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif
