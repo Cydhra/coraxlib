@@ -21,11 +21,6 @@
 
 #include "corax/corax_core.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef CORAX_MODEL_MODUTIL_H_
 #define CORAX_MODEL_MODUTIL_H_
 
@@ -72,6 +67,11 @@ typedef struct model_alias
   char *alias;        /* model alias name */
   char *primary_name; /* primary name used in the model definition */
 } corax_subst_model_alias_t;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* general model management functions */
 CORAX_EXPORT double *corax_util_get_equal_freqs(unsigned int states);
