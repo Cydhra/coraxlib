@@ -13,8 +13,8 @@
 
 template <class ...Args>
 void BM_Parse_Newick(benchmark::State& state, Args&&... args) {
-  auto args_tuple = std::make_tuple(std::move(args)...);
-  auto treePath = std::get<0>(args_tuple);
+  auto argsTuple = std::make_tuple(std::move(args)...);
+  auto treePath = std::get<0>(argsTuple);
   std::vector<corax_utree_t *> toDestroy;
   for (auto _ : state) {
     auto tree = corax_utree_parse_newick_rooted(treePath);
@@ -22,22 +22,28 @@ void BM_Parse_Newick(benchmark::State& state, Args&&... args) {
   }
 }
 
-template <class ...Args>
-void BM_kernel_likelihood(benchmark::State& state, Args&&... args) {
-  auto args_tuple = std::make_tuple(std::move(args)...);
-  auto treePath = std::get<0>(args_tuple);
-  auto msaPath= std::get<1>(args_tuple);
-  auto modelStr = std::get<2>(args_tuple);
-  auto repeats = std::get<3>(args_tuple);
-  auto vectorization = std::get<4>(args_tuple);
-  PLLTreeInfo treeInfoWrapper(treePath,
-      false,
+template <class T>
+std::unique_ptr<PLLTreeInfo> createTreeInfo(T &argsTuple)
+{
+  auto treePath = std::get<0>(argsTuple);
+  auto msaPath= std::get<1>(argsTuple);
+  auto modelStr = std::get<2>(argsTuple);
+  auto repeatsEnabled = std::get<3>(argsTuple);
+  auto vectorizationAttribute = std::get<4>(argsTuple);
+  bool isNewickAFile = false;
+  return std::make_unique<PLLTreeInfo>(treePath,
+      isNewickAFile,
       msaPath,
       modelStr,
-      repeats,
-      vectorization);
-  
-  auto treeinfo = treeInfoWrapper.getTreeInfo();
+      repeatsEnabled,
+      vectorizationAttribute);
+}
+
+template <class ...Args>
+void BM_kernel_likelihood(benchmark::State& state, Args&&... args) {
+  auto argsTuple = std::make_tuple(std::move(args)...);
+  auto treeInfoWrapper = createTreeInfo(argsTuple);
+  auto treeinfo = treeInfoWrapper->getTreeInfo();
   double ll = corax_treeinfo_compute_loglh(treeinfo, false);
   for (auto _ : state) {
       auto v = corax_compute_edge_loglikelihood(treeinfo->partitions[0],
@@ -52,50 +58,82 @@ void BM_kernel_likelihood(benchmark::State& state, Args&&... args) {
   }
 }
 
+static int cb_full_traversal(corax_unode_t *node)
+{
+  CORAX_UNUSED(node);
+  return CORAX_SUCCESS;
+}
+
+template <class ...Args>
+void BM_kernel_partial(benchmark::State& state, Args&&... args) {
+  auto argsTuple = std::make_tuple(std::move(args)...);
+  auto treeInfoWrapper = createTreeInfo(argsTuple);
+  auto treeinfo = treeInfoWrapper->getTreeInfo();
+  double ll = corax_treeinfo_compute_loglh(treeinfo, false);
+  unsigned int traversal_size = 0;
+  unsigned int ops_count = 0;
+  corax_utree_traverse(treeinfo->root,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
+                          cb_full_traversal,
+                          treeinfo->travbuffer,
+                          &traversal_size);
+  corax_utree_create_operations(
+      (const corax_unode_t *const *)treeinfo->travbuffer,
+      traversal_size,
+      NULL,
+      NULL,
+      treeinfo->operations,
+      NULL,
+      &ops_count);
+  for (auto _ : state) {
+    corax_update_clvs(treeinfo->partitions[0], 
+        treeinfo->operations, 
+        ops_count);
+  }
+}
+
 
 #define GET_TREE(DATA) GET_DATA(trees/DATA ## .newick)
 #define GET_MSA(DATA) GET_DATA(msas/DATA ## .phy)
-
-#define BENCH_KERNEL(KER, VEC, MODEL, DATA) \
-  BENCHMARK_CAPTURE(BM_kernel_ ## KER, \
-    DNA_ ## DATA  ## _ ## MODEL ## _1_ ## VEC,\
-    GET_TREE(DATA), \
-    GET_MSA(DATA),\
-    STRINGIFY(MODEL),\
-    1,\
-    CORAX_ATTRIB_ARCH_ ## VEC \
-    );
-
-
-  
-BENCH_KERNEL(likelihood, AVX, GTR, 128)
-BENCH_KERNEL(likelihood, SSE, GTR, 128)
-BENCH_KERNEL(likelihood, AVX, LG, 94)
-BENCH_KERNEL(likelihood, SSE, LG, 94)
 
 #define BENCH_TREE(TREE) BENCHMARK_CAPTURE(BM_Parse_Newick, \
     tree_ ## TREE ## _taxa,  \
     GET_TREE(TREE));
  
-BENCH_TREE(94)
+
+#define BENCH_KERNEL(KER, VEC, REPEATS, MODEL, DATA) \
+  BENCHMARK_CAPTURE(BM_kernel_ ## KER, \
+    Dataset_ ## DATA  ## _ ## MODEL ## _ ## VEC ## _Repeat ## REPEATS ,\
+    GET_TREE(DATA), \
+    GET_MSA(DATA),\
+    STRINGIFY(MODEL),\
+    REPEATS,\
+    CORAX_ATTRIB_ARCH_ ## VEC \
+    );
+
+#define BENCH_KERNEL_ALL_REPEATS(KER, VEC, MODEL, DATA) \
+  BENCH_KERNEL(KER, VEC, true, MODEL, DATA) \
+  BENCH_KERNEL(KER, VEC, false, MODEL, DATA) \
+
+#define BENCH_KERNEL_ALL_VEC(KER, MODEL, DATA) \
+   BENCH_KERNEL_ALL_REPEATS(KER, AVX2, MODEL, DATA) \
+   BENCH_KERNEL_ALL_REPEATS(KER, AVX, MODEL, DATA) \
+   BENCH_KERNEL_ALL_REPEATS(KER, SSE, MODEL, DATA)
+ 
+#define BENCH_KERNEL_ALL_DATA(KER) \
+  BENCH_KERNEL_ALL_VEC(KER, LG+G, 140) \
+  BENCH_KERNEL_ALL_VEC(KER, GTR+G, 128)
+
+#define BENCH_KERNEL_ALL() \
+  BENCH_KERNEL_ALL_DATA(partial) \
+  BENCH_KERNEL_ALL_DATA(likelihood)
+
+BENCH_KERNEL_ALL();
+
+
 BENCH_TREE(128)
 BENCH_TREE(286)
 BENCH_TREE(10575)
 
-
-/*
-BENCHMARK_CAPTURE(BM_Parse_Newick, 
-    tree_128_taxa, 
-    GET_DATA(trees/128.newick));
-BENCHMARK_CAPTURE(BM_Parse_Newick, 
-    tree_94_taxa, 
-    GET_DATA(trees/94.newick));
-BENCHMARK_CAPTURE(BM_Parse_Newick, 
-    tree_286_taxa, 
-    GET_DATA(trees/vertebrates_286.newick));
-BENCHMARK_CAPTURE(BM_Parse_Newick, 
-    tree_10575_taxa, 
-    GET_DATA(trees/wol_10575.newick));
-*/
 BENCHMARK_MAIN();
 

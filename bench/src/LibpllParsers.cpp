@@ -8,7 +8,7 @@
 #include <array>
 #include "LibpllException.hpp"
 #include <corax/corax.h>
-
+#include <iostream>
 
 
 
@@ -83,6 +83,7 @@ void LibpllParsers::parsePhylip(const char *phylipFile,
   corax_msa_t *msa = nullptr;
   // todobenoit check memory leaks when using the std::exception trick
   try {
+    
     msa = corax_phylip_parse_interleaved(reader.get());
     if (!msa) {
       throw LibpllException("failed to parse ", phylipFile);
