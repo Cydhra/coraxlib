@@ -36,10 +36,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 add_subdirectory(src/corax)
 
 option(CORAX_TESTS_ENABLED "Enable and build the tests" ON)
+option(CORAX_BENCH_ENABLED "Enable and build the benchmarks" OFF)
 
 if (CORAX_TESTS_ENABLED)
   enable_testing()
   add_subdirectory(test)
 endif(CORAX_TESTS_ENABLED)
 
+
+if (CORAX_BENCH_ENABLED)
+  add_subdirectory(bench)
+endif(CORAX_BENCH_ENABLED)
 
