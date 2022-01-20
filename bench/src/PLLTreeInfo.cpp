@@ -4,6 +4,8 @@
 #include <fstream>
 #include <corax/corax.h>
 
+#include <iostream>
+
 const double DEFAULT_BL = 0.1;
 
 static unsigned int getBestLibpllAttribute() {
@@ -33,10 +35,16 @@ void treeinfoDestroy(corax_treeinfo_t *treeinfo)
 PLLTreeInfo::PLLTreeInfo(const std::string &newickStrOrFile,
     bool isNewickAFile,
     const std::string& alignmentFilename,
-    const std::string &modelStr) :
+    const std::string &modelStr,
+    bool repeats,
+    unsigned int vectorizationAttribute
+    ):
   _treeinfo(nullptr, treeinfoDestroy),
-  _model(std::make_unique<Model>(modelStr))
+  _model(std::make_unique<Model>(modelStr)),
+  _attributes(0)
 {
+  _attributes |= (repeats ? CORAX_ATTRIB_SITE_REPEATS : CORAX_ATTRIB_PATTERN_TIP);
+  _attributes |= vectorizationAttribute;
   PLLSequencePtrs sequences;
   unsigned int *patternWeights = nullptr;
   LibpllParsers::parseMSA(alignmentFilename, _model->charmap(), sequences, patternWeights);
@@ -72,7 +80,6 @@ void PLLTreeInfo::buildTree(const std::string &newickStrOrFile,
 corax_partition_t * PLLTreeInfo::buildPartition(const PLLSequencePtrs &sequences, 
   unsigned int *patternWeights)  
 {  
-  unsigned int attribute = getBestLibpllAttribute();
   unsigned int tipNumber = static_cast<unsigned int>(sequences.size());
   unsigned int innerNumber = tipNumber -1;
   unsigned int edgesNumber = 2 * tipNumber - 1;
@@ -86,7 +93,7 @@ corax_partition_t * PLLTreeInfo::buildPartition(const PLLSequencePtrs &sequences
       edgesNumber,// prob_matrices
       _model->num_ratecats(),  
       edgesNumber,// scalers
-      attribute);  
+      _attributes);  
   corax_set_pattern_weights(partition, patternWeights);
   
   // fill partition

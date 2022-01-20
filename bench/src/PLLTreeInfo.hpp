@@ -16,7 +16,10 @@ public:
   PLLTreeInfo(const std::string &newickStrOrFile,
     bool isNewickAFile,
     const std::string& alignmentFilename,
-    const std::string &modelStr);
+    const std::string &modelStr,
+    bool repeats,
+    unsigned int vectorizationAttribute
+    );
  
   // forbid copy
   PLLTreeInfo(const PLLTreeInfo &) = delete;
@@ -32,6 +35,7 @@ private:
   std::unique_ptr<corax_treeinfo_t, void(*)(corax_treeinfo_t*)> _treeinfo;
   std::unique_ptr<PLLUnrootedTree> _utree;
   std::unique_ptr<Model> _model; 
+  unsigned int _attributes;
 private:
   void buildFromString(const std::string &newickString,
       const std::string& alignmentFilename,
