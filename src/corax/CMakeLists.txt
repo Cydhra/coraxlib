@@ -198,9 +198,17 @@ if(NOT DEFINED BUILD_CORAX_SHARED AND NOT DEFINED BUILD_CORAX_STATIC)
   endif()
 endif()
 
+option(CORAX_NONREV "Enable non-reversible model computation" OFF)
+
 add_library(corax_obj OBJECT ${CORAX_SOURCES})
 set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 target_include_directories(corax_obj PRIVATE ${CORAX_INCLUDE_DIRS})
+
+if(CORAX_NONREV)
+  message("Non-rev enabled")
+  target_compile_definitions(corax_obj PUBLIC -DCORAX_NONREV)
+  target_link_libraries(corax_obj PUBLIC cblas lapack)
+endif()
 
 macro(add_corax_lib _target linkage)
     add_library(${_target} ${linkage} $<TARGET_OBJECTS:corax_obj>)
@@ -220,6 +228,7 @@ if(BUILD_CORAX_STATIC)
 endif()
 
 message(STATUS "coraxlib libraries: ${CORAX_LIBRARIES}")
+
 
 #include(GNUInstallDirs)
 #install(TARGETS corax_static ARCHIVE)

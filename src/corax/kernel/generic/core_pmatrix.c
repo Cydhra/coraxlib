@@ -21,24 +21,187 @@
 
 #include "corax/corax.h"
 
-CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
+#ifdef CORAX_NONREV
+#include <cblas.h>
+#include <lapacke.h>
+
+int corax_core_update_pmatrix_nonrev_ss(
+    double *A, size_t n, size_t lda, double t, double *P)
+{
+  const size_t matrix_size = n * lda;
+
+  double *X = (double *)calloc(matrix_size, sizeof(double));
+  double *N = (double *)calloc(matrix_size, sizeof(double));
+  double *D = (double *)calloc(matrix_size, sizeof(double));
+
+  /* Compute the INF norm, which we use to compute scaling factor */
+  double inf_norm  = LAPACKE_dlange(CblasRowMajor, 'I', n, n, A, lda);
+  int    At_norm   = (int)(inf_norm * t);
+  int    scale_exp = CORAX_MIN(30, CORAX_MAX(0, 1 + At_norm));
+
+  double Ascal = t / pow(2.0, scale_exp);
+
+  cblas_dscal(matrix_size, Ascal, A, 1);
+
+  /* q is a magic parameter that controls the number of iterations of the loop
+   * higher is more accurate, with each increase of q decreasing error by 4
+   * orders of magnitude. Anything above 12 is probably snake oil. Experiments
+   * have show that 3 seems to be sufficent.
+   */
+  const int q    = 3;
+  double    c    = 0.5;
+  double    sign = -1.0;
+
+  cblas_dcopy(matrix_size, A, 1, X, 1);
+
+  for (size_t i = 0; i < n; ++i) { N[i * lda + i] = 1.0; }
+  for (size_t i = 0; i < n; ++i) { D[i * lda + i] = 1.0; }
+
+  /* Using fortran indexing, and we started an iteration ahead to skip some
+   * setup. Furhthermore, we are going to unroll the loop to allow us to skip
+   * some assignments.
+   */
+
+  cblas_daxpy(matrix_size, c, X, 1, N, 1);
+  cblas_daxpy(matrix_size, sign * c, X, 1, D, 1);
+
+  for (int i = 2; i <= q; ++i)
+  {
+    c = c * (q - i + 1) / (i * (2 * q - i + 1));
+    sign *= -1.0;
+
+    cblas_dgemm(CblasRowMajor,
+                CblasNoTrans,
+                CblasNoTrans,
+                n,
+                n,
+                n,
+                1.0,
+                A,
+                lda,
+                X,
+                lda,
+                0.0,
+                X,
+                lda);
+    cblas_daxpy(matrix_size, c, X, 1, N, 1);
+    cblas_daxpy(matrix_size, sign * c, X, 1, D, 1);
+  }
+
+  /* Solve the equation X = N/D or DX = N */
+  {
+    int *ipiv = (int *)malloc(sizeof(int) * n);
+
+    LAPACKE_dgesv(CblasRowMajor, n, n, D, lda, ipiv, N, lda);
+
+    free(ipiv);
+  }
+
+  /*Square until we "fix" the earlier scaling */
+
+  double *r1 = N;
+  double *r2 = D;
+
+  for (int i = 0; i < scale_exp; ++i)
+  {
+    cblas_dgemm(CblasRowMajor,
+                CblasNoTrans,
+                CblasNoTrans,
+                n,
+                n,
+                n,
+                1.0,
+                r1,
+                lda,
+                r1,
+                lda,
+                0.0,
+                r2,
+                lda);
+    double *tmp = r1;
+    r1          = r2;
+    r2          = tmp;
+  }
+
+  for (size_t i = 0; i < matrix_size; ++i) { P[i] = r1[i]; }
+
+  free(X);
+  free(N);
+  free(D);
+
+  return CORAX_SUCCESS;
+}
+
+int setup_ratematrix_nonrev(double *params, size_t n, size_t lda, double *rm)
+{
+  size_t k = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    double row_sum = 0.0;
+    for (size_t j = 0; j < n; ++j)
+    {
+      if (i == j) { continue; }
+      double tmp = params[k++];
+      row_sum += tmp;
+      rm[i * lda + j] = tmp;
+    }
+    rm[i * lda + i] = -row_sum;
+  }
+  return CORAX_SUCCESS;
+}
+
+CORAX_EXPORT int
+corax_core_update_pmatrix_nonrev(double            **pmatrix,
+                                 size_t              states,
+                                 size_t              rate_cats,
+                                 const double       *rates,
+                                 const double       *branch_lengths,
+                                 const unsigned int *matrix_indices,
+                                 const unsigned int *params_indices,
+                                 const double       *prop_invar,
+                                 double *const      *params,
+                                 unsigned int        count,
+                                 unsigned int        attrib)
+{
+  double *tmp_rm = (double *)malloc(states * states * sizeof(double));
+  for (size_t i = 0; i < count; ++i)
+  {
+    for (size_t j = 0; j < rate_cats; ++j)
+    {
+      double *cur_pmat   = pmatrix[matrix_indices[i]] + j * states * states;
+      double *cur_params = params[params_indices[j]];
+      double  cur_pinv   = prop_invar[params_indices[j]];
+      double  cur_brlen  = branch_lengths[i];
+      double  cur_rate   = rates[j];
+      double  t          = cur_rate * cur_brlen / (1.0 - cur_pinv);
+      assert(cur_pinv < 1.0);
+      setup_ratematrix_nonrev(cur_params, states, states, tmp_rm);
+
+      corax_core_update_pmatrix_nonrev_ss(tmp_rm, states, states, t, cur_pmat);
+    }
+  }
+  return CORAX_SUCCESS;
+}
+#endif // CORAX_NONREV
+
+CORAX_EXPORT int corax_core_update_pmatrix(double            **pmatrix,
                                            unsigned int        states,
                                            unsigned int        rate_cats,
-                                           const double *      rates,
-                                           const double *      branch_lengths,
+                                           const double       *rates,
+                                           const double       *branch_lengths,
                                            const unsigned int *matrix_indices,
                                            const unsigned int *params_indices,
-                                           const double *      prop_invar,
-                                           double *const *     eigenvals,
-                                           double *const *     eigenvecs,
-                                           double *const *     inv_eigenvecs,
+                                           const double       *prop_invar,
+                                           double *const      *eigenvals,
+                                           double *const      *eigenvecs,
+                                           double *const      *inv_eigenvecs,
                                            unsigned int        count,
                                            unsigned int        attrib)
 {
   unsigned int i, n, j, k, m;
   unsigned int states_padded = states;
-  double *     expd;
-  double *     temp;
+  double      *expd;
+  double      *temp;
 
   double  pinvar;
   double *evecs;
@@ -222,7 +385,8 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
       }
       else
       {
-        /* if branch length is zero then set the p-matrix to identity matrix */
+        /* if branch length is zero then set the p-matrix to identity matrix
+         */
         for (j = 0; j < states; ++j)
           for (k = 0; k < states; ++k)
             pmat[j * states_padded + k] = (j == k) ? 1 : 0;
