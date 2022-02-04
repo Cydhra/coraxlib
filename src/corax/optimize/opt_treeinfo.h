@@ -182,7 +182,50 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                            int               smoothings,
                                            double            epsilon,
                                            cutoff_info_t *   cutoff_info,
+  
                                            double            subtree_cutoff);
+  // Defining errors in NNI
+  #define CORAX_NNI_ROUND_LEAF_ERROR      6001
+  #define CORAX_NNI_ROUND_INTEGRITY_ERROR 6002
+  #define CORAX_NNI_ROUND_TRIPLET_ERROR   6003
+  #define CORAX_NNI_ROUND_UNDO_MOVE_ERROR 6004
+  #define CORAX_NNI_DIFF_NEGATIVE_ERROR   6005
+  #define CORAX_NNI_ROOT_NOT_FOUND        6005
+
+  /**
+   * NNI round - Searches for the optimal tree topology based on NNI moves. After calling this function
+   * the tree topology is probably changed.
+   *
+   * Check `corax_algo_nni_round` documentation.
+   *
+   * @param  treeinfo          the CORAX treeinfo structure - for now it can only take single partition data
+   * @param  tolerance         tolerance for NNI round: if (`final_logl - init_logl <= tolerance`) -> exit
+   * @param  smoothings        number of smoothings in local branch length optimization that takes place
+   * @param  lh_epsilon        epsilon value in local branch length optimization that takes place
+   *
+   * @return                   the likelihood score after NNI optimization + new topology
+   */
+  CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
+                                            double tolerance,
+                                            int    smoothings,
+                                            double lh_elpsilon);
+
+
+  /**
+   * Finds the best out of the 3 NNI topologies, in the quartet defined around the root of the tree.
+   * It is assumed that the rood in an internal branch. It is also assumed that probability matrices and CLVs around the rood
+   * are up to date.  Even if the current tree topology is the best out of 3, the returned likelihood might be increased, since 
+   * branch lenghts are optimized before the likelihood calculations of the 3 topologies 
+   *
+   * @param  treeinfo          the CORAX treeinfo structure - for now it can only take single partition data
+   * @param  smoothings        number of smoothings in local branch length optimization that takes place
+   * @param  lh_epsilon        epsilon value in local branch length optimization that takes place
+   * @return                   the likelihood score after NNI optimization + new topology
+   */
+  CORAX_EXPORT double corax_algo_nni_local(corax_treeinfo_t *treeinfo,
+                                            int    smoothings,
+                                            double lh_epsilon);
+
 
 #ifdef __cplusplus
 } /* extern "C" */
