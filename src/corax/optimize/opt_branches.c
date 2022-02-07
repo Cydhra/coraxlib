@@ -1258,3 +1258,222 @@ cleanup:
 
   return result;
 } /* corax_opt_optimize_branch_lengths_local */
+
+
+CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi_quartet(
+    corax_partition_t **partitions,
+    size_t              partition_count,
+    corax_unode_t *     tree,
+    unsigned int **     params_indices,
+    double **           precomp_buffers,
+    double **           brlen_buffers,
+    double *            brlen_scalers,
+    double              branch_length_min,
+    double              branch_length_max,
+    double              lh_epsilon,
+    int                 max_iters,
+    int                 keep_update,
+    int                 opt_method,
+    int                 brlen_linkage,
+    void *              parallel_context,
+    void (*parallel_reduce_cb)(void *, double *, size_t, int))
+{
+  unsigned int iters;
+  double       loglikelihood = 0.0, new_loglikelihood;
+  size_t       p;
+  double       result = (double)CORAX_FAILURE;
+
+  int radius = 1;
+
+  corax_reset_error();
+
+  /**
+   * preconditions:
+   *    (1) CLVs must be updated towards 'tree'
+   *    (2) Pmatrix indices must be **unique** for each branch
+   */
+
+  if (opt_method == CORAX_OPT_BLO_NEWTON_FALLBACK
+      || opt_method == CORAX_OPT_BLO_NEWTON_GLOBAL)
+  {
+    corax_set_error(CORAX_ERROR_NOT_IMPLEMENTED,
+                    "Optimization method not implemented: "
+                    "NEWTON_FALLBACK, NEWTON_GLOBAL");
+    return (double)CORAX_FAILURE;
+  }
+
+  if (radius < CORAX_OPT_BRLEN_OPTIMIZE_ALL)
+  {
+    corax_set_error(CORAX_OPT_ERROR_NEWTON_BAD_RADIUS,
+                    "Invalid radius for branch length optimization");
+    return (double)CORAX_FAILURE;
+  }
+
+  /* make sure p-matrices are up-to-date */
+  /* update_prob_matrices(partitions,
+                       partition_count,
+                       params_indices,
+                       brlen_buffers,
+                       brlen_scalers,
+                       tree); */
+
+  /* get the initial likelihood score */
+  loglikelihood = compute_edge_loglikelihood_multi(partitions,
+                                                   partition_count,
+                                                   tree->back->clv_index,
+                                                   tree->back->scaler_index,
+                                                   tree->clv_index,
+                                                   tree->scaler_index,
+                                                   tree->pmatrix_index,
+                                                   params_indices,
+                                                   NULL,
+                                                   parallel_context,
+                                                   parallel_reduce_cb);
+
+  DBG("\nStarting BLO_multi: radius: %d, max_iters: %d, lh_eps: %f, old LH: "
+      "%.9f\n",
+      radius,
+      max_iters,
+      lh_epsilon,
+      loglikelihood);
+
+  /* set parameters for N-R optimization */
+  corax_newton_tree_params_multi_t params;
+  params.partitions      = partitions;
+  params.partition_count = partition_count;
+  params.tree            = tree;
+  params.params_indices  = params_indices;
+  params.branch_length_min =
+      (branch_length_min > 0) ? branch_length_min : CORAX_OPT_MIN_BRANCH_LEN;
+  params.branch_length_max =
+      (branch_length_max > 0) ? branch_length_max : CORAX_OPT_MAX_BRANCH_LEN;
+  params.tolerance       = (branch_length_min > 0) ? branch_length_min / 10.0
+                                                   : CORAX_OPT_TOL_BRANCH_LEN;
+  params.precomp_buffers = precomp_buffers;
+  params.brlen_buffers   = brlen_buffers;
+  params.brlen_scalers   = brlen_scalers;
+  params.opt_method      = opt_method;
+  params.brlen_linkage =
+      (partition_count > 1) ? brlen_linkage : CORAX_BRLEN_LINKED;
+  params.max_newton_iters = 30;
+
+  params.brlen_orig  = NULL;
+  params.brlen_guess = NULL;
+  params.converged   = NULL;
+
+  params.parallel_context   = parallel_context;
+  params.parallel_reduce_cb = parallel_reduce_cb;
+
+  /* allocate the sumtable if needed */
+  if (!allocate_buffers(&params))
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                    "Cannot allocate memory for brlen opt variables");
+    goto cleanup;
+  }
+
+  iters = (unsigned int)max_iters;
+  while (iters)
+  {
+    new_loglikelihood = loglikelihood;
+
+    /* iterate on first edge */
+    params.tree = tree;
+    if (!recomp_iterative_multi(
+            &params, radius, &new_loglikelihood, keep_update))
+    {
+      assert(corax_errno);
+      goto cleanup;
+    }
+
+    if (radius)
+    {
+      /* iterate on second edge */
+      params.tree = tree->back;
+      if (!recomp_iterative_multi(
+              &params, radius, &new_loglikelihood, keep_update))
+      {
+        assert(corax_errno);
+        goto cleanup;
+      }
+    }
+
+    /* compute likelihood after optimization */
+    new_loglikelihood =
+        compute_edge_loglikelihood_multi(partitions,
+                                         partition_count,
+                                         tree->back->clv_index,
+                                         tree->back->scaler_index,
+                                         tree->clv_index,
+                                         tree->scaler_index,
+                                         tree->pmatrix_index,
+                                         params_indices,
+                                         NULL,
+                                         parallel_context,
+                                         parallel_reduce_cb);
+
+    DBG("BLO_multi: iteration %u, old LH: %.9f, new LH: %.9f\n",
+        (unsigned int)max_iters - iters,
+        loglikelihood,
+        new_loglikelihood);
+
+    if (new_loglikelihood - loglikelihood
+        > new_loglikelihood * BETTER_LL_TRESHOLD)
+    {
+      iters--;
+
+      /* check convergence */
+      if (fabs(new_loglikelihood - loglikelihood) < lh_epsilon) iters = 0;
+
+      loglikelihood = new_loglikelihood;
+    }
+    else
+    {
+      if (params.opt_method == CORAX_OPT_BLO_NEWTON_SAFE)
+        assert(new_loglikelihood - loglikelihood
+               > new_loglikelihood * BETTER_LL_TRESHOLD);
+      else if (opt_method == CORAX_OPT_BLO_NEWTON_FALLBACK)
+      {
+        // reset branch lengths
+        params.opt_method = CORAX_OPT_BLO_NEWTON_SAFE;
+        iters             = (unsigned int)max_iters;
+      }
+      else
+      {
+        corax_set_error(
+            CORAX_OPT_ERROR_NEWTON_WORSE_LK,
+            "BL opt converged to a worse likelihood score by %.15f units",
+            new_loglikelihood - loglikelihood);
+        goto cleanup;
+      }
+    }
+
+  } // while
+
+  result = -1 * loglikelihood;
+
+cleanup:
+  /* deallocate sumtable */
+  if (!precomp_buffers)
+  {
+    for (p = 0; p < partition_count; ++p)
+    {
+      if (params.precomp_buffers[p]) free(params.precomp_buffers[p]);
+    }
+    corax_aligned_free(params.precomp_buffers);
+  }
+
+  if (params.brlen_buffers && !brlen_buffers)
+  {
+    free(params.brlen_buffers[0]);
+    free(params.brlen_buffers);
+  }
+
+  if (params.converged) free(params.converged);
+
+  if (params.brlen_guess) free(params.brlen_guess);
+
+  if (params.brlen_orig) free(params.brlen_orig);
+
+  return result;
+} /* corax_opt_optimize_branch_lengths_local_multi_quartet */
