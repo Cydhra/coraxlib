@@ -1,0 +1,266 @@
+#ifndef CORAX_MODEL_EVOLMODEL_HPP_
+#define CORAX_MODEL_EVOLMODEL_HPP_
+
+#include <memory>
+#include <string>
+#include <algorithm>
+#include <vector>
+#include <unordered_map>
+
+#include "corax/corax_core.h"
+#include "modutil.h"
+
+typedef unsigned int corax_weight_t;
+typedef std::unordered_map<corax_state_t,std::string> StateNameMap;
+
+/*
+ * workaround needed for using enum as std::map key
+ * code from: http://stackoverflow.com/a/24847480
+ * */
+struct EnumClassHash
+{
+  template <typename T>
+  std::size_t operator()(T t) const
+  {
+      return static_cast<std::size_t>(t);
+  }
+};
+
+enum class DataType
+{
+  autodetect = 0,
+  dna,
+  protein,
+  binary,
+  multistate,
+  genotype10
+};
+
+
+enum class ParamMode
+{
+  undefined = 0,
+  equal = 1,
+  user = 2,
+  model = 3,
+  empirical = 4,
+  ML = 5
+};
+
+enum class AscBiasCorrection
+{
+  none = 0,
+  lewis = CORAX_ATTRIB_AB_LEWIS,
+  felsenstein = CORAX_ATTRIB_AB_FELSENSTEIN,
+  stamatakis = CORAX_ATTRIB_AB_STAMATAKIS,
+};
+
+class SubstitutionMatrix
+{
+public:
+  SubstitutionMatrix(const corax_subst_model_t& sm) :
+    _states(sm.states), _name(sm.name)
+  {
+    if (sm.freqs)
+      _base_freqs.assign(sm.freqs, sm.freqs + sm.states);
+    if (sm.rates)
+      _subst_rates.assign(sm.rates, sm.rates + sm.states*(sm.states-1)/2);
+    if (sm.rate_sym)
+      _rate_sym.assign(sm.rate_sym, sm.rate_sym + sm.states*(sm.states-1)/2);
+    if (sm.freq_sym)
+      _freq_sym.assign(sm.freq_sym, sm.freq_sym + sm.states);
+  };
+
+  // getters
+  unsigned int states() const;
+  std::string name() const;
+  const std::vector<double>& base_freqs() const { return _base_freqs; }
+  const std::vector<double>& subst_rates() const { return _subst_rates; }
+  const std::vector<int>& rate_sym() const { return _rate_sym; }
+  const std::vector<int>& freq_sym() const { return _freq_sym; }
+
+  unsigned int num_rates() const  { return _states*(_states-1)/2; }
+  unsigned int num_uniq_rates() const
+  {
+    if (_rate_sym.empty())
+      return num_rates();
+    else
+      return *std::max_element(_rate_sym.cbegin(), _rate_sym.cend()) + 1;
+  }
+
+  std::vector<double> uniq_subst_rates() const
+  {
+    if (!_rate_sym.empty())
+    {
+      std::vector<double> uniq_rates(num_uniq_rates());
+      for (size_t i = 0; i < _subst_rates.size(); ++i)
+        uniq_rates[_rate_sym[i]] = _subst_rates[i];
+      return uniq_rates;
+    }
+    else
+      return _subst_rates;
+  };
+
+
+  // setters
+  void base_freqs(const std::vector<double>& v)
+  {
+//    std::cout << "expected: " << _states << ", got: " << v.size() << std::endl;
+    if (v.size() != _states)
+      throw std::invalid_argument("Invalid size of base_freqs vector!");
+
+    _base_freqs = v;
+  };
+
+  void subst_rates(const std::vector<double>& v)
+  {
+    if (v.size() != num_rates())
+      throw std::invalid_argument("Invalid size of subst_rates vector!");
+
+    _subst_rates = v;
+  };
+
+  void uniq_subst_rates(const std::vector<double>& v)
+  {
+    if (!_rate_sym.empty())
+    {
+      if (v.size() != num_uniq_rates())
+        throw std::invalid_argument("Invalid size of subst_rates vector!");
+
+      _subst_rates.resize(num_rates());
+      for (size_t i = 0; i < _subst_rates.size(); ++i)
+        _subst_rates[i] = v[_rate_sym[i]];
+    }
+    else
+      subst_rates(v);
+  };
+
+private:
+  unsigned int _states;
+  std::string _name;
+  std::vector<double> _base_freqs;
+  std::vector<double> _subst_rates;
+  std::vector<int> _rate_sym;
+  std::vector<int> _freq_sym;
+};
+
+class EvolModel
+{
+public:
+  typedef std::unordered_map<int,ParamMode> ParamModeMap;
+
+  EvolModel (DataType data_type = DataType::autodetect, const std::string &model_string = "GTR");
+  EvolModel (const std::string &model_string) : EvolModel(DataType::autodetect, model_string) {};
+
+  EvolModel(const EvolModel&) = default;
+
+  /* getters */
+  DataType data_type() const { return _data_type; };
+  std::string data_type_name() const;
+  unsigned int num_states() const { return _num_states; };
+  std::string name() const { return _name; };
+
+  const corax_state_t* charmap() const;
+  const std::vector<std::string>& state_names() const;            // non-ambiguous states only, eg A C G T
+  const StateNameMap& full_state_namemap() const; // + ambiguous states, eg A C G T M R W S Y K -
+
+  const SubstitutionMatrix submodel(size_t i) const { return _submodels.at(i); };
+
+  unsigned int ratehet_mode() const { return _rate_het; };
+  unsigned int num_ratecats() const { return _num_ratecats; };
+  unsigned int num_submodels() const { return _num_submodels; };
+  const std::vector<double>& ratecat_rates() const { return _ratecat_rates; };
+  const std::vector<double>& ratecat_weights() const { return _ratecat_weights; };
+  const std::vector<unsigned int>& ratecat_submodels() const { return _ratecat_submodels; };
+  int gamma_mode() const { return _gamma_mode; };
+
+  double alpha() const { return _alpha; };
+  double pinv() const { return _pinv; };
+  double brlen_scaler() const { return _brlen_scaler; };
+  const std::vector<double>& base_freqs(unsigned int i) const { return _submodels.at(i).base_freqs(); };
+  const std::vector<double>& subst_rates(unsigned int i) const { return _submodels.at(i).subst_rates(); };
+
+  std::string to_string(bool print_params = false, unsigned int precision = 0) const;
+  int params_to_optimize() const;
+  const ParamModeMap& param_mode() const { return _param_mode; }
+  ParamMode param_mode(int param) const { return _param_mode.at(param); };
+  bool param_estimated(int param) const;
+
+  AscBiasCorrection ascbias_type() const { return _ascbias_type; }
+  const std::vector<corax_weight_t>& ascbias_weights() const { return _ascbias_weights; }
+
+  /* per alignment site, given in elements (NOT in bytes) */
+  size_t clv_entry_size() const { return _num_states * _num_ratecats; }
+
+  unsigned int  num_free_params() const;
+
+  /* setters */
+  void alpha(double value) { _alpha = value; };
+  void pinv(double value) { _pinv = value; };
+  void brlen_scaler(double value) { _brlen_scaler = value; };
+  void base_freqs(size_t i, const std::vector<double>& value) { _submodels.at(i).base_freqs(value); };
+  void subst_rates(size_t i, const std::vector<double>& value) { _submodels.at(i).subst_rates(value); };
+  void base_freqs(const std::vector<double>& value) { for (SubstitutionMatrix& s: _submodels) s.base_freqs(value); };
+  void subst_rates(const std::vector<double>& value) { for (SubstitutionMatrix& s: _submodels) s.subst_rates(value); };
+  void ratecat_rates(std::vector<double> const& value) { _ratecat_rates = value; };
+  void ratecat_weights(std::vector<double> const& value) { _ratecat_weights = value; };
+
+  void param_mode(int param, ParamMode mode) { _param_mode[param] = mode; };
+  void set_param_mode_default(int param, ParamMode mode)
+  {
+    if (param_mode(param) == ParamMode::undefined)
+      _param_mode[param] = mode;
+  };
+
+  /* initialization */
+  void init_from_string(const std::string& model_string);
+
+private:
+  std::string _name;
+  DataType _data_type;
+  unsigned int _num_states;
+
+  std::string _custom_states;
+  std::string _custom_gaps;
+  bool _custom_case_sensitive;
+  std::shared_ptr<corax_state_t> _custom_charmap;
+  mutable std::vector<std::string> _state_names;
+  mutable StateNameMap _full_state_namemap;
+
+  unsigned int _rate_het;
+  unsigned int _num_ratecats;
+  unsigned int _num_submodels;
+  std::vector<double> _ratecat_rates;
+  std::vector<double> _ratecat_weights;
+  std::vector<unsigned int> _ratecat_submodels;
+  int _gamma_mode;
+
+  double _alpha;
+  double _pinv;
+  double _brlen_scaler;
+
+  AscBiasCorrection _ascbias_type;
+  std::vector<corax_weight_t> _ascbias_weights;
+
+  std::vector<SubstitutionMatrix> _submodels;
+
+  ParamModeMap _param_mode;
+
+  void autodetect_data_type(const std::string& model_name);
+  corax_mixture_model_t * init_mix_model(const std::string& model_name);
+  void init_model_opts(const std::string& model_opts, const corax_mixture_model_t& mix_model);
+  void init_state_names() const;
+  void set_user_srates(std::vector<double>& srates, bool normalize = true);
+  void set_user_freqs(std::vector<double>& freqs);
+};
+
+typedef std::unordered_map<size_t, EvolModel> ModelMap;
+typedef std::unordered_map<size_t, EvolModel&> ModelRefMap;
+typedef std::unordered_map<size_t, const EvolModel&> ModelCRefMap;
+
+void assign(EvolModel& model, const corax_partition_t * partition);
+void assign(corax_partition_t * partition, const EvolModel& model);
+
+std::ostream& operator<<(std::ostream& stream, const EvolModel& m);
+
+#endif /* CORAX_MODEL_EVOLMODEL_HPP_ */

@@ -4,6 +4,7 @@ find_package(GTest)
 set(CORAX_TEST_SOURCES
   src/dummy.cpp
   src/newick.cpp
+  src/evolmodel.cpp
   src/main.cpp)
 
 set(CORAX_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)

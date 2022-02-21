@@ -76,7 +76,8 @@ set(CORAX_SOURCES ${CORAX_SRC_DIR_CORE}/common.c
   ${CORAX_SRC_DIR_MODEL}/modutil_dna.c
   ${CORAX_SRC_DIR_MODEL}/modutil_gt.c
   ${CORAX_SRC_DIR_MODEL}/modutil_mult.c
-
+  ${CORAX_SRC_DIR_MODEL}/evolmodel.cpp
+  
   ${CORAX_OPTIMIZE_SOURCES}
   
   ${CORAX_TREE_SOURCES}
