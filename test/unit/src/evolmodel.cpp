@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace corax::model;
 
 string list_to_string(const vector<string>& list)
 {

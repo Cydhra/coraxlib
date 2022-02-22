@@ -10,6 +10,7 @@
 #include "evolmodel.hpp"
 
 using namespace std;
+using namespace corax::model;
 
 const vector<int> ALL_MODEL_PARAMS = {CORAX_OPT_PARAM_FREQUENCIES, CORAX_OPT_PARAM_SUBST_RATES,
                                       CORAX_OPT_PARAM_PINV, CORAX_OPT_PARAM_ALPHA,
