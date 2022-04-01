@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "corax/corax_core.h"
 #include "modutil.h"
