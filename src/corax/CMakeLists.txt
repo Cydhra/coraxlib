@@ -12,27 +12,10 @@ set (SSE_FLAGS "-msse3")
 set (AVX_FLAGS "-mavx")
 set (AVX2_FLAGS "-mfma -mavx2")
 
-set(CORAX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CORAX_SRC_DIR_CORE ${CORAX_SRC_DIR}/core)
-set(CORAX_SRC_DIR_IO ${CORAX_SRC_DIR}/io)
-set(CORAX_SRC_DIR_MODEL ${CORAX_SRC_DIR}/model)
-set(CORAX_SRC_DIR_OPTIMIZE ${CORAX_SRC_DIR}/optimize)
-set(CORAX_SRC_DIR_TREE ${CORAX_SRC_DIR}/tree)
-set(CORAX_SRC_DIR_UTIL ${CORAX_SRC_DIR}/util)
-set(CORAX_SRC_DIR_KERNEL ${CORAX_SRC_DIR}/kernel)
-set(CORAX_SRC_DIR_KERNEL_GENERIC ${CORAX_SRC_DIR_KERNEL}/generic)
-set(CORAX_SRC_DIR_KERNEL_SSE ${CORAX_SRC_DIR_KERNEL}/sse)
-set(CORAX_SRC_DIR_KERNEL_AVX ${CORAX_SRC_DIR_KERNEL}/avx)
-set(CORAX_SRC_DIR_KERNEL_AVX2 ${CORAX_SRC_DIR_KERNEL}/avx2)
-
-# Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
-set(CORAX_INCLUDE_DIRS
-  ${PROJECT_SOURCE_DIR}/src
-  CACHE INTERNAL "${PROJECT_NAME}: Include dirs")
-
 # needed for coraxmodule files
 include_directories(${CORAX_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 
 file(GLOB CORAX_OPTIMIZE_SOURCES ${CORAX_SRC_DIR_OPTIMIZE}/*.c
   ${CORAX_SRC_DIR_OPTIMIZE}/lbfgsb/*.c
@@ -202,6 +185,10 @@ endif()
 add_library(corax_obj OBJECT ${CORAX_SOURCES})
 set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 target_include_directories(corax_obj PRIVATE ${CORAX_INCLUDE_DIRS})
+
+if(CORAX_BUILD_DIFFICULTY_PREDICTION)
+  target_link_libraries(corax_obj PRIVATE coraxlib_difficulty_prediction_lib)
+endif()
 
 macro(add_corax_lib _target linkage)
     add_library(${_target} ${linkage} $<TARGET_OBJECTS:corax_obj>)
