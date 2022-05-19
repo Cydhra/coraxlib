@@ -452,12 +452,12 @@ void assign(EvolModel& model, const corax_partition_t * partition);
  */
 void assign(corax_partition_t * partition, const EvolModel& model);
 
+} // namespace corax
+} // namespace model
+
 /**
  * @brief Print "long" model specification (as in raxml-ng log file)
  */
-std::ostream& operator<<(std::ostream& stream, const EvolModel& m);
-
-} // namespace corax
-} // namespace model
+std::ostream& operator<<(std::ostream& stream, const corax::model::EvolModel& m);
 
 #endif /* CORAX_MODEL_EVOLMODEL_HPP_ */
