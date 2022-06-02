@@ -73,7 +73,7 @@ static void cpu_features_detect()
 
   memset(&corax_hardware, 0, sizeof(corax_hardware_t));
 
-  corax_hardware.init = 1;
+  corax_hardware.is_initialized = 1;
 
 #if defined(__PPC__)
   corax_hardware.altivec_present = 1;
@@ -110,7 +110,7 @@ static void cpu_features_detect()
 {
   memset(&corax_hardware, 0, sizeof(corax_hardware_t));
 
-  corax_hardware.init            = 1;
+  corax_hardware.is_initialized  = 1;
 #if defined(__PPC__)
   corax_hardware.altivec_present = __builtin_cpu_supports("altivec");
 #elif defined(__x86_64__) || defined(__i386__)
@@ -156,14 +156,14 @@ CORAX_EXPORT int corax_hardware_probe()
 
 CORAX_EXPORT void corax_hardware_dump()
 {
-  if (!corax_hardware.init) corax_hardware_probe();
+  if (!corax_hardware.is_initialized) { corax_hardware_probe(); }
 
   cpu_features_show();
 }
 
 CORAX_EXPORT void corax_hardware_ignore()
 {
-  corax_hardware.init            = 1;
+  corax_hardware.is_initialized  = 1;
   corax_hardware.altivec_present = 1;
   corax_hardware.mmx_present     = 1;
   corax_hardware.sse_present     = 1;

@@ -54,7 +54,8 @@
     y                = _t;                                                     \
   } while (0)
 #define CORAX_STAT(x)                                                          \
-  ((corax_hardware.init || corax_hardware_probe()) && corax_hardware.x)
+  ((corax_hardware.is_initialized || corax_hardware_probe())                   \
+   && corax_hardware.x)
 #define CORAX_UNUSED(expr)                                                     \
   do {                                                                         \
     (void)(expr);                                                              \
