@@ -95,7 +95,7 @@ CORAX_EXPORT void corax_core_update_clv_tt(unsigned int         states,
   const double *offset;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
       corax_core_update_clv_tt_4x4_sse(sites,
@@ -123,7 +123,7 @@ CORAX_EXPORT void corax_core_update_clv_tt(unsigned int         states,
 
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
       corax_core_update_clv_tt_4x4_avx(sites,
@@ -150,7 +150,7 @@ CORAX_EXPORT void corax_core_update_clv_tt(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
       corax_core_update_clv_tt_4x4_avx(sites,
@@ -223,7 +223,7 @@ corax_core_update_clv_ti_4x4(unsigned int         sites,
   const double *rmat;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     corax_core_update_clv_ti_4x4_sse(sites,
                                      rate_cats,
@@ -239,7 +239,7 @@ corax_core_update_clv_ti_4x4(unsigned int         sites,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     corax_core_update_clv_ti_4x4_avx(sites,
                                      rate_cats,
@@ -255,7 +255,7 @@ corax_core_update_clv_ti_4x4(unsigned int         sites,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     corax_core_update_clv_ti_4x4_avx(sites,
                                      rate_cats,
@@ -374,7 +374,7 @@ CORAX_EXPORT void corax_core_update_clv_ti(unsigned int         states,
   const double *rmat;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
       corax_core_update_clv_ti_4x4_sse(sites,
@@ -405,7 +405,7 @@ CORAX_EXPORT void corax_core_update_clv_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     corax_core_update_clv_ti_avx(states,
                                  sites,
@@ -424,7 +424,7 @@ CORAX_EXPORT void corax_core_update_clv_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     corax_core_update_clv_ti_avx2(states,
                                   sites,
@@ -551,7 +551,7 @@ corax_core_update_clv_repeats(unsigned int        states,
   else
     core_update_clvs = corax_core_update_clv_repeats_generic;
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
     {
@@ -570,14 +570,14 @@ corax_core_update_clv_repeats(unsigned int        states,
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     core_update_clvs = corax_core_update_clv_repeats_generic_sse;
   }
 
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     core_update_clvs = corax_core_update_clv_repeats_generic_avx2;
     if (states == 4)
@@ -635,7 +635,7 @@ CORAX_EXPORT void corax_core_update_clv_ii(unsigned int        states,
   unsigned int span = states * rate_cats;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     corax_core_update_clv_ii_sse(states,
                                  sites,
@@ -653,7 +653,7 @@ CORAX_EXPORT void corax_core_update_clv_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     corax_core_update_clv_ii_avx(states,
                                  sites,
@@ -671,7 +671,7 @@ CORAX_EXPORT void corax_core_update_clv_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     corax_core_update_clv_ii_avx2(states,
                                   sites,
@@ -1093,7 +1093,7 @@ CORAX_EXPORT void corax_core_create_lookup(unsigned int         states,
 {
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
       corax_core_create_lookup_4x4_sse(
@@ -1110,7 +1110,7 @@ CORAX_EXPORT void corax_core_create_lookup(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
       corax_core_create_lookup_4x4_avx(
@@ -1127,7 +1127,7 @@ CORAX_EXPORT void corax_core_create_lookup(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
       corax_core_create_lookup_4x4_avx(

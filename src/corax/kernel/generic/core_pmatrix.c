@@ -47,7 +47,7 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
   double *pmat;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
     {
@@ -83,7 +83,7 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
     {
@@ -119,7 +119,7 @@ CORAX_EXPORT int corax_core_update_pmatrix(double **           pmatrix,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
     {
