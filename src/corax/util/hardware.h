@@ -14,7 +14,7 @@
  */
 typedef struct corax_hardware_s
 {
-  int init;
+  int is_initialized;
   /* cpu features */
   int altivec_present;
   int mmx_present;
