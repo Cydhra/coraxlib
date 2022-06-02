@@ -53,7 +53,7 @@
     x                = y;                                                      \
     y                = _t;                                                     \
   } while (0)
-#define CORAX_STAT(x)                                                          \
+#define CORAX_HAS_CPU_FEATURE(x)                                               \
   ((corax_hardware.is_initialized || corax_hardware_probe())                   \
    && corax_hardware.x)
 #define CORAX_UNUSED(expr)                                                     \
