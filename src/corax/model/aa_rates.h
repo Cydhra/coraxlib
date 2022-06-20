@@ -23,6 +23,16 @@ CORAX_EXPORT extern const double corax_aa_rates_jttdcmut[190];
 CORAX_EXPORT extern const double corax_aa_rates_flu[190];
 CORAX_EXPORT extern const double corax_aa_rates_stmtrev[190];
 CORAX_EXPORT extern const double corax_aa_rates_den[190];
+
+CORAX_EXPORT extern const double corax_aa_rates_q_pfam[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_pfam_gb[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_lg[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_bird[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_insect[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_mammal[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_plant[190];
+CORAX_EXPORT extern const double corax_aa_rates_q_yeast[190];
+
 CORAX_EXPORT extern const double corax_aa_rates_lg4m[4][190];
 CORAX_EXPORT extern const double corax_aa_rates_lg4x[4][190];
 
@@ -46,6 +56,16 @@ CORAX_EXPORT extern const double corax_aa_freqs_jttdcmut[20];
 CORAX_EXPORT extern const double corax_aa_freqs_flu[20];
 CORAX_EXPORT extern const double corax_aa_freqs_stmtrev[20];
 CORAX_EXPORT extern const double corax_aa_freqs_den[20];
+
+CORAX_EXPORT extern const double corax_aa_freqs_q_pfam[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_pfam_gb[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_lg[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_bird[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_insect[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_mammal[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_plant[20];
+CORAX_EXPORT extern const double corax_aa_freqs_q_yeast[20];
+
 CORAX_EXPORT extern const double corax_aa_freqs_lg4m[4][20];
 CORAX_EXPORT extern const double corax_aa_freqs_lg4x[4][20];
 

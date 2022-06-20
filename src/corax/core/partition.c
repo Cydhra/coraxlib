@@ -233,7 +233,7 @@ static int update_charmap(corax_partition_t *  partition,
     /* for AVX we do not need to reallocate ttlookup as it has fixed size */
     if ((partition->states == 4)
         && (partition->attributes & CORAX_ATTRIB_ARCH_AVX)
-        && CORAX_STAT(avx_present))
+        && CORAX_HAS_CPU_FEATURE(avx_present))
       return CORAX_SUCCESS;
 
     free(partition->ttlookup);
@@ -331,7 +331,7 @@ static int create_charmap(corax_partition_t *  partition,
      in case not all 16 possible ambiguities are present */
   if ((partition->states == 4)
       && (partition->attributes & CORAX_ATTRIB_ARCH_AVX)
-      && CORAX_STAT(avx_present))
+      && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     partition->ttlookup = corax_aligned_alloc(
         1024 * partition->rate_cats * sizeof(double), partition->alignment);
@@ -424,21 +424,21 @@ CORAX_EXPORT corax_partition_t *
   partition->attributes    = attributes;
   partition->states_padded = states;
 #ifdef HAVE_SSE3
-  if (attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attributes & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     partition->alignment     = CORAX_ALIGNMENT_SSE;
     partition->states_padded = (states + 1) & 0xFFFFFFFE;
   }
 #endif
 #ifdef HAVE_AVX
-  if (attributes & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attributes & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     partition->alignment     = CORAX_ALIGNMENT_AVX;
     partition->states_padded = (states + 3) & 0xFFFFFFFC;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attributes & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attributes & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     partition->alignment     = CORAX_ALIGNMENT_AVX;
     partition->states_padded = (states + 3) & 0xFFFFFFFC;

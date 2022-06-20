@@ -92,6 +92,28 @@ extern "C"
       void *              parallel_context,
       void (*parallel_reduce_cb)(void *, double *, size_t, int));
 
+  // Optimizes branches around the local quartet defined by the root of the tree.
+  // it also works for multi-partition data.
+  // This functions assumes that p-matrix indices are up-to-date.
+  CORAX_EXPORT double corax_opt_optimize_branch_lengths_local_multi_quartet(
+      corax_partition_t **partitions,
+      size_t              partition_count,
+      corax_unode_t *     tree,
+      unsigned int **     params_indices,
+      double **           sumtable_buffers,
+      double **           brlen_buffers,
+      double *            brlen_scalers,
+      double              branch_length_min,
+      double              branch_length_max,
+      double              lh_epsilon,
+      int                 max_iters,
+      int                 keep_update,
+      int                 opt_method,
+      int                 brlen_linkage,
+      void *              parallel_context,
+    void (*parallel_reduce_cb)(void *, double *, size_t, int));
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

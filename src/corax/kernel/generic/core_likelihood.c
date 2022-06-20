@@ -49,7 +49,7 @@ corax_core_root_loglikelihood(unsigned int         states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
     {
@@ -86,7 +86,7 @@ corax_core_root_loglikelihood(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
     {
@@ -123,7 +123,7 @@ corax_core_root_loglikelihood(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
     {
@@ -306,19 +306,19 @@ corax_core_root_loglikelihood_repeats(unsigned int         states,
 
   core_root_loglikelihood = corax_core_root_loglikelihood_repeats_generic;
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     core_root_loglikelihood = corax_core_root_loglikelihood_repeats_avx;
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     core_root_loglikelihood = corax_core_root_loglikelihood_repeats_sse;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     core_root_loglikelihood = corax_core_root_loglikelihood_repeats_avx2;
     // TODO call 4x4 avx (not avx2) functions when implemented
@@ -372,7 +372,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_sse(sites,
                                                     rate_cats,
@@ -391,7 +391,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
                                                     rate_cats,
@@ -410,7 +410,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     return corax_core_edge_loglikelihood_ti_4x4_avx(sites,
                                                     rate_cats,
@@ -602,7 +602,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
     {
@@ -646,7 +646,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
     {
@@ -709,7 +709,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
     {
@@ -957,7 +957,7 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
   core_edge_loglikelihood = corax_core_edge_loglikelihood_repeats_generic;
 
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     core_edge_loglikelihood = corax_core_edge_loglikelihood_repeats_generic_avx;
     if (states == 4)
@@ -971,13 +971,13 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     core_edge_loglikelihood = corax_core_edge_loglikelihood_repeats_generic_sse;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     core_edge_loglikelihood =
         corax_core_edge_loglikelihood_repeats_generic_avx2;
@@ -1214,7 +1214,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     if (states == 4)
     {
@@ -1259,7 +1259,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     if (states == 4)
     {
@@ -1304,7 +1304,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     if (states == 4)
     {

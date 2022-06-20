@@ -61,7 +61,7 @@ corax_core_update_sumtable_repeats(unsigned int        states,
   unsigned int use_bclv = (bclv_buffer && (parent_sites < (sites * 2) / 3));
   core_update_sumtable  = corax_core_update_sumtable_repeats_generic;
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     core_update_sumtable = corax_core_update_sumtable_repeats_generic_avx;
     if (states == 4)
@@ -74,13 +74,13 @@ corax_core_update_sumtable_repeats(unsigned int        states,
   }
 #endif
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     core_update_sumtable = corax_core_update_sumtable_repeats_generic_sse;
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     core_update_sumtable = corax_core_update_sumtable_repeats_generic_avx2;
     if (states == 4)
@@ -348,7 +348,7 @@ corax_core_update_sumtable_ii(unsigned int        states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     return corax_core_update_sumtable_ii_sse(states,
                                              sites,
@@ -365,7 +365,7 @@ corax_core_update_sumtable_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     return corax_core_update_sumtable_ii_avx(states,
                                              sites,
@@ -382,7 +382,7 @@ corax_core_update_sumtable_ii(unsigned int        states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     return corax_core_update_sumtable_ii_avx2(states,
                                               sites,
@@ -502,7 +502,7 @@ corax_core_update_sumtable_ti(unsigned int         states,
   unsigned int states_padded = states;
 
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     return corax_core_update_sumtable_ti_sse(states,
                                              sites,
@@ -519,7 +519,7 @@ corax_core_update_sumtable_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX
-  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     return corax_core_update_sumtable_ti_avx(states,
                                              sites,
@@ -537,7 +537,7 @@ corax_core_update_sumtable_ti(unsigned int         states,
   }
 #endif
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     return corax_core_update_sumtable_ti_avx2(states,
                                               sites,
@@ -776,14 +776,14 @@ corax_core_likelihood_derivatives(unsigned int        states,
 
 // SSE3 vectorization in missing as of now
 #ifdef HAVE_SSE3
-  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_STAT(sse3_present))
+  if (attrib & CORAX_ATTRIB_ARCH_SSE && CORAX_HAS_CPU_FEATURE(sse3_present))
   {
     states_padded = (states + 1) & 0xFFFFFFFE;
   }
 #endif
 
 #ifdef HAVE_AVX2
-  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_STAT(avx2_present))
+  if (attrib & CORAX_ATTRIB_ARCH_AVX2 && CORAX_HAS_CPU_FEATURE(avx2_present))
   {
     states_padded = (states + 3) & 0xFFFFFFFC;
 
@@ -804,7 +804,7 @@ corax_core_likelihood_derivatives(unsigned int        states,
   else
 #endif
 #ifdef HAVE_AVX
-      if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_STAT(avx_present))
+      if (attrib & CORAX_ATTRIB_ARCH_AVX && CORAX_HAS_CPU_FEATURE(avx_present))
   {
     states_padded = (states + 3) & 0xFFFFFFFC;
 

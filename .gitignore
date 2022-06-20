@@ -5,3 +5,9 @@ build/*
 bin/*
 compile_commands.json
 .cache
+
+# IDEs (VScode, ...)
+.vscode/
+
+# Clangd
+.clangd/

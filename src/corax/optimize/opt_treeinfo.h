@@ -24,6 +24,7 @@
 
 #include "corax/tree/treeinfo.h"
 #include "opt_generic.h"
+#include <stdio.h>
 
 typedef struct cutoff_info
 {
@@ -182,7 +183,71 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                            int               smoothings,
                                            double            epsilon,
                                            cutoff_info_t *   cutoff_info,
+  
                                            double            subtree_cutoff);
+  
+  // Headers in order to define some default values in NNI round
+  #ifdef __cplusplus
+    /* in case the compiler is a C++ compiler */
+    #define DEFAULT_VALUE(value) = value
+  #else
+    /* otherwise, C compiler, do nothing */
+    #define DEFAULT_VALUE(value)
+  #endif
+  
+  // Defining errors in NNI
+  #define CORAX_NNI_ROUND_LEAF_ERROR      6001
+  #define CORAX_NNI_ROUND_INTEGRITY_ERROR 6002
+  #define CORAX_NNI_ROUND_TRIPLET_ERROR   6003
+  #define CORAX_NNI_ROUND_UNDO_MOVE_ERROR 6004
+  #define CORAX_NNI_DIFF_NEGATIVE_ERROR   6005
+  #define CORAX_NNI_ROOT_NOT_FOUND        6005
+
+  /**
+   * NNI round - Searches for the optimal tree topology based on NNI moves. After calling this function
+   * the tree topology is probably changed.
+   *
+   * Check `corax_algo_nni_round` documentation.
+   *
+   * @param  treeinfo          the CORAX treeinfo structure - for now it can only take single partition data
+   * @param  tolerance         tolerance for NNI round: if (`final_logl - init_logl <= tolerance`) -> exit
+   * @param  brlen_opt_method  Branch length optimization method (default `CORAX_OPT_BLO_NEWTON_FAST`)
+   * @param  bl_min            Minimum branch length (default `CORAX_OPT_MIN_BRANCH_LEN`)
+   * @param  bl_max            Maximum branch length (default `CORAX_OPT_MAX_BRANCH_LEN`)
+   * @param  smoothings        number of smoothings in local branch length optimization that takes place (default `CORAX_OPT_DEFAULT_SMOOTHINGS`)
+   * @param  lh_epsilon        epsilon value in local branch length optimization that takes place (default `CORAX_OPT_DEFAULT_EPSILON`)
+   * @return                   the likelihood score after NNI optimization + new topology
+   */
+  CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
+                                            double tolerance,
+                                            int brlen_opt_method DEFAULT_VALUE(CORAX_OPT_BLO_NEWTON_FAST),
+                                            double bl_min DEFAULT_VALUE(CORAX_OPT_MIN_BRANCH_LEN),
+                                            double bl_max DEFAULT_VALUE(CORAX_OPT_MAX_BRANCH_LEN),
+                                            int smoothings DEFAULT_VALUE(CORAX_OPT_DEFAULT_SMOOTHINGS),
+                                            double lh_epsilon DEFAULT_VALUE(CORAX_OPT_DEFAULT_EPSILON));
+
+
+  /**
+   * Finds the best out of the 3 NNI topologies, in the quartet defined around the root of the tree.
+   * It is assumed that the rood in an internal branch. It is also assumed that probability matrices and CLVs around the rood
+   * are up to date.  Even if the current tree topology is the best out of 3, the returned likelihood might be increased, since 
+   * branch lenghts are optimized before the likelihood calculations of the 3 topologies 
+   *
+   * @param  treeinfo          the CORAX treeinfo structure - for now it can only take single partition data
+   * @param  brlen_opt_method  Branch length optimization method (default `CORAX_OPT_BLO_NEWTON_FAST`)
+   * @param  bl_min            Minimum branch length (default `CORAX_OPT_MIN_BRANCH_LEN`)
+   * @param  bl_max            Maximum branch length (default `CORAX_OPT_MAX_BRANCH_LEN`)
+   * @param  smoothings        number of smoothings in local branch length optimization that takes place (default `CORAX_OPT_DEFAULT_SMOOTHINGS`)
+   * @param  lh_epsilon        epsilon value in local branch length optimization that takes place (default `CORAX_OPT_DEFAULT_EPSILON`)
+   * @return                   the likelihood score after NNI optimization + new topology
+   */
+  CORAX_EXPORT double corax_algo_nni_local(corax_treeinfo_t *treeinfo,
+                                            int brlen_opt_method DEFAULT_VALUE(CORAX_OPT_BLO_NEWTON_FAST),
+                                            double bl_min DEFAULT_VALUE(CORAX_OPT_MIN_BRANCH_LEN),
+                                            double bl_max DEFAULT_VALUE(CORAX_OPT_MAX_BRANCH_LEN),
+                                            int smoothings DEFAULT_VALUE(CORAX_OPT_DEFAULT_SMOOTHINGS),
+                                            double lh_epsilon DEFAULT_VALUE(CORAX_OPT_DEFAULT_EPSILON));
+
 
 #ifdef __cplusplus
 } /* extern "C" */

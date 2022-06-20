@@ -86,6 +86,24 @@ const corax_subst_model_t M_STMTREV = {"STMTREV",
 const corax_subst_model_t M_DEN     = {
     "DEN", 20, corax_aa_rates_den, corax_aa_freqs_den, NULL, NULL, 0};
 
+const corax_subst_model_t M_Q_PFAM     = {
+    "Q.PFAM", 20, corax_aa_rates_q_pfam, corax_aa_freqs_q_pfam, NULL, NULL, 0};
+const corax_subst_model_t M_Q_PFAM_GB  = {
+    "Q.PFAM_GB", 20, corax_aa_rates_q_pfam_gb, corax_aa_freqs_q_pfam_gb, NULL, NULL, 0};
+const corax_subst_model_t M_Q_LG       = {
+    "Q.LG", 20, corax_aa_rates_q_lg, corax_aa_freqs_q_lg, NULL, NULL, 0};
+const corax_subst_model_t M_Q_BIRD     = {
+    "Q.BIRD", 20, corax_aa_rates_q_bird, corax_aa_freqs_q_bird, NULL, NULL, 0};
+const corax_subst_model_t M_Q_INSECT   = {
+    "Q.INSECT", 20, corax_aa_rates_q_insect, corax_aa_freqs_q_insect, NULL, NULL, 0};
+const corax_subst_model_t M_Q_MAMMAL   = {
+    "Q.MAMMAL", 20, corax_aa_rates_q_mammal, corax_aa_freqs_q_mammal, NULL, NULL, 0};
+const corax_subst_model_t M_Q_PLANT    = {
+    "Q.PLANT", 20, corax_aa_rates_q_plant, corax_aa_freqs_q_plant, NULL, NULL, 0};
+const corax_subst_model_t M_Q_YEAST    = {
+    "Q.YEAST", 20, corax_aa_rates_q_yeast, corax_aa_freqs_q_yeast, NULL, NULL, 0};
+
+
 /* LG4M components */
 const corax_subst_model_t M_LG4M1 = {
     "LG4M1", 20, corax_aa_rates_lg4m[0], corax_aa_freqs_lg4m[0], NULL, NULL, 0};
@@ -113,6 +131,9 @@ static const corax_subst_model_t *prot_model_list[] = {
     &M_DAYHOFF, &M_LG,    &M_DCMUT,    &M_JTT,   &M_MTREV,   &M_WAG,   &M_RTREV,
     &M_CPREV,   &M_VT,    &M_BLOSUM62, &M_MTMAM, &M_MTART,   &M_MTZOA, &M_PMB,
     &M_HIVB,    &M_HIVW,  &M_JTTDCMUT, &M_FLU,   &M_STMTREV, &M_DEN,
+
+    &M_Q_PFAM,  &M_Q_PFAM_GB, &M_Q_LG, &M_Q_BIRD, &M_Q_INSECT, &M_Q_MAMMAL,
+    &M_Q_PLANT, &M_Q_YEAST,
 
     &M_LG4M1,   &M_LG4M2, &M_LG4M3,    &M_LG4M4,
 
