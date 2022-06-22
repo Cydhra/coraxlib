@@ -1,27 +1,11 @@
-find_package(GTest)
-
-
-set(CORAX_TEST_SOURCES
-  src/dummy.cpp
-  src/newick.cpp
-  src/evolmodel.cpp
-  src/main.cpp)
+include(CoraxlibTestHelper)
+include(GoogleTest)
 
 set(CORAX_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
-add_executable(corax-test ${CORAX_TEST_SOURCES})
-target_include_directories(corax-test PRIVATE ${GTEST_INCLUDE_DIRS} ${CORAX_INCLUDE_DIRS})
-target_link_libraries(corax-test PRIVATE ${GTEST_BOTH_LIBRARIES} pthread)
-target_link_libraries(corax-test PRIVATE ${CORAX_LIBRARIES})
-target_compile_definitions(corax-test PRIVATE TREEPATH=${CORAX_TEST_DATA_DIR})
+corax_register_test(test_dummy FILES src/dummy.cpp)
+corax_register_test(test_newick FILES src/newick.cpp DEFINES TREEPATH=${CORAX_TEST_DATA_DIR})
+corax_register_test(test_evolmodel FILES src/evolmodel.cpp)
+corax_register_test(test_partition_create FILES src/partition_create.cpp DEFINES HAVE_SSE3=1 HAVE_AVX=1 HAVE_AVX2=0)
 
-if(${CMAKE_VERSION} VERSION_LESS "3.13") 
-  set_target_properties(corax-test PROPERTIES COMPILE_FLAGS -fsanitize=address)
-  set_target_properties(corax-test PROPERTIES LINK_FLAGS -fsanitize=address)
-else()
-  target_compile_options(corax-test PRIVATE -fsanitize=address)
-  target_link_options(corax-test PRIVATE -fsanitize=address)
-endif()
-
-add_test(corax-test ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/corax-test)
 enable_testing()

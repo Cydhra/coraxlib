@@ -48,3 +48,22 @@ authors for making their source code available.
 
 coraxlib includes code from GNU Compiler Collection distributed under the GNU
 General Public License.
+
+# Registering and running tests
+
+We use CTest for manageing our automated tests. You can thus use a standard CMake workflow:
+
+```
+cmake -B build
+cmake --build build -j
+pushd build && ctest; popd
+```
+
+We use Googletest for our unit tests.
+To register a new unit-test, create a file in `test/unit/src` and add the following line to `test/unit/CMakeLists.txt`:
+
+```
+corax_register_test(test_my_awesome_new_test FILES src/my_awesome_new_test.cpp)
+# or
+corax_register_test(test_with_custom_defines FILES src/with_custom_defines.cpp DEFINES SAMPLE_DEFINE=1 ANOTHER_DEFINE=2)
+```
