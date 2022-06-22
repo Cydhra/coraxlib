@@ -28,44 +28,44 @@
     https://github.com/xflouris/libpll/issues/138
 
 */
-#if (defined(__APPLE__))                                                       \
-    || (!defined(__clang__) && defined(__GNUC__)                               \
-        && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 8)))            \
-    || (defined(__clang__)                                                     \
-        && (__clang_major__ < 3                                                \
-            || (__clang_major__ == 3 && __clang_minor__ < 9)))
 
-#if defined(__i386__) && defined(__PIC__)
-#if (defined(__GNUC__) && __GNUC__ < 3)
-#define cpuid(level, count, a, b, c, d)                                        \
-  __asm__("xchgl\t%%ebx, %k1\n\t"                                              \
-          "cpuid\n\t"                                                          \
-          "xchgl\t%%ebx, %k1\n\t"                                              \
-          : "=a"(a), "=&r"(b), "=c"(c), "=d"(d)                                \
-          : "0"(level), "2"(count))
-#else
-#define cpuid(level, count, a, b, c, d)                                        \
-  __asm__("xchg{l}\t{%%}ebx, %k1\n\t"                                          \
-          "cpuid\n\t"                                                          \
-          "xchg{l}\t{%%}ebx, %k1\n\t"                                          \
-          : "=a"(a), "=&r"(b), "=c"(c), "=d"(d)                                \
-          : "0"(level), "2"(count))
-#endif
-#elif defined(__x86_64__)                                                      \
-    && (defined(__code_model_medium__) || defined(__code_model_large__))       \
-    && defined(__PIC__)
-#define cpuid(level, count, a, b, c, d)                                        \
-  __asm__("xchg{q}\t{%%}rbx, %q1\n\t"                                          \
-          "cpuid\n\t"                                                          \
-          "xchg{q}\t{%%}rbx, %q1\n\t"                                          \
-          : "=a"(a), "=&r"(b), "=c"(c), "=d"(d)                                \
-          : "0"(level), "2"(count))
-#else
-#define cpuid(level, count, a, b, c, d)                                        \
-  __asm__("cpuid\n\t"                                                          \
-          : "=a"(a), "=b"(b), "=c"(c), "=d"(d)                                 \
-          : "0"(level), "2"(count))
-#endif
+#if (defined(__APPLE__) && !defined(__aarch64__)) || \
+    (!defined(__clang__) && defined(__GNUC__) && (__GNUC__ < 4 || \
+      (__GNUC__ == 4 && __GNUC_MINOR__ < 8))) || \
+    (defined(__clang__) && (__clang_major__ < 3 || \
+      (__clang_major__ == 3 && __clang_minor__ < 9)))
+  
+  #if defined(__i386__) && defined(__PIC__)
+    #if (defined(__GNUC__) && __GNUC__ < 3)
+#define cpuid(level, count, a, b, c, d)                 \
+  __asm__ ("xchgl\t%%ebx, %k1\n\t"                      \
+           "cpuid\n\t"                                  \
+           "xchgl\t%%ebx, %k1\n\t"                      \
+           : "=a" (a), "=&r" (b), "=c" (c), "=d" (d)    \
+           : "0" (level), "2" (count))
+    #else
+#define cpuid(level, count, a, b, c, d)                 \
+  __asm__ ("xchg{l}\t{%%}ebx, %k1\n\t"                  \
+           "cpuid\n\t"                                  \
+           "xchg{l}\t{%%}ebx, %k1\n\t"                  \
+           : "=a" (a), "=&r" (b), "=c" (c), "=d" (d)    \
+           : "0" (level), "2" (count))
+    #endif
+  #elif defined(__x86_64__) && (defined(__code_model_medium__) || \
+        defined(__code_model_large__)) && defined(__PIC__)
+#define cpuid(level, count, a, b, c, d)                 \
+  __asm__ ("xchg{q}\t{%%}rbx, %q1\n\t"                  \
+           "cpuid\n\t"                                  \
+           "xchg{q}\t{%%}rbx, %q1\n\t"                  \
+           : "=a" (a), "=&r" (b), "=c" (c), "=d" (d)    \
+           : "0" (level), "2" (count))
+  #else
+#define cpuid(level, count, a, b, c, d)                 \
+  __asm__ ("cpuid\n\t"                                  \
+           : "=a" (a), "=b" (b), "=c" (c), "=d" (d)     \
+           : "0" (level), "2" (count))
+  #endif
+
 
 static void cpu_features_detect()
 {

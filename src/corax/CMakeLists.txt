@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0.2)
 include(CheckIncludeFile) 
 
 set (CORAX_BASE_FLAGS "-Wall -Wsign-compare -std=c99 -D_GNU_SOURCE -O3 -fPIC ")
+set (CORAX_BASE_FLAGS_CXX "-Wall -Wsign-compare -std=c++11 -D_GNU_SOURCE -O3 -fPIC ")
 
 if(CORAX_DEBUG)
   set(CORAX_BASE_FLAGS "${CORAX_BASE_FLAGS} -DDEBUG")
@@ -184,9 +185,12 @@ if (ENABLE_AVX2)
   SET_SOURCE_FILES_PROPERTIES( ${CORAX_AVX2_SOURCES} PROPERTIES COMPILE_FLAGS ${AVX2_FLAGS} )
 endif ()
 
-add_definitions(-DHAVE_X86INTRIN_H)
+if (ENABLE_SSE OR ENABLE_AVX OR ENABLE_AVX2)
+  add_definitions(-DHAVE_X86INTRIN_H)
+endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CORAX_BASE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CORAX_BASE_FLAGS_CXX}")
 
 # Set BUILD_CORAX_SHARED and BUILD_CORAX_SHARED if both are unset
 # Use BUILD_SHARED_LIBS to decide whether we should build shared or static libraries
