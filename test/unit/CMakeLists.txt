@@ -1,5 +1,10 @@
 find_package(GTest)
 
+if(NOT GTEST_FOUND)
+    message (STATUS "GTest not found")
+    message (WARNING "Skipping building tests.")
+    return()
+endif()
 
 set(CORAX_TEST_SOURCES
   src/dummy.cpp
