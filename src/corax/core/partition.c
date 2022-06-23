@@ -395,13 +395,14 @@ CORAX_EXPORT corax_partition_t *
   unsigned int i;
   unsigned int sites_alloc;
 
-  /* make sure that multiple ARCH were not specified */
-  if (CORAX_POPCNT32(attributes & CORAX_ATTRIB_ARCH_MASK) > 1)
-  {
-    corax_set_error(CORAX_ERROR_INVALID_PARAM,
-                    "Multiple architecture flags specified.");
-    return CORAX_FAILURE;
-  }
+  // Multiple specified ARCHs is no problem, we will autoselect the best available later.
+  // "best" is defined as AVX2 > AVX > SSE3
+  //if (CORAX_POPCNT32(attributes & CORAX_ATTRIB_ARCH_MASK) > 1)
+  //{
+  //  corax_set_error(CORAX_ERROR_INVALID_PARAM,
+  //                  "Multiple architecture flags specified.");
+  //  return CORAX_FAILURE;
+  //}
 
   /* disable repeats if there are to few sites */
   if (sites < 16 && (attributes & CORAX_ATTRIB_SITE_REPEATS))
