@@ -35,13 +35,14 @@
         EXPECT_TRUE(nni_logl>=logl1);                               \
     }
 
-#define check_rf_dist(split1, split2, n_taxa)                       \
-    {                                                               \
-        auto rf = corax_utree_split_rf_distance(splits[0],          \
-                                                splits[1],          \
-                                                n_taxa);            \
-        EXPECT_EQ(rf, 0);                                           \
-    }                                                               \
+#define check_rf_dist(split1, split2, tip_nodes_count)                              \
+    {                                                                               \
+        auto rf = corax_utree_split_rf_distance(splits[0],                          \
+                                                splits[1],                          \
+                                                (unsigned int) tip_nodes_count);    \
+        EXPECT_EQ(rf, 0);                                                           \
+    }                                                                               \
+
 
 void show_tree (corax_unode_t * tree, int SHOW_ASCII_TREE)
 {
@@ -75,7 +76,7 @@ void check_trees(corax_utree_t* tree, const char* _check_tree, int root_index, i
     //show_tree(check_tree->vroot, 1);
     
     // Create splits for calculating rf distance
-    int _num_trees = 2;
+    size_t _num_trees = 2;
     std::vector<corax_split_t *> splits(_num_trees);
     std::vector<corax_utree_t *> pars_trees(_num_trees);
     std::vector<corax_unode_t *> pars_roots(_num_trees);
@@ -88,12 +89,12 @@ void check_trees(corax_utree_t* tree, const char* _check_tree, int root_index, i
 
 
     std::map<std::string, unsigned int> labelToId;
-    for (unsigned int i = 0; i < tip_nodes_count; ++i) {
+    for (int i = 0; i < tip_nodes_count; ++i) {
       labelToId.insert({std::string(pars_trees[0]->nodes[i]->label), i});
     }
-    for (auto tree: pars_trees) {
-      for (unsigned int i = 0; i < tip_nodes_count; ++i) {
-        auto leaf = tree->nodes[i];
+    for (auto _tree: pars_trees) {
+      for (int i = 0; i < tip_nodes_count; ++i) {
+        auto leaf = _tree->nodes[i];
         auto id = labelToId.at(std::string(leaf->label));
         leaf->node_index = leaf->clv_index = id;
       }
@@ -102,13 +103,11 @@ void check_trees(corax_utree_t* tree, const char* _check_tree, int root_index, i
     for (size_t i = 0; i < _num_trees; ++i)
     {
         splits[i] = corax_utree_split_create(pars_roots[i],
-                                              tip_nodes_count,
+                                              (unsigned int) tip_nodes_count,
                                               nullptr);
     }
 
-    auto rf = corax_utree_split_rf_distance(splits[0], splits[1], tip_nodes_count);
-
-    check_rf_dist(splits[0], splits[1], tip_nodes_count);
+    check_rf_dist(splits[0], splits[1],  (unsigned int) tip_nodes_count);
 
     for (auto s: splits)
         corax_utree_split_destroy(s);
@@ -162,7 +161,7 @@ corax_treeinfo_t* initialize_treeinfo(corax_unode_t* root,
                                         int tip_nodes_count)
 {
     corax_treeinfo_t* treeinfo;
-    treeinfo = corax_treeinfo_create(root, tip_nodes_count, 1, CORAX_BRLEN_UNLINKED);
+    treeinfo = corax_treeinfo_create(root, (unsigned int) tip_nodes_count, 1, CORAX_BRLEN_UNLINKED);
     corax_treeinfo_init_partition(treeinfo, 
                                     0,
                                     partition, 
@@ -277,14 +276,14 @@ TEST(coraxlib_nni, simple1)
 
     unsigned int params_indices[4] = {0,0,0,0};
 
-    partition = corax_partition_create(tip_nodes_count,       /* Tip CLVs */
-                                        inner_nodes_count,       /* Inner CLVs */
+    partition = corax_partition_create((unsigned int) tip_nodes_count,  /* Tip CLVs */
+                                        (unsigned int) inner_nodes_count,       /* Inner CLVs */
                                         4,       /* States */
                                         6,       /* Sequence length */
                                         1,       /* Models (sets of subst. params)*/
                                         7,       /* P matrices */
                                         4,       /* Rate categories */
-                                        inner_nodes_count,       /* Scale buffers */
+                                        (unsigned int) inner_nodes_count,       /* Scale buffers */
                                         CORAX_ATTRIB_ARCH_AVX);
     
     double branch_lengths[7] = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
@@ -465,22 +464,23 @@ TEST(coraxlib_nni, simple3)
     int inner_nodes_count = tip_nodes_count-2;
 
     unsigned int params_indices[4] = {0,0,0,0};
+    unsigned int num_of_p_matrices = 2*((unsigned int)tip_nodes_count) - 3;
 
-    partition = corax_partition_create(tip_nodes_count,       /* Tip CLVs */
-                                        inner_nodes_count,       /* Inner CLVs */
+    partition = corax_partition_create((unsigned int) tip_nodes_count,       /* Tip CLVs */
+                                        (unsigned int) inner_nodes_count,       /* Inner CLVs */
                                         4,       /* States */
                                         8,       /* Sequence length */
                                         1,       /* Models (sets of subst. params)*/
-                                        2*tip_nodes_count-3,       /* P matrices */
+                                        num_of_p_matrices,       /* P matrices */
                                         4,       /* Rate categories */
-                                        inner_nodes_count,       /* Scale buffers */
+                                        (unsigned int) inner_nodes_count,       /* Scale buffers */
                                         CORAX_ATTRIB_ARCH_AVX);
     
     double branch_lengths[15];
     unsigned int matrix_indices[15];
     for(int i = 0; i<15; i++){
         branch_lengths[i] = 0.1;
-        matrix_indices[i] = i;
+        matrix_indices[i] = (unsigned int) i;
     }
 
     double frequencies[4] = { 0.25, 0.25, 0.25, 0.25 };
@@ -643,7 +643,7 @@ TEST(coraxlib_nni, simple4)
     fsetpos(stdout, &pos); // move to the correct position
     std::remove("dummy.txt");
     // --------------------------------------------------
-    
+
     check_triplet_error(nni_logl);
     
     delete[] trav_buffer;
