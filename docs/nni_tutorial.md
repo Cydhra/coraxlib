@@ -95,7 +95,9 @@ The function returns either the likelihood of the best topology or a `CORAX_FAIL
 ```
 double corax_algo_nni_round(corax_treeinfo_t *treeinfo, /* pointer to treeinfo */
                             double tolerance,           /* NNI round threshold, e.g. 0.1 */
-                            double *aLRT_values,        /* Array in which the aLRT statistics for each branch are stored */
+                            double *shSupportValues,    /* Array where the SH-aLRT statistics for each branch are stored */
+                            int nBootstrap, 		  /* Number of bootstrap replicates */
+                            double shEpsilon, 	  /* Confidence value for the SH-aLRT metric calculation, e.g. 0.1 */
                             int    brlen_opt_method,    /* branch length optimization method */
                             double bl_min,              /* minimum branch length */
                             double bl_max,              /* maximum branch length */

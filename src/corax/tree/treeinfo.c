@@ -1093,9 +1093,9 @@ CORAX_EXPORT double corax_treeinfo_compute_loglh_flex(
 }
 
 CORAX_EXPORT double corax_treeinfo_compute_loglh_persite(
-    corax_treeinfo_t *treeinfo, int incremental, double **persite_lnl)
+    corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **persite_lnl)
 {
-  return treeinfo_compute_loglh(treeinfo, incremental, 1, persite_lnl);
+  return treeinfo_compute_loglh(treeinfo, incremental, update_matrices, persite_lnl);
 }
 
 CORAX_EXPORT
