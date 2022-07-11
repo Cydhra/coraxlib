@@ -210,22 +210,26 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
    *
    * Check `corax_algo_nni_round` documentation.
    *
-   * @param  treeinfo          the CORAX treeinfo structure - for now it can only take single partition data
-   * @param  tolerance         tolerance for NNI round: if (final_logl - init_logl <= tolerance) -> exit
-   * @param[out] aLRT_values   (Optional) Array where the aLRT statistics will be stored. The size of the array must be 2*n-3, 
-   *                           where n is the number of tip nodes. The aLRT statistic for a branch with pmatrix_index = i
-   *                           is stored in aLRT_values[i]. All tip branches will have aLRT=-inf, 
-   *                           since the metric only makes sense for internal brances. (default NULL)
-   * @param  brlen_opt_method  Branch length optimization method (default CORAX_OPT_BLO_NEWTON_FAST)
-   * @param  bl_min            Minimum branch length (default CORAX_OPT_MIN_BRANCH_LEN)
-   * @param  bl_max            Maximum branch length (default CORAX_OPT_MAX_BRANCH_LEN)
-   * @param  smoothings        number of smoothings in local branch length optimization that takes place (default CORAX_OPT_DEFAULT_SMOOTHINGS)
-   * @param  lh_epsilon        epsilon value in local branch length optimization that takes place (default CORAX_OPT_DEFAULT_EPSILON)
-   * @return                   the likelihood score after NNI optimization + new topology
+   * @param  treeinfo               the CORAX treeinfo structure - for now it can only take single partition data
+   * @param  tolerance              tolerance for NNI round: if (final_logl - init_logl <= tolerance) -> exit
+   * @param[out] shSupportValues    (Optional) Array where the SH-aLRT statistics will be stored. The size of the array must be 2*n-3, 
+   *                                where n is the number of tip nodes. The SH-aLRT statistic for a branch with pmatrix_index = i
+   *                                is stored in shSupportValues[i]. All tip branches will have SH-aLRT=-inf, 
+   *                                since the metric only makes sense for internal brances. (default NULL)
+   * @param  nBootstrap             (if shSupportValues != NULL) Number of bootstrap replicates (default 1000)
+   * @param  shEpsilon              (if shSupportValues != NULL) Confidence of SH-like criterion (default 0.1)
+   * @param  brlen_opt_method       Branch length optimization method (default CORAX_OPT_BLO_NEWTON_FAST)
+   * @param  bl_min                 Minimum branch length (default CORAX_OPT_MIN_BRANCH_LEN)
+   * @param  bl_max                 Maximum branch length (default CORAX_OPT_MAX_BRANCH_LEN)
+   * @param  smoothings             number of smoothings in local branch length optimization that takes place (default CORAX_OPT_DEFAULT_SMOOTHINGS)
+   * @param  lh_epsilon             epsilon value in local branch length optimization that takes place (default CORAX_OPT_DEFAULT_EPSILON)
+   * @return                        the likelihood score after NNI optimization + new topology
    */
   CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
                                             double tolerance,
-                                            double *aLRT_values DEFAULT_VALUE(NULL),
+                                            double *shSupportValues DEFAULT_VALUE(NULL),
+                                            int nBootstrap DEFAULT_VALUE(1000),
+                                            double shEpsilon DEFAULT_VALUE(0.1),
                                             int brlen_opt_method DEFAULT_VALUE(CORAX_OPT_BLO_NEWTON_FAST),
                                             double bl_min DEFAULT_VALUE(CORAX_OPT_MIN_BRANCH_LEN),
                                             double bl_max DEFAULT_VALUE(CORAX_OPT_MAX_BRANCH_LEN),

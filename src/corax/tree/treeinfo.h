@@ -253,7 +253,7 @@ extern "C"
       corax_treeinfo_t *treeinfo, int incremental, int update_pmatrices);
 
   CORAX_EXPORT double corax_treeinfo_compute_loglh_persite(
-      corax_treeinfo_t *treeinfo, int incremental, double **persite_lnl);
+      corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **persite_lnl);
 
   CORAX_EXPORT
   int corax_treeinfo_scale_branches_all(corax_treeinfo_t *treeinfo,

@@ -376,31 +376,44 @@ static int undo_move(corax_treeinfo_t* treeinfo, corax_unode_t *node, corax_nni_
     return retval;
 }
 
-static int calculate_aLRT_values(corax_treeinfo_t *treeinfo,
-                                double *aLRT_values,
-                                double tolerance,
-                                int brlen_opt_method,
-                                double bl_min,
-                                double bl_max,
-                                int    smoothings,
-                                double lh_epsilon)
+static int shSupport(corax_treeinfo_t *treeinfo,
+                    double *shSupportValues,
+                    double **persite_lnl_0,
+                    int nBootstrap,
+                    double shEpsilon,
+                    double tolerance,
+                    int brlen_opt_method,
+                    double bl_min,
+                    double bl_max,
+                    int    smoothings,
+                    double lh_epsilon)
 {
-    double tree_logl;
-    double test_logl;
-    double new_logl;
-    double second_best_logl;
+    double LNL0, LNL1, LNL2, test_logl, _LNL0, _LNL1, _LNL2, second_best_logl;
+    int nSupport = 0;
+    bool shittySplit = false;
+    double aLRT;
+
+    double **persite_lnl_1,**persite_lnl_2;
+    
+    persite_lnl_1 = (double**)malloc(sizeof(double*) * (treeinfo->partition_count));
+    persite_lnl_2 = (double**)malloc(sizeof(double*) * (treeinfo->partition_count));
+    
+    for(unsigned int i=0; i<treeinfo->partition_count; i++){
+        persite_lnl_1[i] = (double*)malloc(sizeof(double)*treeinfo->partitions[i]->sites);
+        persite_lnl_2[i] = (double*)malloc(sizeof(double)*treeinfo->partitions[i]->sites);
+    }
 
     corax_unode_t *q = treeinfo->root;
     corax_nni_move *move = (corax_nni_move *)malloc(sizeof(corax_nni_move));
     
     // update clvs and matrices
-    tree_logl = compute_local_likelihood_treeinfo(treeinfo, q, 2);
+    LNL0 = compute_local_likelihood_treeinfo(treeinfo, q, 2);
     
     // First NNI topology
     setup_move_info(move, q, CORAX_UTREE_MOVE_NNI_LEFT);
-    new_logl = apply_move(treeinfo, q, move, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon);
-    
-    if (new_logl == CORAX_FAILURE){
+    LNL1 = apply_move(treeinfo, q, move, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon);
+
+    if (LNL1 == CORAX_FAILURE){
         printf("Failed to apply NNI move. \n");
         printf("Corax error number %d \n", corax_errno);
         printf("Corax error msg: %s\n", corax_errmsg);
@@ -408,7 +421,11 @@ static int calculate_aLRT_values(corax_treeinfo_t *treeinfo,
         return CORAX_FAILURE;
     }
 
-    second_best_logl = new_logl;
+    // calculate persite
+    test_logl = corax_treeinfo_compute_loglh_persite(treeinfo, 0, 0, persite_lnl_1);
+    assert(fabs(test_logl - LNL1) < 1e-5);
+
+    second_best_logl = LNL1;
 
     // undo + testing
     if(!undo_move(treeinfo, q, move)){
@@ -419,15 +436,19 @@ static int calculate_aLRT_values(corax_treeinfo_t *treeinfo,
     }
 
     test_logl = compute_local_likelihood_treeinfo(treeinfo, q, 1);
-    assert(fabs(test_logl - tree_logl) < 1e-5);
+    assert(fabs(test_logl - LNL0) < 1e-5);
     
     // second NNI topology
     move->type = CORAX_UTREE_MOVE_NNI_RIGHT;
-    new_logl = apply_move(treeinfo, q, move, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon);
+    LNL2 = apply_move(treeinfo, q, move, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon);
     
-    if(new_logl > second_best_logl)
-        second_best_logl = new_logl;
+    if(LNL2 > second_best_logl)
+        second_best_logl = LNL2;
     
+    // calculate persite
+    test_logl = corax_treeinfo_compute_loglh_persite(treeinfo, 0, 0, persite_lnl_2);
+    assert(fabs(test_logl - LNL2) < 1e-5);
+
     // undo + testing
     if(!undo_move(treeinfo, q, move)){
         corax_set_error(CORAX_NNI_ROUND_UNDO_MOVE_ERROR,
@@ -436,25 +457,101 @@ static int calculate_aLRT_values(corax_treeinfo_t *treeinfo,
     }
 
     test_logl = compute_local_likelihood_treeinfo(treeinfo, q, 1);
-    assert(fabs(test_logl - tree_logl) < 1e-5);
+    assert(fabs(test_logl - LNL0) < 1e-5);
     
-    if( second_best_logl > tree_logl ){
+    if( second_best_logl > LNL0 ){
 
-        if(second_best_logl - tree_logl > tolerance){
+        if(second_best_logl - LNL0 > tolerance){
 
             corax_set_error(CORAX_ALRT_NOT_NNI_OPTIMAL,
-                "aLRT values cannot be calculated for non-optimal NNI topologies ...\n");
+                "sh-Like aLRT values cannot be calculated for non-optimal NNI topologies ...\n");
             return CORAX_FAILURE;
 
         } else {
 
-            aLRT_values[q->pmatrix_index] = 0;
-
+            shittySplit = true;
         }
+
     } else {
-        aLRT_values[q->pmatrix_index] = 2*(tree_logl - second_best_logl);
+        aLRT = 2*(LNL0 - second_best_logl);
     }
 
+    if(shittySplit){
+        shSupportValues[q->pmatrix_index] = 0;
+        return CORAX_SUCCESS;
+    }
+
+    unsigned int nSites = 0;
+    for(unsigned int i = 0; i<treeinfo->partition_count; i++){
+        nSites += treeinfo->partitions[i]->sites;
+    }
+
+    srand(time(NULL));
+    unsigned int _seed = abs(rand());
+    corax_random_state* rstate = corax_random_create(_seed);
+    
+    for (int i = 0; i<nBootstrap; i++){
+        
+        double cs[3];
+        double tmp, diff;
+        int pIndex, sIndex;
+        _LNL0 = 0;
+        _LNL1 = 0;
+        _LNL2 = 0;
+        
+
+        for(unsigned int j = 0; j<nSites; j++){
+            if(treeinfo->partition_count > 1){
+                pIndex = corax_random_getint(rstate, treeinfo->partition_count);
+            } else {
+                pIndex = 0;
+            }
+
+            sIndex = corax_random_getint(rstate, treeinfo->partitions[pIndex]->sites);
+
+            _LNL0 += persite_lnl_0[pIndex][sIndex];
+            _LNL1 += persite_lnl_1[pIndex][sIndex];
+            _LNL2 += persite_lnl_2[pIndex][sIndex];
+        }
+
+        cs[0] = _LNL0 - LNL0;
+        cs[1] = _LNL1 - LNL1;
+        cs[2] = _LNL2 - LNL2;
+
+        if(cs[0] < cs[1]){
+            tmp = cs[0];
+            cs[0] = cs[1];
+            cs[1] = tmp;
+        }
+
+        if(cs[1] < cs[2]){
+            tmp = cs[1];
+            cs[1] = cs[2];
+            cs[2] = tmp;
+        }
+
+
+        diff = fabs(cs[0] - cs[1]);
+        if( aLRT > 2*diff + shEpsilon){
+            nSupport++;
+        }
+
+    }
+    
+    // sh support value
+    double support = (nSupport/(double)nBootstrap);
+    shSupportValues[q->pmatrix_index] = support * 100.0;
+    
+    // free heap
+    corax_random_destroy(rstate);
+
+    for(unsigned i=0; i<treeinfo->partition_count; i++){
+        free(persite_lnl_1[i]);
+        free(persite_lnl_2[i]);
+    }
+    
+    free(persite_lnl_1);
+    free(persite_lnl_2);
     free(move);
 
 
@@ -594,7 +691,10 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
                         corax_unode_t *node,
                         unsigned int *interchagnes,
                         bool compute_aLRT,
-                        double *aLRT_values,
+                        double *shSupportValues,
+                        double **persite_lnl,
+                        int nBootstrap,
+                        double shEpsilon,
                         double tolerance,
                         int brlen_opt_method,
                         double bl_min,
@@ -637,7 +737,17 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
         
         } else {
             
-            retval = calculate_aLRT_values(treeinfo, aLRT_values, tolerance, brlen_opt_method, bl_min, bl_max ,smoothings, lh_epsilon);
+            retval = shSupport(treeinfo, 
+                                shSupportValues, 
+                                persite_lnl,
+                                nBootstrap,
+                                shEpsilon,
+                                tolerance, 
+                                brlen_opt_method, 
+                                bl_min, 
+                                bl_max,
+                                smoothings, 
+                                lh_epsilon);
             
         }
     }
@@ -646,17 +756,47 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
     // so the second time we call the function, we have to update CLVs from the previous root
     // up to the new root
     if(!CORAX_UTREE_IS_TIP(pb1) && retval)
-        retval = nni_recursive(treeinfo, pb1, interchagnes, compute_aLRT, aLRT_values, tolerance, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon, false);
+        retval = nni_recursive(treeinfo, 
+                                pb1, 
+                                interchagnes, 
+                                compute_aLRT, 
+                                shSupportValues, 
+                                persite_lnl,
+                                nBootstrap,
+                                shEpsilon,
+                                tolerance, 
+                                brlen_opt_method, 
+                                bl_min, 
+                                bl_max, 
+                                smoothings, 
+                                lh_epsilon, 
+                                false);
     
     if(!CORAX_UTREE_IS_TIP(pb2) && retval)
-        retval = nni_recursive(treeinfo, pb2, interchagnes, compute_aLRT, aLRT_values, tolerance, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon, true);
+        retval = nni_recursive(treeinfo, 
+                                pb2, 
+                                interchagnes, 
+                                compute_aLRT, 
+                                shSupportValues, 
+                                persite_lnl,
+                                nBootstrap,
+                                shEpsilon,
+                                tolerance, 
+                                brlen_opt_method, 
+                                bl_min, 
+                                bl_max, 
+                                smoothings, 
+                                lh_epsilon, 
+                                true);
 
     return retval;
 }
 
 static double algo_nni_round(corax_treeinfo_t *treeinfo,
                                 double tolerance,
-                                double *aLRT_values,
+                                double *shSupportValues,
+                                int nBootstrap,
+                                double shEpsilon,
                                 int brlen_opt_method,
                                 double bl_min,
                                 double bl_max,
@@ -701,7 +841,21 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
         interchanges = 0;
 
         // perform nni moves
-        retval = nni_recursive(treeinfo, start_node, &interchanges, false, NULL, tolerance, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon, true);
+        retval = nni_recursive(treeinfo, 
+                                start_node, 
+                                &interchanges, 
+                                false, 
+                                NULL,
+                                NULL,
+                                nBootstrap,
+                                shEpsilon, 
+                                tolerance, 
+                                brlen_opt_method, 
+                                bl_min, 
+                                bl_max, 
+                                smoothings, 
+                                lh_epsilon, 
+                                true);
         
         if (retval == CORAX_FAILURE){
             printf("\nSomething went wrong, the return value of NNI round is CORAX_FAILURE. Exit...\n");
@@ -739,28 +893,61 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
     printf("\nCompleted.\nTotal interchanges = %d, Time = %.3f secs\n", total_interchanges, time_spent);
     printf("Final logl = %.5f\n\n", tree_logl);
 
-    if(aLRT_values){
-        
-        int alrt_size = 2*treeinfo->tip_count-3;
-        for(int i = 0; i<alrt_size; i++){
-            aLRT_values[i] = -INFINITY;
+    if(shSupportValues){
+
+        printf("Calculating SH-like aLRT statistics ... \n"); 
+        int shalrt_size = 2*treeinfo->tip_count-3;
+        for(int i = 0; i<shalrt_size; i++){
+            shSupportValues[i] = -INFINITY;
         }
 
         interchanges = 0;
 
-        // perform nni moves
-        retval = nni_recursive(treeinfo, start_node, &interchanges, true, aLRT_values, tolerance, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon, true);
+        double **persite_lnl;
+        persite_lnl = (double**)malloc(sizeof(double*) * (treeinfo->partition_count));
         
+        for(unsigned int i=0; i<treeinfo->partition_count; i++)
+            persite_lnl[i] = (double*)malloc(sizeof(double)*treeinfo->partitions[i]->sites);
+        
+        start_node = tree->nodes[tip_index]->back;
+        treeinfo->root = start_node;
+        new_logl = corax_treeinfo_compute_loglh_persite(treeinfo, 0, 0, persite_lnl);
+        
+        // perform nni moves
+        retval = nni_recursive(treeinfo, 
+                                start_node, 
+                                &interchanges, 
+                                true, 
+                                shSupportValues, 
+                                persite_lnl,
+                                nBootstrap,
+                                shEpsilon,
+                                tolerance, 
+                                brlen_opt_method, 
+                                bl_min, 
+                                bl_max, 
+                                smoothings, 
+                                lh_epsilon, 
+                                true);
+        
+        for(unsigned i=0; i<treeinfo->partition_count; i++)
+            free(persite_lnl[i]);
+        
+        free(persite_lnl);  
+
         if (retval == CORAX_FAILURE){
-            printf("\nSomething went wrong, the return value of NNI round is CORAX_FAILURE. Exit...\n");
+            printf("\nSomething went wrong in the calculations of SH-like aLRT statistics. Exit...\n");
             return CORAX_FAILURE;
         }
+
 
         start_node = tree->nodes[tip_index]->back;
         new_logl = compute_local_likelihood_treeinfo(treeinfo, start_node, 0);
         treeinfo->root = start_node;
 
         assert(fabs(new_logl - tree_logl)<1e-5);
+
+        printf("Done!\n\n");
     }
 
     if(start_node != initial_root){
@@ -775,7 +962,9 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
                                         double tolerance,
-                                        double *aLRT_values,
+                                        double *shSupportValues,
+                                        int nBootstrap,
+                                        double shEpsilon,
                                         int brlen_opt_method,
                                         double bl_min,
                                         double bl_max,
@@ -799,7 +988,9 @@ CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
 
     return algo_nni_round(treeinfo, 
                         tolerance,
-                        aLRT_values, 
+                        shSupportValues, 
+                        nBootstrap,
+                        shEpsilon,
                         brlen_opt_method,
                         bl_min,
                         bl_max,
