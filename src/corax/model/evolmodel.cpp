@@ -1143,7 +1143,7 @@ const StateNameMap& EvolModel::full_state_namemap() const
   return _full_state_namemap;
 }
 
-void assign(EvolModel& model, const corax_partition_t * partition)
+void corax::model::assign(EvolModel& model, const corax_partition_t * partition)
 {
   if (model.num_states() == partition->states &&
       model.num_submodels() == partition->rate_matrices)
@@ -1171,7 +1171,7 @@ void assign(EvolModel& model, const corax_partition_t * partition)
     throw runtime_error("incompatible partition!");
 }
 
-void assign(corax_partition_t * partition, const EvolModel& model)
+void corax::model::assign(corax_partition_t * partition, const EvolModel& model)
 {
   if (model.num_states() == partition->states &&
       model.num_submodels() == partition->rate_matrices)
