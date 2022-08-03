@@ -14,23 +14,23 @@ class CoraxlibEnvironment : public ::testing::Environment {
   CoraxlibEnvironment() {}
 
   std::string datafile_filename(){
-    return std::string(STRINGIFY(TREEPATH/random_test_trees));
+    return std::string(STRINGIFY(DATAPATH/random_test_trees));
   }
 
   std::ifstream get_datafile() {
-    return std::ifstream(STRINGIFY(TREEPATH/random_test_trees));
+    return std::ifstream(STRINGIFY(DATAPATH/random_test_trees));
   }
 
   std::ifstream get_pathological_data() {
-    return std::ifstream(STRINGIFY(TREEPATH/pathological_trees));
+    return std::ifstream(STRINGIFY(DATAPATH/pathological_trees));
   }
 
   std::string msa_filename() {
-      return std::string(STRINGIFY(TREEPATH/example.phy));
+      return std::string(STRINGIFY(DATAPATH/example.phy));
   }
 
   std::string small_msa_filename() {
-      return std::string(STRINGIFY(TREEPATH/small.fasta));
+      return std::string(STRINGIFY(DATAPATH/small.fasta));
   }
 };
 
