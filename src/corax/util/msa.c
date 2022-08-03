@@ -292,6 +292,162 @@ corax_msa_empirical_invariant_sites(corax_partition_t *partition)
   return empirical_pinv;
 }
 
+CORAX_EXPORT double*
+corax_msa_column_entropies(const corax_msa_t *   msa,
+                           unsigned int          states,
+                           const corax_state_t * tipmap
+)
+{
+  if (!msa)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return CORAX_FAILURE;
+  }
+
+  if (!tipmap)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "Character-to-state mapping (charmap) is NULL");
+    return CORAX_FAILURE;
+  }
+
+  const unsigned long msa_count  = (unsigned long)msa->count;
+  const unsigned long msa_length = (unsigned long)msa->length;
+
+  unsigned long  i, j, k;
+
+  corax_state_t gap_state = 0;
+
+  double * const column_entropies = (double *)calloc(msa_length, sizeof(double));
+
+  /* gap state has always all bits set to one */
+  gap_state = (1ul << (states)) - 1;
+
+  for (j = 0; j < msa_length; ++j) // site loop msa_length
+  {
+    // compute the column wise entropy
+    // for this first count the proportion of each state in this column
+    int state_counts[states];
+    memset(state_counts, 0, sizeof(unsigned) * (states));
+
+    int count_non_gaps = 0;
+
+    for (i = 0; i < msa_count; ++i) // taxa loop msa_count
+    {
+      const corax_state_t state       = tipmap[(int)msa->sequence[i][j]];
+      const int           is_gap      = state == gap_state ? 1 : 0;
+
+      if(is_gap) {continue;}
+
+      for (k = 0; k < states; ++k)
+      {
+        if (state & (1ll << k)) {
+          state_counts[k]++;
+        }
+      }
+      count_non_gaps++;
+    }
+
+    double column_entropy = 0.0;
+    for (k = 0; k < states; ++k)
+    {
+      if (state_counts[k] == 0) {continue;}
+
+      double state_probability = state_counts[k] / (double)count_non_gaps;
+      column_entropy += -state_probability * log2(state_probability);
+    }
+
+    column_entropies[j] = column_entropy;
+  }
+
+  return column_entropies;
+}
+
+
+CORAX_EXPORT double
+corax_msa_entropy(const corax_msa_t *         msa,
+                  unsigned int          states,
+                  const corax_state_t * tipmap
+)
+{
+  if (!msa)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return CORAX_FAILURE;
+  }
+
+  if (!tipmap)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "Character-to-state mapping (charmap) is NULL");
+    return CORAX_FAILURE;
+  }
+
+  const unsigned long msa_length = (unsigned long)msa->length;
+
+  unsigned long  i;
+
+  double* column_entropies = corax_msa_column_entropies(msa, states, tipmap);
+
+  double sum = 0.0;
+
+  for (i = 0; i < msa_length; ++i)
+  {
+    sum += column_entropies[i];
+  }
+
+  free(column_entropies);
+
+  return sum / msa_length;
+}
+
+
+CORAX_EXPORT double
+corax_msa_bollback_multinomial(corax_msa_t *         msa,
+                               unsigned int *        site_weights,
+                               const corax_state_t * tipmap
+)
+{
+  if (!msa)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "MSA structure is NULL");
+    return CORAX_FAILURE;
+  }
+
+  if (!site_weights)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Site weights structure is NULL");
+    return CORAX_FAILURE;
+  }
+
+  if (!tipmap)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "Character-to-state mapping (charmap) is NULL");
+    return CORAX_FAILURE;
+  }
+
+  int number_of_sites = 0;
+  int i;
+
+  double sum = 0.0;
+
+  for (i = 0; i < msa->length; ++i)
+  {
+    unsigned int site_weight = site_weights[i];
+
+    if (site_weight == 0) {continue;}
+
+    number_of_sites += site_weight;
+
+    double factor = site_weight * log(site_weight);
+    sum += factor;
+  }
+
+  return sum - number_of_sites * log(number_of_sites);
+}
+
+
 #ifdef USE_POSIX_SEARCH
 /* Find duplicates using hash table from search.h. This works best for short
  * strings, so we use this method for checking taxa names */
@@ -589,6 +745,9 @@ CORAX_EXPORT corax_msa_stats_t *
   unsigned long  inv_weight = 0;
 
   corax_state_t gap_state = 0;
+
+  double *column_entropies = NULL;
+  double entropy = 0;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -894,6 +1053,15 @@ CORAX_EXPORT corax_msa_stats_t *
     seq_gap_weight = NULL;
   }
 
+  /* compute MSA entropy */
+  if (stats_mask & CORAX_MSA_STATS_ENTROPY)
+  {
+    column_entropies = corax_msa_column_entropies(msa, states, tipmap);
+    entropy = corax_msa_entropy(msa, states, tipmap);
+    stats->column_entropies = column_entropies;
+    stats->entropy = entropy;
+  }
+
   return stats;
 
 error_exit:
@@ -922,6 +1090,8 @@ CORAX_EXPORT void corax_msa_destroy_stats(corax_msa_stats_t *stats)
   if (stats->freqs) free(stats->freqs);
 
   if (stats->subst_rates) free(stats->subst_rates);
+
+  if (stats->column_entropies) free(stats->column_entropies);
 
   free(stats);
 }

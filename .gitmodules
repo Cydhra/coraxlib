@@ -1,0 +1,3 @@
+[submodule "lib/difficulty_prediction"]
+	path = lib/difficulty_prediction
+	url = https://github.com/tschuelia/CPythia.git

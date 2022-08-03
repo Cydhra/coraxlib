@@ -24,6 +24,14 @@ class CoraxlibEnvironment : public ::testing::Environment {
   std::ifstream get_pathological_data() {
     return std::ifstream(STRINGIFY(TREEPATH/pathological_trees));
   }
+
+  std::string msa_filename() {
+      return std::string(STRINGIFY(TREEPATH/example.phy));
+  }
+
+  std::string small_msa_filename() {
+      return std::string(STRINGIFY(TREEPATH/small.fasta));
+  }
 };
 
 extern CoraxlibEnvironment *env;
