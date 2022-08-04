@@ -61,6 +61,7 @@
   } while (0)
 
 #define CORAX_SUBST_RATE_COUNT(states) (states * (states - 1) / 2)
+#define CORAX_SUBST_RATE_COUNT_NONREV(states) (states * (states - 1))
 
 /** @defgroup corax_defines Constant Definitions
  * @{

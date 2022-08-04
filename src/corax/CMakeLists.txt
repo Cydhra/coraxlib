@@ -202,7 +202,7 @@ option(CORAX_NONREV "Enable non-reversible model computation" OFF)
 
 add_library(corax_obj OBJECT ${CORAX_SOURCES})
 set_property(TARGET corax_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
-target_include_directories(corax_obj PRIVATE ${CORAX_INCLUDE_DIRS})
+target_include_directories(corax_obj PUBLIC ${CORAX_INCLUDE_DIRS})
 
 if(CORAX_NONREV)
   message("Non-rev enabled")

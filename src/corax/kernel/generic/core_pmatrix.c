@@ -123,7 +123,7 @@ int corax_core_update_pmatrix_nonrev_ss(
     r2          = tmp;
   }
 
-  for (size_t i = 0; i < matrix_size; ++i) { P[i] = r1[i]; }
+  for (size_t i = 0; i < matrix_size; ++i) { P[i] = r2[i]; }
 
   free(X);
   free(N);
@@ -180,6 +180,7 @@ corax_core_update_pmatrix_nonrev(double            **pmatrix,
       corax_core_update_pmatrix_nonrev_ss(tmp_rm, states, states, t, cur_pmat);
     }
   }
+  free(tmp_rm);
   return CORAX_SUCCESS;
 }
 #endif // CORAX_NONREV
