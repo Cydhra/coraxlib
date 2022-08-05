@@ -386,12 +386,14 @@ static int shSupport(corax_treeinfo_t *treeinfo,
                     double bl_min,
                     double bl_max,
                     int    smoothings,
-                    double lh_epsilon)
+                    double lh_epsilon,
+                    bool *warning_printed)
 {
     double LNL0, LNL1, LNL2, test_logl, _LNL0, _LNL1, _LNL2, second_best_logl;
     int nSupport = 0;
     bool shittySplit = false;
-    double aLRT;
+    bool non_optimal_split = false;
+    double aLRT = 0;
 
     double **persite_lnl_1,**persite_lnl_2;
     
@@ -462,13 +464,18 @@ static int shSupport(corax_treeinfo_t *treeinfo,
     if( second_best_logl > LNL0 ){
 
         if(second_best_logl - LNL0 > tolerance){
+            
+            if(!(*warning_printed)){
+                printf("\nWARNING!\nYou are trying to calculate the SH-like aLRT support values for a non NNI-optimal tree topology."
+                        " For the internal branches that aren't NNI optimal, the SH-like aLRT metric will be equal to -inf.\n"
+                        "RECOMMENDED: Since the SH-like aLRT statistics makes more sense for NNI-optimal topologies, we recommend the user to first run the "
+                        "corax_algo_nni_round() function, with a relatively small tolerance value (e.g. 0.1 or 0.01) to optimize the tree topology.\n"
+                        "In case you have already done the NNI-optimization step, try again with a smaller tolerance value.\n\n");
+                *warning_printed = true;
+            }
+            non_optimal_split = true;
 
-            corax_set_error(CORAX_ALRT_NOT_NNI_OPTIMAL,
-                "sh-Like aLRT values cannot be calculated for non-optimal NNI topologies ...\n");
-            return CORAX_FAILURE;
-
-        } else {
-
+        } else{
             shittySplit = true;
         }
 
@@ -478,6 +485,11 @@ static int shSupport(corax_treeinfo_t *treeinfo,
 
     if(shittySplit){
         shSupportValues[q->pmatrix_index] = 0;
+        return CORAX_SUCCESS;
+    }
+
+    if(non_optimal_split){
+        shSupportValues[q->pmatrix_index] = -INFINITY;
         return CORAX_SUCCESS;
     }
 
@@ -553,7 +565,6 @@ static int shSupport(corax_treeinfo_t *treeinfo,
     free(persite_lnl_1);
     free(persite_lnl_2);
     free(move);
-
 
     return CORAX_SUCCESS;
 }
@@ -701,7 +712,8 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
                         double bl_max,
                         int smoothings,
                         double lh_epsilon,
-                        int update_to_root)
+                        int update_to_root,
+                        bool *warning_printed)
 {
     
     int retval = CORAX_SUCCESS;
@@ -747,7 +759,8 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
                                 bl_min, 
                                 bl_max,
                                 smoothings, 
-                                lh_epsilon);
+                                lh_epsilon,
+                                warning_printed);
             
         }
     }
@@ -770,7 +783,8 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
                                 bl_max, 
                                 smoothings, 
                                 lh_epsilon, 
-                                false);
+                                false,
+                                warning_printed);
     
     if(!CORAX_UTREE_IS_TIP(pb2) && retval)
         retval = nni_recursive(treeinfo, 
@@ -787,16 +801,14 @@ static int nni_recursive(corax_treeinfo_t* treeinfo,
                                 bl_max, 
                                 smoothings, 
                                 lh_epsilon, 
-                                true);
+                                true,
+                                warning_printed);
 
     return retval;
 }
 
 static double algo_nni_round(corax_treeinfo_t *treeinfo,
                                 double tolerance,
-                                double *shSupportValues,
-                                int nBootstrap,
-                                double shEpsilon,
                                 int brlen_opt_method,
                                 double bl_min,
                                 double bl_max,
@@ -847,15 +859,16 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
                                 false, 
                                 NULL,
                                 NULL,
-                                nBootstrap,
-                                shEpsilon, 
+                                0,
+                                0, 
                                 tolerance, 
                                 brlen_opt_method, 
                                 bl_min, 
                                 bl_max, 
                                 smoothings, 
                                 lh_epsilon, 
-                                true);
+                                true,
+                                NULL);
         
         if (retval == CORAX_FAILURE){
             printf("\nSomething went wrong, the return value of NNI round is CORAX_FAILURE. Exit...\n");
@@ -893,63 +906,6 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
     printf("\nCompleted.\nTotal interchanges = %d, Time = %.3f secs\n", total_interchanges, time_spent);
     printf("Final logl = %.5f\n\n", tree_logl);
 
-    if(shSupportValues){
-
-        printf("Calculating SH-like aLRT statistics ... \n"); 
-        int shalrt_size = 2*treeinfo->tip_count-3;
-        for(int i = 0; i<shalrt_size; i++){
-            shSupportValues[i] = -INFINITY;
-        }
-
-        interchanges = 0;
-
-        double **persite_lnl;
-        persite_lnl = (double**)malloc(sizeof(double*) * (treeinfo->partition_count));
-        
-        for(unsigned int i=0; i<treeinfo->partition_count; i++)
-            persite_lnl[i] = (double*)malloc(sizeof(double)*treeinfo->partitions[i]->sites);
-        
-        start_node = tree->nodes[tip_index]->back;
-        treeinfo->root = start_node;
-        new_logl = corax_treeinfo_compute_loglh_persite(treeinfo, 0, 0, persite_lnl);
-        
-        // perform nni moves
-        retval = nni_recursive(treeinfo, 
-                                start_node, 
-                                &interchanges, 
-                                true, 
-                                shSupportValues, 
-                                persite_lnl,
-                                nBootstrap,
-                                shEpsilon,
-                                tolerance, 
-                                brlen_opt_method, 
-                                bl_min, 
-                                bl_max, 
-                                smoothings, 
-                                lh_epsilon, 
-                                true);
-        
-        for(unsigned i=0; i<treeinfo->partition_count; i++)
-            free(persite_lnl[i]);
-        
-        free(persite_lnl);  
-
-        if (retval == CORAX_FAILURE){
-            printf("\nSomething went wrong in the calculations of SH-like aLRT statistics. Exit...\n");
-            return CORAX_FAILURE;
-        }
-
-
-        start_node = tree->nodes[tip_index]->back;
-        new_logl = compute_local_likelihood_treeinfo(treeinfo, start_node, 0);
-        treeinfo->root = start_node;
-
-        assert(fabs(new_logl - tree_logl)<1e-5);
-
-        printf("Done!\n\n");
-    }
-
     if(start_node != initial_root){
        treeinfo->root = initial_root;
        new_logl = corax_treeinfo_compute_loglh(treeinfo, 0); 
@@ -962,9 +918,6 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
 
 CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
                                         double tolerance,
-                                        double *shSupportValues,
-                                        int nBootstrap,
-                                        double shEpsilon,
                                         int brlen_opt_method,
                                         double bl_min,
                                         double bl_max,
@@ -988,13 +941,107 @@ CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
 
     return algo_nni_round(treeinfo, 
                         tolerance,
-                        shSupportValues, 
-                        nBootstrap,
-                        shEpsilon,
                         brlen_opt_method,
                         bl_min,
                         bl_max,
                         smoothings,
                         lh_epsilon);
 
+}
+
+
+CORAX_EXPORT int corax_shSupport_values(corax_treeinfo_t *treeinfo,
+                                        double tolerance,
+                                        double *shSupportValues,
+                                        int nBootstrap,
+                                        double shEpsilon,
+                                        int brlen_opt_method,
+                                        double bl_min,
+                                        double bl_max,
+                                        int smoothings,
+                                        double lh_epsilon)
+{
+
+    // Integrity check
+    if(!corax_utree_check_integrity(treeinfo->tree)){
+        corax_set_error(CORAX_NNI_ROUND_INTEGRITY_ERROR,
+                        "Tree is not consistent...\n");
+        return CORAX_FAILURE;
+    }
+    
+    // If the tree is a triplet, NNI moves cannot be done
+    if(treeinfo->tip_count == 3){
+        corax_set_error(CORAX_NNI_ROUND_TRIPLET_ERROR,
+                    "Tree is a triplet, NNI moves are not allowed ...\n");
+        return CORAX_FAILURE;   
+    }
+
+    int retval = CORAX_SUCCESS;
+    double tree_logl, new_logl;
+    unsigned int tip_index = 0;
+    
+    corax_utree_t *tree = treeinfo->tree;
+    corax_unode_t *initial_root = treeinfo->root;
+    corax_unode_t *start_node;
+    
+    printf("Calculating SH-like aLRT statistics ... \n"); 
+    int shalrt_size = 2*treeinfo->tip_count-3;
+    for(int i = 0; i<shalrt_size; i++){
+        shSupportValues[i] = -INFINITY;
+    }
+
+    double **persite_lnl;
+    persite_lnl = (double**)malloc(sizeof(double*) * (treeinfo->partition_count));
+    
+    for(unsigned int i=0; i<treeinfo->partition_count; i++)
+        persite_lnl[i] = (double*)malloc(sizeof(double)*treeinfo->partitions[i]->sites);
+    
+    start_node = tree->nodes[tip_index]->back;
+    treeinfo->root = start_node;
+    tree_logl = corax_treeinfo_compute_loglh_persite(treeinfo, 0, 0, persite_lnl);
+    
+    // perform nni moves
+    bool warning_printed = false;
+    retval = nni_recursive(treeinfo, 
+                            start_node, 
+                            NULL, 
+                            true, 
+                            shSupportValues, 
+                            persite_lnl,
+                            nBootstrap,
+                            shEpsilon,
+                            tolerance, 
+                            brlen_opt_method, 
+                            bl_min, 
+                            bl_max, 
+                            smoothings, 
+                            lh_epsilon, 
+                            true,
+                            &warning_printed);
+    
+    for(unsigned i=0; i<treeinfo->partition_count; i++)
+        free(persite_lnl[i]);
+    
+    free(persite_lnl);  
+
+    if (retval == CORAX_FAILURE){
+        printf("\nSomething went wrong in the calculations of SH-like aLRT statistics. Exit...\n");
+        return CORAX_FAILURE;
+    }
+
+
+    start_node = tree->nodes[tip_index]->back;
+    new_logl = compute_local_likelihood_treeinfo(treeinfo, start_node, 0);
+    treeinfo->root = start_node;
+
+    assert(fabs(new_logl - tree_logl)<1e-5);
+    printf("Done!\n\n");
+
+    if(start_node != initial_root){
+       treeinfo->root = initial_root;
+       new_logl = corax_treeinfo_compute_loglh(treeinfo, 0); 
+       assert(fabs(new_logl - tree_logl) < 1e-5);
+    }
+
+    return retval;
 }

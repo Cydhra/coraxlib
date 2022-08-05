@@ -241,7 +241,12 @@ TEST(coraxlib_nni, simple0)
     check_likelihoods(logl1, logl2);
     
     // NNI local
-    double nni_logl = corax_algo_nni_local(treeinfo);
+    double nni_logl = corax_algo_nni_local(treeinfo, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     tree->vroot = final_root->back;
     // checking
 
@@ -335,7 +340,12 @@ TEST(coraxlib_nni, simple1)
     
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     
     // redirect back to console
     fflush(stdout);   
@@ -431,8 +441,14 @@ TEST(coraxlib_nni, simple2)
     check_likelihoods(logl1, logl2);
     
     // NNI local
-    double nni_logl = corax_algo_nni_local(treeinfo);
+    double nni_logl = corax_algo_nni_local(treeinfo, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     tree->vroot = final_root->back;
+
     // checking
 
     // Checking for improved likelihood + topology
@@ -533,7 +549,12 @@ TEST(coraxlib_nni, simple3)
     
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     
     // redirect back to console
     fflush(stdout);   
@@ -633,7 +654,12 @@ TEST(coraxlib_nni, simple4)
     
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     
     // redirect back to console
     fflush(stdout);   
