@@ -99,7 +99,8 @@ double corax_algo_nni_round(corax_treeinfo_t *treeinfo, /* pointer to treeinfo *
                             double bl_min,              /* minimum branch length */
                             double bl_max,              /* maximum branch length */
                             int    smoothings,          /* number of branch-length optimization rounds */
-                            double lh_epsilon)          /* NNI optimization threshold, e.g. 0.1 */
+                            double lh_epsilon,          /* NNI optimization threshold, e.g. 0.1 */
+			     bool print_in_console)	  /* Default TRUE */
 ```
 
 The function implements a series of NNI rounds and generates the NNI optimal tree. `tolerance` parameter is an
@@ -130,7 +131,8 @@ int corax_shSupport_values(corax_treeinfo_t *treeinfo,  /* pointer to treeinfo *
                             double bl_min,              /* minimum branch length */
                             double bl_max,              /* maximum branch length */
                             int    smoothings,          /* number of branch-length optimization rounds */
-                            double lh_epsilon)          /* NNI optimization threshold, e.g. 0.1 */
+                            double lh_epsilon,          /* NNI optimization threshold, e.g. 0.1 */
+			     bool print_in_console)	  /* Default TRUE */
 ```
 
 The function returns `CORAX_SUCCESS` in case the SH-aLRT values are calculated successfully. The values are stored in `*shSupportValues` array, which is passed as an argument in the function.

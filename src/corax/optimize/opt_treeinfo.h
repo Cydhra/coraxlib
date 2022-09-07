@@ -194,6 +194,14 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
   #define CORAX_NNI_DIFF_NEGATIVE_ERROR   6005
   #define CORAX_NNI_ROOT_NOT_FOUND        6005
 
+  #ifdef __cplusplus
+      /* in case the compiler is a C++ compiler */
+      #define DEFAULT_VALUE(value) = value
+  #else
+      /* otherwise, C compiler, do nothing */
+      #define DEFAULT_VALUE(value)
+  #endif
+
   /**
    * SH-like aLRT statistics calculation (support values for internal branches).
    * SH-like aLRT values are defined for NNI optimal tree topologies. Hence, it is recommended for the user to call corax_algo_nni_round() function first.
@@ -214,6 +222,7 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
    * @param  bl_max                 Maximum branch length (e.g. CORAX_OPT_MAX_BRANCH_LEN)
    * @param  smoothings             number of smoothings in local branch length optimization that takes place (e.g. CORAX_OPT_DEFAULT_SMOOTHINGS)
    * @param  lh_epsilon             epsilon value in local branch length optimization that takes place (e.g. CORAX_OPT_DEFAULT_EPSILON)
+   * @param  print_in_console       TRUE, if anything to be printed in the console, otherwise FALSE. (Default TRUE)
    * @return                        CORAX_SUCCESS, if the SH-like aLRT values are calculated successfully
    */
   CORAX_EXPORT int corax_shSupport_values(corax_treeinfo_t *treeinfo,
@@ -225,7 +234,8 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                         double bl_min,
                                         double bl_max,
                                         int smoothings,
-                                        double lh_epsilon);
+                                        double lh_epsilon,
+                                        bool print_in_console DEFAULT_VALUE(true));
   /**
    * NNI round - Searches for the optimal tree topology based on NNI moves. After calling this function
    * the tree topology is probably changed.
@@ -239,6 +249,7 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
    * @param  bl_max                 Maximum branch length (e.g. CORAX_OPT_MAX_BRANCH_LEN)
    * @param  smoothings             number of smoothings in local branch length optimization that takes place (e.g. CORAX_OPT_DEFAULT_SMOOTHINGS)
    * @param  lh_epsilon             epsilon value in local branch length optimization that takes place (e.g. CORAX_OPT_DEFAULT_EPSILON)
+   * @param  print_in_console       TRUE, if the intermediate stages of NNI round are to be printed in the console, otherwise FALSE. (Default TRUE)
    * @return                        the likelihood score after NNI optimization + new topology
    */
   CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
@@ -247,7 +258,8 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                             double bl_min,
                                             double bl_max,
                                             int smoothings,
-                                            double lh_epsilon);
+                                            double lh_epsilon,
+                                            bool print_in_console DEFAULT_VALUE(true));
 
 
   /**

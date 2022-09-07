@@ -6,6 +6,17 @@
 typedef unsigned int        corax_split_base_t;
 typedef corax_split_base_t *corax_split_t;
 
+/* set of splits with equal dimensions, e.g. extracted from a tree */
+typedef struct
+{
+  unsigned int tip_count;    /* number of taxa */
+  unsigned int split_size;   /* size of a split storage element in bits */
+  unsigned int split_len;    /* number of storage elements per split */
+  unsigned int split_count;  /* number of splits currently set */
+  corax_split_t * splits;      /* array of pointers to splits */
+  int *id_to_split;          /* map between node/subnode ids and splits */
+} corax_split_set_t;
+
 typedef unsigned int hash_key_t;
 
 typedef struct bitv_hash_entry
@@ -88,6 +99,24 @@ extern "C"
   CORAX_EXPORT unsigned int corax_utree_split_rf_distance(const corax_split_t *s1,
                                                           const corax_split_t *s2,
                                                           unsigned int tip_count);
+
+  CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t * tree);
+
+  CORAX_EXPORT void corax_utree_splitset_destroy(corax_split_set_t * split_set);
+
+  
+  CORAX_EXPORT int corax_utree_constraint_check_splits_tree(corax_split_set_t * cons_splits,
+                                                         const corax_utree_t * tree);
+  
+  CORAX_EXPORT int corax_utree_constraint_check_splits(corax_split_set_t * cons_splits, 
+                                                        corax_split_set_t * tree_splits);
+  
+  /* Checks whether the two trees are compatible */
+  CORAX_EXPORT int corax_utree_constraint_check_tree(const corax_utree_t * cons_tree,
+                                                  const corax_utree_t * tree);
+
+
+
   // TODO: implement Newick->splits parser
   #if 0
   CORAX_EXPORT corax_split_t * corax_utree_split_newick_string(char * s,
