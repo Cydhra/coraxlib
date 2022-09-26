@@ -100,6 +100,10 @@
 #define CORAX_OPT_BLO_NEWTON_GLOBAL                                            \
   3 /* NR variant which looks for local optima */
 
+#define CORAX_OPT_BLO_NEWTON_OLDFAST 4 /* standard Newton-Raphson (NR) - old*/
+#define CORAX_OPT_BLO_NEWTON_OLDSAFE 5 /* NR with per-branch LH check - old*/
+
+
 /** @} */
 
 /** @ingroup corax_errors

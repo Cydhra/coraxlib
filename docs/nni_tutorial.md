@@ -95,14 +95,12 @@ The function returns either the likelihood of the best topology or a `CORAX_FAIL
 ```
 double corax_algo_nni_round(corax_treeinfo_t *treeinfo, /* pointer to treeinfo */
                             double tolerance,           /* NNI round threshold, e.g. 0.1 */
-                            double *shSupportValues,    /* Array where the SH-aLRT statistics for each branch are stored */
-                            int nBootstrap, 		  /* Number of bootstrap replicates */
-                            double shEpsilon, 	  /* Confidence value for the SH-aLRT metric calculation, e.g. 0.1 */
                             int    brlen_opt_method,    /* branch length optimization method */
                             double bl_min,              /* minimum branch length */
                             double bl_max,              /* maximum branch length */
                             int    smoothings,          /* number of branch-length optimization rounds */
-                            double lh_epsilon)          /* NNI optimization threshold, e.g. 0.1 */
+                            double lh_epsilon,          /* NNI optimization threshold, e.g. 0.1 */
+			     bool print_in_console)	  /* Default TRUE */
 ```
 
 The function implements a series of NNI rounds and generates the NNI optimal tree. `tolerance` parameter is an
@@ -117,3 +115,28 @@ wrong.
 An example of the output of `corax_algo_nni_round()` to the console is shown in the following picture:
 
 <img src="images/NNI/output.png" width="500" height="300" />
+
+
+## 4. Calculate the SH-like aLRT support values
+
+`corax_shSupport_values()` fucntion allows the users to calculate the SH-like aLRT values, that is, a statistical test to assess the support of the data for internal branches of a phylogeny. This statistical test was initially defined in [Guindon (2010)](https://academic.oup.com/sysbio/article/59/3/307/1702850?login=true). Since the statistical test is defined in NNI-optimal tree topologies, we recommend the user to run `corax_algo_nni_round()` first, otherwise, in case of a non-optimal topology, a warning message will be printed. Non NNI-optimal internal branches, as well as tip brances, will be assigned a `-inf` value. Ambiguous internal branches, that is, branches for which there is a second equally optimal NNI topology, will be assigned a zero value.
+
+```
+int corax_shSupport_values(corax_treeinfo_t *treeinfo,  /* pointer to treeinfo */
+                            double tolerance,           /* NNI round threshold, e.g. 0.1 */
+                            double *shSupportValues,    /* Array where the SH-aLRT statistics for each branch are stored */
+                            int nBootstrap, 		/* Number of bootstrap replicates */
+                            double shEpsilon, 	        /* Confidence value for the SH-aLRT metric calculation, e.g. 0.1 */
+                            int    brlen_opt_method,    /* branch length optimization method */
+                            double bl_min,              /* minimum branch length */
+                            double bl_max,              /* maximum branch length */
+                            int    smoothings,          /* number of branch-length optimization rounds */
+                            double lh_epsilon,          /* NNI optimization threshold, e.g. 0.1 */
+			     bool print_in_console)	  /* Default TRUE */
+```
+
+The function returns `CORAX_SUCCESS` in case the SH-aLRT values are calculated successfully. The values are stored in `*shSupportValues` array, which is passed as an argument in the function.
+
+## 5. References
+
+\[1] Guindon, S., Dufayard, J. F., Lefort, V., Anisimova, M., Hordijk, W., Gascuel, O. (2010). New Algorithms and Methods to Estimate Maximum-Likelihood Phylogenies: Assessing the Performance of PhyML 3.0. *Systematic Biology, 59*(3), 307–321. https://doi.org/10.1093/sysbio/syq010

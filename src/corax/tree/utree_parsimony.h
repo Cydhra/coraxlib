@@ -34,7 +34,30 @@ extern "C"
                                          corax_partition_t *const *partitions,
                                          unsigned int              random_seed,
                                          unsigned int *            score);
+  
+  CORAX_EXPORT 
+  corax_utree_t * corax_utree_resolve_parsimony_multipart(const corax_utree_t * multi_tree,
+                                                            unsigned int partition_count,
+                                                            corax_partition_t * const * partitions,
+                                                            const unsigned int * tip_msa_idmap,
+                                                            unsigned int max_spr_rounds,
+                                                            unsigned int random_seed,
+                                                            int * clv_index_map,
+                                                            unsigned int * score);
 
+  /**
+   * Creates a maximum parsimony topology using randomized stepwise-addition
+   * algorithm. All branch lengths will be set to default.
+   * This function can be used with partitioned alignments (e.g., combined DNA+AA data)
+   */
+  CORAX_EXPORT int corax_utree_extend_parsimony_multipart(corax_utree_t * tree,
+                                                        unsigned int taxon_count,
+                                                        char * const * taxon_names,
+                                                        const unsigned int * tip_msa_idmap,
+                                                        unsigned int partition_count,
+                                                        corax_partition_t * const * partitions,
+                                                        unsigned int random_seed,
+                                                        unsigned int * score);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

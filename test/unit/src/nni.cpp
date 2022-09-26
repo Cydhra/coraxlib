@@ -241,7 +241,12 @@ TEST(coraxlib_nni, simple0)
     check_likelihoods(logl1, logl2);
     
     // NNI local
-    double nni_logl = corax_algo_nni_local(treeinfo);
+    double nni_logl = corax_algo_nni_local(treeinfo, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     tree->vroot = final_root->back;
     // checking
 
@@ -327,23 +332,15 @@ TEST(coraxlib_nni, simple1)
     check_likelihoods(logl1, logl2);
 
     // --------------- NNI -----------------------------
-    // redirect stdout
-    fpos_t pos;
-    fgetpos(stdout, &pos);  // save the position in the file stream
-    int fd = dup(fileno(stdout));  // use the dup() function to create a copy of stdout
-    freopen("dummy.txt", "w", stdout);  // redirect stdout
-    
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
-    
-    // redirect back to console
-    fflush(stdout);   
-    dup2(fd, fileno(stdout));  // restore the stdout
-    close(fd);
-    clearerr(stdout);  
-    fsetpos(stdout, &pos); // move to the correct position
-    std::remove("dummy.txt");
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON,
+                                            false);
     // --------------------------------------------------
 
     // logl test
@@ -431,8 +428,14 @@ TEST(coraxlib_nni, simple2)
     check_likelihoods(logl1, logl2);
     
     // NNI local
-    double nni_logl = corax_algo_nni_local(treeinfo);
+    double nni_logl = corax_algo_nni_local(treeinfo, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON);
     tree->vroot = final_root->back;
+
     // checking
 
     // Checking for improved likelihood + topology
@@ -525,23 +528,15 @@ TEST(coraxlib_nni, simple3)
     check_likelihoods(logl1, logl2);
     
     // --------------- NNI -----------------------------
-    // redirect stdout
-    fpos_t pos;
-    fgetpos(stdout, &pos);  // save the position in the file stream
-    int fd = dup(fileno(stdout));  // use the dup() function to create a copy of stdout
-    freopen("dummy.txt", "w", stdout);  // redirect stdout
-    
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
-    
-    // redirect back to console
-    fflush(stdout);   
-    dup2(fd, fileno(stdout));  // restore the stdout
-    close(fd);
-    clearerr(stdout);  
-    fsetpos(stdout, &pos); // move to the correct position
-    std::remove("dummy.txt");
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON,
+                                            false);
     // --------------------------------------------------
 
     tree->vroot = final_root->back;
@@ -625,23 +620,15 @@ TEST(coraxlib_nni, simple4)
     check_likelihoods(logl1, logl2);
     
     // --------------- NNI -----------------------------
-    // redirect stdout
-    fpos_t pos;
-    fgetpos(stdout, &pos);  // save the position in the file stream
-    int fd = dup(fileno(stdout));  // use the dup() function to create a copy of stdout
-    freopen("dummy.txt", "w", stdout);  // redirect stdout
-    
     // NNI round
     double tolerance = 0.1;
-    double nni_logl = corax_algo_nni_round(treeinfo, tolerance);
-    
-    // redirect back to console
-    fflush(stdout);   
-    dup2(fd, fileno(stdout));  // restore the stdout
-    close(fd);
-    clearerr(stdout);  
-    fsetpos(stdout, &pos); // move to the correct position
-    std::remove("dummy.txt");
+    double nni_logl = corax_algo_nni_round(treeinfo, tolerance, 
+                                            CORAX_OPT_BLO_NEWTON_FAST, 
+                                            CORAX_OPT_MIN_BRANCH_LEN, 
+                                            CORAX_OPT_MAX_BRANCH_LEN, 
+                                            CORAX_OPT_DEFAULT_SMOOTHINGS, 
+                                            CORAX_OPT_DEFAULT_EPSILON,
+                                            false);
     // --------------------------------------------------
 
     check_triplet_error(nni_logl);

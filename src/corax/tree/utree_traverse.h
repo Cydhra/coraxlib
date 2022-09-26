@@ -7,6 +7,10 @@
 #define CORAX_TREE_TRAVERSE_POSTORDER 1
 #define CORAX_TREE_TRAVERSE_PREORDER 2
 
+#define CORAX_TREE_TRAVERSE_FULL              1
+#define CORAX_TREE_TRAVERSE_PARTIAL           2
+#define CORAX_TREE_TRAVERSE_NONE              3
+
 #ifdef __cplusplus
 extern "C"
 {

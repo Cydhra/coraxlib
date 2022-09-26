@@ -17,6 +17,24 @@ extern "C"
                                             unsigned int        count,
                                             unsigned int        seed);
 
+  CORAX_EXPORT int 
+                corax_fastparsimony_stepwise_spr_round(corax_utree_t * tree,
+                                                   corax_parsimony_t ** pars_list,
+                                                   unsigned int pars_count,
+                                                   const unsigned int * tip_msa_idmap,
+                                                   unsigned int seed,
+                                                   const int * clv_index_map,
+                                                   unsigned int * cost);
+    
+    CORAX_EXPORT int 
+                  corax_fastparsimony_stepwise_extend(corax_utree_t * tree,
+                                                 corax_parsimony_t ** pars_list,
+                                                 unsigned int pars_count,
+                                                 char * const * labels,
+                                                 const unsigned int * tip_msa_idmap,
+                                                 unsigned int seed,
+                                                 unsigned int * cost);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

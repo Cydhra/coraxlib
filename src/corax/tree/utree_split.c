@@ -189,6 +189,28 @@ static int split_is_valid_and_normalized(const corax_split_t bitv,
   return (mask == all1) ? 0 : 1;
 }
 
+static void truncate_splits(corax_split_set_t * split_set, unsigned int new_tip_count)
+{
+  unsigned int bitv_elem = split_set->split_size;
+  unsigned int bitv_size = new_tip_count / bitv_elem;
+  unsigned int bitv_off = new_tip_count % bitv_elem;
+  if (bitv_off > 0)
+    bitv_size++;
+
+  if (split_set->tip_count > new_tip_count)
+  {
+    unsigned int mask = 0;
+    for (unsigned int i = 0; i < (bitv_off ? bitv_off : bitv_elem); ++i)
+      mask |= (1u << i);
+
+    for (unsigned int i = 0; i < split_set->split_count; ++i)
+    {
+      corax_split_t last_elem = split_set->splits[i] + bitv_size - 1;
+      *last_elem &= mask;
+    }
+  }
+}
+
 /******************************************************************************/
 /* tree split functions */
 
@@ -669,4 +691,101 @@ CORAX_EXPORT
 void corax_utree_split_hashtable_destroy(bitv_hashtable_t *hash)
 {
   if (hash) hash_destroy(hash);
+}
+
+CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t * tree){
+
+  corax_split_set_t * split_set = (corax_split_set_t *) calloc(1, sizeof(corax_split_set_t));
+
+  if (!split_set)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for split list\n");
+    return NULL;
+  }
+
+  /* init constraint */
+  split_set->tip_count = tree->tip_count;
+  split_set->split_size = sizeof(corax_split_base_t) * 8;
+  split_set->split_len = bitv_length(tree->tip_count);
+  split_set->split_count = tree->edge_count - tree->tip_count;
+  split_set->splits = corax_utree_split_create(tree->vroot, tree->tip_count, NULL);
+
+  if (!split_set->splits)
+  {
+    free(split_set);
+    return NULL;
+  }
+
+  return split_set;
+}
+
+CORAX_EXPORT void corax_utree_splitset_destroy(corax_split_set_t * split_set)
+{
+  if (split_set)
+  {
+    corax_utree_split_destroy(split_set->splits);
+    free(split_set->id_to_split);
+    free(split_set);
+  }
+}
+
+CORAX_EXPORT int corax_utree_constraint_check_splits(corax_split_set_t * cons_splits, corax_split_set_t * tree_splits)
+{
+  int retval = CORAX_SUCCESS;
+
+  bitv_hashtable_t* splits_hash = corax_utree_split_hashtable_insert(NULL,
+                                                                      tree_splits->splits,
+                                                                      cons_splits->tip_count,
+                                                                      tree_splits->split_count,
+                                                                      NULL,
+                                                                      0);
+
+  for (size_t i = 0; i < cons_splits->split_count; ++i)
+  {
+    if (!corax_utree_split_hashtable_lookup(splits_hash, cons_splits->splits[i], cons_splits->tip_count))
+    {
+//      pllmod_utree_split_show(cons_splits->splits[i], cons_splits->tip_count);
+//      printf("\n");
+      retval = CORAX_FAILURE;
+      break;
+    }
+  }
+
+  corax_utree_split_hashtable_destroy(splits_hash);
+
+  return retval;
+}
+
+
+CORAX_EXPORT int corax_utree_constraint_check_splits_tree(corax_split_set_t * cons_splits,
+                                                         const corax_utree_t * tree)
+{
+  int retval = CORAX_SUCCESS;
+
+  corax_split_set_t * tree_splits =  corax_utree_splitset_create(tree);
+
+  truncate_splits(tree_splits, cons_splits->tip_count);
+
+  retval = corax_utree_constraint_check_splits(cons_splits, tree_splits);
+
+  corax_utree_splitset_destroy(tree_splits);
+
+  return retval;
+}
+
+
+CORAX_EXPORT int corax_utree_constraint_check_tree(const corax_utree_t * cons_tree,
+                                                  const corax_utree_t * tree)
+{
+
+  int retval = CORAX_SUCCESS;
+
+  corax_split_set_t * cons_splits =  corax_utree_splitset_create(cons_tree);
+
+  retval = corax_utree_constraint_check_splits_tree(cons_splits, tree);
+
+  corax_utree_splitset_destroy(cons_splits);
+
+  return retval;
 }
