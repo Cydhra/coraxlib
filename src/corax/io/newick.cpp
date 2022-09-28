@@ -7,6 +7,7 @@
 #include <string>
 
 #include "corax/corax.h"
+#include "corax/io/newick.hpp"
 
 inline void synchronize_attrs(corax_unode_t *start)
 {
@@ -60,10 +61,7 @@ inline void set_mutual_back_pointers(corax_unode_t *a, corax_unode_t *b)
   a->back = b;
   b->back = a;
   if (a->length == 0.0) { a->length = b->length; }
-  else
-  {
-    b->length = a->length;
-  }
+  else { b->length = a->length; }
 }
 
 inline void free_node_exception(corax_unode_t *n)
@@ -158,144 +156,108 @@ corax_unode_t *unode_unroot(corax_unode_t *vroot)
   return rchild;
 }
 
-enum lexeme_type_t
+std::string corax_newick_lexer_t::consume_value_as_string()
 {
-  OPENING_SQUARE_BRACKET,
-  CLOSING_SQUARE_BRACKET,
-  OPENING_PAREN,
-  CLOSING_PAREN,
-  COLON,
-  SEMICOLON,
-  COMMA,
-  VALUE,
-  END
-};
+  std::string tmp;
+  std::swap(tmp, _value);
+  return tmp;
+}
 
-class newick_lexer_t
+/* WARNING, ALLOCATES MEMORY */
+char *corax_newick_lexer_t::consume_value_as_cstring()
 {
-public:
-  newick_lexer_t(std::string input) :
-      _input{std::move(input)}, _current_index{0} {};
+  char *label = (char *)calloc(
+      sizeof(char), (_value.size() + 1) /* Need to include space for the null */
+  );
 
-  lexeme_type_t consume();
-  lexeme_type_t peak();
+  for (size_t i = 0; i < _value.size(); ++i) { label[i] = _value[i]; }
+  _value.clear();
+  return label;
+}
 
-  std::string consume_value_as_string()
+double corax_newick_lexer_t::consume_value_as_float()
+{
+  auto   f_str = consume_value_as_string();
+  size_t pos   = 0;
+  double val   = std::stod(f_str, &pos);
+  if (pos != f_str.size())
   {
-    std::string tmp;
-    std::swap(tmp, _value);
-    return tmp;
+    throw std::runtime_error{std::string("Float conversion failed around")
+                             + describe_position()};
   }
+  return val;
+}
 
-  /* WARNING, ALLOCATES MEMORY */
-  char *consume_value_as_cstring()
+std::string corax_newick_lexer_t::describe_position() const
+{
+  std::stringstream builder;
+  builder << "position " << _current_index;
+  return builder.str();
+}
+
+bool corax_newick_lexer_t::is_punct(char c)
+{
+  return c == '[' || c == ']' || c == '(' || c == ')' || c == ':' || c == ';'
+         || c == ',' || c == 0 || c == EOF;
+}
+
+std::pair<corax_lexeme_t, size_t> corax_newick_lexer_t::consume_token_pos()
+{
+  auto start_index = _current_index;
+  auto token       = consume();
+  return {token, start_index};
+}
+
+void corax_newick_lexer_t::skip_whitespace()
+{
+  while (_current_index < _input.size())
   {
-    char *label = (char *)calloc(
-        sizeof(char),
-        (_value.size() + 1) /* Need to include space for the null */
-    );
-
-    for (size_t i = 0; i < _value.size(); ++i) { label[i] = _value[i]; }
-    _value.clear();
-    return label;
+    char c = _input[_current_index];
+    if (!std::isspace(c)) { break; }
+    _current_index++;
   }
+}
 
-  double consume_value_as_float()
+void corax_newick_lexer_t::expect(corax_lexeme_t token_type)
+{
+  auto ret = consume_token_pos();
+  if (ret.first != token_type)
   {
-    auto   f_str = consume_value_as_string();
-    size_t pos   = 0;
-    double val   = std::stod(f_str, &pos);
-    if (pos != f_str.size())
-    {
-      throw std::runtime_error{std::string("Float conversion failed around")
-                               + describe_position()};
-    }
-    return val;
+    throw std::runtime_error{
+        std::string("Got the wrong token type at position ")
+        + std::to_string(ret.second + 1) + " was expecting "
+        + describe_token(token_type)};
   }
+}
 
-  std::string describe_position() const
+std::string corax_newick_lexer_t::describe_token(corax_lexeme_t token_type)
+{
+  switch (token_type)
   {
-    std::stringstream builder;
-    builder << "position " << _current_index;
-    return builder.str();
+  case OPENING_SQUARE_BRACKET:
+    return {"opening square bracket"};
+  case CLOSING_SQUARE_BRACKET:
+    return {"closing square bracket"};
+  case OPENING_PAREN:
+    return {"opening parenthesis"};
+  case CLOSING_PAREN:
+    return {"closing parenthesis"};
+  case COLON:
+    return {"colon"};
+  case SEMICOLON:
+    return {"semicolon"};
+  case COMMA:
+    return {"comma"};
+  case END:
+    return {"end of input"};
+  case VALUE:
+    return {"either a identifier or a number"};
+  default:
+    return {"unknown token"};
   }
+}
 
-  void expect(lexeme_type_t token_type)
-  {
-    auto ret = consume_token_pos();
-    if (ret.first != token_type)
-    {
-      throw std::runtime_error{
-          std::string("Got the wrong token type at position ")
-          + std::to_string(ret.second + 1) + " was expecting "
-          + describe_token(token_type)};
-    }
-  }
-
-  void consume_until(lexeme_type_t token_type)
-  {
-    while (token_type != consume()) {}
-  }
-
-  bool at_end() { return _input.size() == _current_index; }
-
-private:
-  bool is_punct(char c)
-  {
-    return c == '[' || c == ']' || c == '(' || c == ')' || c == ':' || c == ';'
-           || c == ',' || c == 0 || c == EOF;
-  }
-
-  std::pair<lexeme_type_t, size_t> consume_token_pos()
-  {
-    auto start_index = _current_index;
-    auto token       = consume();
-    return {token, start_index};
-  }
-
-  std::string describe_token(lexeme_type_t token_type)
-  {
-    switch (token_type)
-    {
-    case OPENING_SQUARE_BRACKET:
-      return {"opening square bracket"};
-    case CLOSING_SQUARE_BRACKET:
-      return {"closing square bracket"};
-    case OPENING_PAREN:
-      return {"opening parenthesis"};
-    case CLOSING_PAREN:
-      return {"closing parenthesis"};
-    case COLON:
-      return {"colon"};
-    case SEMICOLON:
-      return {"semicolon"};
-    case COMMA:
-      return {"comma"};
-    case END:
-      return {"end of input"};
-    case VALUE:
-      return {"either a identifier or a number"};
-    default:
-      return {"unknown token"};
-    }
-  }
-
-  void skip_whitespace()
-  {
-    while (_current_index < _input.size())
-    {
-      char c = _input[_current_index];
-      if (!std::isspace(c)) { break; }
-      _current_index++;
-    }
-  }
-
-  std::string _input;
-  std::string _value;
-  size_t      _current_index;
-};
-
-lexeme_type_t newick_lexer_t::peak()
+corax_lexeme_t corax_newick_lexer_t::peak()
 {
   size_t tmp_index    = _current_index;
   char   current_char = _input[tmp_index++];
@@ -324,13 +286,10 @@ lexeme_type_t newick_lexer_t::peak()
       throw std::runtime_error{"The punctuation was unrecognized"};
     }
   }
-  else
-  {
-    return VALUE;
-  }
+  else { return VALUE; }
 }
 
-lexeme_type_t newick_lexer_t::consume()
+corax_lexeme_t corax_newick_lexer_t::consume()
 {
   auto token = peak();
   if (token == VALUE)
@@ -360,76 +319,8 @@ lexeme_type_t newick_lexer_t::consume()
   }
 }
 
-/* Using the following grammar:
- * <tree> ::=
- *     <subtree> ";"
- * <subtree> ::=
- *     <leaf> |
- *     <internal>
- * <internal> ::=
- *     "(" <node_set> ")" <node_attrs>
- * <node_set> ::=
- *     <node> |
- *     <node> "," <node_set>
- * <node> ::=
- *     <subtree> <length>
- * <node_attrs> ::=
- *     <name> <length> <comment>
- * <leaf> ::=
- *     <node_attrs>
- * <length> ::=
- *     ":" <number> |
- *     <empty>
- * <name> ::=
- *     <string> |
- *     <empty>
- * <string> ::=
- *     anything but punctuation
- * <number> ::=
- *     [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
- * <comment> ::=
- *     "[" .* "]" |
- *     <empty>
- * <empty> ::=
- *     ""
- */
-class newick_parser_t
-{
-public:
-  newick_parser_t(std::string input) :
-      _lexer{std::move(input)},
-      _tip_count{0},
-      _inner_count{0},
-      _edge_count{0} {};
-
-  corax_utree_t *parse() { return parse_utree(false, false); }
-  corax_utree_t *parse(bool auto_unroot, bool allow_rooted)
-  {
-    return parse_utree(auto_unroot, allow_rooted);
-  }
-
-private:
-  corax_utree_t *parse_utree(bool auto_unroot, bool allow_rooted);
-  corax_unode_t *parse_subtree();
-  corax_unode_t *parse_internal(); // creates node
-  corax_unode_t *parse_node_set();
-  void           parse_node_attrs(corax_unode_t *current_node);
-  corax_unode_t *parse_leaf(); // creates node
-  void           parse_length(corax_unode_t *current_node);
-  void           parse_name(corax_unode_t *current_node);
-  std::string    parse_string();
-  char          *parse_cstring();
-  double         parse_number();
-  void           parse_comment();
-
-  /* member variables */
-  newick_lexer_t _lexer;
-  size_t         _tip_count;
-  size_t         _inner_count;
-  size_t         _edge_count;
-};
-
-corax_utree_t *newick_parser_t::parse_utree(bool auto_unroot, bool allow_rooted)
+corax_utree_t *corax_newick_parser_t::parse_utree(bool auto_unroot,
+                                                  bool allow_rooted)
 {
   corax_unode_t *root_node = nullptr;
 
@@ -513,7 +404,7 @@ corax_utree_t *newick_parser_t::parse_utree(bool auto_unroot, bool allow_rooted)
   return current_tree;
 }
 
-corax_unode_t *newick_parser_t::parse_subtree()
+corax_unode_t *corax_newick_parser_t::parse_subtree()
 {
   auto token = _lexer.peak();
   _edge_count++;
@@ -532,7 +423,7 @@ corax_unode_t *newick_parser_t::parse_subtree()
   }
 }
 
-corax_unode_t *newick_parser_t::parse_internal()
+corax_unode_t *corax_newick_parser_t::parse_internal()
 {
   corax_unode_t *extra_node   = nullptr;
   corax_unode_t *current_node = nullptr;
@@ -565,7 +456,7 @@ corax_unode_t *newick_parser_t::parse_internal()
   }
 }
 
-corax_unode_t *newick_parser_t::parse_node_set()
+corax_unode_t *corax_newick_parser_t::parse_node_set()
 {
   corax_unode_t *current_node = nullptr;
   corax_unode_t *child        = nullptr;
@@ -591,7 +482,7 @@ corax_unode_t *newick_parser_t::parse_node_set()
   }
 }
 
-void newick_parser_t::parse_node_attrs(corax_unode_t *current_node)
+void corax_newick_parser_t::parse_node_attrs(corax_unode_t *current_node)
 {
   parse_name(current_node);
   parse_comment();
@@ -599,7 +490,7 @@ void newick_parser_t::parse_node_attrs(corax_unode_t *current_node)
   parse_comment();
 }
 
-corax_unode_t *newick_parser_t::parse_leaf()
+corax_unode_t *corax_newick_parser_t::parse_leaf()
 {
   corax_unode_t *current_node = nullptr;
   try
@@ -622,7 +513,7 @@ corax_unode_t *newick_parser_t::parse_leaf()
   }
 }
 
-void newick_parser_t::parse_length(corax_unode_t *current_node)
+void corax_newick_parser_t::parse_length(corax_unode_t *current_node)
 {
   auto token = _lexer.peak();
   if (token == COLON)
@@ -633,7 +524,7 @@ void newick_parser_t::parse_length(corax_unode_t *current_node)
   }
 }
 
-void newick_parser_t::parse_name(corax_unode_t *current_node)
+void corax_newick_parser_t::parse_name(corax_unode_t *current_node)
 {
   auto token = _lexer.peak();
   if (token == VALUE)
@@ -643,22 +534,22 @@ void newick_parser_t::parse_name(corax_unode_t *current_node)
   }
 }
 
-std::string newick_parser_t::parse_string()
+std::string corax_newick_parser_t::parse_string()
 {
   return _lexer.consume_value_as_string();
 }
 
-char *newick_parser_t::parse_cstring()
+char *corax_newick_parser_t::parse_cstring()
 {
   return _lexer.consume_value_as_cstring();
 }
 
-double newick_parser_t::parse_number()
+double corax_newick_parser_t::parse_number()
 {
   return _lexer.consume_value_as_float();
 }
 
-void newick_parser_t::parse_comment()
+void corax_newick_parser_t::parse_comment()
 {
   auto token = _lexer.peak();
   if (token == OPENING_SQUARE_BRACKET)
@@ -676,7 +567,7 @@ corax_utree_t *utree_parse_newick_string(std::string newick_string,
 {
   try
   {
-    newick_parser_t np(newick_string);
+    corax_newick_parser_t np(newick_string);
     return np.parse(auto_unroot, allow_rooted);
   }
   catch (std::invalid_argument &e)

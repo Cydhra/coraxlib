@@ -29,5 +29,6 @@
 #include "corax/corax.h"
 
 #include "corax/model/evolmodel.hpp"
+#include "corax/io/newick.hpp"
 
 #endif /* CORAX_HPP_ */
