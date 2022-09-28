@@ -92,9 +92,61 @@ void BM_kernel_partial(benchmark::State& state, Args&&... args) {
   }
 }
 
+template <class ...Args>
+void BM_search(benchmark::State& state, Args&&... args) {
+  auto argsTuple = std::make_tuple(std::move(args)...);
+  for (auto _ : state) {
+    auto treeInfoWrapper = createTreeInfo(argsTuple);
+    auto treeinfo = treeInfoWrapper->getTreeInfo();
+    double ll1 = corax_treeinfo_compute_loglh(treeinfo, false);
+    
+    double cutoff = 0.0; //wtf is that
+    cutoff_info_t cutoff_info;
+    int minRadius = 1;
+    int maxRadius = 1;
+    int toKeep = 20;
+    int thorough = true;
+    const double RAXML_BRLEN_MIN = 0.000001;
+    const double RAXML_BRLEN_MAX = 100.0;
+    const int RAXML_BRLEN_SMOOTHINGS = 8;
+    unsigned int traversal_size = 0;
+    unsigned int ops_count = 0;
+    corax_utree_traverse(treeinfo->root,
+                            CORAX_TREE_TRAVERSE_POSTORDER,
+                            cb_full_traversal,
+                            treeinfo->travbuffer,
+                            &traversal_size);
+    corax_utree_create_operations(
+        (const corax_unode_t *const *)treeinfo->travbuffer,
+        traversal_size,
+        NULL,
+        NULL,
+        treeinfo->operations,
+        NULL,
+        &ops_count);
+    corax_update_clvs(treeinfo->partitions[0], 
+        treeinfo->operations, 
+        ops_count);
+    double ll2 = corax_treeinfo_compute_loglh(treeinfo, false);
+    auto ll3 = corax_algo_spr_round(treeinfo,
+      static_cast<int>(minRadius),
+      static_cast<int>(maxRadius),
+      static_cast<int>(toKeep), // params.ntopol_keep
+      static_cast<int>(thorough), // THOROUGH
+      0, //int brlen_opt_method,
+      RAXML_BRLEN_MIN,
+      RAXML_BRLEN_MAX,
+      RAXML_BRLEN_SMOOTHINGS,
+      0.1,
+      nullptr,
+      cutoff); //double subtree_cutoff);
+  }
+}
+
 
 #define GET_TREE(DATA) GET_DATA(trees/DATA ## .newick)
 #define GET_MSA(DATA) GET_DATA(msas/DATA ## .phy)
+#define GET_MSA_FASTA(DATA) GET_DATA(msas/DATA ## .fasta)
 
 #define BENCH_TREE(TREE) BENCHMARK_CAPTURE(BM_Parse_Newick, \
     tree_ ## TREE ## _taxa,  \
@@ -128,12 +180,30 @@ void BM_kernel_partial(benchmark::State& state, Args&&... args) {
   BENCH_KERNEL_ALL_DATA(partial) \
   BENCH_KERNEL_ALL_DATA(likelihood)
 
-BENCH_KERNEL_ALL();
 
+
+#define BENCH_SEARCH(VEC, REPEATS, MODEL, DATA)\
+  BENCHMARK_CAPTURE(BM_search,\
+      SEARCH_ ## DATA  ## _ ## MODEL ## _ ## VEC ## _Repeat ## REPEATS ,\
+      GET_TREE(DATA), \
+      GET_MSA_FASTA(DATA),\
+      STRINGIFY(MODEL),\
+      REPEATS,\
+      CORAX_ATTRIB_ARCH_ ## VEC \
+      );
+
+
+
+
+BENCH_KERNEL_ALL();
 
 BENCH_TREE(128)
 BENCH_TREE(286)
 BENCH_TREE(10575)
 
-BENCHMARK_MAIN();
+BENCH_SEARCH(AVX, true, GTR+G, 50);
+BENCH_SEARCH(AVX, false, GTR+G, 50);
+BENCH_SEARCH(SSE, true, GTR+G, 50);
+BENCH_SEARCH(SSE, false, GTR+G, 50);
 
+BENCHMARK_MAIN();
