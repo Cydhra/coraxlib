@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 3.0.2 FATAL_ERROR)
 
 project (corax)
 
+# GoogleTest requires at least C++14
+set(CMAKE_CXX_STANDARD 14)
+
 #set(PLL_EXPORTED_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
 
 option(CORAX_BUILD_DOCS "Build documentation" OFF)
