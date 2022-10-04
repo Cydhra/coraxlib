@@ -1,6 +1,6 @@
-# Make the cmake helpers for testing findable and load them.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CoraxlibTestHelper)
+include(CTest)
 
 # Load the GoogleTest included in the git submodule.
 add_subdirectory("${PROJECT_SOURCE_DIR}/lib/googletest" "lib/googletest")
