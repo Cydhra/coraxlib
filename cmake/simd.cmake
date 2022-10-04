@@ -8,7 +8,7 @@ set(AVX2_FLAGS "-mfma -mavx2")
 # compile small test programs.
 function (check_sse_available)
     set(TEST_CODE " #include <immintrin.h>
-  int main() {__m128d a = _mm_setzero_pd();  return 1;}"
+        int main() {__m128d a = _mm_setzero_pd();  return 1;}"
     )
     set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_sse.c)
     file(WRITE "${TEST_FILE}" "${TEST_CODE}")
@@ -25,7 +25,7 @@ endfunction ()
 
 function (check_avx_available)
     set(TEST_CODE " #include <immintrin.h>
-  int main() {__m256d a = _mm256_setzero_pd ();  return 1;}"
+        int main() {__m256d a = _mm256_setzero_pd ();  return 1;}"
     )
     set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_avx.c)
     file(WRITE "${TEST_FILE}" "${TEST_CODE}")
@@ -42,7 +42,7 @@ endfunction ()
 
 function (check_avx2_available)
     set(TEST_CODE " #include <immintrin.h>
-  int main() {__m256i a, b; b =  _mm256_abs_epi16(a); return 1;}"
+        int main() {__m256i a, b; b =  _mm256_abs_epi16(a); return 1;}"
     )
     set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_avx2.c)
     file(WRITE "${TEST_FILE}" "${TEST_CODE}")
