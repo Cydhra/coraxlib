@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "utree_io.h"
 
 static char *newick_utree_recurse(const corax_unode_t *root,
