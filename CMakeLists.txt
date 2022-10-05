@@ -18,6 +18,9 @@ option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, a
 option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_BUILD_SHARED "Build a shared library" Off)
+option(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+option(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+
 if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
     message(
         WARNING
@@ -28,7 +31,10 @@ endif ()
 
 # Default the build type to Release
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE
+        "Release"
+        CACHE STRING "Build type" FORCE
+    )
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
 endif ()
 
@@ -66,9 +72,6 @@ message(STATUS "Enable AVX SIMD kernels: ${CORAX_ENABLE_AVX}")
 message(STATUS "Enable AVX2 SIMD kernels: ${CORAX_ENABLE_AVX2}")
 
 # Configuration which is not user settable
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-
 set(CORAX_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/src
     CACHE INTERNAL "${PROJECT_NAME}: Include dirs"
