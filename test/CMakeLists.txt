@@ -4,6 +4,7 @@ include(CTest)
 
 # Load the GoogleTest included in the git submodule.
 add_subdirectory("${PROJECT_SOURCE_DIR}/lib/googletest" "lib/googletest")
+set(INSTALL_GTEST Off)
 include(GoogleTest)
 
 # Keep cache nad IDEs which support folders clean. See:
@@ -18,6 +19,8 @@ mark_as_advanced(
     gtest_disable_pthreads
     gtest_force_shared_crt
     gtest_hide_internal_symbols
+    benchmark_DIR
+    INSTALL_GTEST
 )
 
 set_target_properties(gtest PROPERTIES FOLDER extern)
