@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 # Options - user settable
 option(CORAX_BUILD_DOCS "Build (Doxygen) documentation" Off)
-option(CORAX_BUILD_TESTS "Build the automatic tests" On)
+option(CORAX_BUILD_TESTS "Build the automatic tests" Off)
 option(CORAX_BUILD_BENCHMARKS "Build the benchmarks" Off)
 option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build difficulty prediction module" Off)
 option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, and CPU" On)
