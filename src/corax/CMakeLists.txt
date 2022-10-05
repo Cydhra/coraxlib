@@ -19,16 +19,16 @@ if (CORAX_BUILD_SHARED)
 endif ()
 
 # Add sources and recurse into subdirs
-target_sources_local(${CORAX_LIB_TARGET}
-    PUBLIC
-        corax_core.h
-        corax_io.h
-        corax_kernel.h
-        corax_model.h
-        corax_optimize.h
-        corax_tree.h
-        corax_util.h
-        corax.hpp
+target_sources_local(
+    ${CORAX_LIB_TARGET}
+    PUBLIC corax_core.h
+           corax_io.h
+           corax_kernel.h
+           corax_model.h
+           corax_optimize.h
+           corax_tree.h
+           corax_util.h
+           corax.hpp
 )
 add_subdirectory(core)
 add_subdirectory(optimize)
