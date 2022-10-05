@@ -6,12 +6,15 @@ set(CORAX_LIB_TARGET
     "corax"
     CACHE INTERNAL "${PROJECT_NAME}: Library target to link against."
 )
-# STATIC / SHARED is auto-choosen based on BUILD_SHARED_LIBS
-add_library(${CORAX_LIB_TARGET})
-target_sources(${CORAX_LIB_TARGET} PRIVATE ${CORAX_SOURCES})
+
+if (CORAX_BUILD_SHARED)
+    add_library(${CORAX_LIB_TARGET} SHARED)
+else ()
+    add_library(${CORAX_LIB_TARGET} STATIC)
+endif ()
 
 # For other programs to include coraxlib, it has to have position independent code.
-if (BUILD_SHARED_LIBS)
+if (CORAX_BUILD_SHARED)
     set_property(TARGET ${CORAX_LIB_TARGET} PROPERTY POSITION_INDEPENDENT_CODE 1)
 endif ()
 

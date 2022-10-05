@@ -17,6 +17,14 @@ option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build difficulty prediction module" Of
 option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
+option(CORAX_BUILD_SHARED "Build a shared library" Off)
+if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
+    message(
+        WARNING
+            "BUILD_SHARED_LIBS is set, but CORAX_BUILD_SHARED is Off. Setting CORAX_BUILD_SHARED to On."
+    )
+    set(CORAX_BUILD_SHARED On)
+endif ()
 
 # Default the build type to Release
 if (NOT CMAKE_BUILD_TYPE)
@@ -44,7 +52,7 @@ if (NOT AVX2_AVAILABLE)
 endif ()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-if (DEFINED BUILD_SHARED_LIBS)
+if (CORAX_BUILD_SHARED)
     message(STATUS "Building coraxlib as a shared library.")
 else ()
     message(STATUS "Building coraxlib as a static library.")
