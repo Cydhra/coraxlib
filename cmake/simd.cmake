@@ -64,7 +64,7 @@ function(__corax_add_simd_definitions TARGET SIMD_VARIANT)
 endfunction()
 
 function (target_add_sse_definitions TARGET)
-    __corax_add_simd_definitions(${TARGET} SSE)
+    __corax_add_simd_definitions(${TARGET} SSE3)
 endfunction ()
 
 function (target_add_avx_definitions TARGET)
