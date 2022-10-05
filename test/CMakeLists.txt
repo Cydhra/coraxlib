@@ -33,3 +33,4 @@ enable_testing()
 
 # Add the unit tests.
 add_subdirectory(unit)
+add_subdirectory(integration EXCLUDE_FROM_ALL)
