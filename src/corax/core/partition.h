@@ -46,11 +46,12 @@
  */
 #define CORAX_ATTRIB_SITE_REPEATS (1 << 10)
 
+#define CORAX_ATTRIB_NONREV (1 << 11)
+
 /** Mask for all the attributes currently defined */
-#define CORAX_ATTRIB_MASK ((1 << 11) - 1)
+#define CORAX_ATTRIB_MASK ((1 << 12) - 1)
 
 /** @} */
-
 
 struct corax_repeats;
 

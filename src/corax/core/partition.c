@@ -683,9 +683,17 @@ CORAX_EXPORT corax_partition_t *
   }
   for (i = 0; i < partition->rate_matrices; ++i)
   {
-    partition->subst_params[i] =
-        corax_aligned_alloc(((states * states - states) / 2) * sizeof(double),
-                            partition->alignment);
+    size_t subst_count = 0;
+    if (partition->attributes & CORAX_ATTRIB_NONREV)
+    {
+      subst_count = states * states - states;
+    }
+    else
+    {
+      subst_count = (states * states - states) / 2;
+    }
+    partition->subst_params[i] = corax_aligned_alloc(subst_count *
+        sizeof(double), partition->alignment);
     if (!partition->subst_params[i])
     {
       dealloc_partition_data(partition);
@@ -1116,7 +1124,9 @@ CORAX_EXPORT void corax_set_subst_params(corax_partition_t *partition,
                                          unsigned int       params_index,
                                          const double *     params)
 {
-  unsigned int count = CORAX_SUBST_RATE_COUNT(partition->states);
+  unsigned int count = partition->attributes & CORAX_ATTRIB_NONREV
+                           ? CORAX_SUBST_RATE_COUNT_NONREV(partition->states)
+                           : CORAX_SUBST_RATE_COUNT(partition->states);
 
   memcpy(partition->subst_params[params_index], params, count * sizeof(double));
   partition->eigen_decomp_valid[params_index] = 0;

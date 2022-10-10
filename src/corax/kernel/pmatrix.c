@@ -17,6 +17,22 @@ CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t * partition,
         return CORAX_FAILURE;
     }
   }
+#ifdef CORAX_NONREV
+  if (partition->attributes & CORAX_ATTRIB_NONREV)
+  {
+    return corax_core_update_pmatrix_nonrev(partition->pmatrix,
+                                            partition->states,
+                                            partition->rate_cats,
+                                            partition->rates,
+                                            branch_lengths,
+                                            matrix_indices,
+                                            params_indices,
+                                            partition->prop_invar,
+                                            partition->subst_params,
+                                            count,
+                                            partition->attributes);
+  }
+#endif
 
   return corax_core_update_pmatrix(partition->pmatrix,
                                    partition->states,
