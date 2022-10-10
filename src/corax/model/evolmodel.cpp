@@ -52,7 +52,7 @@ void corax_check_error(const std::string& errmsg, bool force = false)
     throw runtime_error("Unknown CORAX error.");
 }
 
-bool sysutil_dir_exists(const string& dname)
+static bool sysutil_dir_exists(const string& dname)
 {
   struct stat info;
 
