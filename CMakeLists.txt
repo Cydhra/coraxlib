@@ -80,7 +80,11 @@ set(CORAX_INCLUDE_DIRS
 # Build the difficulty prediction if requested.
 if (CORAX_BUILD_DIFFICULTY_PREDICTION)
     add_subdirectory(lib/difficulty_prediction)
-endif ()
+    set(CORAX_INCLUDE_DIRS
+            ${CORAX_INCLUDE_DIRS}
+            ${PROJECT_SOURCE_DIR}/lib/difficulty_prediction/src
+    )
+endif()
 
 # Build the corax library
 add_subdirectory(src/corax)
@@ -93,7 +97,11 @@ endif ()
 # Build the tests if requested.
 if (CORAX_BUILD_TESTS)
     add_subdirectory(test)
+    if(CORAX_BUILD_DIFFICULTY_PREDICTION)
+        add_subdirectory(lib/difficulty_prediction/test)
+    endif()
 endif (CORAX_BUILD_TESTS)
+
 
 # Build the benchmarks if requested.
 if (CORAX_BUILD_BENCHMARKS)
