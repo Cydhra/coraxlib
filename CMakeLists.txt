@@ -23,7 +23,7 @@ option(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
 if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
     message(
-        WARNING
+            WARNING
             "BUILD_SHARED_LIBS is set, but CORAX_BUILD_SHARED is Off. Setting CORAX_BUILD_SHARED to On."
     )
     set(CORAX_BUILD_SHARED On)
@@ -32,9 +32,9 @@ endif ()
 # Default the build type to Release
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE
-        "Release"
-        CACHE STRING "Build type" FORCE
-    )
+            "Release"
+            CACHE STRING "Build type" FORCE
+            )
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
 endif ()
 
@@ -73,18 +73,15 @@ message(STATUS "Enable AVX2 SIMD kernels: ${CORAX_ENABLE_AVX2}")
 
 # Configuration which is not user settable
 set(CORAX_INCLUDE_DIRS
-    ${PROJECT_SOURCE_DIR}/src
-    CACHE INTERNAL "${PROJECT_NAME}: Include dirs"
-)
+        ${PROJECT_SOURCE_DIR}/src
+        CACHE INTERNAL "${PROJECT_NAME}: Include dirs"
+        )
 
 # Build the difficulty prediction if requested.
 if (CORAX_BUILD_DIFFICULTY_PREDICTION)
     add_subdirectory(lib/difficulty_prediction)
-    set(CORAX_INCLUDE_DIRS
-            ${CORAX_INCLUDE_DIRS}
-            ${PROJECT_SOURCE_DIR}/lib/difficulty_prediction/src
-    )
-endif()
+    list(APPEND CORAX_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/lib/difficulty_prediction/src)
+endif ()
 
 # Build the corax library
 add_subdirectory(src/corax)
@@ -101,7 +98,6 @@ if (CORAX_BUILD_TESTS)
         add_subdirectory(lib/difficulty_prediction/test)
     endif()
 endif (CORAX_BUILD_TESTS)
-
 
 # Build the benchmarks if requested.
 if (CORAX_BUILD_BENCHMARKS)
