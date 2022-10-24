@@ -38,6 +38,8 @@ function (corax_register_test TARGET_NAME)
     # some tests).
     target_compile_options(${TARGET_NAME} PRIVATE ${CORAX_TEST_WARNING_FLAGS})
     target_compile_definitions(${TARGET_NAME} PRIVATE ${CORAX_DEFINES})
+    # Disabled for now, as the EvolModel tests will crash with these. The issue has been created.
+    # target_compile_definitions(${TARGET_NAME} PRIVATE ${GLIBCXX_DEBUG_DEFINES})
     target_add_address_sanitizer(${TARGET_NAME})
 
     # Let ctest discover all tests in the test target (-> pretty list when calling ctest).
