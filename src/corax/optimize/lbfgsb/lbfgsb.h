@@ -20,6 +20,7 @@
 #ifndef LBFGSB_H
 #define LBFGSB_H
 
+#include "corax/core/common.h"
 #define CORAX_LBFGSB_ERROR             1.0e-4
 
 typedef int ftnlen;

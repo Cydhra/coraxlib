@@ -121,6 +121,7 @@ static int treeinfo_get_alpha(const corax_treeinfo_t *treeinfo,
                               double *                param_vals,
                               unsigned int            param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   param_vals[0] = treeinfo->alphas[part_num];
@@ -132,6 +133,7 @@ static int treeinfo_set_alpha(corax_treeinfo_t *treeinfo,
                               const double *    param_vals,
                               unsigned int      param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   treeinfo->alphas[part_num] = param_vals[0];
@@ -153,6 +155,7 @@ static int treeinfo_get_pinv(const corax_treeinfo_t *treeinfo,
                              double *                param_vals,
                              unsigned int            param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   corax_partition_t *partition = treeinfo->partitions[part_num];
@@ -165,6 +168,7 @@ static int treeinfo_set_pinv(corax_treeinfo_t *treeinfo,
                              const double *    param_vals,
                              unsigned int      param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   unsigned int       k;
@@ -186,6 +190,7 @@ static int treeinfo_get_brlen_scaler(const corax_treeinfo_t *treeinfo,
                                      double *                param_vals,
                                      unsigned int            param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   param_vals[0] = treeinfo->brlen_scalers[part_num];
@@ -197,6 +202,7 @@ static int treeinfo_set_brlen_scaler(corax_treeinfo_t *treeinfo,
                                      const double *    param_vals,
                                      unsigned int      param_count)
 {
+  CORAX_UNUSED(param_count);
   if (part_num >= treeinfo->partition_count) return CORAX_FAILURE;
 
   treeinfo->brlen_scalers[part_num] = param_vals[0];

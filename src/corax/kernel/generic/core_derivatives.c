@@ -232,6 +232,9 @@ corax_core_update_sumtable_repeats_generic(unsigned int        states,
                                            unsigned int        inv,
                                            unsigned int        attrib)
 {
+  CORAX_UNUSED(parent_sites);
+  CORAX_UNUSED(bclv_buffer);
+  CORAX_UNUSED(inv);
   unsigned int i, j, k, n;
   double       lefterm  = 0;
   double       righterm = 0;

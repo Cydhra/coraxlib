@@ -1077,6 +1077,9 @@ corax_core_update_clv_repeats_20x20_avx2(unsigned int        parent_sites,
                                          double *            bclv_buffer,
                                          unsigned int        attrib)
 {
+  CORAX_UNUSED(left_sites);
+  CORAX_UNUSED(right_sites);
+  CORAX_UNUSED(bclv_buffer);
   unsigned int i, k, n;
 
   const double *lmat;

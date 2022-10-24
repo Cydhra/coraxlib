@@ -420,6 +420,7 @@ static double compute_edge_loglikelihood_multi(
     void *               parallel_context,
     void (*parallel_reduce_cb)(void *, double *, size_t, int))
 {
+  CORAX_UNUSED(persite_lnl);
   double total_loglh = 0.;
 
   size_t p;

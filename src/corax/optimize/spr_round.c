@@ -308,7 +308,7 @@ static void algo_bestnode_list_save(corax_bestnode_list_t *best_node_list,
     --j;
   }
 
-  assert(idx >= 0 && idx < list_size);
+  assert(idx < list_size);
 
   algo_bestnode_list_copy_entry(best_node_list, idx, entry);
 }

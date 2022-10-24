@@ -27,7 +27,6 @@ extern "C"
                            unsigned int *       parent_scaler,
                            const unsigned char *left_tipchars,
                            const unsigned char *right_tipchars,
-                           const corax_state_t *tipmap,
                            unsigned int         tipmap_size,
                            const double *       lookup,
                            unsigned int         attrib);

@@ -111,13 +111,6 @@ CORAX_EXPORT unsigned int corax_default_enable_repeats(
            || (repeats->pernode_ids[right_clv] > (partition->sites / 2)));
 }
 
-CORAX_EXPORT unsigned int corax_no_enable_repeats(corax_partition_t *partition,
-                                                  unsigned int       left_clv,
-                                                  unsigned int       right_clv)
-{
-  return 0;
-}
-
 CORAX_EXPORT int corax_repeats_initialize(corax_partition_t *partition)
 {
   unsigned int sites_alloc =

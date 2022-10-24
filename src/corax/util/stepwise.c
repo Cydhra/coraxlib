@@ -428,6 +428,7 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
 
 static int cb_full(corax_unode_t * node)
 {
+  CORAX_UNUSED(node);
   return 1;
 }
 

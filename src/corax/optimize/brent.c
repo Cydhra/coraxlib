@@ -199,6 +199,7 @@ static int brent_opt_post_loop(opt_params *bp)
 double
 target_funk_wrapper(void *params, double *xopt, double *fxopt, int *converged)
 {
+  CORAX_UNUSED(converged);
   brent_wrapper_params *wrap_params = (brent_wrapper_params *)params;
 
   *fxopt = wrap_params->target_funk(wrap_params->params, *xopt);

@@ -1029,6 +1029,8 @@ double corax_core_edge_loglikelihood_repeats_generic(
     double *             bclv,
     unsigned int         attrib)
 {
+  CORAX_UNUSED(child_sites);
+  CORAX_UNUSED(bclv);
   unsigned int n, i, j, k;
   double       logl = 0;
 

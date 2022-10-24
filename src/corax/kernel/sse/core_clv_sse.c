@@ -887,6 +887,9 @@ corax_core_update_clv_repeats_generic_sse(unsigned int        states,
                                           double *            bclv_buffer,
                                           unsigned int        attrib)
 {
+  CORAX_UNUSED(left_sites);
+  CORAX_UNUSED(right_sites);
+  CORAX_UNUSED(bclv_buffer);
   unsigned int i, j, k, n;
 
   const double *lmat;
@@ -1324,6 +1327,7 @@ corax_core_update_clv_ti_sse(unsigned int         states,
                              unsigned int         tipmap_size,
                              unsigned int         attrib)
 {
+  CORAX_UNUSED(tipmap_size);
   unsigned int i, j, k, n;
   unsigned int states_padded = (states + 1) & 0xFFFFFFFE;
   unsigned int span_padded   = states_padded * rate_cats;
