@@ -1356,7 +1356,7 @@ CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t * msa,
     if (site_part[j])
     {
       p = site_part[j] - 1;
-      assert(p >= 0 && p < part_count);
+      assert(p < part_count);
       const unsigned int len = (unsigned int)part_msa_list[p]->length;
       part_msa_list[p]->length++;
       for (i = 0; i < (unsigned long)msa->count; i++)

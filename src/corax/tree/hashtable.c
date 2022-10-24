@@ -226,7 +226,6 @@ void hash_remove(bitv_hashtable_t *  h,
   *prev_ptr = e->next;
   hash_destroy_entry(e);
   --h->entry_count;
-  assert(h->entry_count >= 0);
 }
 
 void hash_print(bitv_hashtable_t *h)

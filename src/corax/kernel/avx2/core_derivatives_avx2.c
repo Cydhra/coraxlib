@@ -546,6 +546,9 @@ CORAX_EXPORT int corax_core_update_sumtable_repeats_20x20_avx2(
     unsigned int        inv,
     unsigned int        attrib)
 {
+  CORAX_UNUSED(parent_sites);
+  CORAX_UNUSED(bclv_buffer);
+  CORAX_UNUSED(inv);
   unsigned int i, j, k, n;
 
   /* build sumtable */

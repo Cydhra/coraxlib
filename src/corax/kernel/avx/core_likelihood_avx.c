@@ -1029,6 +1029,8 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
     double *             bclv,
     unsigned int         attrib)
 {
+  CORAX_UNUSED(child_sites);
+  CORAX_UNUSED(bclv);
   unsigned int n, i, j, k;
   double       logl       = 0;
   double       prop_invar = 0;
@@ -1737,6 +1739,8 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
     double *             bclv,
     unsigned int         attrib)
 {
+  CORAX_UNUSED(child_sites);
+  CORAX_UNUSED(bclv);
   unsigned int n, i;
   double       logl       = 0;
   double       prop_invar = 0;

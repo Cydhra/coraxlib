@@ -164,11 +164,6 @@ extern "C"
                                unsigned int       left_clv,
                                unsigned int       right_clv);
 
-  CORAX_EXPORT unsigned int
-  corax_no_enable_repeats(corax_partition_t *partition,
-                          unsigned int       left_clv,
-                          unsigned int       right_clv);
-
   CORAX_EXPORT void
   corax_default_reallocate_repeats(corax_partition_t *partition,
                                    unsigned int       parent,

@@ -575,6 +575,8 @@ corax_core_update_clv_repeatsbclv_4x4_avx(unsigned int        states,
                                           double *            bclv_buffer,
                                           unsigned int        attrib)
 {
+  CORAX_UNUSED(right_sites);
+  CORAX_UNUSED(left_sites);
   unsigned int n, k, i;
 
   const double *lmat;
@@ -775,6 +777,9 @@ corax_core_update_clv_repeats_4x4_avx(unsigned int        states,
                                       double *            bclv_buffer,
                                       unsigned int        attrib)
 {
+  CORAX_UNUSED(left_sites);
+  CORAX_UNUSED(right_sites);
+  CORAX_UNUSED(bclv_buffer);
   unsigned int n, k, i;
 
   const double *lmat;
@@ -1768,6 +1773,9 @@ corax_core_update_clv_repeats_generic_avx(unsigned int        states,
                                           double *            bclv_buffer,
                                           unsigned int        attrib)
 {
+  CORAX_UNUSED(left_sites);
+  CORAX_UNUSED(right_sites);
+  CORAX_UNUSED(bclv_buffer);
   unsigned int i, j, k, n;
 
   const double *lmat;
@@ -2010,6 +2018,7 @@ CORAX_EXPORT void corax_core_update_clv_repeatsbclv_generic_avx(
     double *            bclv_buffer,
     unsigned int        attrib)
 {
+  CORAX_UNUSED(right_sites);
   unsigned int i, j, k, n;
 
   unsigned int states_padded = (states + 3) & 0xFFFFFFFC;

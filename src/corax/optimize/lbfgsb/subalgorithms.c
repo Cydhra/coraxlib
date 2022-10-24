@@ -37,6 +37,7 @@ int hpsolb (int *n, double *t, int *iorder, int *iheap);
 int active (int *n, double *l, double *u, int *nbd, double *x, int *iwhere,
             int *iprint, logical *prjctd, logical *cnstnd, logical *boxed)
 {
+  CORAX_UNUSED(iprint);
   int i, nbdd;
 
   nbdd = 0;
@@ -241,6 +242,7 @@ int cauchy(int *n, double *x, double *l,
 	int *iprint, double *sbgnrm, int *info, double *
 	epsmch)
 {
+    CORAX_UNUSED(iprint);
 
     /* System generated locals */
     int wy_dim1, wy_offset, ws_dim1, ws_offset, sy_dim1, sy_offset,
@@ -1145,6 +1147,7 @@ int freev(int *n, int *nfree, int *index,
 	logical *wrk, logical *updatd, logical *cnstnd, int *iprint,
 	int *iter)
 {
+    CORAX_UNUSED(iprint);
     /* System generated locals */
     int i__1;
 
@@ -1559,6 +1562,7 @@ int subsm(int *n, int *m, int *nsub, int *
 	int *head, int *iword, double *wv, double *wn, 
 	int *iprint, int *info)
 {
+    CORAX_UNUSED(iprint);
 
     /* System generated locals */
     int ws_dim1, ws_offset, wy_dim1, wy_offset, wn_dim1, wn_offset, i__1,

@@ -57,7 +57,6 @@ static void case_tiptip(corax_partition_t *      partition,
                            parent_scaler,
                            partition->tipchars[op->child1_clv_index],
                            partition->tipchars[op->child2_clv_index],
-                           partition->tipmap,
                            partition->maxstates,
                            partition->ttlookup,
                            partition->attributes);

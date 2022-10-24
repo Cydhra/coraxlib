@@ -123,30 +123,6 @@ extern "C"
                                            unsigned int *     attributes,
                                            long int           offset);
 
-  CORAX_EXPORT int corax_binary_repeats_dump(FILE *             bin_file,
-                                             int                block_id,
-                                             corax_partition_t *partition,
-                                             unsigned int       attributes);
-
-  CORAX_EXPORT int corax_binary_repeats_load(FILE *             bin_file,
-                                             int                block_id,
-                                             corax_partition_t *partition,
-                                             unsigned int *     attributes,
-                                             long int           offset);
-
-  CORAX_EXPORT int corax_binary_pernoderepeats_dump(FILE *             bin_file,
-                                                    int                block_id,
-                                                    corax_partition_t *partition,
-                                                    unsigned int       clv_index,
-                                                    unsigned int attributes);
-
-  CORAX_EXPORT int corax_binary_pernoderepeats_load(FILE *             bin_file,
-                                                    int                block_id,
-                                                    corax_partition_t *partition,
-                                                    unsigned int       clv_index,
-                                                    unsigned int *     attributes,
-                                                    long int           offset);
-
   CORAX_EXPORT int corax_binary_clv_dump(FILE *             bin_file,
                                          int                block_id,
                                          corax_partition_t *partition,

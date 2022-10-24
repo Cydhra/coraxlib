@@ -226,6 +226,9 @@ corax_core_update_sumtable_repeats_4x4_avx(unsigned int        states,
                                            unsigned int        inv,
                                            unsigned int        attrib)
 {
+  CORAX_UNUSED(parent_sites);
+  CORAX_UNUSED(bclv_buffer);
+  CORAX_UNUSED(inv);
   unsigned int i, j, k, n;
 
   /* build sumtable */
@@ -665,6 +668,9 @@ CORAX_EXPORT int corax_core_update_sumtable_repeats_generic_avx(
     unsigned int        inv,
     unsigned int        attrib)
 {
+  CORAX_UNUSED(parent_sites);
+  CORAX_UNUSED(bclv_buffer);
+  CORAX_UNUSED(inv);
   unsigned int i, j, k, n;
 
   /* build sumtable */

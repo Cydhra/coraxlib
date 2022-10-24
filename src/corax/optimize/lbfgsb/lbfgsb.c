@@ -37,7 +37,7 @@ static int prn3lb (int *n, double *x, double *f, int * task, int *iprint, int *i
     double *sbtime, double *lnscht, ftnlen task_len, ftnlen word_len);
 #endif
 static int errclb (int *n, int *m, double *factr, double *l, double *u,
-                   int *nbd, int *task, int *info, int *k, ftnlen task_len);
+                   int *nbd, int *task, int *info, int *k);
 static int timer (double *ttime);
 
 int setulb (int *n, int *m, double *x, double *l, double *u, int *nbd,
@@ -452,7 +452,7 @@ int mainlb (int *n, int *m, double *x, double *l, double *u, int *nbd,
     itfile = 8;
     /* Note: no longer trying to write to file */
     /* Check the input arguments for errors. */
-    errclb (n, m, factr, &l[1], &u[1], &nbd[1], task, &info, &k, (ftnlen) 60);
+    errclb (n, m, factr, &l[1], &u[1], &nbd[1], task, &info, &k);
     if (IS_ERROR(*task))
     {
 #ifdef DEBUG
@@ -1062,7 +1062,7 @@ int prn3lb (int *n, double *x, double *f, int * task, int *iprint, int *info,
  * checks the validity of the input data
  */
 int errclb (int *n, int *m, double *factr, double *l, double *u, int *nbd,
-            int *task, int *info, int *k, ftnlen task_len)
+            int *task, int *info, int *k)
 {
   int i;
 
