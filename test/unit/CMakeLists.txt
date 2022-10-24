@@ -10,6 +10,6 @@ corax_register_test(test_newick FILES src/newick.cpp DEFINES DATAPATH=${CORAX_TE
 corax_register_test(test_msa FILES src/msa.cpp DEFINES DATAPATH=${CORAX_TEST_DATA_DIR})
 corax_register_test(test_evolmodel FILES src/evolmodel.cpp)
 corax_register_test(test_nni FILES src/nni.cpp)
-corax_register_test(test_partition_create FILES src/partition_create.cpp DEFINES HAVE_SSE3=1 HAVE_AVX=1 HAVE_AVX2=0)
+corax_register_test(test_partition FILES src/partition.cpp)
 
 enable_testing()
