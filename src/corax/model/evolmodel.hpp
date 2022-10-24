@@ -137,7 +137,7 @@ public:
     if (_rate_sym.empty())
       return num_rates();
     else
-      return *std::max_element(_rate_sym.cbegin(), _rate_sym.cend()) + 1;
+      return *std::max_element(_rate_sym.cbegin(), _rate_sym.cend()) + 1u;
   }
 
   /**

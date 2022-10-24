@@ -1,3 +1,6 @@
 [submodule "lib/difficulty_prediction"]
 	path = lib/difficulty_prediction
 	url = https://github.com/tschuelia/CPythia.git
+[submodule "lib/googletest"]
+	path = lib/googletest
+	url = https://github.com/lukashuebner/googletest.git

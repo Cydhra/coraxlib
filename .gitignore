@@ -2,12 +2,17 @@
 *.so
 .project
 build/*
+bench/build/*
 bin/*
 compile_commands.json
 .cache
+test/Testing
+test/unit/Testing
 
 # IDEs (VScode, ...)
 .vscode/
 
 # Clangd
 .clangd/
+cmake.check_cache
+CMakeCache.txt

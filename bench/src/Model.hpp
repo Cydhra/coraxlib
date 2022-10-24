@@ -5,6 +5,7 @@
  */
 
 #include <algorithm>
+#include <stdexcept>
 #include <unordered_map>
 #include <corax/corax_model.h>
 #include <corax/corax.h>
@@ -199,5 +200,3 @@ private:
 
 void assign(Model& model, const corax_partition_t * partition);
 void assign(corax_partition_t * partition, const Model& model);
-
-

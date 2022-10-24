@@ -1,73 +1,105 @@
-cmake_minimum_required (VERSION 3.0.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
+project(corax)
 
-project (corax)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(simd)
+include(warningFlags)
 
-#set(PLL_EXPORTED_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src PARENT_SCOPE)
+# GoogleTest needs at least C++14; we decided against C++17 for now, as it's not widely available on
+# cluster systems.
+set(CMAKE_CXX_STANDARD 14)
+include(CTest)
 
-option(CORAX_BUILD_DOCS "Build documentation" OFF)
-option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build the difficulty prediction module" OFF)
+# Enable ctest for the current subdirectory and below.
+enable_testing()
 
-# check if Doxygen is installed
-if(CORAX_BUILD_DOCS)
-  # Code taken from https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
-  find_package(Doxygen)
-  if (DOXYGEN_FOUND)
-      # set input and output files
-      set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-      set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+# Options - user settable
+option(CORAX_BUILD_DOCS "Build (Doxygen) documentation" Off)
+option(CORAX_BUILD_TESTS "Build the automatic tests" Off)
+option(CORAX_BUILD_BENCHMARKS "Build the benchmarks" Off)
+option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build difficulty prediction module" Off)
+option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, and CPU" On)
+option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, and CPU" On)
+option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
+option(CORAX_BUILD_SHARED "Build a shared library" Off)
+option(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+option(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
-      # request to configure the file
-      configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-      message("Doxygen build started")
+if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
+    message(
+        WARNING
+            "BUILD_SHARED_LIBS is set, but CORAX_BUILD_SHARED is Off. Setting CORAX_BUILD_SHARED to On."
+    )
+    set(CORAX_BUILD_SHARED On)
+endif ()
 
-      # note the option ALL which allows to build the docs together with the application
-      add_custom_target(doc_doxygen ALL
-          COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-          COMMENT "Generating API documentation with Doxygen"
-          VERBATIM )
-  else (DOXYGEN_FOUND)
-    message("Doxygen need to be installed to generate the doxygen documentation")
-  endif (DOXYGEN_FOUND)
-endif(CORAX_BUILD_DOCS)
+# Default the build type to Release
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE
+        "Release"
+        CACHE STRING "Build type" FORCE
+    )
+    message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
+endif ()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+# Check for available SIMD variants and disable not available ones.
+check_sse_available()
+if (NOT SSE_AVAILABLE)
+    message(STATUS "SSE SIMD not supported -> disabling")
+    set(CORAX_ENABLE_SSE Off)
+endif ()
 
-set(CORAX_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/corax)
-set(CORAX_SRC_DIR_CORE ${CORAX_SRC_DIR}/core)
-set(CORAX_SRC_DIR_IO ${CORAX_SRC_DIR}/io)
-set(CORAX_SRC_DIR_MODEL ${CORAX_SRC_DIR}/model)
-set(CORAX_SRC_DIR_OPTIMIZE ${CORAX_SRC_DIR}/optimize)
-set(CORAX_SRC_DIR_TREE ${CORAX_SRC_DIR}/tree)
-set(CORAX_SRC_DIR_UTIL ${CORAX_SRC_DIR}/util)
-set(CORAX_SRC_DIR_KERNEL ${CORAX_SRC_DIR}/kernel)
-set(CORAX_SRC_DIR_KERNEL_GENERIC ${CORAX_SRC_DIR_KERNEL}/generic)
-set(CORAX_SRC_DIR_KERNEL_SSE ${CORAX_SRC_DIR_KERNEL}/sse)
-set(CORAX_SRC_DIR_KERNEL_AVX ${CORAX_SRC_DIR_KERNEL}/avx)
-set(CORAX_SRC_DIR_KERNEL_AVX2 ${CORAX_SRC_DIR_KERNEL}/avx2)
+check_avx_available()
+if (NOT AVX_AVAILABLE)
+    message(STATUS "AVX SIMD not supported -> disabling")
+    set(CORAX_ENABLE_AVX Off)
+endif ()
 
-# Export CORAX_LIBRARIES and CORAX_INCLUDE_DIRS as CACHE entries
+check_avx2_available()
+if (NOT AVX2_AVAILABLE)
+    message(STATUS "AVX2 SIMD not supported -> disabling")
+    set(CORAX_ENABLE_AVX2 Off)
+endif ()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+if (CORAX_BUILD_SHARED)
+    message(STATUS "Building coraxlib as a shared library.")
+else ()
+    message(STATUS "Building coraxlib as a static library.")
+endif ()
+message(STATUS "Building documentation: ${CORAX_BUILD_DOCS}")
+message(STATUS "Building tests: ${CORAX_BUILD_TESTS}")
+message(STATUS "Building benchmarks: ${CORAX_BUILD_BENCHMARKS}")
+message(STATUS "Building difficutly prediction: ${CORAX_BUILD_DIFFICULTY_PREDICTION}")
+message(STATUS "Enable SSE SIMD kernels: ${CORAX_ENABLE_SSE}")
+message(STATUS "Enable AVX SIMD kernels: ${CORAX_ENABLE_AVX}")
+message(STATUS "Enable AVX2 SIMD kernels: ${CORAX_ENABLE_AVX2}")
+
+# Configuration which is not user settable
 set(CORAX_INCLUDE_DIRS
-        ${PROJECT_SOURCE_DIR}/src
-        CACHE INTERNAL "${PROJECT_NAME}: Include dirs")
+    ${PROJECT_SOURCE_DIR}/src
+    CACHE INTERNAL "${PROJECT_NAME}: Include dirs"
+)
 
-if(CORAX_BUILD_DIFFICULTY_PREDICTION)
+# Build the difficulty prediction if requested.
+if (CORAX_BUILD_DIFFICULTY_PREDICTION)
     add_subdirectory(lib/difficulty_prediction)
-endif()
+endif ()
 
+# Build the corax library
 add_subdirectory(src/corax)
 
-option(CORAX_TESTS_ENABLED "Enable and build the tests" ON)
-option(CORAX_BENCH_ENABLED "Enable and build the benchmarks" OFF)
+# Build the documentation if requested.
+if (CORAX_BUILD_DOCS)
+    add_subdirectory(docs)
+endif ()
 
-if (CORAX_TESTS_ENABLED)
-  enable_testing()
-  add_subdirectory(test)
-endif(CORAX_TESTS_ENABLED)
+# Build the tests if requested.
+if (CORAX_BUILD_TESTS)
+    add_subdirectory(test)
+endif (CORAX_BUILD_TESTS)
 
-
-if (CORAX_BENCH_ENABLED)
-  add_subdirectory(bench)
-endif(CORAX_BENCH_ENABLED)
-
+# Build the benchmarks if requested.
+if (CORAX_BUILD_BENCHMARKS)
+    add_subdirectory(bench)
+endif (CORAX_BUILD_BENCHMARKS)
