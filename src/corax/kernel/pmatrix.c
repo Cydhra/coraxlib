@@ -8,15 +8,6 @@ CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t * partition,
 {
   unsigned int n;
 
-  /* check whether we have cached an eigen decomposition. If not, compute it */
-  for (n = 0; n < partition->rate_cats; ++n)
-  {
-    if (!partition->eigen_decomp_valid[params_indices[n]])
-    {
-      if (!corax_update_eigen(partition, params_indices[n]))
-        return CORAX_FAILURE;
-    }
-  }
 #ifdef CORAX_NONREV
   if (partition->attributes & CORAX_ATTRIB_NONREV)
   {
@@ -33,6 +24,16 @@ CORAX_EXPORT int corax_update_prob_matrices(corax_partition_t * partition,
                                             partition->attributes);
   }
 #endif
+
+  /* check whether we have cached an eigen decomposition. If not, compute it */
+  for (n = 0; n < partition->rate_cats; ++n)
+  {
+    if (!partition->eigen_decomp_valid[params_indices[n]])
+    {
+      if (!corax_update_eigen(partition, params_indices[n]))
+        return CORAX_FAILURE;
+    }
+  }
 
   return corax_core_update_pmatrix(partition->pmatrix,
                                    partition->states,
