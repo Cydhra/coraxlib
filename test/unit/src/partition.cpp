@@ -89,18 +89,17 @@ const unsigned int scale_buffers_default = tips_default - 1;
 const unsigned int attributes_default =
     CORAX_ATTRIB_ARCH_CPU | CORAX_ATTRIB_SITE_REPEATS;
 
-void cpu_feature_detection_override() {
+void cpu_feature_detection_override()
+{
   corax_hardware_probe();
   corax_hardware.sse3_present = true;
-  corax_hardware.avx_present = true;
+  corax_hardware.avx_present  = true;
   corax_hardware.avx2_present = false;
 }
 
-void cpu_feature_detection_reset() {
-    corax_hardware_probe();
-}
+void cpu_feature_detection_reset() { corax_hardware_probe(); }
 
-TEST(PartitionCreate, Basic)
+TEST(Partition, Basic)
 {
   corax_partition_t *partition = nullptr;
   ASSERT_NO_THROW(partition = corax_partition_create(tips_default,
@@ -119,10 +118,8 @@ TEST(PartitionCreate, Basic)
   corax_partition_destroy(partition);
 }
 
-TEST(PartitionCreate, MultipleArchitectureAttributesSet_none)
+TEST(Partition, MultipleArchitectureAttributesSet_none)
 {
-  static_assert(HAVE_SSE3 && HAVE_AVX && !HAVE_AVX2,
-                "This test is only valid with SSE3, AVX and no AVX2");
   cpu_feature_detection_override();
   assert(CORAX_HAS_CPU_FEATURE(sse3_present));
   assert(CORAX_HAS_CPU_FEATURE(avx_present));
@@ -152,10 +149,8 @@ TEST(PartitionCreate, MultipleArchitectureAttributesSet_none)
   cpu_feature_detection_reset();
 }
 
-TEST(PartitionCreate, MultipleArchitectureAttributesSet_cpu)
+TEST(Partition, MultipleArchitectureAttributesSet_cpu)
 {
-  static_assert(HAVE_SSE3 && HAVE_AVX && !HAVE_AVX2,
-                "This test is only valid with SSE3, AVX and no AVX2");
   cpu_feature_detection_override();
   assert(CORAX_HAS_CPU_FEATURE(sse3_present));
   assert(CORAX_HAS_CPU_FEATURE(avx_present));
@@ -185,18 +180,16 @@ TEST(PartitionCreate, MultipleArchitectureAttributesSet_cpu)
   cpu_feature_detection_reset();
 }
 
-TEST(PartitionCreate, MultipleArchitectureAttributesSet_sse3)
+TEST(Partition, MultipleArchitectureAttributesSet_sse3)
 {
-  static_assert(HAVE_SSE3 && HAVE_AVX && !HAVE_AVX2,
-                "This test is only valid with SSE3, AVX and no AVX2");
   cpu_feature_detection_override();
   assert(CORAX_HAS_CPU_FEATURE(sse3_present));
   assert(CORAX_HAS_CPU_FEATURE(avx_present));
   assert(!CORAX_HAS_CPU_FEATURE(avx2_present));
 
-  corax_partition_t *partition  = nullptr;
-  const unsigned int attributes = CORAX_ATTRIB_ARCH_CPU | CORAX_ATTRIB_ARCH_SSE
-                                  | CORAX_ATTRIB_ARCH_AVX2;
+  corax_partition_t *partition = nullptr;
+  const unsigned int attributes =
+      CORAX_ATTRIB_ARCH_CPU | CORAX_ATTRIB_ARCH_SSE | CORAX_ATTRIB_ARCH_AVX2;
   ASSERT_NO_THROW(partition = corax_partition_create(tips_default,
                                                      clv_buffers_default,
                                                      states_default,
@@ -219,10 +212,8 @@ TEST(PartitionCreate, MultipleArchitectureAttributesSet_sse3)
   cpu_feature_detection_reset();
 }
 
-TEST(PartitionCreate, MultipleArchitectureAttributesSet_avx)
+TEST(Partition, MultipleArchitectureAttributesSet_avx)
 {
-  static_assert(HAVE_SSE3 && HAVE_AVX && !HAVE_AVX2,
-                "This test is only valid with SSE3, AVX and no AVX2");
   cpu_feature_detection_override();
   assert(CORAX_HAS_CPU_FEATURE(sse3_present));
   assert(CORAX_HAS_CPU_FEATURE(avx_present));
@@ -252,14 +243,8 @@ TEST(PartitionCreate, MultipleArchitectureAttributesSet_avx)
   cpu_feature_detection_reset();
 }
 
-TEST(PartitionCreate, MultipleArchitectureAttributesSet_avx2)
+TEST(Partition, CheckFields)
 {
-  static_assert(HAVE_SSE3 && HAVE_AVX && !HAVE_AVX2,
-                "This test is only valid with SSE3, AVX and no AVX2");
-  cpu_feature_detection_override();
-  assert(CORAX_HAS_CPU_FEATURE(sse3_present));
-  assert(CORAX_HAS_CPU_FEATURE(avx_present));
-  assert(!CORAX_HAS_CPU_FEATURE(avx2_present));
 
   corax_partition_t *partition  = nullptr;
   const unsigned int attributes = CORAX_ATTRIB_ARCH_CPU | CORAX_ATTRIB_ARCH_SSE
@@ -278,11 +263,277 @@ TEST(PartitionCreate, MultipleArchitectureAttributesSet_avx2)
   ASSERT_NE(partition, static_cast<corax_partition_t *>(CORAX_FAILURE));
   ASSERT_FALSE(corax_errno);
 
-  // The best one should be autoselected.
-  EXPECT_FALSE(partition->alignment & CORAX_ALIGNMENT_CPU);
-  EXPECT_FALSE(partition->alignment & CORAX_ALIGNMENT_SSE);
-  EXPECT_TRUE(partition->alignment & CORAX_ALIGNMENT_AVX);
-  EXPECT_EQ(partition->states_padded, (states_default + 3) & 0xFFFFFFFC);
+  /* Check clv fields */
+
+  EXPECT_EQ(partition->clv_buffers, clv_buffers_default);
+  EXPECT_EQ(partition->tips, tips_default);
+  EXPECT_EQ(partition->nodes, tips_default + clv_buffers_default);
+
+  EXPECT_EQ(partition->sites, sites_default);
+
+  EXPECT_EQ(partition->clv_buffers, clv_buffers_default);
+  EXPECT_NE(partition->clv, nullptr);
+
+  for (size_t i = 0; i < partition->clv_buffers; ++i)
+  {
+    EXPECT_NE(partition->clv[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; ++j)
+    {
+      EXPECT_EQ(partition->clv[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->frequencies, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; ++i)
+  {
+    EXPECT_NE(partition->frequencies[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; ++j)
+    {
+      EXPECT_EQ(partition->frequencies[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->frequencies, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; ++i)
+  {
+    EXPECT_NE(partition->frequencies[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; ++j)
+    {
+
+      EXPECT_EQ(partition->frequencies[i][j], 0.0);
+    }
+  }
+
+  EXPECT_EQ(partition->rate_cats, rate_cats_default);
+  EXPECT_NE(partition->rates, nullptr);
+  EXPECT_NE(partition->rate_weights, nullptr);
+
+  for (size_t i = 0; i < partition->rate_cats; i++)
+  {
+    EXPECT_EQ(partition->rates[i], 0.0);
+    EXPECT_EQ(partition->rate_weights[i], 1.0);
+  }
+
+  EXPECT_EQ(partition->scale_buffers, scale_buffers_default);
+  EXPECT_NE(partition->scale_buffer, nullptr);
+  size_t scalar_count = partition->sites * partition->rate_cats;
+  for (size_t i = 0; i < partition->scale_buffers; i++)
+  {
+    EXPECT_NE(partition->scale_buffer[i], nullptr);
+    for (size_t j = 0; j < scalar_count; j++)
+    {
+      EXPECT_EQ(partition->scale_buffer[i][j], 0);
+    }
+  }
+
+  /* Check rate matrix fields */
+
+  EXPECT_EQ(partition->rate_matrices, rate_matrices_default);
+  EXPECT_NE(partition->subst_params, nullptr);
+
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->subst_params[i], nullptr);
+  }
+
+  /* Check prob matrix fields */
+
+  EXPECT_EQ(partition->prob_matrices, prob_matrices_default);
+  EXPECT_NE(partition->pmatrix, nullptr);
+  size_t matrix_size = partition->states * partition->states_padded;
+  for (size_t i = 0; i < partition->prob_matrices; i++)
+  {
+    EXPECT_NE(partition->pmatrix[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->pmatrix[i][j], 0.0);
+    }
+  }
+
+  /* Check eigen fields */
+
+  EXPECT_NE(partition->eigenvecs, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->eigenvecs[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->eigenvecs[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->inv_eigenvecs, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->inv_eigenvecs[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->inv_eigenvecs[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->eigenvals, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->eigenvals[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; j++)
+    {
+      EXPECT_EQ(partition->eigenvals[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->eigen_decomp_valid, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_EQ(partition->eigen_decomp_valid[i], 0);
+  }
+
+  /* Check site repeats fields */
+
+  EXPECT_EQ(partition->repeats, nullptr);
+
   corax_partition_destroy(partition);
-  cpu_feature_detection_reset();
+}
+
+TEST(Partition, CheckFieldsSiteRepeats)
+{
+
+  corax_partition_t *partition = nullptr;
+  const unsigned int attributes =
+      CORAX_ATTRIB_ARCH_CPU | CORAX_ATTRIB_ARCH_SSE | CORAX_ATTRIB_ARCH_AVX
+      | CORAX_ATTRIB_ARCH_AVX2 | CORAX_ATTRIB_SITE_REPEATS;
+  ASSERT_NO_THROW(partition = corax_partition_create(tips_default,
+                                                     clv_buffers_default,
+                                                     states_default,
+                                                     sites_default,
+                                                     rate_matrices_default,
+                                                     prob_matrices_default,
+                                                     rate_cats_default,
+                                                     scale_buffers_default,
+                                                     attributes));
+  ASSERT_NE(partition, nullptr);
+  ASSERT_NE(partition, static_cast<corax_partition_t *>(CORAX_FAILURE));
+  ASSERT_FALSE(corax_errno);
+
+  /* Check clv fields */
+
+  EXPECT_EQ(partition->clv_buffers, clv_buffers_default);
+  EXPECT_EQ(partition->tips, tips_default);
+  EXPECT_EQ(partition->nodes, tips_default + clv_buffers_default);
+
+  EXPECT_EQ(partition->sites, sites_default);
+
+  EXPECT_EQ(partition->clv_buffers, clv_buffers_default);
+  EXPECT_NE(partition->clv, nullptr);
+
+  for (size_t i = 0; i < partition->clv_buffers; ++i)
+  {
+    EXPECT_EQ(partition->clv[i], nullptr);
+  }
+
+  EXPECT_NE(partition->frequencies, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; ++i)
+  {
+    EXPECT_NE(partition->frequencies[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; ++j)
+    {
+      EXPECT_EQ(partition->frequencies[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->frequencies, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; ++i)
+  {
+    EXPECT_NE(partition->frequencies[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; ++j)
+    {
+
+      EXPECT_EQ(partition->frequencies[i][j], 0.0);
+    }
+  }
+
+  EXPECT_EQ(partition->rate_cats, rate_cats_default);
+  EXPECT_NE(partition->rates, nullptr);
+  EXPECT_NE(partition->rate_weights, nullptr);
+
+  for (size_t i = 0; i < partition->rate_cats; i++)
+  {
+    EXPECT_EQ(partition->rates[i], 0.0);
+    EXPECT_EQ(partition->rate_weights[i], 1.0);
+  }
+
+  EXPECT_EQ(partition->scale_buffers, scale_buffers_default);
+  EXPECT_NE(partition->scale_buffer, nullptr);
+  for (size_t i = 0; i < partition->scale_buffers; i++)
+  {
+    EXPECT_EQ(partition->scale_buffer[i], nullptr);
+  }
+
+  /* Check rate matrix fields */
+
+  EXPECT_EQ(partition->rate_matrices, rate_matrices_default);
+  EXPECT_NE(partition->subst_params, nullptr);
+
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->subst_params[i], nullptr);
+  }
+
+  /* Check prob matrix fields */
+
+  EXPECT_EQ(partition->prob_matrices, prob_matrices_default);
+  EXPECT_NE(partition->pmatrix, nullptr);
+  size_t matrix_size = partition->states * partition->states_padded;
+  for (size_t i = 0; i < partition->prob_matrices; i++)
+  {
+    EXPECT_NE(partition->pmatrix[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->pmatrix[i][j], 0.0);
+    }
+  }
+
+  /* Check eigen fields */
+
+  EXPECT_NE(partition->eigenvecs, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->eigenvecs[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->eigenvecs[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->inv_eigenvecs, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->inv_eigenvecs[i], nullptr);
+    for (size_t j = 0; j < matrix_size; j++)
+    {
+      EXPECT_EQ(partition->inv_eigenvecs[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->eigenvals, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_NE(partition->eigenvals[i], nullptr);
+    for (size_t j = 0; j < partition->states_padded; j++)
+    {
+      EXPECT_EQ(partition->eigenvals[i][j], 0.0);
+    }
+  }
+
+  EXPECT_NE(partition->eigen_decomp_valid, nullptr);
+  for (size_t i = 0; i < partition->rate_matrices; i++)
+  {
+    EXPECT_EQ(partition->eigen_decomp_valid[i], 0);
+  }
+
+  /* Check site repeats fields */
+
+  EXPECT_NE(partition->repeats, nullptr);
+
+  corax_partition_destroy(partition);
 }
