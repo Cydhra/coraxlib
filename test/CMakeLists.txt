@@ -1,6 +1,5 @@
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CoraxlibTestHelper)
-include(CTest)
 
 # Load the GoogleTest included in the git submodule.
 add_subdirectory("${PROJECT_SOURCE_DIR}/lib/googletest" "lib/googletest")
@@ -27,9 +26,6 @@ set_target_properties(gtest PROPERTIES FOLDER extern)
 set_target_properties(gtest_main PROPERTIES FOLDER extern)
 set_target_properties(gmock PROPERTIES FOLDER extern)
 set_target_properties(gmock_main PROPERTIES FOLDER extern)
-
-# Enable ctest for the current subdirectory and below.
-enable_testing()
 
 # Add the unit tests.
 add_subdirectory(unit)

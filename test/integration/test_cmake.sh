@@ -64,6 +64,7 @@ configure_output="$(cmake \
     -DCORAX_BUILD_DIFFICULTY_PREDICTION=On\
     -DCORAX_BUILD_DOCS=On\
     -DCORAX_BUILD_TESTS=On || \
+    -DCMAKE_BUILD_TYPE=Debug \
     fail "Configuration failed")"
 assert_contain "$(echo "$configure_output" | grep "Building benchmarks ")" "On" "Did not build benchmarks"
 assert_contain "$(echo "$configure_output" | grep "Building documentation ")" "On" "Did not build documentation"

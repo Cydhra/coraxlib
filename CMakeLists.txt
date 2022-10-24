@@ -8,6 +8,10 @@ include(warningFlags)
 # GoogleTest needs at least C++14; we decided against C++17 for now, as it's not widely available on
 # cluster systems.
 set(CMAKE_CXX_STANDARD 14)
+include(CTest)
+
+# Enable ctest for the current subdirectory and below.
+enable_testing()
 
 # Options - user settable
 option(CORAX_BUILD_DOCS "Build (Doxygen) documentation" Off)
