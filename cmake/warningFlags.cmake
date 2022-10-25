@@ -42,4 +42,4 @@ endif ()
 set (GLIBCXX_DEBUG_DEFINES "_GLIBCXX_DEBUG;_GLIBCXX_DEBUG_PEDANTIC")
 
 # TODO REMOVE THIS
-set(CORAX_WARNING_FLAGS "-Wall" "-Wsign-compare")
+set(CORAX_WARNING_FLAGS "-Wall" "-Wsign-compare" "-Wextra")
