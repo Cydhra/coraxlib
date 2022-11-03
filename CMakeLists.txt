@@ -22,8 +22,9 @@ option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, a
 option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_BUILD_SHARED "Build a shared library" Off)
-option(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
-option(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
 if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
     message(
