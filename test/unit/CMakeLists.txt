@@ -9,3 +9,4 @@ corax_register_test(test_msa FILES src/msa.cpp DEFINES DATAPATH=${CORAX_TEST_DAT
 corax_register_test(test_evolmodel FILES src/evolmodel.cpp)
 corax_register_test(test_nni FILES src/nni.cpp)
 corax_register_test(test_partition FILES src/partition.cpp)
+corax_register_test(test_absdiff FILES src/absdiff.cpp)

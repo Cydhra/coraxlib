@@ -1,5 +1,5 @@
 #pragma once
-#ifndef _CORAX_ASSERT_H
+#ifndef _CORAX_ASSERT_HPP
 
 #include <sstream>
 #include <iostream>
@@ -94,4 +94,4 @@ inline std::string corax_assert_message(const char *expression,
 #define corax_always_assert(Expression, Message)                               \
   CORAX_ALWAYS_ASSERT_IMPL(Expression, Message)
 
-#endif // _CORAX_ASSERT_H
+#endif // _CORAX_ASSERT_HPP

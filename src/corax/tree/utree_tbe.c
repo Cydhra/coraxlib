@@ -20,6 +20,7 @@
 */
 
 #include "corax/corax.h"
+#include "corax/util/absdiff.h"
 #include "hashtable.h"
 
 typedef struct index_information
@@ -390,8 +391,10 @@ CORAX_EXPORT int corax_utree_tbe_naive(corax_split_t *ref_splits,
       unsigned int hdist, hdist_inv;
 
       /* this split is too far away -> skip it */
-      if (abs(bs_light[j] - p) > min_hdist
-          && abs(tip_count - bs_light[j] - p) > min_hdist)
+      assert(tip_count >= p);
+      assert(tip_count >= bs_light[j]);
+      if (absdiff(bs_light[j], p) > min_hdist
+          && absdiff((tip_count - bs_light[j]), p) > min_hdist)
       {
         continue;
       }
