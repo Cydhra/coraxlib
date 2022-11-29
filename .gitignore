@@ -2,6 +2,7 @@
 *.so
 .project
 build/*
+examples/cmake-project/build/*
 bench/build/*
 bin/*
 compile_commands.json
