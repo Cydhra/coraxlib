@@ -22,12 +22,14 @@ function (target_sources_local target)
         if (NOT src STREQUAL "PRIVATE"
             AND NOT src STREQUAL "PUBLIC"
             AND NOT src STREQUAL "INTERFACE"
-            AND NOT IS_ABSOLUTE "${src}"
         )
-            # Relative path to source, prepend relative to where target was defined
-            file(RELATIVE_PATH src "${_targetSourceDir}" "${CMAKE_CURRENT_LIST_DIR}/${src}")
-        endif ()
-        list(APPEND _srcList ${src})
+            # Append absolute path of source
+            if (NOT IS_ABSOLUTE "${src}")
+                # file(RELATIVE_PATH src "${_targetSourceDir}" "${CMAKE_CURRENT_LIST_DIR}/${src}")
+                set(src "${CMAKE_CURRENT_LIST_DIR}/${src}")
+            endif()
+        endif()
+        list(APPEND _srcList "${src}")
     endforeach ()
     target_sources(${target} ${_srcList})
 endfunction ()
