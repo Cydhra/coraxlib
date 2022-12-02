@@ -63,7 +63,7 @@ extern "C"
    * This function will create a corax_utree_t from a newick _file_. If there is
    * an error, the function will return CORAX_ERROR (which happens to be 0). If a
    * file containing a rooted tree is passed to this function, it will **unroot**
-   * the tree, and return a rooted tree.
+   * the tree, and return an unrooted tree.
    *
    * @ingroup corax_utree_t
    */
