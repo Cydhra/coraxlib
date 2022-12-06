@@ -186,7 +186,7 @@ void BM_search(benchmark::State& state, Args&&... args) {
   BENCHMARK_CAPTURE(BM_search,\
       SEARCH_ ## DATA  ## _ ## MODEL ## _ ## VEC ## _Repeat ## REPEATS ,\
       GET_TREE(DATA), \
-      GET_MSA_FASTA(DATA),\
+      GET_MSA(DATA),\
       STRINGIFY(MODEL),\
       REPEATS,\
       CORAX_ATTRIB_ARCH_ ## VEC \
@@ -201,9 +201,9 @@ BENCH_TREE(128)
 BENCH_TREE(286)
 BENCH_TREE(10575)
 
-BENCH_SEARCH(AVX, true, GTR+G, 50);
-BENCH_SEARCH(AVX, false, GTR+G, 50);
-BENCH_SEARCH(SSE, true, GTR+G, 50);
-BENCH_SEARCH(SSE, false, GTR+G, 50);
+BENCH_SEARCH(AVX, true, GTR+G, 128);
+BENCH_SEARCH(AVX, false, GTR+G, 128);
+BENCH_SEARCH(SSE, true, GTR+G, 128);
+BENCH_SEARCH(SSE, false, GTR+G, 128);
 
 BENCHMARK_MAIN();
