@@ -591,7 +591,8 @@ CORAX_EXPORT int algo_utree_spr(corax_treeinfo_t *           treeinfo,
 static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
                               node_entry_t *               entry,
                               cutoff_info_t *              cutoff_info,
-                              const corax_search_params_t *params)
+                              const corax_search_params_t *params,
+                              bool optimized)
 {
   assert(treeinfo && entry && params);
 
@@ -634,8 +635,17 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
 
   corax_treeinfo_set_root(treeinfo, p_edge);
 
-  /* recompute all CLVs and p-matrices before pruning */
-  loglh = corax_treeinfo_compute_loglh(treeinfo, 0);
+  if(optimized){
+
+    /* optimized version - update only invalid CLVs */
+    corax_treeinfo_invalidate_clv(treeinfo, p_edge);
+    loglh = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
+  
+  } else {
+
+    /* recompute all CLVs and p-matrices before pruning */
+    loglh = corax_treeinfo_compute_loglh(treeinfo, 0);
+  }
 
   /* PRUNE */
   orig_prune_edge = algo_utree_prune(treeinfo, params, p_edge);
@@ -817,7 +827,7 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
   }
 
   /* done with regrafting; restore old root */
-  corax_treeinfo_set_root(treeinfo, orig_prune_edge);
+  // corax_treeinfo_set_root(treeinfo, orig_prune_edge);
 
   /* re-insert into the original pruning branch */
   retval = corax_utree_regraft(p_edge, orig_prune_edge);
@@ -833,6 +843,20 @@ static int best_reinsert_edge(corax_treeinfo_t *           treeinfo,
   corax_treeinfo_invalidate_pmatrix(treeinfo, p_edge->next);
   corax_treeinfo_invalidate_pmatrix(treeinfo, p_edge->next->next);
 
+  if(optimized){
+
+    // update
+    algo_update_pmatrix(treeinfo, p_edge);
+    algo_update_pmatrix(treeinfo, p_edge->next);
+    algo_update_pmatrix(treeinfo, p_edge->next->next);
+
+    /* restore root and re-update invalid CLVs */
+    corax_treeinfo_set_root(treeinfo, p_edge);
+    corax_treeinfo_invalidate_clv(treeinfo, p_edge);
+    loglh = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
+
+  }
+
   free(regraft_nodes);
   free(regraft_dist);
 
@@ -845,7 +869,8 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
                              corax_rollback_list_t *      rollback_list,
                              corax_bestnode_list_t *      best_node_list,
                              cutoff_info_t *              cutoff_info,
-                             const corax_search_params_t *params)
+                             const corax_search_params_t *params, 
+                             bool optimized)
 {
   int i;
 
@@ -876,7 +901,7 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
 
     if (cutoff_info) cutoff_info->lh_start = best_lh;
 
-    int retval = best_reinsert_edge(treeinfo, &spr_entry, cutoff_info, params);
+    int retval = best_reinsert_edge(treeinfo, &spr_entry, cutoff_info, params, optimized);
     if (!retval)
     {
       /* return and spread error */
@@ -911,6 +936,11 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
       algo_unode_fix_length(
           treeinfo, orig_prune_edge, params->bl_min, params->bl_max);
 
+      if(optimized){
+        corax_treeinfo_invalidate_pmatrix(treeinfo, orig_prune_edge);
+        algo_update_pmatrix(treeinfo, orig_prune_edge);
+      }
+
       /* increment rollback slot counter to save SPR history */
       rollback = algo_rollback_list_next(rollback_list);
 
@@ -930,6 +960,22 @@ static double reinsert_nodes(corax_treeinfo_t *           treeinfo,
             treeinfo, p_edge->next, params->bl_min, params->bl_max);
         algo_unode_fix_length(
             treeinfo, p_edge->next->next, params->bl_min, params->bl_max);
+      }
+
+      if(optimized){
+
+        corax_treeinfo_invalidate_pmatrix(treeinfo, p_edge);
+        corax_treeinfo_invalidate_pmatrix(treeinfo, p_edge->next);
+        corax_treeinfo_invalidate_pmatrix(treeinfo, p_edge->next->next);
+        
+        algo_update_pmatrix(treeinfo, p_edge);
+        algo_update_pmatrix(treeinfo, p_edge->next);
+        algo_update_pmatrix(treeinfo, p_edge->next->next);
+
+        // the root is already at p_edge
+        corax_treeinfo_invalidate_clv(treeinfo, p_edge);
+        loglh = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
+
       }
 
       assert(spr_entry.lh > best_lh);
@@ -985,8 +1031,10 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
                                          int               smoothings,
                                          double            epsilon,
                                          cutoff_info_t *   cutoff_info,
-                                         double            subtree_cutoff)
+                                         double            subtree_cutoff,
+                                         bool optimized)
 {
+
   unsigned int          i;
   double                loglh, best_lh;
   corax_search_params_t params;
@@ -1031,6 +1079,9 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   /* reset error */
   corax_errno = 0;
 
+  /* initial root */
+  // corax_unode_t *initial_root = treeinfo->root;
+
   /* allocate brlen buffers */
   for (i = 0; i < BRLEN_BUF_COUNT; ++i)
   {
@@ -1066,6 +1117,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   }
 
   loglh   = corax_treeinfo_compute_loglh(treeinfo, 0);
+  corax_unode_t* initial_root = treeinfo->root;
   best_lh = loglh;
 
   /* query all nodes */
@@ -1081,13 +1133,17 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   unsigned int node_count = algo_query_allnodes(treeinfo->root, allnodes);
   assert(node_count == allnodes_count);
 
+  
   loglh = reinsert_nodes(treeinfo,
-                         allnodes,
-                         allnodes_count,
-                         rollback_list,
-                         bestnode_list,
-                         cutoff_info,
-                         &params);
+                        allnodes,
+                        allnodes_count,
+                        rollback_list,
+                        bestnode_list,
+                        cutoff_info,
+                        &params,
+                        optimized);
+
+
   if (!loglh)
   {
     /* return and spread error */
@@ -1107,13 +1163,17 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
 
     DBG("\nThorough re-insertion of %u best-scoring nodes...\n", i);
 
+    corax_treeinfo_set_root(treeinfo, initial_root);
+    
     loglh = reinsert_nodes(treeinfo,
-                           allnodes,
-                           i,
-                           rollback_list,
-                           bestnode_list,
-                           cutoff_info,
-                           &params);
+                          allnodes,
+                          i,
+                          rollback_list,
+                          bestnode_list,
+                          cutoff_info,
+                          &params,
+                          optimized);
+
     if (!loglh)
     {
       /* return and spread error */
@@ -1124,6 +1184,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   free(allnodes);
   allnodes = NULL;
 
+  corax_treeinfo_set_root(treeinfo, initial_root);
   best_lh = algo_optimize_bl_all(treeinfo, &params, epsilon, 0.25);
   DBG("Best tree LH after BLO: %f\n", best_lh);
 
