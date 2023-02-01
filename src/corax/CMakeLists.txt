@@ -29,7 +29,9 @@ target_sources_local(
            corax_tree.h
            corax_util.h
            corax.hpp
+           corax_topology.h
 )
+
 add_subdirectory(core)
 add_subdirectory(optimize)
 add_subdirectory(tree)
@@ -37,6 +39,7 @@ add_subdirectory(io)
 add_subdirectory(kernel)
 add_subdirectory(model)
 add_subdirectory(util)
+add_subdirectory(topology)
 
 # Add include directories.
 target_include_directories(${CORAX_LIB_TARGET} PRIVATE ${CORAX_INCLUDE_DIRS})

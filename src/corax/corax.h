@@ -33,5 +33,6 @@
 #include "corax/corax_optimize.h"
 #include "corax/corax_util.h"
 #include "corax/corax_tree.h"
+#include "corax/corax_topology.h"
 
 #endif /* CORAX_H_ */
