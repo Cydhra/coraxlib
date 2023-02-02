@@ -42,7 +42,7 @@ add_subdirectory(util)
 add_subdirectory(topology)
 
 # Add include directories.
-target_include_directories(${CORAX_LIB_TARGET} PRIVATE ${CORAX_INCLUDE_DIRS})
+target_include_directories(${CORAX_LIB_TARGET} PUBLIC ${CORAX_INCLUDE_DIRS})
 
 # Add warning flags
 target_compile_options(${CORAX_LIB_TARGET} PRIVATE ${CORAX_WARNING_FLAGS})
