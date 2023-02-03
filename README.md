@@ -67,3 +67,19 @@ corax_register_test(test_my_awesome_new_test FILES src/my_awesome_new_test.cpp)
 # or
 corax_register_test(test_with_custom_defines FILES src/with_custom_defines.cpp DEFINES SAMPLE_DEFINE=1 ANOTHER_DEFINE=2)
 ```
+
+# On Linear Algebra Libraries
+
+The situation with linear algebra libraries is complicated. To build coraxlib in with non-reversible models enabled, the
+following needs to be provided in some way:
+
+- CBLAS (a C interface to BLAS)
+- LAPACKE (a C interface to LAPACK)
+
+Both of these packages normally depend on BLAS and LAPACK, respectively. Therefore, you will probably need to install
+all four.
+
+We recommend that users install OpenBLAS. Depending on the package manager, this will provide the interface to all of
+the above. If this is not the case, then try installing CBLAS and LAPACKE, as these are the final targets required.
+However, not all BLAS implementations are the same, strictly speaking. If you get linker errors, it is probably due to
+the installed BLAS implementation not providing "extra" functions, which are present in OpenBLAS.

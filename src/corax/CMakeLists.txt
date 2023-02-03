@@ -51,8 +51,12 @@ option(CORAX_NONREV "Enable non-reversible model computation" OFF)
 
 if(CORAX_NONREV)
   message("Non-rev enabled")
+
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  find_package(LAPACKE REQUIRED)
   target_compile_definitions(${CORAX_LIB_TARGET} PUBLIC -DCORAX_NONREV)
-  target_link_libraries(${CORAX_LIB_TARGET} PUBLIC cblas lapacke)
+  target_link_libraries(${CORAX_LIB_TARGET} PUBLIC ${LAPACKE_LIBRARIES} ${BLAS_LIBRARIES})
 endif()
 
 # TODO Decide if we want to use DEBUG, NDEBUG, or DEBUG_MODE and unify all usages.
