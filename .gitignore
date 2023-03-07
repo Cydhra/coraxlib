@@ -12,6 +12,10 @@ test/unit/Testing
 
 # IDEs (VScode, ...)
 .vscode/
+.idea/
+
+# MacOS
+.DS_Store
 
 # Clangd
 .clangd/
