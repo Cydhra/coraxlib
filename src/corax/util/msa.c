@@ -403,9 +403,9 @@ corax_msa_entropy(const corax_msa_t *         msa,
 
 
 CORAX_EXPORT double
-corax_msa_bollback_multinomial(corax_msa_t *         msa,
-                               unsigned int *        site_weights,
-                               const corax_state_t * tipmap
+corax_msa_pattern_entropy(corax_msa_t *         msa,
+                          unsigned int *        site_weights,
+                          const corax_state_t * tipmap
 )
 {
   if (!msa)
@@ -427,7 +427,6 @@ corax_msa_bollback_multinomial(corax_msa_t *         msa,
     return CORAX_FAILURE;
   }
 
-  int number_of_sites = 0;
   int i;
 
   double sum = 0.0;
@@ -438,13 +437,34 @@ corax_msa_bollback_multinomial(corax_msa_t *         msa,
 
     if (site_weight == 0) {continue;}
 
-    number_of_sites += site_weight;
-
     double factor = site_weight * log(site_weight);
     sum += factor;
   }
 
-  return sum - number_of_sites * log(number_of_sites);
+  return sum;
+}
+
+
+CORAX_EXPORT double
+corax_msa_bollback_multinomial(corax_msa_t *         msa,
+                               unsigned int *        site_weights,
+                               const corax_state_t * tipmap
+)
+{
+  int number_of_sites = 0;
+  int i;
+
+  for (i = 0; i < msa->length; ++i)
+  {
+    unsigned int site_weight = site_weights[i];
+
+    if (site_weight == 0) {continue;}
+
+    number_of_sites += site_weight;
+  }
+  double pattern_entropy = corax_msa_pattern_entropy(msa, site_weights, tipmap);
+
+  return pattern_entropy - number_of_sites * log(number_of_sites);
 }
 
 
