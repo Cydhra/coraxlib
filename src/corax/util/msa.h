@@ -127,6 +127,21 @@ extern "C"
   );
 
   /**
+   * Takes a multiple sequence alignment and a tipmap and computes an entropy like
+   * metric based on the number and frequency of patterns in the MSA.
+   *
+   * @param msa Multiple Sequence Alignment. Note that the MSA object is modified during
+   *            the computation of the multinomial statistic.
+   * @param tipmap Mapping from chars to states (e.g., corax_map_nt for DNA)
+   * @return Pattern entropy. A pattern-based entropy like metric. The pattern entropy is >= 0.
+   */
+  CORAX_EXPORT double
+  corax_msa_pattern_entropy(corax_msa_t *         msa,
+                            unsigned int *        site_weights,
+                            const corax_state_t * tipmap
+  );
+
+  /**
    * Takes a multiple sequence alignment and a tipmap and computes the bollback multinomial
    * statistic according to Bollback, JP: Bayesian model adequacy and choice in phylogenetics (2002).
    *

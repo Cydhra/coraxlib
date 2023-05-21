@@ -39,6 +39,34 @@ TEST(MSA, entropy)
     corax_msa_destroy(msa);
 }
 
+TEST(MSA, pattern_entropy)
+{
+  std::string filename = env->small_msa_filename();
+  const char* c_filename = filename.c_str();
+  corax_msa_t* msa = corax_fasta_load(c_filename);
+  unsigned int* site_pattern_map = (unsigned int *)calloc(msa->length, sizeof(unsigned int));
+  unsigned int* site_weights = corax_compress_site_patterns_msa(msa, corax_map_nt, site_pattern_map);
+
+  double pattern_entropy = corax_msa_pattern_entropy(msa, site_weights, corax_map_nt);
+
+  /* The MSA "small.fasta" has 10 taxa and 5 different patterns with the following number of occurrences
+   *  'TTTTTTTTTT': 26,
+      'CCCCCCCCCC': 16,
+      'AAAAAAAAAA': 28,
+      'GGGGGGGGGG': 21,
+      '----------': 431
+   * => The pattern entropy computes as:
+   * mult = (26 * log(26) + 16 * log(16) + ... + 431 * log(431))
+   * In this case this is ~ 2900.801214
+   */
+
+  EXPECT_NEAR(pattern_entropy, 2900.801214, 0.001);
+
+  free(site_weights);
+  free(site_pattern_map);
+  corax_msa_destroy(msa);
+}
+
 TEST(MSA, bollback)
 {
     std::string filename = env->small_msa_filename();
