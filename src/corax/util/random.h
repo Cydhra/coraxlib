@@ -49,7 +49,7 @@ extern "C"
 
   CORAX_EXPORT corax_random_state *corax_random_create(unsigned int seed);
 
-  CORAX_EXPORT int corax_random_getint(corax_random_state *rstate, int maxval);
+  CORAX_EXPORT int corax_random_getint(corax_random_state *rstate, uint32_t maxval);
 
   CORAX_EXPORT void corax_random_destroy(corax_random_state *rstate);
 
