@@ -37,7 +37,6 @@
 #include "corax/corax_core.h"
 #include "corax/corax_model.h"
 
-
 CORAX_EXPORT double *
 corax_msa_empirical_frequencies(const corax_partition_t *partition)
 {
@@ -48,8 +47,8 @@ corax_msa_empirical_frequencies(const corax_partition_t *partition)
   unsigned int         rate_cats     = partition->rate_cats;
   unsigned int         tips          = partition->tips;
   const corax_state_t *tipmap        = partition->tipmap;
-  const unsigned int * w             = partition->pattern_weights;
-  double *             frequencies;
+  const unsigned int  *w             = partition->pattern_weights;
+  double              *frequencies;
 
   if ((frequencies = (double *)calloc((size_t)states, sizeof(double))) == NULL)
   {
@@ -139,11 +138,11 @@ corax_msa_empirical_frequencies(const corax_partition_t *partition)
 void compute_pair_rates(unsigned int         states,
                         unsigned int         tips,
                         unsigned long        sites,
-                        unsigned char **     tipchars,
-                        const unsigned int * w,
+                        unsigned char      **tipchars,
+                        const unsigned int  *w,
                         const corax_state_t *tipmap,
-                        size_t *             state_freq,
-                        size_t *             pair_rates)
+                        size_t              *state_freq,
+                        size_t              *pair_rates)
 {
   unsigned int  i, j, k;
   unsigned long n;
@@ -185,8 +184,8 @@ corax_msa_empirical_subst_rates(const corax_partition_t *partition)
   unsigned int         tips          = partition->tips;
   unsigned int         rate_cats     = partition->rate_cats;
   const corax_state_t *tipmap        = partition->tipmap;
-  const unsigned int * w             = partition->pattern_weights;
-  unsigned char **     tipchars      = partition->tipchars;
+  const unsigned int  *w             = partition->pattern_weights;
+  unsigned char      **tipchars      = partition->tipchars;
 
   unsigned int n_subst_rates = (states * (states - 1) / 2);
   double *subst_rates = (double *)calloc((size_t)n_subst_rates, sizeof(double));
@@ -292,11 +291,9 @@ corax_msa_empirical_invariant_sites(corax_partition_t *partition)
   return empirical_pinv;
 }
 
-CORAX_EXPORT double*
-corax_msa_column_entropies(const corax_msa_t *   msa,
-                           unsigned int          states,
-                           const corax_state_t * tipmap
-)
+CORAX_EXPORT double *corax_msa_column_entropies(const corax_msa_t   *msa,
+                                                unsigned int         states,
+                                                const corax_state_t *tipmap)
 {
   if (!msa)
   {
@@ -314,11 +311,11 @@ corax_msa_column_entropies(const corax_msa_t *   msa,
   const unsigned long msa_count  = (unsigned long)msa->count;
   const unsigned long msa_length = (unsigned long)msa->length;
 
-  unsigned long  i, j, k;
+  unsigned long i, j, k;
 
   corax_state_t gap_state = 0;
 
-  double * const column_entropies = (double *)calloc(msa_length, sizeof(double));
+  double *const column_entropies = (double *)calloc(msa_length, sizeof(double));
 
   /* gap state has always all bits set to one */
   gap_state = (1ul << (states)) - 1;
@@ -334,16 +331,14 @@ corax_msa_column_entropies(const corax_msa_t *   msa,
 
     for (i = 0; i < msa_count; ++i) // taxa loop msa_count
     {
-      const corax_state_t state       = tipmap[(int)msa->sequence[i][j]];
-      const int           is_gap      = state == gap_state ? 1 : 0;
+      const corax_state_t state  = tipmap[(int)msa->sequence[i][j]];
+      const int           is_gap = state == gap_state ? 1 : 0;
 
-      if(is_gap) {continue;}
+      if (is_gap) { continue; }
 
       for (k = 0; k < states; ++k)
       {
-        if (state & (1ll << k)) {
-          state_counts[k]++;
-        }
+        if (state & (1ll << k)) { state_counts[k]++; }
       }
       count_non_gaps++;
     }
@@ -351,7 +346,7 @@ corax_msa_column_entropies(const corax_msa_t *   msa,
     double column_entropy = 0.0;
     for (k = 0; k < states; ++k)
     {
-      if (state_counts[k] == 0) {continue;}
+      if (state_counts[k] == 0) { continue; }
 
       double state_probability = state_counts[k] / (double)count_non_gaps;
       column_entropy += -state_probability * log2(state_probability);
@@ -363,12 +358,9 @@ corax_msa_column_entropies(const corax_msa_t *   msa,
   return column_entropies;
 }
 
-
-CORAX_EXPORT double
-corax_msa_entropy(const corax_msa_t *         msa,
-                  unsigned int          states,
-                  const corax_state_t * tipmap
-)
+CORAX_EXPORT double corax_msa_entropy(const corax_msa_t   *msa,
+                                      unsigned int         states,
+                                      const corax_state_t *tipmap)
 {
   if (!msa)
   {
@@ -385,28 +377,22 @@ corax_msa_entropy(const corax_msa_t *         msa,
 
   const unsigned long msa_length = (unsigned long)msa->length;
 
-  unsigned long  i;
+  unsigned long i;
 
-  double* column_entropies = corax_msa_column_entropies(msa, states, tipmap);
+  double *column_entropies = corax_msa_column_entropies(msa, states, tipmap);
 
   double sum = 0.0;
 
-  for (i = 0; i < msa_length; ++i)
-  {
-    sum += column_entropies[i];
-  }
+  for (i = 0; i < msa_length; ++i) { sum += column_entropies[i]; }
 
   free(column_entropies);
 
   return sum / msa_length;
 }
 
-
-CORAX_EXPORT double
-corax_msa_pattern_entropy(corax_msa_t *         msa,
-                          unsigned int *        site_weights,
-                          const corax_state_t * tipmap
-)
+CORAX_EXPORT double corax_msa_pattern_entropy(corax_msa_t         *msa,
+                                              unsigned int        *site_weights,
+                                              const corax_state_t *tipmap)
 {
   if (!msa)
   {
@@ -416,7 +402,8 @@ corax_msa_pattern_entropy(corax_msa_t *         msa,
 
   if (!site_weights)
   {
-    corax_set_error(CORAX_ERROR_INVALID_PARAM, "Site weights structure is NULL");
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "Site weights structure is NULL");
     return CORAX_FAILURE;
   }
 
@@ -435,7 +422,7 @@ corax_msa_pattern_entropy(corax_msa_t *         msa,
   {
     unsigned int site_weight = site_weights[i];
 
-    if (site_weight == 0) {continue;}
+    if (site_weight == 0) { continue; }
 
     double factor = site_weight * log(site_weight);
     sum += factor;
@@ -444,12 +431,9 @@ corax_msa_pattern_entropy(corax_msa_t *         msa,
   return sum;
 }
 
-
-CORAX_EXPORT double
-corax_msa_bollback_multinomial(corax_msa_t *         msa,
-                               unsigned int *        site_weights,
-                               const corax_state_t * tipmap
-)
+CORAX_EXPORT double corax_msa_bollback_multinomial(corax_msa_t  *msa,
+                                                   unsigned int *site_weights,
+                                                   const corax_state_t *tipmap)
 {
   int number_of_sites = 0;
   int i;
@@ -458,7 +442,7 @@ corax_msa_bollback_multinomial(corax_msa_t *         msa,
   {
     unsigned int site_weight = site_weights[i];
 
-    if (site_weight == 0) {continue;}
+    if (site_weight == 0) { continue; }
 
     number_of_sites += site_weight;
   }
@@ -467,14 +451,13 @@ corax_msa_bollback_multinomial(corax_msa_t *         msa,
   return pattern_entropy - number_of_sites * log(number_of_sites);
 }
 
-
 #ifdef USE_POSIX_SEARCH
 /* Find duplicates using hash table from search.h. This works best for short
  * strings, so we use this method for checking taxa names */
 static int find_duplicate_strings_htable(char **const    strings,
                                          unsigned long   string_count,
                                          unsigned long **duplicates,
-                                         unsigned long * duplicate_count)
+                                         unsigned long  *duplicate_count)
 {
   if (!strings) return CORAX_FAILURE;
 
@@ -545,7 +528,7 @@ static int find_duplicate_strings(char **const    strings,
                                   unsigned long   string_count,
                                   unsigned long   string_len,
                                   unsigned long **duplicates,
-                                  unsigned long * duplicate_count)
+                                  unsigned long  *duplicate_count)
 {
   if (!strings) return CORAX_FAILURE;
 
@@ -627,7 +610,7 @@ static int find_duplicate_strings(char **const    strings,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t *  msa,
+CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t   *msa,
                                                  const corax_state_t *tipmap)
 {
   unsigned long i, j;
@@ -723,11 +706,11 @@ CORAX_EXPORT void corax_msa_destroy_errors(corax_msa_errors_t *errs)
  *      CORAX_MSA_STATS_ALL        all of the above
  * */
 CORAX_EXPORT corax_msa_stats_t *
-             corax_msa_compute_stats(const corax_msa_t *  msa,
-                                     unsigned int         states,
-                                     const corax_state_t *tipmap,
-                                     const unsigned int * weights,
-                                     unsigned long        stats_mask)
+corax_msa_compute_stats(const corax_msa_t   *msa,
+                        unsigned int         states,
+                        const corax_state_t *tipmap,
+                        const unsigned int  *weights,
+                        unsigned long        stats_mask)
 {
   if (!msa)
   {
@@ -760,8 +743,8 @@ CORAX_EXPORT corax_msa_stats_t *
   unsigned long  total_gap_count = 0;
   unsigned long *col_gap_weight  = NULL;
   unsigned long *seq_gap_weight  = NULL;
-  size_t *       pair_rates      = NULL;
-  size_t *       col_state_freq  = NULL;
+  size_t        *pair_rates      = NULL;
+  size_t        *col_state_freq  = NULL;
 
   corax_state_t *inv_state  = NULL;
   unsigned long  inv_weight = 0;
@@ -769,7 +752,7 @@ CORAX_EXPORT corax_msa_stats_t *
   corax_state_t gap_state = 0;
 
   double *column_entropies = NULL;
-  double entropy = 0;
+  double  entropy          = 0;
 
   /* gap state has always all bits set to one */
   for (i = 0; i < states; ++i)
@@ -1078,10 +1061,10 @@ CORAX_EXPORT corax_msa_stats_t *
   /* compute MSA entropy */
   if (stats_mask & CORAX_MSA_STATS_ENTROPY)
   {
-    column_entropies = corax_msa_column_entropies(msa, states, tipmap);
-    entropy = corax_msa_entropy(msa, states, tipmap);
+    column_entropies        = corax_msa_column_entropies(msa, states, tipmap);
+    entropy                 = corax_msa_entropy(msa, states, tipmap);
     stats->column_entropies = column_entropies;
-    stats->entropy = entropy;
+    stats->entropy          = entropy;
   }
 
   return stats;
@@ -1129,7 +1112,7 @@ CORAX_EXPORT void corax_msa_destroy_stats(corax_msa_stats_t *stats)
  * @param inplace create new MSA structure for the filtered alignment (0)
  *                or re-use the original one (1)
  */
-CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t *  msa,
+CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t   *msa,
                                            unsigned long *remove_seqs,
                                            unsigned long  remove_seqs_count,
                                            unsigned long *remove_cols,
@@ -1163,7 +1146,7 @@ CORAX_EXPORT corax_msa_t *corax_msa_filter(corax_msa_t *  msa,
 
   unsigned char *seqflag = NULL;
   unsigned char *colflag = NULL;
-  corax_msa_t *  new_msa = NULL;
+  corax_msa_t   *new_msa = NULL;
 
   if (remove_seqs_count)
   {
@@ -1321,7 +1304,7 @@ error_exit:
  *  // part_msa[0] = 1st, 2nd and 5th columns of msa
  *  // part_msa[1] = 3rd and 4th columns of msa
  */
-CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t * msa,
+CORAX_EXPORT corax_msa_t **corax_msa_split(const corax_msa_t  *msa,
                                            const unsigned int *site_part,
                                            unsigned int        part_count)
 {

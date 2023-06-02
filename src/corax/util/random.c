@@ -209,7 +209,7 @@ fail:
    setstate so that it doesn't matter when initstate is called.
    Returns 0 on success, non-zero on failure.  */
 int corax_initstate_r(unsigned int              seed,
-                      char *                    arg_state,
+                      char                     *arg_state,
                       size_t                    n,
                       struct corax_random_data *buf)
 {
