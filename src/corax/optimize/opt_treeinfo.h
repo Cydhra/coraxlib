@@ -138,6 +138,14 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
 
   /* search */
 
+  #ifdef __cplusplus
+      /* in case the compiler is a C++ compiler */
+      #define DEFAULT_VALUE(value) = value
+  #else
+      /* otherwise, C compiler, do nothing */
+      #define DEFAULT_VALUE(value)
+  #endif
+
   /**
    * Perform an SPR round.
    *
@@ -183,8 +191,8 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
                                            int               smoothings,
                                            double            epsilon,
                                            cutoff_info_t *   cutoff_info,
-  
-                                           double            subtree_cutoff);
+                                           double            subtree_cutoff,
+                                           bool optimized DEFAULT_VALUE(false));
   
   // Defining errors in NNI
   #define CORAX_NNI_ROUND_LEAF_ERROR      6001
@@ -194,13 +202,6 @@ corax_algo_opt_onedim_treeinfo_custom(corax_treeinfo_t     *treeinfo,
   #define CORAX_NNI_DIFF_NEGATIVE_ERROR   6005
   #define CORAX_NNI_ROOT_NOT_FOUND        6005
 
-  #ifdef __cplusplus
-      /* in case the compiler is a C++ compiler */
-      #define DEFAULT_VALUE(value) = value
-  #else
-      /* otherwise, C compiler, do nothing */
-      #define DEFAULT_VALUE(value)
-  #endif
 
   /**
    * SH-like aLRT statistics calculation (support values for internal branches).

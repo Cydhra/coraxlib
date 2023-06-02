@@ -700,6 +700,8 @@ CORAX_EXPORT void corax_msa_destroy_errors(corax_msa_errors_t *errs)
   if (errs->invalid_char_seq) free(errs->invalid_char_seq);
 
   if (errs->invalid_char_pos) free(errs->invalid_char_pos);
+
+  free(errs);
 }
 
 /**

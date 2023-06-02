@@ -388,7 +388,7 @@ CORAX_EXPORT corax_random_state *corax_random_create(unsigned int seed)
 /* return a random integer r, 0 <= r < maxval */
 CORAX_EXPORT int corax_random_getint(corax_random_state *rstate, int maxval)
 {
-  int32_t r;
+  int32_t r = 0;
   corax_random_r(&rstate->rdata, &r);
   return r % maxval;
 }
