@@ -139,7 +139,8 @@ void BM_search(benchmark::State& state, Args&&... args) {
       RAXML_BRLEN_SMOOTHINGS,
       0.1,
       nullptr,
-      cutoff); //double subtree_cutoff);
+      cutoff,
+      0.1); //double subtree_cutoff);
   }
 }
 

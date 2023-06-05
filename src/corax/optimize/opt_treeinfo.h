@@ -178,6 +178,11 @@ extern "C"
    * subtrees. A larger value means higher cutoff, i.e. deeper descent into
    * subtrees. For more information, see
    * https://cme.h-its.org/exelixis/pubs/VLSI2007.pdf
+   * 
+   * @param lh_epsilon_brlen_triplet Epsilon value for branch length optimization
+   * of the triplet of nodes around the regrafting point (e.g. 0.1)
+   * 
+   * @param fast_clv_updates Enable fast clv updates (default value: 1)
    *
    * @ingroup corax_treeinfo_t
    */
@@ -193,7 +198,8 @@ extern "C"
                                            double            epsilon,
                                            cutoff_info_t    *cutoff_info,
                                            double            subtree_cutoff,
-                                           bool optimized DEFAULT_VALUE(false));
+                                           double            lh_epsilon_brlen_triplet,
+                                           corax_bool_t fast_clv_updates DEFAULT_VALUE(1));
 
 // Defining errors in NNI
 #define CORAX_NNI_ROUND_LEAF_ERROR 6001
