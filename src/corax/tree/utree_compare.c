@@ -41,12 +41,10 @@ static void reverse_split(corax_split_t split, unsigned int tip_count)
   unsigned int split_len    = tip_count / split_size + (split_offset > 0);
   unsigned int i;
 
-  if (!split_offset) split_offset = split_size;
-
   for (i = 0; i < split_len; ++i) split[i] = ~split[i];
 
   // there are no bits to mask and the mask will overflow
-  if (tip_count % split_size == 0) {
+  if (!split_offset) {
     return;
   }
 
