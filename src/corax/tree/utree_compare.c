@@ -850,7 +850,7 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
     while (e != NULL)
     {
       int delete_split = 0;
-      if (e->support > thr_support)
+      if (e->support > thr_support + 1e-09)
       {
         assert(split_system->split_count < max_splits);
         split_system->support[split_system->split_count] = e->support;
