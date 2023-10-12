@@ -20,6 +20,7 @@
 */
 
 #include "corax/corax.h"
+#include "nni_parsimony.h"
 
 /* simulate exactly the non-reentrant glibc srandom() function */
 #define RAND_STATE_SIZE 128
@@ -861,6 +862,11 @@ CORAX_EXPORT corax_utree_t *
     *cost = 0;
     for (i = 0; i < count; ++i) *cost += list[i]->const_cost;
   }
+  
+  /* wrap tree */
+  corax_utree_t *tree = corax_utree_wraptree(root, tips_count);
+  // Here we can add an nni or spr round on parsimony trees, for example: 
+  // corax_algo_nni_round_parsimony(tree, list, count,cost);
 
   /* delete data elements */
   for (i = 0; i < tips_count - 3; ++i) dealloc_data(inner_node_list[i]);
@@ -873,8 +879,6 @@ CORAX_EXPORT corax_utree_t *
   free(travbuffer);
   free(parsops);
 
-  /* wrap tree */
-  corax_utree_t *tree = corax_utree_wraptree(root, tips_count);
 
   return tree;
 }
