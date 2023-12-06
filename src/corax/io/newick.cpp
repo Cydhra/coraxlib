@@ -296,15 +296,16 @@ corax_lexeme_t corax_newick_lexer_t::consume()
   {
     // we have a value, so we need to scan until we have found punctuation, or
     // the end of the string
-    std::stringstream builder;
+    auto start_itr = _input.begin() + _current_index;
+    auto end_itr = start_itr;
     while (char tmp = _input[_current_index])
     {
       if (is_punct(tmp)) { break; }
-      builder << tmp;
+      end_itr++;
       _current_index++;
     }
 
-    _value = builder.str();
+    _value = std::string{start_itr, end_itr};
     while (std::isspace(*(_value.end() - 1)))
     {
       _value.resize(_value.size() - 1);
