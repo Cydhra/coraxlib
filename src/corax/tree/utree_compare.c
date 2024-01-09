@@ -814,8 +814,9 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
   corax_split_system_t *split_system;
   double                min_support = threshold;
   double                max_support = 1.0;
-  double                thr_support = CORAX_MAX(min_support, .5);
-  if (thr_support == max_support) thr_support -= CORAX_UTREE_WEIGHT_EPSILON;
+  double                thr_support = CORAX_MAX(min_support, .5 + CORAX_UTREE_WEIGHT_EPSILON);
+
+  thr_support = CORAX_MIN(thr_support, max_support - CORAX_UTREE_WEIGHT_EPSILON);
 
   split_system =
       (corax_split_system_t *)calloc(1, sizeof(corax_split_system_t));
@@ -850,7 +851,7 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
     while (e != NULL)
     {
       int delete_split = 0;
-      if (e->support > thr_support + 1e-09)
+      if (e->support > thr_support)
       {
         assert(split_system->split_count < max_splits);
         split_system->support[split_system->split_count] = e->support;
