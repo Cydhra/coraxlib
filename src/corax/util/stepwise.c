@@ -117,8 +117,11 @@ static void dealloc_data_onenode(corax_unode_t *node)
 static void dealloc_data(corax_unode_t *node)
 {
   dealloc_data_onenode(node);
-  dealloc_data_onenode(node->next);
-  dealloc_data_onenode(node->next->next);
+  if (node->next)
+  {
+    dealloc_data_onenode(node->next);
+    dealloc_data_onenode(node->next->next);
+  }
 }
 
 static pars_info_t * create_pars_info(corax_parsimony_t ** pars_list,
