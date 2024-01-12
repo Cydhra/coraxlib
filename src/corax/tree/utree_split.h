@@ -100,21 +100,110 @@ extern "C"
                                                           const corax_split_t *s2,
                                                           unsigned int tip_count);
 
+  /**
+   * Extract all non-directed non-trivial splits, i.e. one split per inner tree edge.
+   *
+   * @return pointer to a newly created pll_split_set_t struct on success
+   *         NULL on error
+   */
   CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t * tree);
 
+  /**
+   * Extract all directed splits, i.e. two splits per every tree edge (inner+outer).
+   *
+   * @return pointer to a newly created pll_split_set_t struct on success
+   *         NULL on error
+   */
+  CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create_all(const corax_utree_t * tree);
+
+  /**
+   * Extract all directed splits from tree and store them in a pre-allocated split set.
+   *
+   * @param  split_set  existing split set with compatible dimensions
+   *                    (use pllmod_utree_splitset_create_all() to initialize)
+   * @param  tree       topology to extract splits from
+   *
+   * @return CORAX_SUCCESS if extraction and update was successful
+   *         CORAX_FAILURE on error
+   */
+  CORAX_EXPORT int corax_utree_splitset_update_all(corax_split_set_t * split_set,
+                                                   const corax_utree_t * tree);
+
+  /**
+   * Deallocate split set memory
+   */
   CORAX_EXPORT void corax_utree_splitset_destroy(corax_split_set_t * split_set);
 
   
+  /**
+   * Check if a given topology is compatible with a set of constraint splits.
+   *
+   * @param  cons_splits  splits from a constraint tree
+   * @param  tree         tree to be checked
+   *
+   * @return CORAX_SUCCESS if topology is compatible
+   *         CORAX_FAILURE otherwise
+   */
   CORAX_EXPORT int corax_utree_constraint_check_splits_tree(corax_split_set_t * cons_splits,
-                                                         const corax_utree_t * tree);
+                                                            const corax_utree_t * tree);
   
+  /**
+   * Check if a given topology (query tree) is compatible with a topological constraint,
+   * while both are specified as a set of splits. Essentially, it checks whether
+   * every split in the constraint tree is present in the query tree.
+   *
+   * @param  cons_splits  splits from a constraint tree
+   * @param  tree_splits  splits from a tree to be checked
+   *
+   * @return CORAX_SUCCESS if topology is compatible
+   *         CORAX_FAILURE otherwise
+   */
   CORAX_EXPORT int corax_utree_constraint_check_splits(corax_split_set_t * cons_splits, 
-                                                        corax_split_set_t * tree_splits);
+                                                       corax_split_set_t * tree_splits);
   
-  /* Checks whether the two trees are compatible */
+  /**
+   * Check if a given topology is compatible with a topological constraint.
+   *
+   * @param  cons_tree  a constraint tree
+   * @param  tree       tree to be checked
+   *
+   * @return CORAX_SUCCESS if topology is compatible
+   *         CORAX_FAILURE otherwise
+   */
   CORAX_EXPORT int corax_utree_constraint_check_tree(const corax_utree_t * cons_tree,
-                                                  const corax_utree_t * tree);
+                                                     const corax_utree_t * tree);
 
+  /**
+   * Check if an SPR is compatible with a given topological constraint
+   *
+   * @param  cons_splits  splits from a constraint tree
+   * @param  tree_splits  splits from the ORIGINAL tree BEFORE PRUNING
+   * @param  p_edge  pruned subtree
+   * @param  r_edge  re-instertion edge
+   *
+   * @return CORAX_SUCCESS if SPR is compatible with constraint
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_utree_constraint_check_spr(corax_split_set_t * cons_splits,
+                                                    corax_split_set_t * tree_splits,
+                                                    corax_unode_t * p_edge,
+                                                    corax_unode_t * r_edge);
+
+  /**
+   * Check if constraint is relevant for a given subtree. For instance, a subtree comprising
+   * only "free" taxa (e.g. those absent from the constraint tree) is not affected,
+   * and hence constraint check is not required before regrafting this subtree.
+   *
+   * @param  cons_splits  splits from a constraint tree
+   * @param  tree_splits  splits from the ORIGINAL tree BEFORE PRUNING
+   * @param  p_edge       pruned subtree
+   *
+   * @return CORAX_SUCCESS subtree is affected by the constraint
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_utree_constraint_subtree_affected(const corax_split_set_t * cons_splits,
+                                                           const corax_split_set_t * tree_splits,
+                                                           corax_unode_t * p_edge);
 
 
   // TODO: implement Newick->splits parser

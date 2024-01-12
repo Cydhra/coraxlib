@@ -20,11 +20,151 @@ struct cb_split_params
 /******************************************************************************/
 /* static functions */
 
+static inline int empty_split(corax_split_t split,
+                         unsigned int split_len)
+{
+  unsigned int i;
+  for (i=0;i<split_len;++i)
+  {
+    if (split[i])
+      return 0;
+  }
+  return 1;
+}
+
+static inline int full_split(corax_split_t split,
+                         unsigned int split_len)
+{
+  corax_split_base_t f = ~0;
+  unsigned int i;
+  for (i=0;i<split_len;++i)
+  {
+    if (split[i] != f)
+      return 0;
+  }
+  return 1;
+}
+
+static inline unsigned int split_popcount(const corax_split_t bitv,
+                                          unsigned int bit_count,
+                                          unsigned int split_len)
+{
+  unsigned int split_size  = sizeof(corax_split_base_t) * 8;
+  unsigned int setb = 0;
+  unsigned int i;
+
+  if (!split_len)
+    split_len = bitv_length(bit_count);
+
+  for (i = 0; i < split_len; ++i)
+  {
+    setb += (unsigned int) CORAX_POPCNT32(bitv[i]);
+  }
+
+  /* IMPORTANT: correct for padding bits in the last element! */
+  unsigned int split_offset = bit_count % split_size;
+  if (split_offset)
+  {
+    unsigned int mask = (1<<split_offset) - 1;
+    unsigned int last = bitv[split_len - 1];
+    /* count set bits in the padding part of the bit vector */
+    last &= ~mask;
+    setb -= (unsigned int) CORAX_POPCNT32(last);
+  }
+
+  return setb;
+}
+
+static inline void invert_split(corax_split_t bitv, unsigned int bit_count)
+{
+  unsigned int split_size  = sizeof(corax_split_base_t) * 8;
+  unsigned int split_offset = bit_count % split_size;
+  unsigned int split_len    = bitv_length(bit_count);
+  unsigned int i;
+
+  for (i=0; i<split_len; ++i)
+  {
+    bitv[i] = ~bitv[i];
+  }
+
+  if (split_offset)
+  {
+    unsigned int mask = (1<<split_offset) - 1;
+    bitv[split_len - 1] &= mask;
+  }
+}
+
+static inline void copy_split(corax_split_t to,
+                              const corax_split_t from,
+                              unsigned int split_len)
+{
+  memcpy(to, from, split_len * sizeof(corax_split_base_t));
+}
+
 static inline void
 merge_split(corax_split_t to, const corax_split_t from, unsigned int split_len)
 {
   unsigned int i;
   for (i = 0; i < split_len; ++i) to[i] |= from[i];
+}
+
+static inline int disjoint_split(const corax_split_t split1,
+                                 const corax_split_t split2,
+                                 unsigned int split_len)
+{
+  unsigned int i;
+  for (i=0; i<split_len; ++i)
+  {
+    if (split1[i] & split2[i])
+      return 0;
+  }
+  return 1;
+}
+
+inline const corax_split_t get_node_split(const corax_split_t * splits,
+                                        const corax_unode_t * node)
+{
+  return splits[node->node_index];
+}
+
+static const corax_split_t find_nonempty_regraft_split(corax_split_t * splits,
+                                                     unsigned int split_len,
+                                                     const corax_split_t prune_split,
+                                                     corax_unode_t * r_edge)
+{
+  corax_split_t regraft_split = NULL;
+  corax_unode_t * left_node = r_edge;
+  corax_unode_t * right_node = r_edge->back;
+
+  while (1)
+  {
+    corax_split_t left_split = get_node_split(splits, left_node);
+    corax_split_t right_split = get_node_split(splits, right_node);
+
+    if (empty_split(right_split, split_len) && !CORAX_UTREE_IS_TIP(left_node))
+    {
+      /* right subtree empty -> traverse left subtree */
+      right_node = left_node->next->next->back;
+      left_node = left_node->next->back;
+    }
+    else if (empty_split(left_split, split_len) && !CORAX_UTREE_IS_TIP(right_node))
+    {
+      /* left subtree empty -> traverse right subtree */
+      left_node = right_node->next->back;
+      right_node = right_node->next->next->back;
+    }
+    else
+    {
+      /* non-trivial split found */
+      if (disjoint_split(prune_split, right_split, split_len))
+        regraft_split = right_split;
+      else
+        regraft_split = left_split;
+      break;
+    }
+  }
+
+  return regraft_split;
 }
 
 /*
@@ -44,14 +184,14 @@ static unsigned int get_utree_splitmap_id(corax_unode_t *node,
  * The splits will be stored in data->splits
  * at positions given by node index
  */
-static int cb_get_splits(corax_unode_t *node, void *data)
+static int cb_get_splits(corax_unode_t * node, void *data)
 {
-  struct cb_split_params *split_data = (struct cb_split_params *)data;
-  corax_split_t           current_split;
+  struct cb_split_params * split_data = (struct cb_split_params *) data;
+  corax_split_t current_split;
 
-  unsigned int tip_count  = split_data->tip_count;
-  unsigned int split_size = split_data->split_size;
-  unsigned int split_len  = split_data->split_len;
+  unsigned int tip_count     = split_data->tip_count;
+  unsigned int split_size    = split_data->split_size;
+  unsigned int split_len     = split_data->split_len;
   unsigned int my_split_id, child_split_id;
   unsigned int my_map_id, back_map_id;
   unsigned int tip_id, split_id;
@@ -64,11 +204,14 @@ static int cb_get_splits(corax_unode_t *node, void *data)
 
     /* check if the split for the branch was already set */
     /* note that tree traversals visit the virtual root branch twice */
-    if (split_data->id_to_split[my_map_id] >= 0) { return 1; }
+    if (split_data->id_to_split[my_map_id] >= 0)
+    {
+      return 1;
+    }
 
     assert(my_split_id < (tip_count - 3));
-    split_data->id_to_split[my_map_id]   = (int)my_split_id;
-    split_data->id_to_split[back_map_id] = (int)my_split_id;
+    split_data->id_to_split[my_map_id] = (int) my_split_id;
+    split_data->id_to_split[back_map_id] = (int) my_split_id;
 
     split_data->split_nodes[my_split_id].node = node;
 
@@ -77,49 +220,103 @@ static int cb_get_splits(corax_unode_t *node, void *data)
     /* increase number of splits */
     split_data->split_count++;
 
-    /* add the split from left branch */
-    if (!CORAX_UTREE_IS_TIP(node->next->back))
-    {
-      child_split_id =
-          (unsigned int)split_data
-              ->id_to_split[get_utree_splitmap_id(node->next, tip_count)];
+    memset(current_split, 0, sizeof(corax_split_base_t) * split_len);
 
-      memcpy(current_split,
-             split_data->split_nodes[child_split_id].split,
-             sizeof(corax_split_base_t) * split_len);
-    }
-    else
+    /* add the split from branches */
+    corax_unode_t * snode = node->next;
+    while(snode != node)
     {
-      tip_id = node->next->back->node_index;
-      assert(tip_id < tip_count);
-      split_id = tip_id / split_size;
-      tip_id %= split_size;
-      current_split[split_id] = (1 << tip_id);
+      if (!CORAX_UTREE_IS_TIP(snode->back))
+      {
+        child_split_id = (unsigned int)
+          split_data->id_to_split[get_utree_splitmap_id(snode, tip_count)];
+
+        merge_split(current_split, split_data->split_nodes[child_split_id].split, split_len);
+      }
+      else
+      {
+        tip_id     = snode->back->node_index;
+        assert(tip_id < tip_count);
+        split_id   = tip_id / split_size;
+        tip_id    %= split_size;
+        current_split[split_id] |= (1 << tip_id);
+      }
+
+      snode = snode->next;
     }
 
-    /* add the split from right branch */
-    if (!CORAX_UTREE_IS_TIP(node->next->next->back))
-    {
-      child_split_id =
-          (unsigned int)split_data
-              ->id_to_split[get_utree_splitmap_id(node->next->next, tip_count)];
-      merge_split(current_split,
-                  split_data->split_nodes[child_split_id].split,
-                  split_len);
-    }
-    else
-    {
-      tip_id = node->next->next->back->node_index;
-      assert(tip_id < tip_count);
-      split_id = tip_id / split_size;
-      tip_id %= split_size;
-      current_split[split_id] |= (1 << tip_id);
-    }
+//    printf("split %u: \n", my_split_id);
+//    pllmod_utree_split_show(current_split, tip_count);
+//    printf("\n");
   }
 
   /* continue */
   return 1;
 }
+
+static int cb_get_all_splits(corax_unode_t * node, void *data)
+{
+  corax_split_t current_split, back_split;
+  unsigned int my_split_id, back_split_id, child_split_id;
+  unsigned int tip_id, split_id;
+
+  corax_split_set_t * split_data = (corax_split_set_t *) data;
+  unsigned int tip_count       = split_data->tip_count;
+  unsigned int split_size      = split_data->split_size;
+  unsigned int split_len       = split_data->split_len;
+
+  my_split_id   = node->node_index;
+  back_split_id = node->back->node_index;
+
+  /* check if the split for the branch was already set */
+  /* note that tree traversals visit the virtual root branch twice */
+  if (split_data->id_to_split[my_split_id] >= 0)
+    return 1;
+
+  /* get current split to fill */
+  current_split = split_data->splits[my_split_id];
+
+  memset(current_split, 0, sizeof(corax_split_base_t) * split_len);
+
+  if (CORAX_UTREE_IS_TIP(node))
+  {
+    /* trivial split */
+    tip_id     = node->node_index;
+    assert(tip_id < tip_count);
+    split_id   = tip_id / split_size;
+    tip_id    %= split_size;
+    current_split[split_id] = (1 << tip_id);
+  }
+  else
+  {
+    /* add the split from branches */
+    corax_unode_t * snode = node->next;
+    while(snode != node)
+    {
+      child_split_id = snode->back->node_index;
+
+      merge_split(current_split, split_data->splits[child_split_id], split_len);
+
+      snode = snode->next;
+    }
+  }
+
+  /* compute split in opposite direction -> simply invert all bits */
+  back_split = split_data->splits[back_split_id];
+  copy_split(back_split, current_split, split_len);
+  invert_split(back_split, tip_count);
+
+  /* here the mapping is trivial, we just use it to flag processed branches (see above) */
+  split_data->id_to_split[my_split_id] = my_split_id;
+  split_data->id_to_split[back_split_id] = back_split_id;
+
+  /* increase number of splits -> two splits per branch! */
+  split_data->split_count += 2;
+
+  /* continue */
+  return 1;
+}
+
 
 /*
  * The order of the splits is not really significant, as long as the two
@@ -323,6 +520,7 @@ CORAX_EXPORT corax_split_t *
 
   // TODO better handling for multifurcating trees
   assert(split_data.split_count <= split_count);
+  split_count = split_data.split_count;
 
   free(split_data.id_to_split);
 
@@ -720,6 +918,104 @@ CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t
   return split_set;
 }
 
+CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create_all(const corax_utree_t * tree)
+{
+  unsigned int i;
+  corax_split_t split_storage;         /* contiguous array of splits, as size is known */
+
+  corax_split_set_t * split_set = (corax_split_set_t *) calloc(1, sizeof(corax_split_set_t));
+
+  if (!split_set)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for split set\n");
+    return NULL;
+  }
+
+  /* init constraint */
+  split_set->tip_count = tree->tip_count;
+  split_set->split_size = sizeof(corax_split_base_t) * 8;
+  split_set->split_len = bitv_length(tree->tip_count);
+  /* directed splits => two splits per branch */
+  split_set->split_count = tree->edge_count * 2;
+
+  split_set->splits = (corax_split_t *) malloc(split_set->split_count * sizeof(corax_split_t));
+  if (!split_set->splits)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for split list\n");
+    corax_utree_splitset_destroy(split_set);
+    return NULL;
+  }
+
+  split_storage = (corax_split_t) calloc(split_set->split_count * split_set->split_len,
+                                       sizeof(corax_split_base_t));
+  if (!split_storage)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for splits\n");
+    corax_utree_splitset_destroy(split_set);
+    return NULL;
+  }
+
+  for (i = 0; i < split_set->split_count; ++i)
+  {
+    split_set->splits[i] = split_storage + i*split_set->split_len;
+  }
+
+  /* reserve positions for subnode ids */
+  split_set->id_to_split = (int *) malloc(sizeof(int) * split_set->split_count);
+
+  if (!split_set->id_to_split)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for splits\n");
+    corax_utree_splitset_destroy(split_set);
+    return NULL;
+  }
+
+  corax_utree_splitset_update_all(split_set, tree);
+
+  return split_set;
+}
+
+CORAX_EXPORT int corax_utree_splitset_update_all(corax_split_set_t * split_set, const corax_utree_t * tree)
+{
+  unsigned int i;
+  unsigned int tip_count = tree->tip_count;
+  unsigned int split_count = tree->edge_count * 2;
+  const corax_unode_t * vroot = CORAX_UTREE_IS_TIP(tree->vroot) ? tree->vroot->back : tree->vroot;
+
+  if (split_set->tip_count != tip_count || split_set->split_count != split_count)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE_SIZE,
+                     "Unable to update splits: tree has different number of tips/edges\n");
+    return CORAX_FAILURE;
+  }
+
+  /* clear branch processing flags */
+  for (i = 0; i < split_set->split_count; ++i)
+    split_set->id_to_split[i] = -1;
+
+  split_set->split_count = 0;
+
+  vroot = tree->vroot;
+  if (CORAX_UTREE_IS_TIP(vroot))
+    vroot = vroot->back;
+
+  /* traverse for computing the scripts */
+  corax_utree_traverse_apply((corax_unode_t *) vroot,
+                              NULL,
+                              NULL,
+                              &cb_get_all_splits,
+                              split_set);
+
+  assert(split_set->split_count == split_count);
+
+  return CORAX_SUCCESS;
+}
+
+
 CORAX_EXPORT void corax_utree_splitset_destroy(corax_split_set_t * split_set)
 {
   if (split_set)
@@ -745,7 +1041,7 @@ CORAX_EXPORT int corax_utree_constraint_check_splits(corax_split_set_t * cons_sp
   {
     if (!corax_utree_split_hashtable_lookup(splits_hash, cons_splits->splits[i], cons_splits->tip_count))
     {
-//      pllmod_utree_split_show(cons_splits->splits[i], cons_splits->tip_count);
+//      corax_utree_split_show(cons_splits->splits[i], cons_splits->tip_count);
 //      printf("\n");
       retval = CORAX_FAILURE;
       break;
@@ -786,6 +1082,85 @@ CORAX_EXPORT int corax_utree_constraint_check_tree(const corax_utree_t * cons_tr
   retval = corax_utree_constraint_check_splits_tree(cons_splits, tree);
 
   corax_utree_splitset_destroy(cons_splits);
+
+  return retval;
+}
+
+CORAX_EXPORT int corax_utree_constraint_check_spr(corax_split_set_t * cons_splits,
+                                                  corax_split_set_t * tree_splits,
+                                                  corax_unode_t * p_edge,
+                                                  corax_unode_t * r_edge)
+{
+  int retval = CORAX_SUCCESS;
+  if (cons_splits)
+  {
+    unsigned int cons_tip_count = cons_splits->tip_count;
+    unsigned int cons_split_len = cons_splits->split_len;
+    corax_split_t * splits = tree_splits->splits;
+
+    /* IDEA: check if the new branch added by SPR move contradicts the the topological constraint.
+     * It gets a bit tricky if the branch immediately adjacent to the regrafting point is trivial
+     * w.r.t. constraint, i.e. one of the subtrees does only contain a single constrained taxon.
+     * In this case. we traverse into the larger subtree (which contains n-1 constraint taxa)
+     * until we find the first non-trivial branch.
+     */
+
+    corax_split_t regraft_split = NULL;
+    const corax_split_t prune_split = get_node_split(splits, p_edge->back);
+    corax_split_t new_split = (corax_split_t) calloc(1, cons_split_len * sizeof(corax_split_base_t));
+
+    unsigned int pruned_count = split_popcount(prune_split, cons_tip_count, cons_split_len);
+    assert(pruned_count <= cons_tip_count);
+
+    if (pruned_count < cons_tip_count-1)
+    {
+      /* remaining subtree contains at least 2 constrained taxa -> traverse into regraft subtree */
+      regraft_split = find_nonempty_regraft_split(splits, cons_split_len, prune_split, r_edge);
+
+      assert(!empty_split(regraft_split, cons_split_len));
+
+      copy_split(new_split, regraft_split, cons_split_len);
+      merge_split(new_split, prune_split, cons_split_len);
+    }
+    else
+    {
+      /* remaining subtree contains just 1 constrained taxon  -> traverse into pruned subtree */
+      copy_split(new_split, prune_split, cons_split_len);
+      invert_split(new_split, cons_tip_count);
+
+      regraft_split = find_nonempty_regraft_split(splits, cons_split_len, new_split, p_edge);
+
+      merge_split(new_split, regraft_split, cons_split_len);
+    }
+
+    /* check that newly introduced split is compatible with *all* constraint splits */
+    for (unsigned int z = 0; z < cons_splits->split_count; ++z)
+    {
+       if (!corax_utree_split_compatible(new_split, cons_splits->splits[z], cons_split_len, cons_tip_count))
+       {
+         retval = CORAX_FAILURE;
+         break;
+       }
+    }
+
+    free(new_split);
+  }
+
+  return retval;
+}
+
+CORAX_EXPORT int corax_utree_constraint_subtree_affected(const corax_split_set_t * cons_splits,
+                                                         const corax_split_set_t * tree_splits,
+                                                         corax_unode_t * p_edge)
+{
+  int retval = CORAX_SUCCESS;
+
+  const corax_split_t prune_split = get_node_split(tree_splits->splits, p_edge->back);
+  unsigned int cons_split_len = cons_splits->split_len;
+
+  /* zero constrained taxa in pruned OR remaining subtree */
+  retval = (empty_split(prune_split, cons_split_len) ||
+            full_split(prune_split, cons_split_len)) ? CORAX_FAILURE : CORAX_SUCCESS;
 
   return retval;
 }

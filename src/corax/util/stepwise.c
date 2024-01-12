@@ -116,9 +116,9 @@ static void dealloc_data_onenode(corax_unode_t *node)
 
 static void dealloc_data(corax_unode_t *node)
 {
-  dealloc_data_onenode(node);
   if (node->next)
   {
+    dealloc_data_onenode(node);
     dealloc_data_onenode(node->next);
     dealloc_data_onenode(node->next->next);
   }
@@ -269,6 +269,7 @@ static void utree_link(corax_unode_t *a, corax_unode_t *b)
 
   a->back = b;
   b->back = a;
+  b->pmatrix_index = a->pmatrix_index;
 }
 
 static void
@@ -290,7 +291,7 @@ utree_edgesplit(corax_unode_t *a, corax_unode_t *b, corax_unode_t *c)
   */
 
   /* link d<->c */
-  utree_link(a->back, c);
+  utree_link(c, a->back);
 
   /* link a<->b */
   utree_link(a, b);
@@ -299,6 +300,8 @@ utree_edgesplit(corax_unode_t *a, corax_unode_t *b, corax_unode_t *c)
 static void invalidate_node(corax_unode_t *node)
 {
   node_info_t *info;
+
+  assert(node->data);
 
   info            = (node_info_t *)(node->data);
   info->clv_valid = 0;
@@ -337,6 +340,7 @@ static unsigned int utree_iterate(corax_parsimony_t **list,
     corax_unode_t *root =
         edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
 
+    /* traverse from every OUTER branch */
     if (root->back->next) continue;
 
     /* make a partial traversal */

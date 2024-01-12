@@ -2,6 +2,7 @@
 #define CORAX_TREE_TREEINFO_H_
 
 #include "corax/tree/utree.h"
+#include "corax/tree/utree_split.h"
 
 #define CORAX_TREEINFO_PARTITION_ALL -1
 
@@ -55,7 +56,9 @@ typedef struct treeinfo
   corax_partition_t **init_partitions;
 
   /* tree topology constraint */
-  unsigned int *constraint;
+  unsigned int * constraint;         /* legacy: constraint check vector */
+  corax_split_set_t * cons_splits;   /* constraint tree splits */
+  corax_split_set_t * tree_splits;   /* current tree splits for constraint check */
 
   /* precomputation buffers for derivatives (aka "sumtable") */
   double **deriv_precomp;
@@ -269,18 +272,72 @@ extern "C"
 
   CORAX_EXPORT int corax_treeinfo_set_tree(corax_treeinfo_t *treeinfo,
                                            corax_utree_t *   tree);
+  /* topological constraint management */
 
   CORAX_EXPORT int
   corax_treeinfo_set_constraint_clvmap(corax_treeinfo_t *treeinfo,
                                        const int *       clv_index_map);
 
+  /**
+   * Set a new constraint tree and initialize internal data structs
+   *
+   * @param  cons_tree       tree to be used as topological constraint (multifurcated/incomplete)
+   * @param  fast_and_dirty  1 = use legacy RAxML algorithm (buggy with incomplete trees!)
+   *                         0 = use new split-based check algorithm (default)
+   *
+   * @return CORAX_SUCCESS if constraint was set successfully
+   *         CORAX_FAILURE on error
+   */
   CORAX_EXPORT int
   corax_treeinfo_set_constraint_tree(corax_treeinfo_t *   treeinfo,
-                                     const corax_utree_t *cons_tree);
+                                     const corax_utree_t *cons_tree,
+                                     int fast_and_dirty);
 
-  CORAX_EXPORT int corax_treeinfo_check_constraint(corax_treeinfo_t *treeinfo,
-                                                   corax_unode_t *   subtree,
-                                                   corax_unode_t *regraft_edge);
+  /**
+   * Check if an SPR is compatible with the current topological constraint
+   *
+   * @param  subtree       pruned subtree
+   * @param  regraft_edge  re-instertion edge
+   *
+   * @return CORAX_SUCCESS if SPR is compatible with constraint (or no constraint set)
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_treeinfo_constraint_check_spr(corax_treeinfo_t * treeinfo,
+                                                       corax_unode_t * subtree,
+                                                       corax_unode_t * regraft_edge);
+
+  /**
+   * Check if current constraint is relevant for a given subtree. For instance, a subtree comprising
+   * only "free" taxa (e.g. those absent from the constraint tree) is not affected,
+   * and hence constraint check is not required before regrafting this subtree.
+   *
+   * @param  subtree       pruned subtree
+   *
+   * @return CORAX_SUCCESS subtree is affected by the constraint
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_treeinfo_constraint_subtree_affected(corax_treeinfo_t * treeinfo,
+                                                              corax_unode_t * subtree);
+
+
+  /**
+   * Extract all directed splits from current topology in treeinfo->tree
+   * and store them in treeinfo->tree_splits.
+   *
+   * @return CORAX_SUCCESS if extraction was successful
+   *         CORAX_FAILURE on error
+   */
+  CORAX_EXPORT int corax_treeinfo_constraint_update_splits(corax_treeinfo_t * treeinfo);
+
+
+  /**
+   * Check if current topology in treeinfo->tree is compatible with topological constraint.
+   *
+   * @return CORAX_SUCCESS if topology is compatible
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_treeinfo_constraint_check_current(corax_treeinfo_t * treeinfo);
+
 
   CORAX_EXPORT corax_ancestral_t *
                corax_treeinfo_compute_ancestral(corax_treeinfo_t *treeinfo);

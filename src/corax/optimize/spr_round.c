@@ -27,6 +27,9 @@ Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
  * the same starting set of branch lengths for every topology */
 #define CORAX_SEARCH_GREEDY_BLO
 
+/* constraint tree debugging */
+//#define CONS_DEBUG
+
 /* if defined, branch length array will be always dynamically allocated,
  * i.e. also in linked and scaled brlen modes; otherwise only in unlinked mode
  */
@@ -649,6 +652,9 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     loglh = corax_treeinfo_compute_loglh(treeinfo, 0);
   }
 
+  corax_treeinfo_constraint_update_splits(treeinfo);
+  int check_cons = corax_treeinfo_constraint_subtree_affected(treeinfo, p_edge);
+
   /* PRUNE */
   orig_prune_edge = algo_utree_prune(treeinfo, params, p_edge);
   if (!orig_prune_edge)
@@ -715,9 +721,16 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   while ((r_edge = regraft_nodes[j]) != NULL)
   {
     /* do not re-insert back into the pruning branch */
-    if (r_edge == orig_prune_edge || r_edge == orig_prune_edge->back
-        || !corax_treeinfo_check_constraint(treeinfo, p_edge, r_edge))
+    if (r_edge == orig_prune_edge || r_edge == orig_prune_edge->back)
     {
+      ++j;
+      continue;
+    }
+
+    /* do not re-insert if resulting tree would contradict the constraint */
+    if (check_cons && !corax_treeinfo_constraint_check_spr(treeinfo, p_edge, r_edge))
+    {
+      DBG("SKIP incompatible: %u %u\n", j, r_edge->clv_index);
       ++j;
       continue;
     }
@@ -733,6 +746,18 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     /* regraft into the candidate branch */
     retval = algo_utree_regraft(treeinfo, params, p_edge, r_edge);
     assert(retval == CORAX_SUCCESS);
+
+#ifdef CONS_DEBUG
+      if (!corax_treeinfo_constraint_check_current(treeinfo))
+      {
+        corax_utree_show_ascii(treeinfo->root, CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_BRANCH_LENGTH |
+                                               CORAX_UTREE_SHOW_CLV_INDEX );
+        printf("Constraint check failed after REGRAFT: %u %u\n", p_edge->clv_index, r_edge->clv_index);
+        corax_set_error(CORAX_ERROR_INVALID_TREE,
+                         "Constraint check failed after applying SPR!");
+        return CORAX_FAILURE;
+      }
+#endif
 
     /* place root at the pruning branch and invalidate CLV at the new root */
     corax_treeinfo_set_root(treeinfo, p_edge);
@@ -929,10 +954,22 @@ static double reinsert_nodes(corax_treeinfo_t            *treeinfo,
           best_r_edge->back->clv_index);
 
       corax_unode_t *orig_prune_edge = p_edge->next->back;
-      int            retval =
+      int retval =
           algo_utree_spr(treeinfo, params, p_edge, best_r_edge, rollback);
       assert(retval == CORAX_SUCCESS);
       if (!retval) return CORAX_FAILURE;
+
+#ifdef CONS_DEBUG
+      if (!corax_treeinfo_constraint_check_current(treeinfo))
+      {
+        corax_utree_show_ascii(treeinfo->root, CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_BRANCH_LENGTH |
+                                               CORAX_UTREE_SHOW_CLV_INDEX );
+        printf("Constraint check failed after applying SPR: %u %u\n", p_edge->clv_index, best_r_edge->clv_index);
+        corax_set_error(CORAX_ERROR_INVALID_TREE,
+                         "Constraint check failed after applying SPR!");
+        return CORAX_FAILURE;
+      }
+#endif
 
       algo_unode_fix_length(
           treeinfo, orig_prune_edge, params->bl_min, params->bl_max);
@@ -1083,6 +1120,14 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   /* reset error */
   corax_errno = 0;
 
+  /* make sure initial topology is compatible with constraint */
+  if (!corax_treeinfo_constraint_check_current(treeinfo))
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
+                    "Constraint check failed before SPR round!");
+    return CORAX_FAILURE;
+  }
+
   /* initial root */
   // corax_unode_t *initial_root = treeinfo->root;
 
@@ -1149,6 +1194,14 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   {
     /* return and spread error */
     goto error_exit;
+  }
+
+  /* make sure intermediate topology is compatible with constraint */
+  if (!corax_treeinfo_constraint_check_current(treeinfo))
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
+                    "Constraint check failed after reinsert_nodes() in SPR round!");
+    return CORAX_FAILURE;
   }
 
   /* in FAST mode, we re-insert a subset of best-scoring subtrees with BLO
@@ -1227,6 +1280,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
     toplist_index          = algo_bestnode_list_next_index(
         bestnode_list, rollback_num, toplist_index);
 
+    int skip_topol = 0;
     if (toplist_index == -1)
     {
       /* no more topologies for this rollback, so we go one slot back */
@@ -1249,10 +1303,20 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
           rollback_counter,
           rollback_list->current);
 
+      corax_treeinfo_constraint_update_splits(treeinfo);
+      if (!corax_treeinfo_constraint_check_spr(treeinfo, rollback->SPR.prune_edge, rollback->SPR.regraft_edge))
+      {
+        DBG("Topological constraint check failed, skip the topology.\n");
+        skip_topol = 1;
+      }
+
       retval = corax_tree_rollback(rollback);
       assert(retval == CORAX_SUCCESS);
 
       rollback_counter++;
+
+      if (skip_topol)
+        continue;
 
       undo_SPR = 0;
     }
@@ -1281,7 +1345,8 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
             spr_entry->lh);
       }
 
-      if (!corax_treeinfo_check_constraint(treeinfo, p_edge, r_edge))
+      corax_treeinfo_constraint_update_splits(treeinfo);
+      if (!corax_treeinfo_constraint_check_spr(treeinfo, p_edge, r_edge))
       {
         DBG("Topological constraint check failed, skip the topology.\n");
         continue;
@@ -1399,6 +1464,17 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   {
     printf("LH mismatch: %.12f  != %.12f\n", best_lh, loglh);
     assert(fabs(loglh - best_lh) < 1e-6);
+  }
+
+  if (!corax_treeinfo_constraint_check_current(treeinfo))
+  {
+#ifdef DEBUG
+    corax_utree_show_ascii(treeinfo->root, CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_BRANCH_LENGTH |
+                                           CORAX_UTREE_SHOW_CLV_INDEX);
+#endif
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
+                     "Constraint check failed after SPR round!");
+    return CORAX_FAILURE;
   }
 
   return loglh;
