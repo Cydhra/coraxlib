@@ -1,6 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
-#    Copyright (C) 2015 Diego Darriba
+#    Copyright (C) 2015-2024 Diego Darriba, Oleksiy Kozlov
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -137,7 +137,7 @@ def testFAIL():
 def diffOutput(filename):
   p2 = Popen(["diff", "tmp", filename], stdout=PIPE)
   output = p2.communicate()[0]
-  return output
+  return output.decode()
   
 def runSpeedTest(files):
   speedtest_header()
@@ -222,7 +222,7 @@ def runSpeedTest(files):
           # Check the output
           skipOutput = diffOutput("out/skip.out")
         
-          if skipOutput == "":
+          if not skipOutput:
               fancyprint("orange", "\b\b\b\b\b")
               testSKIP()
               test_ok = -1
@@ -230,7 +230,7 @@ def runSpeedTest(files):
           else:
               output = diffOutput("out/"+filename+".out")
         
-              if output != "":
+              if output:
                 fancyprint("red", "  Test failed\n")
                 call(["mv", "tmp", "result/testfail_"+typestr+"_"+filename+"_"+nowstr])
                 call(["mv", "tmperr", "result/testfail_"+typestr+"_"+filename+"_"+nowstr+".err"])
@@ -265,7 +265,7 @@ def runSpeedTest(files):
     
         success_count = success_count + result_ok*memory_ok
     
-        print
+        print()
         
   fancyprint("yellow", "{:<80}"
     .format(" "),True)
@@ -310,7 +310,7 @@ def runValidation(files):
         typestr   += "C"
           
       fancyprint("bluebg", "{:<80}"
-        .format(attribstr.rjust(40 + len(attribstr)/2)), True)
+        .format(attribstr.rjust(40 + int(len(attribstr)/2))), True)
         
       # Process each test case
       fancyprint("yellow", "{:<7}   {:<8} {:<18} {:>11}    Result    {:<17}"
@@ -351,21 +351,22 @@ def runValidation(files):
         # Check the output
         skipOutput = diffOutput("out/skip.out")
         
-        if skipOutput == "":
+        if not skipOutput:
           testSKIP()
-          print
+          print()
           result_ok = 1
           memory_ok = 1
         else:
           output = diffOutput("out/"+filename+".out")
-          if output == "":
+          if not output:
             result_ok = 1
             testOK()
             os.remove("tmp")
             os.remove("tmperr")
           else:
             testFAIL()
-            print
+            print(output)
+            print()
             call(["mv", "tmp", "result/testfail_"+typestr+"_"+filename+"_"+nowstr])
             call(["mv", "tmperr", "result/testfail_"+typestr+"_"+filename+"_"+nowstr+".err"])
             continue
@@ -375,7 +376,7 @@ def runValidation(files):
           if (do_memtest == 1 and not filename.endswith("exe")):
               # Check memory leaks
               p3 = Popen(["./eval_valgrind.sh", "obj/"+filename, nowstr, attrib], stdout=PIPE)
-              output = p3.communicate()[0]
+              output = p3.communicate()[0].decode()
               deflost        = int(output.split(' ')[0])
               indlost        = int(output.split(' ')[1])
               reachable      = int(output.split(' ')[2])
@@ -444,7 +445,7 @@ if __name__ == "__main__":
     success_count = runValidation(files)
 
   # Final summary
-  print
+  print()
   global_run_time = int(time.time()*1000) - global_start_time
   fancyprint("-", "Tests done... it took %d ms" % global_run_time, True)
   fancyprint("green", "      %d/%d (%3.2f%%) OK" 
@@ -453,4 +454,4 @@ if __name__ == "__main__":
     fancyprint("red", "      %d/%d (%3.2f%%) FAIL" 
       % (num_tests-success_count, num_tests, 100 - 100*success_count/num_tests), True)
 
-  print
+  print()
