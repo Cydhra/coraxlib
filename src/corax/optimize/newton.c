@@ -20,9 +20,8 @@ newton_wrapper_func(void *params, double *proposal, double *df, double *ddf)
 /**
  * Minimize a function using Newton-Raphson.
  *
- * The target function must compute the derivatives at a certain point,
- * and it requires 4 parameters: (1) custom data (if needed), (2) the value at
- * which derivatives are computed, and (3,4) lower and upper bounds.
+ * This is ultimately a wrapper around `corax_opt_minimize_newton_multi`. Please
+ * see that function for a more detailed description of the `deriv_func`.
  *
  * @param  x1         lower bound
  * @param  xguess     first guess for the free variable
@@ -31,7 +30,7 @@ newton_wrapper_func(void *params, double *proposal, double *df, double *ddf)
  * @param  max_iters  maximum number of iterations (bounds the effect of slow
  * convergence)
  * @param  params     custom parameters required by the target function
- * @param  deriv_func target function
+ * @param  deriv_func derivative function
  *
  * @return            the parameter value that minimizes the function in [x1,x2]
  */
@@ -70,9 +69,11 @@ CORAX_EXPORT double corax_opt_minimize_newton(
  * Minimize multiple functions in parallel using Newton-Raphson.
  * (e.g. unlinked branch lengths for a partitioned alignment)
  *
- * The target function must compute the derivatives at a certain point,
- * and it requires 4 parameters: (1) custom data (if needed), (2) the value at
- * which derivatives are computed, and (3,4) lower and upper bounds.
+ * The derivative function must compute _both_ of the first and second
+ * derivatives at a given point, and it requires 4 parameters: (1) custom data
+ * (if needed), (2) the value at which derivatives are to be computed. The
+ * remaining 2 parameters (3, 4) are out parameters for the first and second
+ * derivatives.
  *
  * @param  xnum       number of functions/variables to optimize
  * @param  xmin       lower bound
