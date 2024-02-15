@@ -293,6 +293,21 @@ extern "C"
                                      const corax_utree_t *cons_tree,
                                      int fast_and_dirty);
 
+
+  /**
+   * Check if an NNI is compatible with the current topological constraint
+   *
+   * @param  edge      NNI edge
+   * @param  nni_type  CORAX_UTREE_MOVE_NNI_LEFT or CORAX_UTREE_MOVE_NNI_RIGHT
+   *
+   * @return CORAX_SUCCESS if NNI is compatible with constraint (or no constraint set)
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_treeinfo_constraint_check_nni(corax_treeinfo_t * treeinfo,
+                                                       corax_unode_t * edge,
+                                                       int nni_type);
+
+
   /**
    * Check if an SPR is compatible with the current topological constraint
    *

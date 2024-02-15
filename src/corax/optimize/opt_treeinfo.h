@@ -292,10 +292,10 @@ extern "C"
 
   /**
    * Finds the best out of the 3 NNI topologies, in the quartet defined around
-   * the root of the tree. It is assumed that the rood in an internal branch. It
-   * is also assumed that probability matrices and CLVs around the rood are up
+   * the root of the tree. It is assumed that the root in an internal branch. It
+   * is also assumed that probability matrices and CLVs around the root are up
    * to date.  Even if the current tree topology is the best out of 3, the
-   * returned likelihood might be increased, since branch lenghts are optimized
+   * returned likelihood might be increased, since branch lengths are optimized
    * before the likelihood calculations of the 3 topologies
    *
    * @param  treeinfo          the CORAX treeinfo structure

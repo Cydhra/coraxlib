@@ -1500,6 +1500,24 @@ static int treeinfo_check_constraint_vector(corax_treeinfo_t * treeinfo,
     return CORAX_SUCCESS;
 }
 
+CORAX_EXPORT int corax_treeinfo_constraint_check_nni(corax_treeinfo_t * treeinfo,
+                                                     corax_unode_t * edge,
+                                                     int nni_type)
+{
+  if (treeinfo->constraint)
+//    return treeinfo_check_constraint_vector(treeinfo, subtree, regraft_edge);
+    return CORAX_FAILURE;
+  else if (treeinfo->cons_splits)
+  {
+    return corax_utree_constraint_check_nni(treeinfo->cons_splits,
+                                            treeinfo->tree_splits,
+                                            edge,
+                                            nni_type);
+  }
+  else
+    return CORAX_SUCCESS;
+}
+
 
 CORAX_EXPORT int corax_treeinfo_constraint_check_spr(corax_treeinfo_t * treeinfo,
                                                     corax_unode_t * subtree,

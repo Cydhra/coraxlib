@@ -132,6 +132,13 @@ merge_split(corax_split_t to, const corax_split_t from, unsigned int split_len)
   for (i = 0; i < split_len; ++i) to[i] |= from[i];
 }
 
+static inline void
+xor_split(corax_split_t to, const corax_split_t from, unsigned int split_len)
+{
+  unsigned int i;
+  for (i = 0; i < split_len; ++i) to[i] ^= from[i];
+}
+
 static inline int disjoint_split(const corax_split_t split1,
                                  const corax_split_t split2,
                                  unsigned int split_len)
@@ -1107,6 +1114,51 @@ CORAX_EXPORT int corax_utree_constraint_check_tree(const corax_utree_t * cons_tr
   retval = corax_utree_constraint_check_splits_tree(cons_splits, tree);
 
   corax_utree_splitset_destroy(cons_splits);
+
+  return retval;
+}
+
+CORAX_EXPORT int corax_utree_constraint_check_nni(corax_split_set_t * cons_splits,
+                                                  corax_split_set_t * tree_splits,
+                                                  corax_unode_t * edge,
+                                                  int nni_type)
+{
+  int retval = CORAX_SUCCESS;
+  if (cons_splits)
+  {
+    corax_split_t * splits = tree_splits->splits;
+    const corax_split_t s1_split = get_node_split(splits, edge->next);
+    const corax_split_t s2_split = (nni_type == CORAX_UTREE_MOVE_NNI_RIGHT) ?
+        get_node_split(splits, edge->back->next) : get_node_split(splits, edge->back->next->next);
+
+    unsigned int cons_tip_count = cons_splits->tip_count;
+    unsigned int cons_split_len = cons_splits->split_len;
+    corax_split_t new_split = (corax_split_t) calloc(1, cons_split_len * sizeof(corax_split_base_t));
+
+   /*
+    *      s0 --\   edge   /-- s1
+    *            |--------|
+    *      s2 --/          \-- s3
+    *
+    *  After an NNI move around the branch 'edge', there will be only one new split corresponding to 'edge'.
+    *  After interchanging subtrees 's0' and 's1', the branch 'edge' will separate 's1' + 's2' from the rest.
+    *  The corresponding split can be computed as 's1' XOR 's2' (we can do it since 's1' and 's2' are disjoint).
+    */
+    copy_split(new_split, s1_split, cons_split_len);
+    xor_split(new_split, s2_split, cons_split_len);
+
+    /* check that newly introduced split is compatible with *all* constraint splits */
+    for (unsigned int z = 0; z < cons_splits->split_count; ++z)
+    {
+       if (!corax_utree_split_compatible(new_split, cons_splits->splits[z], cons_split_len, cons_tip_count))
+       {
+         retval = CORAX_FAILURE;
+         break;
+       }
+    }
+
+    free(new_split);
+  }
 
   return retval;
 }

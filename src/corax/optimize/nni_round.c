@@ -29,7 +29,6 @@
 // move structure
 typedef struct corax_nni_move_s
 {
-
   int           type;
   double      **initial_branch_lengths;
   unsigned int *initial_pmatrix_indices;
@@ -38,37 +37,38 @@ typedef struct corax_nni_move_s
 
 } corax_nni_move_t;
 
-static corax_nni_move_t *create_move(corax_treeinfo_t *treeinfo,
-                                     corax_nni_move_t *move,
-                                     corax_unode_t    *node,
-                                     int               type,
-                                     bool              initialize)
+static corax_nni_move_t *create_move(corax_treeinfo_t *treeinfo)
 {
+  corax_nni_move_t *move = (corax_nni_move_t *) malloc(sizeof(corax_nni_move_t));
 
-  if (initialize)
+  move->initial_branch_lengths =
+      (double **) malloc((treeinfo->partition_count) * sizeof(double *));
+  move->initial_pmatrix_indices =
+      (unsigned int *) malloc(5 * sizeof(unsigned int));
+
+  move->collect_branches = 0;
+  if (treeinfo->partition_count == 1
+      || treeinfo->brlen_linkage == CORAX_BRLEN_LINKED
+      || treeinfo->brlen_linkage == CORAX_BRLEN_SCALED)
   {
-
-    move->initial_branch_lengths =
-        (double **)malloc((treeinfo->partition_count) * sizeof(double *));
-    move->initial_pmatrix_indices =
-        (unsigned int *)malloc(5 * sizeof(unsigned int));
-
-    move->collect_branches = 0;
-    if (treeinfo->partition_count == 1
-        || treeinfo->brlen_linkage == CORAX_BRLEN_LINKED
-        || treeinfo->brlen_linkage == CORAX_BRLEN_SCALED)
-    {
-      move->collect_branches = 1;
-    }
-
-    move->partition_num = treeinfo->partition_count;
-
-    for (unsigned int part = 0; part < treeinfo->partition_count; part++)
-    {
-      move->initial_branch_lengths[part] = (double *)malloc(5 * sizeof(double));
-    }
+    move->collect_branches = 1;
   }
 
+  move->partition_num = treeinfo->partition_count;
+
+  for (unsigned int part = 0; part < treeinfo->partition_count; part++)
+  {
+    move->initial_branch_lengths[part] = (double *) malloc(5 * sizeof(double));
+  }
+
+  return move;
+}
+
+static int update_move(corax_treeinfo_t *treeinfo,
+                       corax_nni_move_t *move,
+                       corax_unode_t    *node,
+                       int               type)
+{
   move->initial_pmatrix_indices[0] = node->next->pmatrix_index;
   move->initial_pmatrix_indices[1] = node->next->next->pmatrix_index;
   move->initial_pmatrix_indices[2] = node->pmatrix_index;
@@ -77,7 +77,6 @@ static corax_nni_move_t *create_move(corax_treeinfo_t *treeinfo,
 
   for (unsigned int part = 0; part < treeinfo->partition_count; part++)
   {
-
     if (move->collect_branches)
     {
       move->initial_branch_lengths[part][0] = node->next->length;
@@ -104,12 +103,11 @@ static corax_nni_move_t *create_move(corax_treeinfo_t *treeinfo,
 
   move->type = type;
 
-  return move;
+  return CORAX_SUCCESS;
 }
 
 static void delete_move(corax_nni_move_t *move)
 {
-
   for (unsigned int part = 0; part < move->partition_num; part++)
   {
     free(move->initial_branch_lengths[part]);
@@ -206,11 +204,9 @@ static double apply_move(corax_treeinfo_t *treeinfo,
                          int               smoothings,
                          double            lh_epsilon)
 {
-
-  if (move->type == CORAX_UTREE_MOVE_NNI_LEFT
-      || move->type == CORAX_UTREE_MOVE_NNI_RIGHT)
+  if (move->type == CORAX_UTREE_MOVE_NNI_LEFT ||
+      move->type == CORAX_UTREE_MOVE_NNI_RIGHT)
   {
-
     if (CORAX_UTREE_IS_TIP(node) || CORAX_UTREE_IS_TIP(node->back))
     {
       /* invalid move */
@@ -228,15 +224,13 @@ static double apply_move(corax_treeinfo_t *treeinfo,
 
     if (loglh == CORAX_FAILURE)
     {
-      printf(
-          "Something went wrong with the branch-length optimization. Exit..\n");
+      printf("Something went wrong with the branch-length optimization. Exit..\n");
       return CORAX_FAILURE;
     }
     return loglh;
   }
   else
   {
-
     /* invalid move */
     corax_set_error(CORAX_TREE_ERROR_NNI_INVALID_MOVE,
                     "Invalid NNI move type\n");
@@ -248,7 +242,6 @@ static int undo_move(corax_treeinfo_t *treeinfo,
                      corax_unode_t    *node,
                      corax_nni_move_t *move)
 {
-
   int retval = CORAX_SUCCESS;
 
   retval = corax_utree_nni(node, move->type, NULL);
@@ -267,7 +260,6 @@ static int undo_move(corax_treeinfo_t *treeinfo,
 
   for (unsigned int part = 0; part < move->partition_num; part++)
   {
-
     treeinfo->branch_lengths[part][node->next->pmatrix_index] =
         move->initial_branch_lengths[part][0];
     treeinfo->branch_lengths[part][node->next->next->pmatrix_index] =
@@ -347,14 +339,14 @@ static int shSupport(corax_treeinfo_t *treeinfo,
   }
 
   corax_unode_t    *q    = treeinfo->root;
-  corax_nni_move_t *move = (corax_nni_move_t *)malloc(sizeof(corax_nni_move_t));
+  corax_nni_move_t *move = create_move(treeinfo);
 
   // update clvs and matrices
   LNL0 = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
   if (DEBUG_MODE) printf("Loglh = %f, ", LNL0);
 
   // First NNI topology
-  move = create_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_LEFT, true);
+  update_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_LEFT);
   LNL1 = apply_move(treeinfo,
                     q,
                     move,
@@ -391,7 +383,7 @@ static int shSupport(corax_treeinfo_t *treeinfo,
   }
 
   // second NNI topology
-  move = create_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_RIGHT, false);
+  update_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_RIGHT);
   LNL2 = apply_move(treeinfo,
                     q,
                     move,
@@ -546,35 +538,26 @@ static int shSupport(corax_treeinfo_t *treeinfo,
   return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT double corax_algo_nni_local(corax_treeinfo_t *treeinfo,
-                                         int               brlen_opt_method,
-                                         double            bl_min,
-                                         double            bl_max,
-                                         int               smoothings,
-                                         double            lh_epsilon)
+/* do a single NNI move around the root branch */
+CORAX_EXPORT double corax_algo_nni_single(corax_treeinfo_t *treeinfo,
+                                          corax_unode_t    *edge,
+                                          corax_nni_move_t *move,
+                                          int               nni_type,
+                                          double            old_logl,
+                                          int               brlen_opt_method,
+                                          double            bl_min,
+                                          double            bl_max,
+                                          int               smoothings,
+                                          double            lh_epsilon)
 {
-
-  double tree_logl, new_logl;
-
-  corax_unode_t    *q    = treeinfo->root;
-  corax_nni_move_t *move = (corax_nni_move_t *)malloc(sizeof(corax_nni_move_t));
+  double new_logl;
 
   // setup move
-  tree_logl = optimize_branch_lengths_quartet(
-      treeinfo, lh_epsilon, brlen_opt_method, bl_min, bl_max, smoothings);
-  if (tree_logl == CORAX_FAILURE)
-  {
-    printf(
-        "Something went wrong with the branch-length optimization. Exit..\n");
-    return CORAX_FAILURE;
-  }
-
-  // setup move
-  move = create_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_LEFT, true);
+  update_move(treeinfo, move, edge, nni_type);
 
   // apply nni move
   new_logl = apply_move(treeinfo,
-                        q,
+                        edge,
                         move,
                         brlen_opt_method,
                         bl_min,
@@ -584,120 +567,117 @@ CORAX_EXPORT double corax_algo_nni_local(corax_treeinfo_t *treeinfo,
 
   if (new_logl == CORAX_FAILURE)
   {
-
     printf("Failed to apply NNI move. \n");
     printf("Corax error number %d \n", corax_errno);
     printf("Corax error msg: %s\n", corax_errmsg);
-    delete_move(move);
+    return CORAX_FAILURE;
+  }
+  else if (new_logl <= old_logl)
+  {
+    if (!undo_move(treeinfo, edge, move))
+    {
+      corax_set_error(CORAX_NNI_ROUND_UNDO_MOVE_ERROR,
+                      "Error in undoing move that generates a tree of worse "
+                      "likelihood ...\n");
+      return CORAX_FAILURE;
+    }
+  }
+
+  return new_logl;
+}
+
+/* do a pair of NNI moves around the root branch */
+CORAX_EXPORT double corax_algo_nni_local(corax_treeinfo_t *treeinfo,
+                                         int               brlen_opt_method,
+                                         double            bl_min,
+                                         double            bl_max,
+                                         int               smoothings,
+                                         double            lh_epsilon)
+{
+  double tree_logl, new_logl;
+  int nni_type;
+  bool check_cons = true;
+
+  corax_unode_t    *q    = treeinfo->root;
+  corax_nni_move_t *move = create_move(treeinfo);
+
+  // setup move
+  tree_logl = optimize_branch_lengths_quartet(treeinfo, lh_epsilon, brlen_opt_method,
+                                              bl_min, bl_max, smoothings);
+  if (tree_logl == CORAX_FAILURE)
+  {
+    printf(
+        "Something went wrong with the branch-length optimization. Exit..\n");
     return CORAX_FAILURE;
   }
 
-  if (new_logl > tree_logl)
+  /* LEFT nni move */
+  nni_type = CORAX_UTREE_MOVE_NNI_LEFT;
+  /* check if resulting tree would contradict the constraint */
+  if (!check_cons || corax_treeinfo_constraint_check_nni(treeinfo, q, nni_type))
   {
-
-    tree_logl = new_logl;
-
-    // update move structure
-    move = create_move(treeinfo, move, q, CORAX_UTREE_MOVE_NNI_RIGHT, false);
-
-    new_logl = apply_move(treeinfo,
-                          q,
-                          move,
-                          brlen_opt_method,
-                          bl_min,
-                          bl_max,
-                          smoothings,
-                          lh_epsilon);
-
-    if (new_logl == CORAX_FAILURE)
-    {
-
-      printf("Failed to apply NNI move. \n");
-      printf("Error number %d \n", corax_errno);
-      printf("Error msg: %s\n", corax_errmsg);
-      delete_move(move);
-      return CORAX_FAILURE;
-    }
+    // test nni move
+    new_logl = corax_algo_nni_single(treeinfo,
+                                     q,
+                                     move,
+                                     nni_type,
+                                     tree_logl,
+                                     brlen_opt_method,
+                                     bl_min,
+                                     bl_max,
+                                     smoothings,
+                                     lh_epsilon);
 
     if (new_logl > tree_logl)
     {
-
+      corax_treeinfo_constraint_update_splits(treeinfo);
       tree_logl = new_logl;
-      delete_move(move);
     }
-    else
+    else if (new_logl == CORAX_FAILURE)
     {
-
-      if (!undo_move(treeinfo, q, move))
-      {
-        corax_set_error(CORAX_NNI_ROUND_UNDO_MOVE_ERROR,
-                        "Error in undoing move that generates a tree of worst "
-                        "likelihood ...\n");
-        return CORAX_FAILURE;
-      }
-
-      // assert(fabs(compute_local_likelihood_treeinfo(treeinfo, q, 1) -
-      // tree_logl) < 1e-5);
       delete_move(move);
+      return CORAX_FAILURE;
     }
   }
   else
   {
+    DBG("SKIP incompatible LEFT NNI: %u\n", q->clv_index);
+  }
 
-    if (!undo_move(treeinfo, q, move))
-    {
-      corax_set_error(CORAX_NNI_ROUND_UNDO_MOVE_ERROR,
-                      "Error in undoing move that generates a tree of worst "
-                      "likelihood ...\n");
-      return CORAX_FAILURE;
-    }
-
-    // if(DEBUG_MODE) assert(fabs(compute_local_likelihood_treeinfo(treeinfo, q,
-    // 1) - tree_logl) < 1e-5);
-
-    // setup_move_info(move, q, new_logl, CORAX_UTREE_MOVE_NNI_RIGHT);
-    move->type = CORAX_UTREE_MOVE_NNI_RIGHT;
-    new_logl   = apply_move(treeinfo,
-                          q,
-                          move,
-                          brlen_opt_method,
-                          bl_min,
-                          bl_max,
-                          smoothings,
-                          lh_epsilon);
-
-    if (new_logl == CORAX_FAILURE)
-    {
-
-      printf("Failed to apply NNI move. \n");
-      printf("Error number %d \n", corax_errno);
-      printf("Error msg: %s\n", corax_errmsg);
-      delete_move(move);
-      return CORAX_FAILURE;
-    }
+  /* RIGHT nni move */
+  nni_type = CORAX_UTREE_MOVE_NNI_RIGHT;
+  /* check if resulting tree would contradict the constraint */
+  if (!check_cons || corax_treeinfo_constraint_check_nni(treeinfo, q, nni_type))
+  {
+    // test nni move
+    new_logl = corax_algo_nni_single(treeinfo,
+                                     q,
+                                     move,
+                                     nni_type,
+                                     tree_logl,
+                                     brlen_opt_method,
+                                     bl_min,
+                                     bl_max,
+                                     smoothings,
+                                     lh_epsilon);
 
     if (new_logl > tree_logl)
     {
-
+      corax_treeinfo_constraint_update_splits(treeinfo);
       tree_logl = new_logl;
-      delete_move(move);
     }
-    else
+    else if (new_logl == CORAX_FAILURE)
     {
-
-      if (!undo_move(treeinfo, q, move))
-      {
-        corax_set_error(CORAX_NNI_ROUND_UNDO_MOVE_ERROR,
-                        "Error in undoing move that generates a tree of worst "
-                        "likelihood ...\n");
-        return CORAX_FAILURE;
-      }
-
-      // assert(fabs(compute_local_likelihood_treeinfo(treeinfo, q, 1) -
-      // tree_logl) < 1e-5);
       delete_move(move);
+      return CORAX_FAILURE;
     }
   }
+  else
+  {
+    DBG("SKIP incompatible RIGHT NNI: %u\n", q->clv_index);
+  }
+
+  delete_move(move);
 
   return tree_logl;
 }
@@ -721,14 +701,13 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
 
   int            retval = CORAX_SUCCESS;
   corax_unode_t *q      = node->back;
-  corax_unode_t *pb1 = node->next->back, *pb2 = node->next->next->back;
+  corax_unode_t *pb1    = node->next->back, *pb2 = node->next->next->back;
 
   double tree_logl;
   double new_logl;
 
   if (!CORAX_UTREE_IS_TIP(q))
   {
-
     corax_treeinfo_set_root(treeinfo, q);
     corax_treeinfo_invalidate_clv(treeinfo, q);
     tree_logl = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
@@ -736,8 +715,8 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
     if (!compute_aLRT)
     {
       corax_unode_t *test_node = q->next->back;
-      new_logl                 = corax_algo_nni_local(
-          treeinfo, brlen_opt_method, bl_min, bl_max, smoothings, lh_epsilon);
+      new_logl                 = corax_algo_nni_local(treeinfo, brlen_opt_method, bl_min, bl_max,
+                                                      smoothings, lh_epsilon);
 
       if (new_logl == CORAX_FAILURE) return CORAX_FAILURE;
 
@@ -750,7 +729,6 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
     }
     else
     {
-
       retval = shSupport(treeinfo,
                          shSupportValues,
                          persite_lnl,
@@ -770,6 +748,7 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
   // so the second time we call the function, we have to update CLVs from the
   // previous root up to the new root
   if (!CORAX_UTREE_IS_TIP(pb1) && retval)
+  {
     retval = nni_recursive(treeinfo,
                            pb1,
                            interchagnes,
@@ -785,8 +764,10 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
                            smoothings,
                            lh_epsilon,
                            warning_printed);
+  }
 
   if (!CORAX_UTREE_IS_TIP(pb2) && retval)
+  {
     retval = nni_recursive(treeinfo,
                            pb2,
                            interchagnes,
@@ -802,6 +783,7 @@ static int nni_recursive(corax_treeinfo_t *treeinfo,
                            smoothings,
                            lh_epsilon,
                            warning_printed);
+  }
 
   return retval;
 }
@@ -851,8 +833,10 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
   tree_logl      = corax_treeinfo_compute_loglh(treeinfo, 0);
   if (DEBUG_MODE) printf("Start logl = %f\n", tree_logl);
 
-  do {
+  // update splits for constraint check
+  corax_treeinfo_constraint_update_splits(treeinfo);
 
+  do {
     interchanges = 0;
 
     // perform nni moves
@@ -863,7 +847,7 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
                            NULL,
                            NULL,
                            0,
-                           0,
+                           0.,
                            tolerance,
                            brlen_opt_method,
                            bl_min,
@@ -906,11 +890,12 @@ static double algo_nni_round(corax_treeinfo_t *treeinfo,
     nniRounds++;
 
     if (print_in_console || DEBUG_MODE)
+    {
       printf("Round %d, interchanges = %d, logl = %.5f\n",
              nniRounds,
              interchanges,
              tree_logl);
-
+    }
   } while ((diff > tolerance || nniRounds < 10) && interchanges != 0);
 
   clock_t end        = clock();
@@ -945,6 +930,7 @@ CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
                                          double            lh_epsilon,
                                          bool              print_in_console)
 {
+  double loglh;
 
   // Integrity check
   if (!corax_utree_check_integrity(treeinfo->tree))
@@ -962,14 +948,36 @@ CORAX_EXPORT double corax_algo_nni_round(corax_treeinfo_t *treeinfo,
     return CORAX_FAILURE;
   }
 
-  return algo_nni_round(treeinfo,
-                        tolerance,
-                        brlen_opt_method,
-                        bl_min,
-                        bl_max,
-                        smoothings,
-                        lh_epsilon,
-                        print_in_console);
+  /* make sure initial topology is compatible with constraint */
+  if (!corax_treeinfo_constraint_check_current(treeinfo))
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
+                    "Constraint check failed before SPR round!");
+    return CORAX_FAILURE;
+  }
+
+  loglh = algo_nni_round(treeinfo,
+                         tolerance,
+                         brlen_opt_method,
+                         bl_min,
+                         bl_max,
+                         smoothings,
+                         lh_epsilon,
+                         print_in_console);
+
+  /* make sure final topology is compatible with constraint */
+  if (!corax_treeinfo_constraint_check_current(treeinfo))
+  {
+#if DEBUG_MODE
+    corax_utree_show_ascii(treeinfo->root, CORAX_UTREE_SHOW_LABEL | CORAX_UTREE_SHOW_BRANCH_LENGTH |
+                                           CORAX_UTREE_SHOW_CLV_INDEX);
+#endif
+    corax_set_error(CORAX_ERROR_INVALID_TREE,
+                     "Constraint check failed after SPR round!");
+    return CORAX_FAILURE;
+  }
+
+  return loglh;
 }
 
 CORAX_EXPORT int corax_shSupport_values(corax_treeinfo_t *treeinfo,

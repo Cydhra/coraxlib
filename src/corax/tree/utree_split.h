@@ -174,6 +174,22 @@ extern "C"
                                                      const corax_utree_t * tree);
 
   /**
+   * Check if an NNI is compatible with a given topological constraint
+   *
+   * @param  cons_splits  splits from a constraint tree
+   * @param  tree_splits  splits from the ORIGINAL tree BEFORE PRUNING
+   * @param  edge         NNI edge
+   * @param  nni_type     CORAX_UTREE_MOVE_NNI_LEFT or CORAX_UTREE_MOVE_NNI_RIGHT
+   *
+   * @return CORAX_SUCCESS if NNI is compatible with constraint
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int corax_utree_constraint_check_nni(corax_split_set_t * cons_splits,
+                                                    corax_split_set_t * tree_splits,
+                                                    corax_unode_t * edge,
+                                                    int nni_type);
+
+  /**
    * Check if an SPR is compatible with a given topological constraint
    *
    * @param  cons_splits  splits from a constraint tree
