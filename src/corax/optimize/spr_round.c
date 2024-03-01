@@ -49,6 +49,11 @@ typedef struct spr_params
   int          brlen_opt_method;
   double       lh_epsilon_brlen_triplet;
   double      *brlen_buf[BRLEN_BUF_COUNT];
+  
+  // for multiple testing
+  unsigned long int *total_moves_counter;
+  unsigned long int *improving_moves_counter;
+  
   corax_bool_t fast_clv_updates;
 } corax_search_params_t;
 
@@ -614,7 +619,7 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   int             retval;
   unsigned int   *regraft_dist;
   int             descent;
-  double          loglh;
+  double          loglh, init_loglh;
 
   corax_unode_t *p_edge           = entry->p_node;
   const size_t   total_edge_count = treeinfo->tree->edge_count;
@@ -647,10 +652,13 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   }
   else
   {
-
     /* recompute all CLVs and p-matrices before pruning */
     loglh = corax_treeinfo_compute_loglh(treeinfo, 0);
   }
+
+  // to investigate whether it makes sense to define some sort of statistical test
+  // based on the # of moves that improve the loglh
+  init_loglh = loglh; // is used lated to increment the improving_moves_counter pointer
 
   corax_treeinfo_constraint_update_splits(treeinfo);
   int check_cons = corax_treeinfo_constraint_subtree_affected(treeinfo, p_edge);
@@ -736,6 +744,7 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     }
 
     regraft_edges++;
+    if(params->total_moves_counter) (*params->total_moves_counter)++;
 
     /* regraft p_edge on r_edge*/
     corax_treeinfo_get_branch_length_all(treeinfo, r_edge, regraft_length);
@@ -784,6 +793,8 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
 
     /* re-compute invalid CLVs, and get tree logLH */
     loglh = corax_treeinfo_compute_loglh_flex(treeinfo, 1, 0);
+
+    if(params->improving_moves_counter && (loglh > init_loglh)) (*params->improving_moves_counter)++;
 
     if (params->thorough)
     {
@@ -1071,7 +1082,9 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
                                          cutoff_info_t    *cutoff_info,
                                          double            subtree_cutoff,
                                          double            lh_epsilon_brlen_triplet,
-                                         corax_bool_t      fast_clv_updates)
+                                         corax_bool_t      fast_clv_updates,
+                                         unsigned long int *total_moves_counter,
+                                         unsigned long int *improving_moves_counter)
 {
 
   unsigned int          i;
@@ -1114,6 +1127,11 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   params.brlen_opt_method = brlen_opt_method;
   params.lh_epsilon_brlen_triplet = lh_epsilon_brlen_triplet;
   params.fast_clv_updates = fast_clv_updates;
+  params.total_moves_counter = total_moves_counter ? total_moves_counter : NULL;
+  params.improving_moves_counter = improving_moves_counter ? improving_moves_counter : NULL;
+
+  if(total_moves_counter) (*total_moves_counter) = 0;
+  if(improving_moves_counter) (*improving_moves_counter) = 0;
 
   brlen_unlinked = (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED) ? 1 : 0;
 
