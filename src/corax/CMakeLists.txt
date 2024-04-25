@@ -53,10 +53,10 @@ if(CORAX_NONREV)
   message("Non-rev enabled")
 
   find_package(PkgConfig REQUIRED)
-  pkg_search_module(BLAS blas)
-  pkg_search_module(CBLAS cblas)
-  pkg_search_module(LAPACK lapack)
-  pkg_search_module(LAPACKE lapacke)
+  pkg_search_module(BLAS REQUIRED blas)
+  pkg_search_module(CBLAS REQUIRED cblas)
+  pkg_search_module(LAPACK REQUIRED lapack)
+  pkg_search_module(LAPACKE REQUIRED lapacke)
   target_compile_definitions(${CORAX_LIB_TARGET} PUBLIC -DCORAX_NONREV)
   target_include_directories(${CORAX_LIB_TARGET} PUBLIC 
     ${BLAS_INCLUDE_DIRS}
