@@ -50,26 +50,32 @@ target_compile_options(${CORAX_LIB_TARGET} PRIVATE ${CORAX_WARNING_FLAGS})
 option(CORAX_NONREV "Enable non-reversible model computation" OFF)
 
 if(CORAX_NONREV)
+  target_compile_definitions(${CORAX_LIB_TARGET} PUBLIC -DCORAX_NONREV)
   message("Non-rev enabled")
 
   find_package(PkgConfig REQUIRED)
-  pkg_search_module(BLAS REQUIRED blas)
-  pkg_search_module(CBLAS REQUIRED cblas)
-  pkg_search_module(LAPACK REQUIRED lapack)
-  pkg_search_module(LAPACKE REQUIRED lapacke)
-  target_compile_definitions(${CORAX_LIB_TARGET} PUBLIC -DCORAX_NONREV)
-  target_include_directories(${CORAX_LIB_TARGET} PUBLIC 
-    ${BLAS_INCLUDE_DIRS}
-    ${CBLAS_INCLUDE_DIRS}
-    ${LAPACK_INCLUDE_DIRS}
-    ${LAPACKE_INCLUDE_DIRS}
-    )
-  target_link_libraries(${CORAX_LIB_TARGET} PUBLIC 
-    ${BLAS_LDFLAGS}
-    ${CBLAS_LDFLAGS}
-    ${LAPACK_LDFLAGS}
-    ${LAPACKE_LDFLAGS}
-    )
+  pkg_search_module(BLAS blas)
+  pkg_search_module(CBLAS cblas)
+  pkg_search_module(LAPACK lapack)
+  pkg_search_module(LAPACKE lapacke)
+  if(${BLAS_FOUND} AND ${CBLAS_FOUND} AND ${LAPACK_FOUND} AND ${LAPACKE_FOUND})
+      target_include_directories(${CORAX_LIB_TARGET} PUBLIC 
+        ${BLAS_INCLUDE_DIRS}
+        ${CBLAS_INCLUDE_DIRS}
+        ${LAPACK_INCLUDE_DIRS}
+        ${LAPACKE_INCLUDE_DIRS}
+        )
+      target_link_libraries(${CORAX_LIB_TARGET} PUBLIC 
+        ${BLAS_LDFLAGS}
+        ${CBLAS_LDFLAGS}
+        ${LAPACK_LDFLAGS}
+        ${LAPACKE_LDFLAGS}
+        )
+    else()
+        pkg_search_module(OpenBLAS openblas)
+        target_include_directories(${CORAX_LIB_TARGET} PUBLIC ${OpenBLAS_INCLUDE_DIRS})
+        target_link_libraries(${CORAX_LIB_TARGET} PUBLIC ${OpenBLAS_LDFLAGS})
+    endif()
 endif()
 
 # TODO Decide if we want to use DEBUG, NDEBUG, or DEBUG_MODE and unify all usages.
