@@ -58,7 +58,7 @@ if(CORAX_NONREV)
   pkg_search_module(CBLAS cblas)
   pkg_search_module(LAPACK lapack)
   pkg_search_module(LAPACKE lapacke)
-  if(${BLAS_FOUND} AND ${CBLAS_FOUND} AND ${LAPACK_FOUND} AND ${LAPACKE_FOUND})
+  if((${BLAS_FOUND} AND ${CBLAS_FOUND}) AND (${LAPACK_FOUND} AND ${LAPACKE_FOUND}))
       target_include_directories(${CORAX_LIB_TARGET} PUBLIC 
         ${BLAS_INCLUDE_DIRS}
         ${CBLAS_INCLUDE_DIRS}
@@ -72,7 +72,7 @@ if(CORAX_NONREV)
         ${LAPACKE_LDFLAGS}
         )
     else()
-        pkg_search_module(OpenBLAS openblas)
+        pkg_search_module(OpenBLAS REQUIRED openblas)
         target_include_directories(${CORAX_LIB_TARGET} PUBLIC ${OpenBLAS_INCLUDE_DIRS})
         target_link_libraries(${CORAX_LIB_TARGET} PUBLIC ${OpenBLAS_LDFLAGS})
     endif()
