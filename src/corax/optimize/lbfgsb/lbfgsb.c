@@ -223,13 +223,6 @@ int setulb (int *n, int *m, double *x, double *l, double *u, int *nbd,
    ************
    */
 
-#ifndef NDEBUG
-  /* assert that the lower bounds are greater or equal than the LBFGS ERROR */
-  int i;
-  for (i = 0; i < *n; i++)
-    assert(!(nbd[i]==1 || nbd[i]==2) || l[i]>=CORAX_LBFGSB_ERROR);
-#endif
-
   /* -jlm-jn */
   /* Parameter adjustments */
   --iwa;

@@ -95,6 +95,10 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
     return (double)-INFINITY;
   }
 
+  double lbfgsb_error = CORAX_LBFGSB_ERROR;
+  for (unsigned int i = 0; i < n; i++)
+    if (xmin[i] < lbfgsb_error) lbfgsb_error = xmin[i];
+
   //  double initial_score = target_funk (params, x);
   int continue_opt = 1;
   while (continue_opt)
@@ -134,8 +138,8 @@ CORAX_EXPORT double corax_opt_minimize_lbfgsb(double *     x,
       for (i = 0; i < n; i++)
       {
         temp = x[i];
-        h    = CORAX_LBFGSB_ERROR * fabs(temp);
-        if (h < 1e-12) h = CORAX_LBFGSB_ERROR;
+        h    = lbfgsb_error * fabs(temp);
+        if (h < 1e-12) h = lbfgsb_error;
 
         x[i]           = temp + h;
         h              = x[i] - temp;
