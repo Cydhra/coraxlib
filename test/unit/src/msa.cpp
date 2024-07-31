@@ -39,6 +39,37 @@ TEST(MSA, entropy)
     corax_msa_destroy(msa);
 }
 
+TEST(MSA, weighted_entropy)
+{
+    std::string filename = env->msa_filename();
+    const char* c_filename = filename.c_str();
+
+    corax_msa_t* msa = corax_phylip_load(c_filename, CORAX_TRUE);
+
+    ASSERT_NE(msa, nullptr);
+
+    unsigned int * weights = corax_compress_site_patterns_msa(msa,
+                                                              corax_map_nt,
+                                                              NULL);
+
+    ASSERT_NE(weights, nullptr);
+
+    corax_msa_stats_t *msa_stats = corax_msa_compute_stats(msa,
+                                                           4, corax_map_nt,
+                                                           weights,
+                                                           CORAX_MSA_STATS_ENTROPY);
+
+    ASSERT_NE(msa_stats, nullptr);
+
+    double entropy = msa_stats->entropy;
+    EXPECT_NEAR(entropy, 0.19863, 0.01);
+
+    corax_msa_destroy_stats(msa_stats);
+    corax_msa_destroy(msa);
+    free(weights);
+}
+
+
 TEST(MSA, pattern_entropy)
 {
   std::string filename = env->small_msa_filename();

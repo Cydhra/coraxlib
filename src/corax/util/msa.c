@@ -1062,7 +1062,12 @@ corax_msa_compute_stats(const corax_msa_t   *msa,
   if (stats_mask & CORAX_MSA_STATS_ENTROPY)
   {
     column_entropies        = corax_msa_column_entropies(msa, states, tipmap);
-    entropy                 = corax_msa_entropy(msa, states, tipmap);
+    for (i = 0; i < msa_length; ++i)
+    {
+      entropy += weights ? weights[i] * column_entropies[i] : column_entropies[i];
+    }
+    entropy /= sum_weights;
+
     stats->column_entropies = column_entropies;
     stats->entropy          = entropy;
   }
