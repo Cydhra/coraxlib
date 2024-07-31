@@ -306,10 +306,13 @@ int corax_core_update_pmatrix_avx2(double **           pmatrix,
   unsigned int states_padded = (states + 3) & 0xFFFFFFFC;
   unsigned int states_padded_squared = states_padded * states_padded;
 
-  expd =
-      (double *)corax_aligned_alloc(states_padded * sizeof(double), CORAX_ALIGNMENT_AVX);
-  temp =
-      (double *)corax_aligned_alloc(states_padded_squared * sizeof(double), CORAX_ALIGNMENT_AVX);
+  expd = (double *)corax_aligned_alloc(states_padded * sizeof(double),
+                                       CORAX_ALIGNMENT_AVX);
+  temp = (double *)corax_aligned_alloc(states_padded_squared * sizeof(double),
+                                       CORAX_ALIGNMENT_AVX);
+
+  memset(expd, 0, sizeof(double) * states_padded);
+  memset(temp, 0, sizeof(double) * states_padded_squared);
 
   /* transposed eigen vectors */
   transposed = (int *)calloc((size_t)rate_cats, sizeof(int));
@@ -351,6 +354,8 @@ int corax_core_update_pmatrix_avx2(double **           pmatrix,
                         "Unable to allocate enough memory.");
         return CORAX_FAILURE;
       }
+
+      memset(tran, 0, sizeof(double) * states_padded_squared);
 
       /* transpose eigen vectors */
       evecs = eigenvecs[index];
