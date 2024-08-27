@@ -40,9 +40,6 @@ typedef struct
   unsigned int traversal_size;
 } pars_info_t;
 
-static corax_unode_t **      travbuffer;
-static corax_pars_buildop_t *parsops;
-
 static char *xstrdup(const char *const s)
 {
   size_t len = strlen(s);
@@ -309,129 +306,6 @@ static void invalidate_node(corax_unode_t *node)
   info->clv_valid = 0;
   info            = (node_info_t *)(node->next->next->data);
   info->clv_valid = 0;
-}
-
-static unsigned int utree_iterate(corax_parsimony_t **list,
-                                  corax_unode_t **    edge_list,
-                                  corax_unode_t *     inner_node,
-                                  corax_unode_t *     tip_node,
-                                  unsigned int        edge_count,
-                                  unsigned int        partition_count)
-{
-  unsigned int i, j;
-  unsigned int min_cost   = 0;
-  unsigned int best_index = 0;
-  unsigned int cost;
-  unsigned int ops_count;
-  unsigned int traversal_size;
-  size_t       total_ops = 0;
-
-  /* set min cost to maximum possible value */
-  min_cost = ~0u;
-
-  /* find first empty slot in edge_list */
-  corax_unode_t **empty_slot = edge_list + edge_count;
-
-  /* fill *all* CLV vectors in all directions, ie 3 CLVs per inner nodes ->
-   * this way, we can do avoid unnecessary CLV recomputation when
-   * evaluating insertion branches in the loop below */
-  for (i = 0; i < edge_count; ++i)
-  {
-    corax_unode_t *root =
-        edge_list[i]->next ? edge_list[i] : edge_list[i]->back;
-
-    /* traverse from every OUTER branch */
-    if (root->back->next) continue;
-
-    /* make a partial traversal */
-    if (!corax_utree_traverse(root,
-                              CORAX_TREE_TRAVERSE_POSTORDER,
-                              cb_partial_traversal,
-                              travbuffer,
-                              &traversal_size))
-      assert(0);
-
-    /* create parsimony operations */
-    corax_utree_create_pars_buildops(
-        travbuffer, traversal_size, parsops, &ops_count);
-
-    for (j = 0; j < partition_count; ++j)
-    {
-      /* update parsimony vectors */
-      corax_fastparsimony_update_vectors(list[j], parsops, ops_count);
-    }
-
-    total_ops += ops_count;
-  }
-
-  for (i = 0; i < edge_count; ++i)
-  {
-    /* make the split */
-    corax_unode_t *d = edge_list[i]->back;
-    utree_edgesplit(edge_list[i], inner_node, inner_node->next);
-    utree_link(inner_node->next->next, tip_node);
-
-    /* we only need to recompute one CLV vector at the inner node */
-    parsops[0].parent_score_index = tip_node->back->node_index;
-    parsops[0].child1_score_index = tip_node->back->next->back->node_index;
-    parsops[0].child2_score_index =
-        tip_node->back->next->next->back->node_index;
-    ops_count = 1;
-
-    total_ops += ops_count;
-
-    /* compute the costs for each parsimony partition */
-    cost = 0;
-    for (j = 0; j < partition_count; ++j)
-    {
-      /* update parsimony vectors */
-      corax_fastparsimony_update_vectors(list[j], parsops, ops_count);
-
-      /* get parsimony score */
-      cost += corax_fastparsimony_edge_score(
-          list[j], tip_node->node_index, tip_node->back->node_index);
-    }
-
-    /* if current cost is smaller than minimum cost save topology index */
-    if (cost < min_cost)
-    {
-      min_cost   = cost;
-      best_index = i;
-    }
-
-    /* restore tree to its state before placing the tip (and inner) node */
-    utree_link(edge_list[i], d);
-    inner_node->back             = NULL;
-    inner_node->next->back       = NULL;
-    inner_node->next->next->back = NULL;
-    tip_node->back               = NULL;
-  }
-
-  //  printf("STEPWISE edges: %u, ops: %lu\n", edge_count, total_ops);
-
-  /* perform the placement yielding the lowest cost */
-  utree_edgesplit(edge_list[best_index], inner_node, inner_node->next);
-  utree_link(inner_node->next->next, tip_node);
-
-  /* add the two new edges to the end of the list */
-  empty_slot[0] = inner_node->next;
-  empty_slot[1] = inner_node->next->next;
-
-  /* invalidate all CLVs */
-  for (j = 0; j < edge_count; ++j) invalidate_node(edge_list[j]);
-
-  /* re-validate CLVs that remain correct after new tip insertion */
-  if (!corax_utree_traverse(tip_node->back,
-                            CORAX_TREE_TRAVERSE_POSTORDER,
-                            cb_validate,
-                            travbuffer,
-                            &traversal_size))
-    assert(0);
-
-  /* reset direction for the newly placed inner node */
-  invalidate_node(inner_node);
-
-  return min_cost;
 }
 
 static int cb_full(corax_unode_t * node)
@@ -738,14 +612,9 @@ CORAX_EXPORT corax_utree_t *
   /* 1. Make all allocations at the beginning and check everything was
         allocated, otherwise return an error */
 
-  travbuffer =
-      (corax_unode_t **)malloc((2 * tips_count - 2) * sizeof(corax_unode_t *));
+  pars_info_t * pars_info = create_pars_info(list, count);
 
   root = utree_inner_create(tips_count - 3, tips_count);
-
-  /* allocate parsimony operations container */
-  parsops = (corax_pars_buildop_t *)malloc((tips_count - 2)
-                                           * sizeof(corax_pars_buildop_t));
 
   /* create tip node list with a terminating NULL element */
   corax_unode_t **tip_node_list =
@@ -756,13 +625,12 @@ CORAX_EXPORT corax_utree_t *
   corax_unode_t **inner_node_list =
       (corax_unode_t **)calloc(tips_count - 2, sizeof(corax_unode_t *));
 
-  if (!inner_node_list || !parsops || !tip_node_list || !root || !travbuffer)
+  if (!inner_node_list || !pars_info || !tip_node_list || !root)
   {
     corax_utree_graph_destroy(root, NULL);
-    free(parsops);
+    destroy_pars_info(pars_info);
     free(inner_node_list);
     free(tip_node_list);
-    free(travbuffer);
 
     corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
     return NULL;
@@ -775,9 +643,8 @@ CORAX_EXPORT corax_utree_t *
     if (!inner_node_list[i])
     {
       corax_utree_graph_destroy(root, NULL);
-      free(parsops);
+      destroy_pars_info(pars_info);
       free(tip_node_list);
-      free(travbuffer);
       for (j = 0; j < i; ++j)
         corax_utree_graph_destroy(inner_node_list[j], NULL);
       free(inner_node_list);
@@ -797,16 +664,20 @@ CORAX_EXPORT corax_utree_t *
   {
     unsigned int index = order[i];
     tip_node_list[i]   = utree_tip_create(index);
-    if (tip_node_list[i]) tip_node_list[i]->label = xstrdup(labels[index]);
+    if (tip_node_list[i])
+    {
+      tip_node_list[i]->label = xstrdup(labels[index]);
+      if (i > 2)
+        utree_link(inner_node_list[i-3], tip_node_list[i]);
+    }
 
     if (!tip_node_list[i] || !tip_node_list[i]->label)
     {
       free(tip_node_list[i]);
 
       corax_utree_graph_destroy(root, NULL);
-      free(parsops);
+      destroy_pars_info(pars_info);
       free(inner_node_list);
-      free(travbuffer);
       for (j = 0; j < i; ++j) corax_utree_graph_destroy(tip_node_list[j], NULL);
       free(tip_node_list);
 
@@ -853,12 +724,12 @@ CORAX_EXPORT corax_utree_t *
     for (i = 3; i < tips_count; ++i)
     {
       /* printf("%d -- adding %s\n", i, tip_node_list[i]->label); */
-      *cost = utree_iterate(list,
-                            edge_list,
-                            inner_node_list[i - 3],
-                            tip_node_list[i],
-                            edge_count,
-                            count);
+      *cost = utree_insert_best(pars_info,
+                                 edge_list,
+                                 edge_count,
+                                 inner_node_list[i-3],
+                                 NULL,
+                                 NULL);
 
       /* after adding a leaf, we have two new edges */
       edge_count += 2;
@@ -872,20 +743,19 @@ CORAX_EXPORT corax_utree_t *
   
   /* wrap tree */
   corax_utree_t *tree = corax_utree_wraptree(root, tips_count);
-  // Here we can add an nni or spr round on parsimony trees, for example: 
+  // Here we can add an nni or spr round on parsimony trees, for example:
   // corax_algo_nni_round_parsimony(tree, list, count,cost);
 
   /* delete data elements */
   for (i = 0; i < tips_count - 3; ++i) dealloc_data(inner_node_list[i]);
   dealloc_data(root);
 
+  destroy_pars_info(pars_info);
+
   /* deallocate auxiliary arrays */
   free(inner_node_list);
   free(tip_node_list);
   free(edge_list);
-  free(travbuffer);
-  free(parsops);
-
 
   return tree;
 }
