@@ -136,9 +136,9 @@ extern "C"
    * @return Pattern entropy. A pattern-based entropy like metric. The pattern entropy is >= 0.
    */
   CORAX_EXPORT double
-  corax_msa_pattern_entropy(corax_msa_t *         msa,
-                            unsigned int *        site_weights,
-                            const corax_state_t * tipmap
+  corax_msa_pattern_entropy(const corax_msa_t   *msa,
+                            const unsigned int  *site_weights,
+                            const corax_state_t *tipmap
   );
 
   /**
@@ -151,9 +151,9 @@ extern "C"
    * @return Bollback multinomial statistic. The bollback multinomial statistic is always <= 0.
    */
   CORAX_EXPORT double
-  corax_msa_bollback_multinomial(corax_msa_t *         msa,
-                                 unsigned int *        site_weights,
-                                 const corax_state_t * tipmap
+  corax_msa_bollback_multinomial(const corax_msa_t   *msa,
+                                 const unsigned int  *site_weights,
+                                 const corax_state_t *tipmap
   );
 
   CORAX_EXPORT corax_msa_errors_t *corax_msa_check(const corax_msa_t *  msa,

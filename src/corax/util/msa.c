@@ -390,8 +390,8 @@ CORAX_EXPORT double corax_msa_entropy(const corax_msa_t   *msa,
   return sum / msa_length;
 }
 
-CORAX_EXPORT double corax_msa_pattern_entropy(corax_msa_t         *msa,
-                                              unsigned int        *site_weights,
+CORAX_EXPORT double corax_msa_pattern_entropy(const corax_msa_t   *msa,
+                                              const unsigned int  *site_weights,
                                               const corax_state_t *tipmap)
 {
   if (!msa)
@@ -431,8 +431,8 @@ CORAX_EXPORT double corax_msa_pattern_entropy(corax_msa_t         *msa,
   return sum;
 }
 
-CORAX_EXPORT double corax_msa_bollback_multinomial(corax_msa_t  *msa,
-                                                   unsigned int *site_weights,
+CORAX_EXPORT double corax_msa_bollback_multinomial(const corax_msa_t   *msa,
+                                                   const unsigned int  *site_weights,
                                                    const corax_state_t *tipmap)
 {
   int number_of_sites = 0;
