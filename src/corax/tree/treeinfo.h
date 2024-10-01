@@ -134,6 +134,12 @@ extern "C"
       void *            parallel_context,
       void (*parallel_reduce_cb)(void *, double *, size_t, int op));
 
+  CORAX_EXPORT
+  void corax_treeinfo_parallel_reduce(corax_treeinfo_t *treeinfo,
+                                      double           *data,
+                                      size_t            size,
+                                      int               op);
+
   /**
    * Initialize a partition in a treeinfo.
    *

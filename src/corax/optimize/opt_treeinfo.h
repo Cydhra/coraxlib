@@ -222,6 +222,62 @@ extern "C"
    * @param  tolerance              tolerance value, to check for NNI-optimality
    * and to avoid numerical issues. It can be equal to tolerance value used for
    * the NNI otpimization in  corax_algo_nni_round() function (e.g. 0.1)
+   * @param[out] sh_support_values   Array where the SH-aLRT statistics will be
+   * stored. The size of the array must be 2*n-3, where n is the number of tip
+   * nodes. The SH-aLRT statistic for a branch with pmatrix_index = i is stored
+   * in sh_support_values[i]. The SH-like aLRT metric for non NNI-optimal internal
+   * branches will be SH-aLRT=-inf. Tip branches will also have SH-aLRT=-inf.
+   * For ambiguous branches, that is, internal branches in which there is a
+   * second NNI-optimal topology, the SH-like aLRT metric will be equal to 0.
+   * If sh_support_values==NULL, no values will be written (useful for multi-threading).
+   * @param  num_bsrep              Number of bootstrap replicates (e.g. 1000)
+   * @param  bsrep_site_weights     Resampled site weights. This two-dimensional array
+   * is indexed by replicate+partition, and then by site. I.e., the weight of site s of
+   * partition p in the replicate i must be stored in
+   * bsrep_site_weights[i * treeinfo->partition_count + p][s]
+   * In multi-threading use case, only the portion of sites processed by the
+   * current thread must be provided (similar to treeinfo->partitions[]).
+   * @param  sh_epsilon             Confidence of SH-like criterion (e.g. 0.1)
+   * @param  brlen_opt_method       Branch length optimization method (e.g.
+   * CORAX_OPT_BLO_NEWTON_FAST)
+   * @param  bl_min                 Minimum branch length (e.g.
+   * CORAX_OPT_MIN_BRANCH_LEN)
+   * @param  bl_max                 Maximum branch length (e.g.
+   * CORAX_OPT_MAX_BRANCH_LEN)
+   * @param  smoothings             number of smoothings in local branch length
+   * optimization that takes place (e.g. CORAX_OPT_DEFAULT_SMOOTHINGS)
+   * @param  lh_epsilon             epsilon value in local branch length
+   * optimization that takes place (e.g. CORAX_OPT_DEFAULT_EPSILON)
+   * @return                        CORAX_SUCCESS, if the SH-like aLRT values
+   * are calculated successfully
+   */
+  CORAX_EXPORT int
+  corax_algo_sh_support(corax_treeinfo_t        *treeinfo,
+                        double                  tolerance,
+                        double                 *sh_support_values,
+                        unsigned int            num_bsrep,
+                        const unsigned int    **bsrep_site_weights,
+                        double                  sh_epsilon,
+                        int                     brlen_opt_method,
+                        double                  bl_min,
+                        double                  bl_max,
+                        int                     smoothings,
+                        double                  lh_epsilon);
+
+
+  /**
+   * DEPRECATED! Use corax_algo_sh_support() instead.
+   *
+   * SH-like aLRT statistics calculation (support values for internal branches).
+   * SH-like aLRT values are defined for NNI optimal tree topologies. Hence, it
+   * is recommended for the user to call corax_algo_nni_round() function first.
+   * In case the tree topology is not NNI-optimal, a warning message will be
+   * printed.
+   *
+   * @param  treeinfo               the CORAX treeinfo structure
+   * @param  tolerance              tolerance value, to check for NNI-optimality
+   * and to avoid numerical issues. It can be equal to tolerance value used for
+   * the NNI otpimization in  corax_algo_nni_round() function (e.g. 0.1)
    * @param[out] shSupportValues    Array where the SH-aLRT statistics will be
    * stored. The size of the array must be 2*n-3, where n is the number of tip
    * nodes. The SH-aLRT statistic for a branch with pmatrix_index = i is stored
@@ -258,6 +314,7 @@ extern "C"
                          int                   smoothings,
                          double                lh_epsilon,
                          bool print_in_console DEFAULT_VALUE(true));
+
   /**
    * NNI round - Searches for the optimal tree topology based on NNI moves.
    * After calling this function the tree topology is probably changed.

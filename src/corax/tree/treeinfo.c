@@ -228,6 +228,22 @@ int corax_treeinfo_set_parallel_context(
   return CORAX_SUCCESS;
 }
 
+CORAX_EXPORT
+void corax_treeinfo_parallel_reduce(corax_treeinfo_t *treeinfo,
+                          double           *data,
+                          size_t            size,
+                          int               op)
+{
+  if (treeinfo->parallel_reduce_cb)
+  {
+    treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
+                                 data,
+                                 size,
+                                 op);
+  }
+}
+
+
 CORAX_EXPORT int
 corax_treeinfo_init_partition(corax_treeinfo_t *  treeinfo,
                               unsigned int        partition_index,
