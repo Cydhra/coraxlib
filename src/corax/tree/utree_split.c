@@ -152,7 +152,7 @@ static inline int disjoint_split(const corax_split_t split1,
   return 1;
 }
 
-inline const corax_split_t get_node_split(const corax_split_t * splits,
+static inline const corax_split_t get_node_split(const corax_split_t * splits,
                                         const corax_unode_t * node)
 {
   return splits[node->node_index];
