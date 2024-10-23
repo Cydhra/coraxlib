@@ -311,15 +311,35 @@ TEST(EvolModel, multistate_custom)
   EXPECT_EQ(map_to_string(model.full_state_namemap()), "ABCDF");
 }
 
-TEST(EvolModel, genotype)
+
+TEST(EvolModel, genotype16)
+{
+  // buildup
+  auto model = EvolModel(DataType::autodetect, "GT16");
+
+  // tests
+  EXPECT_EQ("GT16+FO", model.to_string());
+  EXPECT_EQ(DataType::genotype16, model.data_type());
+  EXPECT_EQ("GT16", model.name());
+  EXPECT_EQ(16, model.num_states());
+  EXPECT_EQ(CORAX_UTIL_MIXTYPE_FIXED, model.ratehet_mode());
+  EXPECT_EQ(1, model.num_ratecats());
+  EXPECT_EQ(model.params_to_optimize(), CORAX_OPT_PARAM_SUBST_RATES | CORAX_OPT_PARAM_FREQUENCIES);
+  EXPECT_NE(nullptr, model.charmap());
+  EXPECT_EQ(model.num_free_params(), 21);
+  EXPECT_EQ(list_to_string(model.state_names()), "ACGT");
+  EXPECT_EQ(map_to_string(model.full_state_namemap()), "-ACGKMRSTWY");
+}
+
+TEST(EvolModel, genotype10)
 {
   // buildup
   auto model = EvolModel(DataType::autodetect, "GTGTR4");
 
   // tests
-  EXPECT_EQ("GTGTR4+FO", model.to_string());
+  EXPECT_EQ("GT10+FO", model.to_string());
   EXPECT_EQ(DataType::genotype10, model.data_type());
-  EXPECT_EQ("GTGTR4", model.name());
+  EXPECT_EQ("GT10", model.name());
   EXPECT_EQ(10, model.num_states());
   EXPECT_EQ(CORAX_UTIL_MIXTYPE_FIXED, model.ratehet_mode());
   EXPECT_EQ(1, model.num_ratecats());
@@ -329,7 +349,6 @@ TEST(EvolModel, genotype)
   EXPECT_EQ(list_to_string(model.state_names()), "ACGTMRWSYK");
   EXPECT_EQ(map_to_string(model.full_state_namemap()), "-ACGKMRSTWY");
 }
-
 
 TEST(EvolModel, DNA_usersym)
 {

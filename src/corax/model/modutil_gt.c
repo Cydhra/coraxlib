@@ -45,10 +45,34 @@ static const double gt_rates_equal[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, /* AA */
                                         1, 1,                      /* CG */
                                         1};                        /* CT */
 
-/*                                      AA   CC   GG   TT   AC   AG   AT   CG
- * CT   GT */
-static const double gt_freqs_equal[] = {
-    0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+/*                                    AA CC GG TT AC AG AT CG CT GT CA GA TA GC TC TG          */
+static const double gt16_rates_equal[120] =
+                                    {     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* AA */
+                                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* CC */
+                                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* GG */
+                                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* TT */
+                                                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* AC */
+                                                         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* AG */
+                                                            1, 1, 1, 1, 1, 1, 1, 1, 1,   /* AT */
+                                                               1, 1, 1, 1, 1, 1, 1, 1,   /* CG */
+                                                                  1, 1, 1, 1, 1, 1, 1,   /* CT */
+                                                                     1, 1, 1, 1, 1, 1,   /* GT */
+                                                                        1, 1, 1, 1, 1,   /* CA */
+                                                                           1, 1, 1, 1,   /* GA */
+                                                                              1, 1, 1,   /* TA */
+                                                                                 1, 1,   /* GC */
+                                                                                    1};  /* TC */
+
+
+/*                                      AA   CC   GG   TT   AC   AG   AT   CG   CT   GT */
+static const double gt_freqs_equal[] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+#define ONE_16 1./16
+static const double gt16_freqs_equal[16] = {ONE_16, ONE_16, ONE_16, ONE_16, ONE_16, ONE_16,
+                                            ONE_16, ONE_16, ONE_16, ONE_16, ONE_16, ONE_16,
+                                            ONE_16, ONE_16, ONE_16, ONE_16};
+
 
 /*                                 A  C  G  T              */
 // static int gt_sym_freq_equal[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -110,26 +134,57 @@ static int gt16_sym_rate_dna4[] = {
     4                                            /* TC */
 };
 
-static const corax_subst_model_t gt_model_list[] = {
-    /*  name    states  model rates         model freqs   rate symmetries
-       freq. sym.           */
-    {"GTJC-SM", 10, gt_rates_equal_sm, gt_freqs_equal, NULL, NULL, 0},
-    {"GTJC", 10, gt_rates_equal, gt_freqs_equal, NULL, NULL, 0},
-    {"GTGTR-SM", 10, NULL, NULL, gt_sym_rate_free_sm, NULL, 0},
-    {"GTGTR4", 10, NULL, NULL, gt_sym_rate_dna4, NULL, 0},
-    {"GTHKY4", 10, NULL, NULL, gt_sym_rate_hky4, NULL, 0},
-    {"GTGTR", 10, NULL, NULL, NULL, NULL, 0},
-    {"GPGTR4", 16, NULL, NULL, gt16_sym_rate_dna4, NULL, 0}};
+static const corax_subst_model_t gt_model_list[] =
+{
+/*  name    states  model rates         model freqs   rate symmetries   freq. sym.           */
+  {"GT10",       10, NULL,               NULL,              gt_sym_rate_dna4,    NULL, 0 },
+  {"GT10JC-SM",  10, gt_rates_equal_sm,  gt_freqs_equal,    NULL,                NULL, 0 },
+  {"GT10JC",     10, gt_rates_equal,     gt_freqs_equal,    NULL,                NULL, 0 },
+  {"GT10GTR-SM", 10, NULL,               NULL,              gt_sym_rate_free_sm, NULL, 0 },
+  {"GT10HKY",    10, NULL,               NULL,              gt_sym_rate_hky4,    NULL, 0 },
+  {"GT10GTR",    10, NULL,               NULL,              NULL,                NULL, 0 },
+  {"GT16",       16, NULL,               NULL,              gt16_sym_rate_dna4,  NULL, 0 },
+  {"GT16JC",     16, gt16_rates_equal,   gt16_freqs_equal,  NULL,                NULL, 0 },
+  {"GT16GTR",    16, NULL,               NULL,              NULL,                NULL, 0 }
+};
 
 const int GT_MODELS_COUNT = sizeof(gt_model_list) / sizeof(corax_subst_model_t);
 
-static int get_model_index(const char *model_name)
+static const corax_subst_model_alias_t gt_model_aliases[] =
+{
+  {"GTJC",     "GT10JC"},
+  {"GTJC-SM",  "GT10JC-SM"},
+  {"GTGTR4",   "GT10"},
+  {"GTGTR",    "GT10GTR"},
+  {"GTGTR-SM", "GT10GTR-SM"},
+  {"GTHKY4",   "GT10HKY"},
+  {"GPGTR4",   "GT16"}
+};
+
+static const int ALIAS_COUNT =
+                sizeof(gt_model_aliases) / sizeof(corax_subst_model_alias_t);
+
+static int get_model_index(const char * model_name)
 {
   int i;
-  for (i = 0; i < GT_MODELS_COUNT; ++i)
-    if (strcasecmp(model_name, gt_model_list[i].name) == 0) return i;
+  const char * resolved_name = model_name;
 
-  /* model not found*/
+  /* resolve model aliases first (e.g., GTGTR4 -> GT10) */
+  for (i = 0; i < ALIAS_COUNT; ++i)
+  {
+    if (strcasecmp(model_name, gt_model_aliases[i].alias) == 0)
+    {
+      resolved_name = gt_model_aliases[i].primary_name;
+      break;
+    }
+  }
+
+  /* search for the model */
+  for (i = 0; i < GT_MODELS_COUNT; ++i)
+    if (strcasecmp(resolved_name, gt_model_list[i].name) == 0)
+      return i;
+
+  /* model not found */
   return -1;
 }
 

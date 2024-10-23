@@ -147,7 +147,9 @@ CORAX_EXPORT                corax_subst_model_t *
 CORAX_EXPORT unsigned int corax_util_model_count_genotype();
 CORAX_EXPORT char **      corax_util_model_names_genotype();
 CORAX_EXPORT int corax_util_model_exists_genotype(const char *model_name);
-CORAX_EXPORT     corax_subst_model_t *
+CORAX_EXPORT int corax_util_model_exists_genotype10(const char *model_name);
+CORAX_EXPORT int corax_util_model_exists_genotype16(const char *model_name);
+CORAX_EXPORT corax_subst_model_t *
                  corax_util_model_info_genotype(const char *model_name);
 
 CORAX_EXPORT int corax_util_model_exists_genotype10(const char *model_name);
