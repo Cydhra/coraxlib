@@ -20,6 +20,7 @@
 */
 
 #include "corax/corax.h"
+#include <limits.h>
 
 static double compute_asc_bias_correction(double       logl_base,
                                           unsigned int sum_w,
@@ -712,12 +713,62 @@ corax_compute_node_ancestral_extbuf(corax_partition_t * partition,
 
   memset(ancestral, 0, sites * states * sizeof(double));
 
+  /* PER-RATE scaling stuff */
+  unsigned int  site_scalings;
+  int           per_rate_scaling = (partition->attributes & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
+  unsigned int *rate_scalings    = NULL;
+  double        scale_minlh[CORAX_SCALE_RATE_MAXDIFF];
+  if (per_rate_scaling || partition->prop_invar)
+  {
+    double scale_factor = 1.0;
+    for (i = 0; i < CORAX_SCALE_RATE_MAXDIFF; ++i)
+    {
+      scale_factor *= CORAX_SCALE_THRESHOLD;
+      scale_minlh[i] = scale_factor;
+    }
+  }
+  if (per_rate_scaling)
+  {
+    rate_scalings = (unsigned int *)calloc(rate_cats, sizeof(unsigned int));
+
+    if (!rate_scalings)
+    {
+      corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                      "Cannot allocate space for rate scalers.");
+      return CORAX_FAILURE;
+    }
+  }
+
   for (n = 0; n < sites; ++n)
   {
+    if (per_rate_scaling)
+    {
+      /* compute minimum per-rate scaler -> common per-site scaler */
+      site_scalings = UINT_MAX;
+      for (i = 0; i < rate_cats; ++i)
+      {
+        rate_scalings[i] = temp_scaler[n * rate_cats + i];
+        if (rate_scalings[i] < site_scalings) site_scalings = rate_scalings[i];
+      }
+
+      /* compute relative capped per-rate scalers */
+      for (i = 0; i < rate_cats; ++i)
+      {
+        rate_scalings[i] = CORAX_MIN(rate_scalings[i] - site_scalings,
+                                     CORAX_SCALE_RATE_MAXDIFF);
+      }
+    }
+
     for (i = 0; i < rate_cats; ++i)
     {
       double *freqs       = partition->frequencies[freqs_indices[i]];
       double  rate_weight = partition->rate_weights[i];
+
+      /* apply per-rate scalers, if necessary */
+      if (rate_scalings && rate_scalings[i] > 0)
+      {
+        rate_weight *= scale_minlh[rate_scalings[i] - 1];
+      }
 
       for (j = 0; j < states; ++j)
       {
@@ -734,6 +785,8 @@ corax_compute_node_ancestral_extbuf(corax_partition_t * partition,
 
     ancp += states;
   }
+
+  if (rate_scalings) free(rate_scalings);
 
   return CORAX_SUCCESS;
 }
