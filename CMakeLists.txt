@@ -91,7 +91,6 @@ set(CORAX_INCLUDE_DIRS
 # Build the difficulty prediction if requested.
 if (CORAX_BUILD_DIFFICULTY_PREDICTION)
     add_subdirectory(lib/difficulty_prediction)
-    list(APPEND CORAX_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/lib/difficulty_prediction/src)
 endif ()
 
 # Build the corax library

@@ -91,7 +91,7 @@ target_compile_definitions(${CORAX_LIB_TARGET} PRIVATE "_GNU_SOURCE")
 
 # If the difficulty prediction is enabled, link it to the corax_obj.
 if (CORAX_BUILD_DIFFICULTY_PREDICTION)
-    target_link_libraries(${CORAX_LIB_TARGET} PRIVATE coraxlib_difficulty_prediction_lib)
+  target_link_libraries(${CORAX_LIB_TARGET} PUBLIC coraxlib_difficulty_prediction_lib)
 endif ()
 
 # Set the SIMD flags corresponding to the requested and supported variant.
