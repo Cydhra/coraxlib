@@ -468,7 +468,7 @@ corax_utree_split_from_tips(const unsigned int *subtree_tip_ids,
 /* Note: This function returns the splits according to the node indices at the
  * tips!
  *
- * split_to_node_map can be NULL
+ * split_to_node_map can be NULLgs
  */
 CORAX_EXPORT corax_split_t *
              corax_utree_split_create(const corax_unode_t *tree,
@@ -487,6 +487,14 @@ CORAX_EXPORT corax_split_t *
   split_size  = (sizeof(corax_split_base_t) * 8);
   split_len   = (tip_count / split_size)
               + (tip_count % (sizeof(corax_split_base_t) * 8) > 0);
+
+  if (tip_count < 4)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE_SIZE,
+                    "Cannot extract splits: tree has less than 4 taxa\n");
+    return NULL;
+  }
+  assert(split_count > 0);
 
   split_list = (corax_split_t *)malloc(split_count * sizeof(corax_split_t));
   if (!split_list)
