@@ -982,7 +982,6 @@ CORAX_EXPORT int corax_fastparsimony_stepwise_extend(corax_utree_t * tree,
 
     if (!tip_node || !inner_node)
     {
-      free(new_nodes);
       free(edge_list);
       free(order);
 
@@ -991,6 +990,7 @@ CORAX_EXPORT int corax_fastparsimony_stepwise_extend(corax_utree_t * tree,
         free(new_nodes[old_tip_count + j]);
         free(new_nodes[new_tip_count + old_inner_count + j]);
       }
+      free(new_nodes);
 
       corax_errno = CORAX_ERROR_MEM_ALLOC;
       snprintf(corax_errmsg, 200, "Cannot allocate memory for nodes!");

@@ -836,9 +836,9 @@ CORAX_EXPORT corax_split_system_t *corax_utree_split_consensus(
 
   if (!split_system->splits || !split_system->support)
   {
-    free(split_system);
     if (split_system->splits) free(split_system->splits);
     if (split_system->support) free(split_system->support);
+    free(split_system);
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for split system!");
     return NULL;
