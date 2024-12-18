@@ -18,10 +18,18 @@ option(CORAX_BUILD_DOCS "Build (Doxygen) documentation" Off)
 option(CORAX_BUILD_TESTS "Build the automatic tests" Off)
 option(CORAX_BUILD_BENCHMARKS "Build the benchmarks" Off)
 option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build difficulty prediction module" Off)
-option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler, OS, and CPU" On)
-option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, and CPU" On)
-option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
+option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler" On)
+option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler" On)
+option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler" On)
 option(CORAX_BUILD_SHARED "Build a shared library" Off)
+option(CORAX_BUILD_PORTABLE "Build a shared library" Off)
+
+# Uncomment to build a semi-portable binary, e.g. for Intel Haswell and above:
+#set(CORAX_BUILD_PORTABLE_ARCH "haswell") 
+
+# Options - user overridable (hidden)
+set(CORAX_ENABLE_AUTOVEC_KERNELS On CACHE BOOL "Enable auto-vectorization of generic kernels")
+set(CORAX_ENABLE_AUTOVEC_OTHER On CACHE BOOL "Enable auto-vectorization of non-kernel code")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
     "${PROJECT_SOURCE_DIR}/bin"
@@ -48,6 +56,12 @@ if (NOT CMAKE_BUILD_TYPE)
             )
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
 endif ()
+
+#check whether to use compiler auto-vectorization
+if (CORAX_BUILD_PORTABLE)
+    set(CORAX_ENABLE_AUTOVEC_KERNELS Off)
+    set(CORAX_ENABLE_AUTOVEC_OTHER Off)
+endif()
 
 # Check for available SIMD variants and disable not available ones.
 check_sse_available()
@@ -77,7 +91,8 @@ endif ()
 message(STATUS "Building documentation: ${CORAX_BUILD_DOCS}")
 message(STATUS "Building tests: ${CORAX_BUILD_TESTS}")
 message(STATUS "Building benchmarks: ${CORAX_BUILD_BENCHMARKS}")
-message(STATUS "Building difficutly prediction: ${CORAX_BUILD_DIFFICULTY_PREDICTION}")
+message(STATUS "Building difficulty prediction: ${CORAX_BUILD_DIFFICULTY_PREDICTION}")
+message(STATUS "Build portable library: ${CORAX_BUILD_PORTABLE}")
 message(STATUS "Enable SSE SIMD kernels: ${CORAX_ENABLE_SSE}")
 message(STATUS "Enable AVX SIMD kernels: ${CORAX_ENABLE_AVX}")
 message(STATUS "Enable AVX2 SIMD kernels: ${CORAX_ENABLE_AVX2}")
