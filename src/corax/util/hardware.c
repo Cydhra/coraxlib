@@ -124,6 +124,16 @@ static void cpu_features_detect()
   corax_hardware.popcnt_present = __builtin_cpu_supports("popcnt");
   corax_hardware.avx_present    = __builtin_cpu_supports("avx");
   corax_hardware.avx2_present   = __builtin_cpu_supports("avx2");
+#elif defined(__aarch64__)
+#if defined(HAVE_SSE2NEON)
+  corax_hardware.sse_present     = 1;
+  corax_hardware.sse2_present    = 1;
+  corax_hardware.sse3_present    = 1;
+  corax_hardware.ssse3_present   = 1;
+  corax_hardware.sse41_present   = 1;
+  corax_hardware.sse42_present   = 1;
+#endif
+  corax_hardware.sve_present   = __builtin_cpu_supports("sve");
 #endif
 }
 

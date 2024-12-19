@@ -2,6 +2,7 @@
 set(SSE_FLAGS "-msse3")
 set(AVX_FLAGS "-mavx")
 set(AVX2_FLAGS "-mfma -mavx2")
+set(NEON_FLAGS "-march=armv8-a+fp+simd")
 set(NATIVE_FLAGS "-march=native")
 
 if (NOT DEFINED CORAX_BUILD_PORTABLE_ARCH)
@@ -73,6 +74,24 @@ function (check_avx2_available)
     )
 endfunction ()
 
+function (check_sse2neon_available)
+    set(TEST_CODE " #include <sse2neon.h>
+        int main() {__m128d a = _mm_setzero_pd(); return 1;}"
+    )
+    set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_sse2neon.c)
+    file(WRITE "${TEST_FILE}" "${TEST_CODE}")
+    try_compile(
+        SSE2NEON_COMPILED ${CMAKE_CURRENT_BINARY_DIR}
+        ${TEST_FILE}
+        COMPILE_DEFINITIONS ${NEON_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    set(SSE2NEON_AVAILABLE
+        ${SSE2NEON_COMPILED}
+        PARENT_SCOPE
+    )
+endfunction ()
+
+
 # Add compile definitions for the different SIMD variants.
 function(__corax_get_simd_definitions SIMD_VARIANT)
     set(_SIMD_DEFS "HAVE_${SIMD_VARIANT}" "HAVE_X86INTRIN_H")
@@ -84,6 +103,9 @@ function(__corax_get_simd_definitions SIMD_VARIANT)
       set(_SIMD_DEFS "HAVE_AUTOVEC")
     elseif (SIMD_VARIANT STREQUAL "SSE" OR SIMD_VARIANT STREQUAL "SSE3")
       set(_SIMD_FLAGS ${SSE_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "SSE2NEON")
+      set(_SIMD_FLAGS ${NEON_FLAGS})
+      set(_SIMD_DEFS "HAVE_SSE3" "HAVE_SSE2NEON")
     elseif (SIMD_VARIANT STREQUAL "AVX")
       set(_SIMD_FLAGS ${AVX_FLAGS})
     elseif (SIMD_VARIANT STREQUAL "AVX2")

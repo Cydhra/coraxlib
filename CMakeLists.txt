@@ -21,6 +21,7 @@ option(CORAX_BUILD_DIFFICULTY_PREDICTION "Build difficulty prediction module" Of
 option(CORAX_ENABLE_SSE "Enable SSE SIMD kernels if supported by compiler" On)
 option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler" On)
 option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler" On)
+option(CORAX_ENABLE_NEON "Enable NEON SIMD kernels if supported by compiler" On)
 option(CORAX_BUILD_SHARED "Build a shared library" Off)
 option(CORAX_BUILD_PORTABLE "Build a shared library" Off)
 
@@ -82,6 +83,18 @@ if (NOT AVX2_AVAILABLE)
     set(CORAX_ENABLE_AVX2 Off)
 endif ()
 
+if (NOT DEFINED CORAX_ENABLE_SSE2NEON)
+  SET(CORAX_ENABLE_SSE2NEON On)
+endif ()
+
+if(CORAX_ENABLE_SSE2NEON) 
+    check_sse2neon_available()
+    if (NOT SSE2NEON_AVAILABLE)
+        message(STATUS "NEON SIMD not supported -> disabling")
+        set(CORAX_ENABLE_SSE2NEON Off)
+    endif ()
+endif()
+
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 if (CORAX_BUILD_SHARED)
     message(STATUS "Building coraxlib as a shared library.")
@@ -96,6 +109,7 @@ message(STATUS "Build portable library: ${CORAX_BUILD_PORTABLE}")
 message(STATUS "Enable SSE SIMD kernels: ${CORAX_ENABLE_SSE}")
 message(STATUS "Enable AVX SIMD kernels: ${CORAX_ENABLE_AVX}")
 message(STATUS "Enable AVX2 SIMD kernels: ${CORAX_ENABLE_AVX2}")
+message(STATUS "Enable NEON SIMD kernels: ${CORAX_ENABLE_SSE2NEON}")
 
 # Configuration which is not user settable
 set(CORAX_INCLUDE_DIRS
