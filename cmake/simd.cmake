@@ -2,7 +2,7 @@
 set(SSE_FLAGS "-msse3")
 set(AVX_FLAGS "-mavx")
 set(AVX2_FLAGS "-mfma -mavx2")
-set(NEON_FLAGS "-march=armv8-a+fp+simd")
+set(NEON_FLAGS "-march=armv8-a+fp+simd -DSSE2NEON_SUPPRESS_WARNINGS")
 set(NATIVE_FLAGS "-march=native")
 
 if (NOT DEFINED CORAX_BUILD_PORTABLE_ARCH)
@@ -13,6 +13,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(NOSIMD_FLAGS "-march=${CORAX_BUILD_PORTABLE_ARCH}")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(NOSIMD_FLAGS "-fno-slp-vectorize -fno-vectorize -march=${CORAX_BUILD_PORTABLE_ARCH}")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    set(NOSIMD_FLAGS "-fno-slp-vectorize -fno-vectorize")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     set(NOSIMD_FLAGS "-no-vec -march=pentium")
 else()
@@ -75,7 +77,7 @@ function (check_avx2_available)
 endfunction ()
 
 function (check_sse2neon_available)
-    set(TEST_CODE " #include <sse2neon.h>
+    set(TEST_CODE " #include <corax/sse2neon.h>
         int main() {__m128d a = _mm_setzero_pd(); return 1;}"
     )
     set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_sse2neon.c)
@@ -83,7 +85,7 @@ function (check_sse2neon_available)
     try_compile(
         SSE2NEON_COMPILED ${CMAKE_CURRENT_BINARY_DIR}
         ${TEST_FILE}
-        COMPILE_DEFINITIONS ${NEON_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}
+        COMPILE_DEFINITIONS "${NEON_FLAGS} -I${PROJECT_SOURCE_DIR}/src"
     )
     set(SSE2NEON_AVAILABLE
         ${SSE2NEON_COMPILED}
@@ -131,7 +133,8 @@ endfunction()
 function(__corax_target_simd_definitions TARGET SIMD_VARIANT)
     __corax_get_simd_definitions(${SIMD_VARIANT})
     target_compile_definitions(${TARGET} PRIVATE ${SIMD_DEFS})
-    target_compile_options(${TARGET} PRIVATE ${SIMD_FLAGS})
+    separate_arguments(_SIMD_FLAGS UNIX_COMMAND "${SIMD_FLAGS}")
+    target_compile_options(${TARGET} PRIVATE ${_SIMD_FLAGS})
 endfunction()
 
 function (target_add_vnone_definitions TARGET)

@@ -133,7 +133,7 @@ static void cpu_features_detect()
   corax_hardware.sse41_present   = 1;
   corax_hardware.sse42_present   = 1;
 #endif
-  corax_hardware.sve_present   = __builtin_cpu_supports("sve");
+//  corax_hardware.sve_present   = __builtin_cpu_supports("sve");
 #endif
 }
 
