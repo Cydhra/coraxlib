@@ -60,8 +60,8 @@ endif ()
 
 #check whether to use compiler auto-vectorization
 if (CORAX_BUILD_PORTABLE)
-    set(CORAX_ENABLE_AUTOVEC_KERNELS Off)
-    set(CORAX_ENABLE_AUTOVEC_OTHER Off)
+    set(CORAX_ENABLE_AUTOVEC_KERNELS Off CACHE BOOL "Enable auto-vectorization of generic kernels" FORCE)
+    set(CORAX_ENABLE_AUTOVEC_OTHER Off CACHE BOOL "Enable auto-vectorization of non-kernel code" FORCE)
 endif()
 
 # Check for available SIMD variants and disable not available ones.

@@ -14,6 +14,6 @@ get_sources_local(
     fast_parsimony_avx.h
 )
 
-corax_add_simd_definitions("AVX" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_AVX})
+corax_add_simd_flags("AVX" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_AVX})
 
 target_sources(${CORAX_LIB_TARGET} PRIVATE ${CORAX_KERNEL_SOURCES_AVX})

@@ -16,10 +16,10 @@ get_sources_local(
 )
 
 if(CORAX_ENABLE_SSE) 
-    corax_add_simd_definitions("SSE" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_SSE})
+    corax_add_simd_flags("SSE" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_SSE})
 elseif(CORAX_ENABLE_SSE2NEON)
     # atm either SSE or SSE2NEON kernels can be built, since the share the same function and object names
-    corax_add_simd_definitions("SSE2NEON" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_SSE})
+    corax_add_simd_flags("SSE2NEON" ${CORAX_LIB_TARGET} ${CORAX_KERNEL_SOURCES_SSE})
 endif()
 
 target_sources(${CORAX_LIB_TARGET} PRIVATE ${CORAX_KERNEL_SOURCES_SSE})
