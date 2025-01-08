@@ -60,6 +60,10 @@ endif ()
 
 #check whether to use compiler auto-vectorization
 if (CORAX_BUILD_PORTABLE)
+    if((CMAKE_VERSION VERSION_LESS "3.18") AND (CORAX_BUILD_PORTABLE_ARCH STREQUAL "x86-64"))
+       message(FATAL_ERROR "Fully portable builds are not supported with CMake <3.18.\n"
+                            "You can add e.g. -DCORAX_BUILD_PORTABLE_ARCH=haswell to build for modern x86 CPUs.")
+    endif()
     set(CORAX_ENABLE_AUTOVEC_KERNELS Off CACHE BOOL "Enable auto-vectorization of generic kernels" FORCE)
     set(CORAX_ENABLE_AUTOVEC_OTHER Off CACHE BOOL "Enable auto-vectorization of non-kernel code" FORCE)
 endif()
