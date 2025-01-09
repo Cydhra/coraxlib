@@ -2,6 +2,25 @@
 set(SSE_FLAGS "-msse3")
 set(AVX_FLAGS "-mavx")
 set(AVX2_FLAGS "-mfma -mavx2")
+set(NEON_FLAGS "-march=armv8-a+fp+simd")
+set(NATIVE_FLAGS "-march=native")
+
+if (NOT DEFINED CORAX_BUILD_PORTABLE_ARCH)
+  string(REPLACE "x86_64" "x86-64" CORAX_BUILD_PORTABLE_ARCH ${CMAKE_SYSTEM_PROCESSOR})    
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(NOSIMD_FLAGS "-march=${CORAX_BUILD_PORTABLE_ARCH}")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(NOSIMD_FLAGS "-fno-slp-vectorize -fno-vectorize -march=${CORAX_BUILD_PORTABLE_ARCH}")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    set(NOSIMD_FLAGS "-fno-slp-vectorize -fno-vectorize")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    set(NOSIMD_FLAGS "-no-vec -march=pentium")
+else()
+    # Unknown compiler, fall back to -O1
+    set(NOSIMD_FLAGS "-O1")
+endif()
 
 # Check if the compiler, OS, and architecture support the different SIMD variants. It seems like the
 # only reasonable way to check if a SIMD variant is supported by the whole toolchain is to actually
@@ -57,20 +76,103 @@ function (check_avx2_available)
     )
 endfunction ()
 
-# Add compile definitions for the different SIMD variants.
-function(__corax_add_simd_definitions TARGET SIMD_VARIANT)
-    target_compile_definitions(${TARGET} PRIVATE "-DHAVE_${SIMD_VARIANT}" "-DHAVE_X86INTRIN_H")
-    target_compile_options(${TARGET} PRIVATE -march=native)
+function (check_sse2neon_available)
+    set(TEST_CODE " #include <corax/sse2neon.h>
+        int main() {__m128d a = _mm_setzero_pd(); return 1;}"
+    )
+    set(TEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_sse2neon.c)
+    file(WRITE "${TEST_FILE}" "${TEST_CODE}")
+    try_compile(
+        SSE2NEON_COMPILED ${CMAKE_CURRENT_BINARY_DIR}
+        ${TEST_FILE}
+        COMPILE_DEFINITIONS "${NEON_FLAGS} -I${PROJECT_SOURCE_DIR}/src"
+    )
+    set(SSE2NEON_AVAILABLE
+        ${SSE2NEON_COMPILED}
+        PARENT_SCOPE
+    )
+endfunction ()
+
+
+# Add compiler flags for the different SIMD variants.
+function(__corax_get_simd_flags SIMD_VARIANT)
+    if (SIMD_VARIANT STREQUAL "NONE")
+      set(_SIMD_FLAGS ${NOSIMD_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "NATIVE")
+      set(_SIMD_FLAGS ${NATIVE_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "SSE" OR SIMD_VARIANT STREQUAL "SSE3")
+      set(_SIMD_FLAGS ${SSE_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "SSE2NEON")
+      set(_SIMD_FLAGS ${NEON_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "AVX")
+      set(_SIMD_FLAGS ${AVX_FLAGS})
+    elseif (SIMD_VARIANT STREQUAL "AVX2")
+      set(_SIMD_FLAGS ${AVX2_FLAGS})
+    endif()
+    set(SIMD_FLAGS ${_SIMD_FLAGS} PARENT_SCOPE)
 endfunction()
 
+# Add defines for all available SIMD variants -> applied to ALL compile units!
+function(__corax_get_simd_definitions)
+    if (CORAX_ENABLE_SSE)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_SSE3")
+    elseif (CORAX_ENABLE_SSE2NEON)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_SSE3" "HAVE_SSE2NEON" "SSE2NEON_SUPPRESS_WARNINGS")
+    endif()    
+    if (CORAX_ENABLE_AVX)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_AVX")
+    endif()  
+    if (CORAX_ENABLE_AVX2)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_AVX2")
+    endif()  
+    if (CORAX_ENABLE_AUTOVEC_OTHER OR CORAX_ENABLE_AUTOVEC_KERNELS)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_AUTOVEC")
+    endif()  
+    
+    if (CORAX_ENABLE_SSE OR CORAX_ENABLE_AVX OR CORAX_ENABLE_AVX2)
+      set(_SIMD_DEFS ${_SIMD_DEFS} "HAVE_X86INTRIN_H")
+    endif()
+    
+    set(SIMD_DEFS ${_SIMD_DEFS} PARENT_SCOPE)
+endfunction()
+
+
+function(corax_add_simd_flags SIMD_VARIANT TARGET)
+    __corax_get_simd_flags(${SIMD_VARIANT})
+#    message(STATUS "SIMD_VARIANT: ${SIMD_VARIANT} ")
+#    message(STATUS "SIMD_FLAGS: ${SIMD_FLAGS} ")
+#    message(STATUS "SOURCES: ${ARGN}")
+    set_source_files_properties(${ARGN} TARGET_DIRECTORY ${TARGET} 
+       PROPERTIES COMPILE_FLAGS ${SIMD_FLAGS} 
+#                  COMPILE_DEFINITIONS "${SIMD_DEFS}"
+    )
+endfunction()
+
+
+function(__corax_target_simd_definitions TARGET SIMD_VARIANT)
+    __corax_get_simd_definitions()
+    target_compile_definitions(${TARGET} PRIVATE ${SIMD_DEFS})
+    __corax_get_simd_flags(${SIMD_VARIANT})
+    separate_arguments(_SIMD_FLAGS UNIX_COMMAND "${SIMD_FLAGS}")
+    target_compile_options(${TARGET} PRIVATE ${_SIMD_FLAGS})
+endfunction()
+
+function (target_add_vnone_definitions TARGET)
+    __corax_target_simd_definitions(${TARGET} "NONE")
+endfunction ()
+
+function (target_add_vnative_definitions TARGET)
+    __corax_target_simd_definitions(${TARGET} "NATIVE")
+endfunction ()
+
 function (target_add_sse_definitions TARGET)
-    __corax_add_simd_definitions(${TARGET} SSE3)
+    __corax_target_simd_definitions(${TARGET} SSE)
 endfunction ()
 
 function (target_add_avx_definitions TARGET)
-    __corax_add_simd_definitions(${TARGET} AVX)
+    __corax_target_simd_definitions(${TARGET} AVX)
 endfunction ()
 
 function (target_add_avx2_definitions TARGET)
-    __corax_add_simd_definitions(${TARGET} AVX2)
+    __corax_target_simd_definitions(${TARGET} AVX2)
 endfunction ()

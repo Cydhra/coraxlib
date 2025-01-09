@@ -33,6 +33,13 @@
 
 /* platform specific */
 
+#if (defined(__aarch64__) && defined(HAVE_SSE2NEON))
+  #define SSE2NEON_PRECISE_MINMAX 1
+  #define SSE2NEON_PRECISE_DIV 1
+  #define SSE2NEON_PRECISE_SQRT 1
+  #include <corax/sse2neon.h>
+#endif
+
 #if (!defined(__APPLE__) && !defined(__WIN32__) && !defined(__WIN64__))
 #include <sys/sysinfo.h>
 #endif

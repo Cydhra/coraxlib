@@ -94,18 +94,12 @@ if (CORAX_BUILD_DIFFICULTY_PREDICTION)
   target_link_libraries(${CORAX_LIB_TARGET} PUBLIC coraxlib_difficulty_prediction_lib)
 endif ()
 
-# Set the SIMD flags corresponding to the requested and supported variant.
-if (CORAX_ENABLE_SSE)
-    target_add_sse_definitions(${CORAX_LIB_TARGET})
-endif ()
-
-if (CORAX_ENABLE_AVX)
-    target_add_avx_definitions(${CORAX_LIB_TARGET})
-endif ()
-
-if (CORAX_ENABLE_AVX2)
-    target_add_avx2_definitions(${CORAX_LIB_TARGET})
-endif ()
+# Set compiler vectorization flags: native (=auto) or none (=portable) 
+if (CORAX_ENABLE_AUTOVEC_OTHER)
+    target_add_vnative_definitions(${CORAX_LIB_TARGET})
+else()
+    target_add_vnone_definitions(${CORAX_LIB_TARGET})
+endif()
 
 # Set the library name to "corax", regardless of if we build the static or shared version. We
 # currently do not need this, as we call both of them "corax".

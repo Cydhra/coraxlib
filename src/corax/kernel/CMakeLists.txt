@@ -18,7 +18,7 @@ target_sources_local(
 
 add_subdirectory(generic)
 
-if (CORAX_ENABLE_SSE)
+if (CORAX_ENABLE_SSE OR CORAX_ENABLE_SSE2NEON)
     add_subdirectory(sse)
 endif ()
 
