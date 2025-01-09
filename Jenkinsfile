@@ -64,7 +64,7 @@ pipeline {
                                 echo Do Build for ${DOCKERFILE} - ${RELEASE_TYPE} - DIFFICULTY_PRED=${BUILD_DIFFICULTY}
                                 set -exo pipefail
                                 rm -fr ${BUILD_DIR} && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-                                cmake -DCMAKE_BUILD_TYPE=${RELEASE_TYPE} -DCORAX_BUILD_TESTS=1 -DCORAX_BUILD_DIFFICULTY_PREDICTION=${BUILD_DIFFICULTY} .. 2>&1 |tee cmake.out
+                                cmake -DCMAKE_BUILD_TYPE=${RELEASE_TYPE} -DCORAX_BUILD_TESTS=1 -DCORAX_BUILD_DIFFICULTY_PREDICTION=${BUILD_DIFFICULTY} -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=${BUILD_DIR}/bin -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${BUILD_DIR}/bin .. 2>&1 |tee cmake.out
                                 make 2>&1 |tee make.out"""
                             }
                         }
