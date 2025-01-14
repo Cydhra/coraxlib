@@ -50,6 +50,10 @@ typedef struct treeinfo
   double *       partition_loglh;
   int *          params_to_optimize;
 
+  /* model parameter linkage across partitions */
+  unsigned int * partition_freqs_linkage;
+  unsigned int * partition_subst_linkage;
+
   // partition that have been initialized (useful for parallelization)
   unsigned int        init_partition_count;
   unsigned int *      init_partition_idx;
@@ -365,6 +369,36 @@ extern "C"
 
   CORAX_EXPORT void
   corax_treeinfo_destroy_ancestral(corax_ancestral_t *ancestral);
+
+  /**
+   * Set linkage for substitution matrices and stationary frequencies
+   * across partitions.
+   *
+   * Linkage array can be defined as follows (here for freqs):
+   *
+   *   00000 = full linkage, all partitions share the same freqs
+   *   01234 = no linkage, every partition has individual.set of freqs
+   *   01114 = partitions #1, #2 and #3 share the same freqs,
+   *           partitions #0 and #4 are independent
+   *   NULL  = do not update / ignore
+   *
+   * @param  subst_linkage   linkage array for substitution matrices
+   * @param  freqs_linkage   linkage array for stationary frequencies
+   *
+   * @return CORAX_SUCCESS if linkage were successfully updated
+   *         CORAX_FAILURE otherwise
+   */
+  CORAX_EXPORT int
+  corax_treeinfo_set_partition_linkage(corax_treeinfo_t   * treeinfo,
+                                       const unsigned int * subst_linkage,
+                                       const unsigned int * freqs_linkage);
+
+  /**
+   * Disable partition model linkage and free the respective arrays.
+   */
+  CORAX_EXPORT void
+  corax_treeinfo_clear_partition_linkage(corax_treeinfo_t   * treeinfo);
+
 
 #ifdef __cplusplus
 } /* extern "C" */

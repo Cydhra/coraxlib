@@ -476,6 +476,7 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   unsigned int      num_parts         = params->num_opt_partitions;
   unsigned int      params_index      = params->params_index;
   unsigned int *    subst_free_params = params->num_free_params;
+  unsigned int *    part_index_map    = params->part_index_map;
 
   double score = -INFINITY;
 
@@ -487,10 +488,14 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
     corax_partition_t *partition = treeinfo->partitions[i];
+    unsigned int real_part    = part_index_map ? part_index_map[i] : part;
+
+    if (real_part == UINT32_MAX)
+      continue;
 
     if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES)
     {
-      if (!partition || (converged && converged[part]))
+      if (!partition || (converged && converged[real_part]))
       {
         /* partitions has converged, skip it */
         part++;
@@ -510,17 +515,18 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
       unsigned int states       = partition->states;
       unsigned int subst_params = (states * (states - 1)) / 2;
       double *     subst_rates  = partition->subst_params[params_index];
+      double *     opt_rates    = x[real_part];
 
       /* update subst rates */
       if (symmetries)
       {
         /* assign values to the substitution rates */
         size_t l, k = 0;
-        for (l = 0; l <= subst_free_params[part]; ++l)
+        for (l = 0; l <= subst_free_params[real_part]; ++l)
         {
           double next_value = (l == (unsigned int)symmetries[subst_params - 1])
                                   ? 1.0
-                                  : x[part][k++];
+                                  : opt_rates[k++];
           for (j = 0; j < subst_params; j++)
           {
             if ((unsigned int)symmetries[j] == l)
@@ -532,8 +538,8 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
       }
       else
       {
-        memcpy(
-            subst_rates, x[part], ((size_t)subst_params - 1) * sizeof(double));
+        memcpy(subst_rates, opt_rates,
+               ((size_t)subst_params - 1) * sizeof(double));
       }
 
       /* important!! invalidate eigen-decomposition */
@@ -549,10 +555,16 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
   /* copy per-partition likelihood to the output array */
   if (fx)
   {
-    j = 0;
+    assert(part_index_map);
+    memset(fx, 0, num_parts * sizeof(double));
+
     for (i = 0; i < treeinfo->partition_count; ++i)
-      if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES)
-        fx[j++] = -1 * treeinfo->partition_loglh[i];
+    {
+      unsigned int real_part    = part_index_map[i];
+
+      if (real_part != UINT32_MAX)
+        fx[real_part] += -1 * treeinfo->partition_loglh[i];
+    }
   }
 
   if (converged)
@@ -577,6 +589,7 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   unsigned int      num_parts        = params->num_opt_partitions;
   unsigned int      params_index     = params->params_index;
   unsigned int *    fixed_freq_state = params->fixed_var_index;
+  unsigned int *    part_index_map   = params->part_index_map;
 
   double score = -INFINITY;
 
@@ -588,10 +601,14 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
     corax_partition_t *partition = treeinfo->partitions[i];
+    unsigned int real_part    = part_index_map ? part_index_map[i] : part;
+
+    if (real_part == UINT32_MAX)
+      continue;
 
     if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES)
     {
-      if (!partition || (converged && converged[part]))
+      if (!partition || (converged && converged[real_part]))
       {
         /* partitions has converged, skip it */
         part++;
@@ -609,23 +626,24 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
 
       unsigned int states = partition->states;
       double *     freqs  = partition->frequencies[params_index];
+      double *     opt_freqs    = x[real_part];
 
-      unsigned int fixed      = fixed_freq_state[part];
+      unsigned int fixed      = fixed_freq_state[real_part];
       double       sum_ratios = 1.0;
       unsigned int cur_index;
 
       /* update frequencies */
       for (j = 0; j < (states - 1); ++j)
       {
-        assert(x[part][j] == x[part][j]);
-        sum_ratios += x[part][j];
+        assert(opt_freqs[j] == opt_freqs[j]);
+        sum_ratios += opt_freqs[j];
       }
       cur_index = 0;
       for (j = 0; j < states; ++j)
       {
         if (j != fixed)
         {
-          freqs[j] = x[part][cur_index] / sum_ratios;
+          freqs[j] = opt_freqs[cur_index] / sum_ratios;
           cur_index++;
         }
       }
@@ -635,7 +653,7 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
       cur_index = 0;
       printf("freqs denorm / norm: ");
       for (size_t i = 0; i < states; ++i)
-        printf("%f ", i == fixed ? 1.0 : x[part][cur_index++]);
+        printf("%f ", i == fixed ? 1.0 : opt_freqs[cur_index++]);
       printf("  ||  ");
 
       for (size_t i = 0; i < states; ++i) printf("%f ", freqs[i]);
@@ -655,10 +673,16 @@ double target_freqs_func_multi(void *p, double **x, double *fx, int *converged)
   /* copy per-partition likelihood to the output array */
   if (fx)
   {
-    j = 0;
+    assert(part_index_map);
+    memset(fx, 0, num_parts * sizeof(double));
+
     for (i = 0; i < treeinfo->partition_count; ++i)
-      if (treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES)
-        fx[j++] = -1 * treeinfo->partition_loglh[i];
+    {
+      unsigned int real_part    = part_index_map[i];
+
+      if (real_part != UINT32_MAX)
+        fx[real_part] += -1 * treeinfo->partition_loglh[i];
+    }
   }
 
   if (converged)

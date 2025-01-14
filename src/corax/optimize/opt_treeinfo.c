@@ -540,18 +540,46 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
   /* nothing to optimize */
   if (!part_count) return -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
-  x                 = (double **)malloc(sizeof(double *) * (part_count));
+  unsigned int *part_linkage = treeinfo->partition_subst_linkage;
+  unsigned int *part_index_map = (unsigned int *)calloc(treeinfo->partition_count,
+                                           sizeof(unsigned int));
+
+  unsigned int part = 0;
+  for (i = 0; i < treeinfo->partition_count; ++i)
+  {
+    part_index_map[i] = UINT32_MAX;
+
+    /* skip partition where no rate optimization is needed */
+    if (!(treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES))
+      continue;
+
+    if (part_linkage && part_linkage[i] != i)
+      part_index_map[i] = part_index_map[part_linkage[i]];
+    else
+    {
+      part_index_map[i] = part;
+      part++;
+    }
+  }
+  part_count = part + 1;
+
+  x                 = (double **)calloc(part_count, sizeof(double *));
   lb                = (double **)malloc(sizeof(double *) * (part_count));
   ub                = (double **)malloc(sizeof(double *) * (part_count));
   bt                = (int **)malloc(sizeof(int *) * (part_count));
   subst_free_params = (unsigned int *)calloc(part_count, sizeof(unsigned int));
 
   /* compute REAL max_free_params accounting for rate symmetries */
-  unsigned int part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
     /* skip partition where no rate optimization is needed */
     if (!(treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES))
+      continue;
+
+    part = part_index_map[i];
+
+    /* skip linked partitions which have been already processed */
+    if (subst_free_params[part])
       continue;
 
     /* process thread-local partitions only */
@@ -580,8 +608,6 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
 
       subst_free_params[part] = part_free_params;
     }
-
-    part++;
   }
 
   /* IMPORTANT: we need to know max_free_params among all threads! */
@@ -605,18 +631,21 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
     ub[0][k] = max_rate;
   }
 
-  part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
     /* skip partition where no rate optimization is needed */
     if (!(treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_SUBST_RATES))
       continue;
 
+    part = part_index_map[i];
+
+    /* skip linked partitions which have been already initialized */
+    if (x[part])
+       continue;
+
     /* remote partition -> skip */
     if (!treeinfo->partitions[i])
     {
-      x[part] = NULL;
-      part++;
       continue;
     }
 
@@ -658,11 +687,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
       else if (x[part][k] > max_rate)
         x[part][k] = max_rate;
     }
-
-    part++;
   }
-
-  assert(part == part_count);
 
   struct treeinfo_opt_params opt_params;
   opt_params.treeinfo           = treeinfo;
@@ -670,6 +695,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
   opt_params.params_index       = params_index;
   opt_params.num_free_params    = subst_free_params;
   opt_params.fixed_var_index    = NULL;
+  opt_params.part_index_map     = part_index_map;
 
   cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
                                              x,
@@ -698,6 +724,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
   free(ub);
   free(bt);
   free(subst_free_params);
+  free(part_index_map);
 
   return cur_logl;
 }
@@ -749,11 +776,35 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
     max_free_params = (unsigned int)tmp;
   }
 
-  x               = (double **)malloc(sizeof(double *) * part_count);
+  unsigned int *part_linkage = treeinfo->partition_freqs_linkage;
+  unsigned int *part_index_map = (unsigned int *)calloc(treeinfo->partition_count,
+                                           sizeof(unsigned int));
+
+  unsigned int part = 0;
+  for (i = 0; i < treeinfo->partition_count; ++i)
+  {
+    part_index_map[i] = UINT32_MAX;
+
+    /* skip partition where no rate optimization is needed */
+    if (!(treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES))
+      continue;
+
+    if (part_linkage && part_linkage[i] != i)
+      part_index_map[i] = part_index_map[part_linkage[i]];
+    else
+    {
+      part_index_map[i] = part;
+      part++;
+    }
+  }
+  part_count = part;
+
+
+  x               = (double **)calloc(part_count, sizeof(double *));
   lb              = (double **)malloc(sizeof(double *) * part_count);
   ub              = (double **)malloc(sizeof(double *) * part_count);
   bt              = (int **)malloc(sizeof(int *) * part_count);
-  num_free_params = (unsigned int *)calloc(sizeof(unsigned int), part_count);
+  num_free_params = (unsigned int *)calloc(part_count, sizeof(unsigned int));
 
   /* those values are the same for all partitions */
   lb[0] = (double *)malloc(sizeof(double) * (max_free_params));
@@ -771,22 +822,26 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
   opt_params.treeinfo           = treeinfo;
   opt_params.num_opt_partitions = part_count;
   opt_params.params_index       = params_index;
-  opt_params.fixed_var_index =
-      (unsigned int *)calloc(part_count, sizeof(unsigned int));
+  opt_params.fixed_var_index    = (unsigned int *)calloc(part_count,
+                                                         sizeof(unsigned int));
+  opt_params.part_index_map     = part_index_map;
 
   /* now iterate over partitions and collect current frequencies values */
-  unsigned int part = 0;
   for (i = 0; i < treeinfo->partition_count; ++i)
   {
     // skip partition where no freqs optimization is needed
     if (!(treeinfo->params_to_optimize[i] & CORAX_OPT_PARAM_FREQUENCIES))
       continue;
 
+    part = part_index_map[i];
+
+    /* skip linked partitions which have been already initialized */
+    if (x[part])
+       continue;
+
     /* skip remote partitions (will be handled by other threads) */
     if (!treeinfo->partitions[i])
     {
-      x[part] = NULL;
-      part++;
       continue;
     }
 
@@ -841,11 +896,7 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
 #endif
 
     opt_params.fixed_var_index[part] = fixed_freq_state;
-
-    part++;
   }
-
-  assert(part == part_count);
 
   cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
                                              x,
@@ -873,6 +924,8 @@ double corax_algo_opt_frequencies_treeinfo(corax_treeinfo_t *treeinfo,
   free(num_free_params);
 
   free(opt_params.fixed_var_index);
+
+  free(part_index_map);
 
   return cur_logl;
 }

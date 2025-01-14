@@ -172,6 +172,10 @@ CORAX_EXPORT corax_treeinfo_t *corax_treeinfo_create(corax_unode_t *root,
     return NULL;
   }
 
+  /* disable partition model linkage by default */
+  treeinfo->partition_freqs_linkage = NULL;
+  treeinfo->partition_subst_linkage = NULL;
+
   unsigned int p;
   for (p = 0; p < partitions; ++p)
   {
@@ -836,6 +840,8 @@ CORAX_EXPORT void corax_treeinfo_destroy(corax_treeinfo_t *treeinfo)
   free(treeinfo->branch_lengths);
   free(treeinfo->partition_loglh);
   free(treeinfo->deriv_precomp);
+
+  corax_treeinfo_clear_partition_linkage(treeinfo);
 
   if (treeinfo->brlen_scalers) free(treeinfo->brlen_scalers);
 
@@ -1745,3 +1751,54 @@ corax_ancestral_t *corax_treeinfo_compute_ancestral(corax_treeinfo_t *treeinfo)
 
   return ancestral;
 }
+
+CORAX_EXPORT int
+corax_treeinfo_set_partition_linkage(corax_treeinfo_t   * treeinfo,
+                                     const unsigned int * subst_linkage,
+                                     const unsigned int * freqs_linkage)
+{
+  size_t link_arr_size = treeinfo->partition_count * sizeof(unsigned int);
+
+  if (subst_linkage)
+  {
+    if (!treeinfo->partition_subst_linkage)
+    {
+      treeinfo->partition_subst_linkage = malloc(link_arr_size);
+      if (!treeinfo->partition_subst_linkage)
+      {
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                        "Can't allocate memory for subst symmetry array");
+        return CORAX_FAILURE;
+      }
+    }
+    memcpy(treeinfo->partition_subst_linkage, subst_linkage, link_arr_size);
+  }
+
+  if (freqs_linkage)
+  {
+    if (!treeinfo->partition_freqs_linkage)
+    {
+      treeinfo->partition_freqs_linkage = malloc(link_arr_size);
+      if (!treeinfo->partition_freqs_linkage)
+      {
+        corax_set_error(CORAX_ERROR_MEM_ALLOC,
+                        "Can't allocate memory for freqs symmetry array");
+        return CORAX_FAILURE;
+      }
+    }
+    memcpy(treeinfo->partition_freqs_linkage, freqs_linkage, link_arr_size);
+  }
+
+  return CORAX_SUCCESS;
+}
+
+CORAX_EXPORT void
+corax_treeinfo_clear_partition_linkage(corax_treeinfo_t   * treeinfo)
+{
+  free(treeinfo->partition_freqs_linkage);
+  free(treeinfo->partition_subst_linkage);
+  treeinfo->partition_freqs_linkage = NULL;
+  treeinfo->partition_subst_linkage = NULL;
+}
+
+

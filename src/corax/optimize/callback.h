@@ -75,6 +75,7 @@ struct treeinfo_opt_params
   unsigned int      params_index;       /* which matrix to optimize */
   unsigned int *num_free_params; /* number of free params for each partition*/
   unsigned int *fixed_var_index; /* which variable is not being optimized */
+  unsigned int *part_index_map;  /* global -> local partition index map */
   treeinfo_param_set_cb param_set_cb;
 };
 
