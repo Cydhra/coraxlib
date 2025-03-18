@@ -1130,8 +1130,8 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   params.total_moves_counter = total_moves_counter ? total_moves_counter : NULL;
   params.improving_moves_counter = improving_moves_counter ? improving_moves_counter : NULL;
 
-  if(total_moves_counter) (*total_moves_counter) = 0;
-  if(improving_moves_counter) (*improving_moves_counter) = 0;
+  //if(total_moves_counter) (*total_moves_counter) = 0;
+  //if(improving_moves_counter) (*improving_moves_counter) = 0;
 
   brlen_unlinked = (treeinfo->brlen_linkage == CORAX_BRLEN_UNLINKED) ? 1 : 0;
 
