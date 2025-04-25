@@ -236,6 +236,20 @@ extern "C"
   bitv_hashtable_t *corax_utree_split_hashtable_create(unsigned int tip_count,
                                                        unsigned int slot_count);
 
+  /**
+   * Updates hashtable 'splits_hash' with splits from another hashtable.
+   * If split already exists in 'splits_hash', its support will be incremented
+   * by the support value in 'hash_from'. Non-existing splits will be inserted with
+   * the original support, but will get new bip_number.
+   *
+   * @param splits_hash    hashtable to update
+   * @param hash_from      hashtable to read splits from
+   *
+   * @returns number of splits inserted/updated
+   */
+  CORAX_EXPORT unsigned int corax_utree_split_hashtable_insert_copy(
+      bitv_hashtable_t *splits_hash, const bitv_hashtable_t *hash_from);
+
   CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
       bitv_hashtable_t *splits_hash, const corax_split_t split, double support);
 
