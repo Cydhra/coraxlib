@@ -837,6 +837,38 @@ bitv_hashtable_t *corax_utree_split_hashtable_create(unsigned int tip_count,
   return hash_init(slot_count, tip_count);
 }
 
+CORAX_EXPORT unsigned int corax_utree_split_hashtable_insert_copy(
+    bitv_hashtable_t *splits_hash, const bitv_hashtable_t *hash_from)
+{
+  size_t splits_added = 0;
+  bitv_hash_entry_t *e, *ne;
+
+  if (!splits_hash || !hash_from)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM, "splits_hash is NULL!\n");
+    return CORAX_FAILURE;
+  }
+
+  for (unsigned int i = 0; i < hash_from->table_size; ++i)
+  {
+    e = hash_from->table[i];
+    while (e != NULL)
+    {
+      ne = hash_insert(e->bit_vector, splits_hash, splits_hash->entry_count,
+                       HASH_KEY_UNDEF, e->support, 0);
+      if (!ne)
+        return CORAX_FAILURE;
+
+      ++splits_added;
+      e = e->next;
+    }
+  }
+
+  assert(splits_added == hash_from->entry_count);
+
+  return splits_added;
+}
+
 CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
     bitv_hashtable_t *splits_hash, const corax_split_t split, double support)
 {
@@ -850,18 +882,6 @@ CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
       split, splits_hash, splits_hash->entry_count, HASH_KEY_UNDEF, support, 0);
 }
 
-/**
- * Creates or updates hashtable with splits (and their support)
- *
- * @param splits_hash    hashtable to update, NULL: create new hashtable
- * @param tip_count      number of tips
- * @param split_count    number of splits in 'splits'
- * @param support        support values for the split
- * @param update_only    0: insert new values as needed,
- *                       1: only increment support for existing splits
- *
- * @returns hashtable with splits
- */
 CORAX_EXPORT bitv_hashtable_t *
              corax_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
                                                 corax_split_t *   splits,
@@ -925,14 +945,77 @@ CORAX_EXPORT bitv_hash_entry_t *
   return 0;
 }
 
+/* forward sort splits by support */
+static int sort_entry_by_support_asc(const void *a, const void *b)
+{
+  bitv_hash_entry_t * ea = *((bitv_hash_entry_t **)a);
+  bitv_hash_entry_t * eb = *((bitv_hash_entry_t **)b);
+
+  double sa = ea->support;
+  double sb = eb->support;
+
+  if (sa == sb)
+    return 0;
+// do we want to resolve ties, e.g. by using split number?
+//    return ((ea->bip_number < eb->bip_number) ? -1 : 1);
+  else
+    return ((sa < sb) ? -1 : 1);
+}
+
+/* reverse sort splits by support */
+static int sort_entry_by_support_desc(const void *a, const void *b)
+{
+  bitv_hash_entry_t * ea = *((bitv_hash_entry_t **)a);
+  bitv_hash_entry_t * eb = *((bitv_hash_entry_t **)b);
+
+  double sa = ea->support;
+  double sb = eb->support;
+
+  if (sa == sb)
+    return 0;
+  else
+    return ((sa < sb) ? 1 : -1);
+}
+
+CORAX_EXPORT bitv_hash_entry_t **
+             corax_utree_split_hashtable_sorted(bitv_hashtable_t *  splits_hash,
+                                                int                 reverse)
+{
+  bitv_hash_entry_t **split_list;
+
+  unsigned int i, j;
+
+  split_list = (bitv_hash_entry_t **) malloc(sizeof(bitv_hash_entry_t *)
+                                              * splits_hash->entry_count);
+
+  j = 0;
+  for (i = 0; i < splits_hash->table_size; i++)
+  {
+    bitv_hash_entry_t *e = splits_hash->table[i];
+    while (e != NULL)
+    {
+      split_list[j] = e;
+      ++j;
+      e = e->next;
+    }
+  }
+  assert(splits_hash->entry_count == j);
+
+  __compar_fn_t cmp_fn = reverse ?  sort_entry_by_support_desc : sort_entry_by_support_asc;
+
+  qsort(split_list, splits_hash->entry_count, sizeof(bitv_hash_entry_t *), cmp_fn);
+
+  return split_list;
+}
+
 CORAX_EXPORT
 void corax_utree_split_hashtable_destroy(bitv_hashtable_t *hash)
 {
   if (hash) hash_destroy(hash);
 }
 
-CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t * tree){
-
+CORAX_EXPORT corax_split_set_t * corax_utree_splitset_create(const corax_utree_t * tree)
+{
   corax_split_set_t * split_set = (corax_split_set_t *) calloc(1, sizeof(corax_split_set_t));
 
   if (!split_set)

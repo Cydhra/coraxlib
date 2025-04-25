@@ -231,6 +231,7 @@ extern "C"
 
   /* split hashtable */
 
+
   CORAX_EXPORT
   bitv_hashtable_t *corax_utree_split_hashtable_create(unsigned int tip_count,
                                                        unsigned int slot_count);
@@ -238,6 +239,18 @@ extern "C"
   CORAX_EXPORT bitv_hash_entry_t *corax_utree_split_hashtable_insert_single(
       bitv_hashtable_t *splits_hash, const corax_split_t split, double support);
 
+  /**
+   * Creates or updates hashtable with splits (and their support)
+   *
+   * @param splits_hash    hashtable to update, NULL: create new hashtable
+   * @param tip_count      number of tips
+   * @param split_count    number of splits in 'splits'
+   * @param support        support values for the split
+   * @param update_only    0: insert new values as needed,
+   *                       1: only increment support for existing splits
+   *
+   * @returns hashtable with splits
+   */
   CORAX_EXPORT bitv_hashtable_t *
                corax_utree_split_hashtable_insert(bitv_hashtable_t *splits_hash,
                                                   corax_split_t *   splits,
@@ -250,6 +263,18 @@ extern "C"
                corax_utree_split_hashtable_lookup(bitv_hashtable_t *  splits_hash,
                                                   const corax_split_t split,
                                                   unsigned int        tip_count);
+  /**
+   * Return a list of splits (hashtable entries) sorted by support.
+   *
+   * @param  splits_hash  split hash table
+   * @param  reverse      sorting order: CORAX_FALSE = asc, CORAX_TRUE = desc
+   *
+   * @return Pointer to a list of sorted hashtable entry pointers.
+   *         Caller is responsible to free the list.
+   */
+  CORAX_EXPORT bitv_hash_entry_t **
+               corax_utree_split_hashtable_sorted(bitv_hashtable_t *  splits_hash,
+                                                  int                 reverse);
 
   CORAX_EXPORT
   void corax_utree_split_hashtable_destroy(bitv_hashtable_t *hash);
