@@ -23,6 +23,19 @@ extern "C"
                                        double *const *     inv_eigenvecs,
                                        unsigned int        count);
 
+  CORAX_EXPORT int
+  corax_core_update_pmatrix_16x16_avx2(double **           pmatrix,
+                                       unsigned int        rate_cats,
+                                       const double *      rates,
+                                       const double *      branch_lengths,
+                                       const unsigned int *matrix_indices,
+                                       const unsigned int *params_indices,
+                                       const double *      prop_invar,
+                                       double *const *     eigenvals,
+                                       double *const *     eigenvecs,
+                                       double *const *     inv_eigenvecs,
+                                       unsigned int        count);
+
   CORAX_EXPORT
   int corax_core_update_pmatrix_avx2(double **           pmatrix,
                                      unsigned int        states,
