@@ -23,15 +23,6 @@ option(CORAX_ENABLE_AVX "Enable AVX SIMD kernels if supported by compiler, OS, a
 option(CORAX_ENABLE_AVX2 "Enable AVX2 SIMD kernels if supported by compiler, OS, and CPU" On)
 option(CORAX_BUILD_SHARED "Build a shared library" Off)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-    "${PROJECT_SOURCE_DIR}/bin"
-    CACHE PATH "Where put all LIBRARY target files when built."
-)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    "${PROJECT_SOURCE_DIR}/bin"
-    CACHE PATH "Where to put all ARCHIVE target files when built."
-)
-
 if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
     message(
             WARNING

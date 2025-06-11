@@ -13,6 +13,11 @@ else ()
     add_library(${CORAX_LIB_TARGET} STATIC)
 endif ()
 
+set_target_properties(${CORAX_LIB_TARGET}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+)
+
 # For other programs to include coraxlib, it has to have position independent code.
 if (CORAX_BUILD_SHARED)
     set_property(TARGET ${CORAX_LIB_TARGET} PROPERTY POSITION_INDEPENDENT_CODE 1)
