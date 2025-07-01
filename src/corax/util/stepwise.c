@@ -786,15 +786,18 @@ CORAX_EXPORT int corax_fastparsimony_stepwise_spr_round(corax_utree_t * tree,
   corax_unode_t ** edge_list = (corax_unode_t **) calloc(old_edge_count,
                                                      sizeof(corax_unode_t *));
 
-  unsigned int * constraint = (unsigned int *) calloc(node_count,
-                                                      sizeof(unsigned int));
-
   unsigned int * orig_idmap = (unsigned int *) calloc(new_tip_count,
                                                       sizeof(unsigned int));
-  for (i = 0; i < node_count; ++i)
+
+  unsigned int * constraint = NULL;
+  if (clv_index_map)
   {
-    unsigned int clv_id = tree->nodes[i]->clv_index;
-    constraint[clv_id] = tree->nodes[i]->next ? clv_index_map[clv_id]+1 : 0;
+    constraint = (unsigned int *) calloc(node_count, sizeof(unsigned int));
+    for (i = 0; i < node_count; ++i)
+    {
+      unsigned int clv_id = tree->nodes[i]->clv_index;
+      constraint[clv_id] = tree->nodes[i]->next ? clv_index_map[clv_id]+1 : 0;
+    }
   }
 
   /* special treatment for incomplete constraint trees:
@@ -924,7 +927,6 @@ CORAX_EXPORT int corax_fastparsimony_stepwise_extend(corax_utree_t * tree,
   unsigned int old_tip_count = tree->tip_count;
   unsigned int old_inner_count = tree->inner_count;
   unsigned int old_node_count = old_tip_count + old_inner_count;
-  unsigned int old_edge_count = tree->edge_count;
   unsigned int ext_tip_count = new_tip_count - old_tip_count;
   unsigned int edge_count;
 
@@ -1019,14 +1021,13 @@ CORAX_EXPORT int corax_fastparsimony_stepwise_extend(corax_utree_t * tree,
   /* collect all edges */
   utree_collect_edges(tree->vroot, edge_list, &edge_count);
 
-  assert(edge_count == old_edge_count);
+  assert(edge_count == tree->edge_count);
 
   corax_unode_t ** new_inner_nodes = new_nodes + new_tip_count + old_inner_count;
   for (i = 0; i < ext_tip_count; ++i)
   {
 //    printf("%d -- adding %u %s\n", i, new_tip_nodes[i]->clv_index, new_tip_nodes[i]->label);
-    corax_unode_t * new_tip_node = new_inner_nodes[i]->back;
-    assert(!new_tip_node->next);
+    assert(!new_inner_nodes[i]->back->next);
 
     *cost = utree_insert_best(pars_info,
                           edge_list,
