@@ -43,7 +43,7 @@ extern "C"
                                            const int *         invar_indices,
                                            const unsigned int *freqs_indices,
                                            double *            persite_lnl,
-                                           unsigned int        attrib);
+                                           double *sitecat_lh, unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,

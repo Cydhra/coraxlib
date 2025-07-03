@@ -119,8 +119,7 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
                                  unsigned int        clv_index,
                                  int                 scaler_index,
                                  const unsigned int *freqs_indices,
-                                 double *            persite_lnl)
-{
+                                 double *persite_lnl, double *sitecat_lh) {
   double        logl = 0;
   unsigned int *scaler;
   unsigned int  identifiers;
@@ -166,6 +165,7 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
                                       partition->invariant,
                                       freqs_indices,
                                       persite_lnl,
+                                      sitecat_lh,
                                       partition->attributes);
   }
 
@@ -433,8 +433,7 @@ static double edge_loglikelihood(corax_partition_t * partition,
                                  int                 child_scaler_index,
                                  unsigned int        matrix_index,
                                  const unsigned int *freqs_indices,
-                                 double *            persite_lnl)
-{
+                                 double *persite_lnl, double *sitecat_lh) {
   double logl = 0;
 
   const double *clvp = partition->clv[parent_clv_index];
@@ -470,7 +469,7 @@ static double edge_loglikelihood(corax_partition_t * partition,
                                        partition->invariant,
                                        freqs_indices,
                                        persite_lnl,
-                                       partition->attributes);
+                                       sitecat_lh, partition->attributes);
 
   /* ascertainment bias correction */
   if (partition->attributes & CORAX_ATTRIB_AB_MASK)
@@ -577,8 +576,7 @@ corax_compute_edge_loglikelihood(corax_partition_t * partition,
                                  int                 child_scaler_index,
                                  unsigned int        matrix_index,
                                  const unsigned int *freqs_indices,
-                                 double *            persite_lnl)
-{
+                                 double *persite_lnl, double *sitecat_lh) {
   double logl;
 
   if (corax_repeats_enabled(partition)
@@ -617,7 +615,8 @@ corax_compute_edge_loglikelihood(corax_partition_t * partition,
                             child_scaler_index,
                             matrix_index,
                             freqs_indices,
-                            persite_lnl);
+                            persite_lnl,
+                            sitecat_lh);
 
   return logl;
 }

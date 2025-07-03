@@ -1516,8 +1516,7 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
                                          const int *          invar_indices,
                                          const unsigned int * freqs_indices,
                                          double *             persite_lnl,
-                                         unsigned int         attrib)
-{
+                                         double *sitecat_lh, unsigned int attrib) {
   unsigned int n, i;
   double       logl       = 0;
   double       prop_invar = 0;
@@ -1657,6 +1656,12 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
+      }
+
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
       }
 
       /* account for invariant sites */

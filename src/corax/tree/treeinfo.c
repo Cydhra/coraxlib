@@ -973,8 +973,8 @@ CORAX_EXPORT void corax_treeinfo_invalidate_clv(corax_treeinfo_t *   treeinfo,
 static double treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
                                      int               incremental,
                                      int               update_pmatrices,
-                                     double **         persite_lnl)
-{
+                                     double **persite_lnl,
+                                     double **sitecat_lh) {
   /* tree root must be an inner node! */
   assert(!CORAX_UTREE_IS_TIP(treeinfo->root));
 
@@ -1080,7 +1080,8 @@ static double treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
                                          treeinfo->root->back->scaler_index,
                                          treeinfo->root->pmatrix_index,
                                          treeinfo->param_indices[p],
-                                         persite_lnl ? persite_lnl[p] : NULL);
+                                         persite_lnl ? persite_lnl[p] : NULL,
+                                         sitecat_lh ? sitecat_lh[p] : NULL);
   }
 
   /* sum up likelihood from all threads */
@@ -1107,19 +1108,25 @@ static double treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
 CORAX_EXPORT double corax_treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
                                                  int               incremental)
 {
-  return treeinfo_compute_loglh(treeinfo, incremental, 1, NULL);
+  return treeinfo_compute_loglh(treeinfo, incremental, 1, NULL,NULL);
 }
 
 CORAX_EXPORT double corax_treeinfo_compute_loglh_flex(
     corax_treeinfo_t *treeinfo, int incremental, int update_pmatrices)
 {
-  return treeinfo_compute_loglh(treeinfo, incremental, update_pmatrices, NULL);
+  return treeinfo_compute_loglh(treeinfo, incremental, update_pmatrices, NULL,NULL);
 }
 
 CORAX_EXPORT double corax_treeinfo_compute_loglh_persite(
     corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **persite_lnl)
 {
-  return treeinfo_compute_loglh(treeinfo, incremental, update_matrices, persite_lnl);
+  return treeinfo_compute_loglh(treeinfo, incremental, update_matrices, persite_lnl,NULL);
+}
+
+// TODO: implement for all kernels
+CORAX_EXPORT double corax_treeinfo_compute_loglh_sitecat(
+  corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **sitecat_lh) {
+  return treeinfo_compute_loglh(treeinfo, incremental, update_matrices, NULL, sitecat_lh);
 }
 
 CORAX_EXPORT

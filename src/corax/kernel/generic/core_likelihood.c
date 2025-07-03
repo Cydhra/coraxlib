@@ -35,6 +35,7 @@ corax_core_root_loglikelihood(unsigned int         states,
                               const int *          invar_indices,
                               const unsigned int * freqs_indices,
                               double *             persite_lnl,
+                              double *sitecat_lh,
                               unsigned int         attrib)
 {
   unsigned int  i, j, k;
@@ -152,7 +153,7 @@ corax_core_root_loglikelihood(unsigned int         states,
                                                 invar_proportion,
                                                 invar_indices,
                                                 freqs_indices,
-                                                persite_lnl);
+                                                persite_lnl, NULL);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */
@@ -1197,8 +1198,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                         const int *          invar_indices,
                                         const unsigned int * freqs_indices,
                                         double *             persite_lnl,
-                                        unsigned int         attrib)
-{
+                                        double *sitecat_lh, unsigned int attrib) {
   unsigned int n, i, j, k;
   double       logl = 0;
 
@@ -1279,7 +1279,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
-                                                      attrib);
+                                                      NULL, attrib);
     }
     else
     {
@@ -1324,6 +1324,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
+                                                      sitecat_lh,
                                                       attrib);
     }
     else
