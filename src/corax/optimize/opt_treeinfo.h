@@ -109,6 +109,16 @@ extern "C"
                                                double            bfgs_factor,
                                                double            tolerance);
 
+  /** FreeRate optimization using Expectation-Maximization (EM) for the rates */
+  CORAX_EXPORT
+  double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
+                                               double            min_rate,
+                                               double            max_rate,
+                                               double            min_brlen,
+                                               double            max_brlen,
+                                               double            bfgs_factor,
+                                               double            tolerance);
+
   CORAX_EXPORT
   double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
                                             unsigned int      params_index,

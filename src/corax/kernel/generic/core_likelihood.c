@@ -153,7 +153,7 @@ corax_core_root_loglikelihood(unsigned int         states,
                                                 invar_proportion,
                                                 invar_indices,
                                                 freqs_indices,
-                                                persite_lnl, NULL);
+                                                persite_lnl);
     }
     /* this line is never called, but should we disable the else case above,
        then states_padded must be set to this value */

@@ -262,12 +262,13 @@ extern "C"
 
   /* functions in em.c */
 
-  /* core Expectation-Maximization (EM) function */
+  /** core Expectation-Maximization (EM) function */
   CORAX_EXPORT void
   corax_opt_minimize_em(double             *w,
                         unsigned int        w_count,
                         double             *sitecat_lh,
                         const unsigned int *site_w,
+                        unsigned int        site_w_sum,
                         unsigned int        l,
                         void               *params,
                         double (*update_sitecatlk_funk)(void *, double *));

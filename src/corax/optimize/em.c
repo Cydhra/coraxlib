@@ -9,6 +9,7 @@ corax_opt_minimize_em(double *             w,
                       unsigned int         w_count,
                       double *             sitecat_lh,
                       const unsigned int * site_w,
+                      unsigned int        site_w_sum,
                       unsigned int         l,
                       void *               params,
                       double (*update_sitecatlk_funk)(void *, double *))
@@ -21,10 +22,18 @@ corax_opt_minimize_em(double *             w,
   double *new_prop   = (double *)malloc(sizeof(double) * w_count);
   double *ratio_prop = (double *)malloc(sizeof(double) * w_count);
 
+    DBG("corax_opt_minimize_em iteration %i weights = (", 10 - max_steps + 1);
+    for (unsigned c = 0; c < w_count; ++c) {
+      DBG(" %f ", w[c]);
+    }
+    DBG(")\n");
+
   while (!converged && max_steps--)
   {
     /* update site-cat LK */
-    update_sitecatlk_funk(params, sitecat_lh);
+    if (update_sitecatlk_funk) {
+      update_sitecatlk_funk(params, sitecat_lh);
+    }
 
     // Expectation
     double *this_lk_cat = sitecat_lh;
@@ -54,15 +63,19 @@ corax_opt_minimize_em(double *             w,
 
     // Maximization
     converged = 1;
+    DBG("corax_opt_minimize_em iteration %i weights = (", 10 - max_steps + 1);
     for (c = 0; c < w_count; c++)
     {
-      new_prop[c] /= l;
+      new_prop[c] /= site_w_sum;
 
       // check for convergence
       converged     = converged && (fabs(w[c] - new_prop[c]) < 1e-4);
       ratio_prop[c] = new_prop[c] / w[c];
       w[c]          = new_prop[c];
+      DBG(" %f ", w[c]);
     }
+
+    DBG(") converged = %i\n", converged);
   }
 
   free(ratio_prop);
