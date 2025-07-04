@@ -1651,6 +1651,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
   assert(treeinfo->partition_count == 1);
 
 
+  double *old_w = (double *) malloc(sizeof(double) * treeinfo->partitions[0]->rate_cats);
   double *sitecat_lh = (double *) malloc(
     sizeof(double) * treeinfo->partitions[0]->sites * treeinfo->partitions[0]->rate_cats);
   double **sitecat_lh_per_part = &sitecat_lh; // sitecat arrays per partition (only one at the moment)
@@ -1660,9 +1661,9 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     prev_logl = cur_logl;
 
     double loglh_before_weights = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 0, sitecat_lh_per_part);
-    DBG("corax_algo_opt_rates_weights_em_treeinfo: sitecatlh[0] = %f %f %f %f\n", sitecat_lh[0], sitecat_lh[0],
-        sitecat_lh[0], sitecat_lh[0]);
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: BEFORE WEIGHTS: logLH = %f\n", loglh_before_weights);
 
+    memcpy(old_w, treeinfo->partitions[0]->rate_weights, sizeof(double) * treeinfo->partitions[0]->rate_cats);
 
     /* optimize mixture weights with EM */
     for (p = 0; p < treeinfo->partition_count; ++p) {
@@ -1681,7 +1682,10 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
         "%.15lf\n",
         loglh_after_weights);
 
-    // TODO: assert(loglh_after_weights > loglh_before_weights);
+    if(loglh_after_weights < loglh_before_weights) {
+        DBG("corax_algo_opt_rates_weights_em_treeinfo: Likelihood worsened, rolling back previous weight values\n");
+        memcpy(treeinfo->partitions[0]->rate_weights, old_w, sizeof(double) * treeinfo->partitions[0]->rate_cats);
+    }
 
     /* optimize mixture rates */
     part = 0;
@@ -1814,6 +1818,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     if (x[p]) free(x[p]);
   }
 
+  free(old_w);
   free(sitecat_lh);
 
   free(old_rates);
