@@ -598,6 +598,13 @@ CORAX_EXPORT int algo_utree_spr(corax_treeinfo_t            *treeinfo,
   return retval;
 }
 
+typedef struct _DescendCandidate {
+  double loglh;
+  corax_unode_t *r_edge;
+  unsigned int r_dist;
+
+} DescendCandidate;
+
 static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
                               node_entry_t                *entry,
                               cutoff_info_t               *cutoff_info,
@@ -608,6 +615,10 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   unsigned int    i, j;
   corax_unode_t  *orig_prune_edge;
   corax_unode_t **regraft_nodes;
+
+  DescendCandidate *candidates;
+  unsigned int next_candidate = 0;
+
   corax_unode_t  *r_edge;
   int             regraft_edges;
   unsigned int    r_dist;
@@ -695,11 +706,17 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     return CORAX_FAILURE;
   }
 
+  candidates = (DescendCandidate*) calloc(8, sizeof(DescendCandidate));
+  if (!candidates) {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for descend candidates\n");
+    return CORAX_FAILURE;
+  }
+
   retval = corax_utree_nodes_at_node_dist(treeinfo->root,
                                           &regraft_nodes[redge_count],
                                           &ncount,
-                                          params->radius_min,
-                                          params->radius_min);
+                                          0,
+                                          0);
   redge_count += ncount;
 
   if (!CORAX_UTREE_IS_TIP(treeinfo->root->back))
@@ -707,11 +724,12 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     retval &= corax_utree_nodes_at_node_dist(treeinfo->root->back,
                                              &regraft_nodes[redge_count],
                                              &ncount,
-                                             params->radius_min,
-                                             params->radius_min);
+                                             0,
+                                             0);
     redge_count += ncount;
   }
   assert(retval == CORAX_SUCCESS);
+  assert(redge_count < 4);
 
   /* initialize regraft distances */
   regraft_dist = (unsigned int *)calloc(total_edge_count, sizeof(unsigned int));
@@ -854,13 +872,39 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
 
     if (r_edge->next && descent)
     {
-      regraft_nodes[redge_count]     = r_edge->next->back;
-      regraft_nodes[redge_count + 1] = r_edge->next->next->back;
-      regraft_dist[redge_count] = regraft_dist[redge_count + 1] = r_dist + 1;
-      redge_count += 2;
+      // regraft_nodes[redge_count]     = r_edge->next->back;
+      // regraft_nodes[redge_count + 1] = r_edge->next->next->back;
+      // regraft_dist[redge_count] = regraft_dist[redge_count + 1] = r_dist + 1;
+      // redge_count += 2;
+      candidates[next_candidate].loglh = loglh;
+      candidates[next_candidate].r_edge = r_edge;
+      candidates[next_candidate].r_dist = r_dist;
+      next_candidate++;
     }
 
     ++j;
+
+    // check if all siblings are done, and if so select next candidate
+    if (regraft_nodes[j] == NULL) {
+      double best_logh = -INFINITY;
+      unsigned int best_index = 0;
+      for (unsigned int x = 0; x < next_candidate; x++) {
+        if (candidates[x].loglh > best_logh) {
+          best_logh = candidates[x].loglh;
+          best_index = x;
+        }
+      }
+
+      // if we have somewhere to descend
+      if (best_index < next_candidate) {
+        regraft_nodes[redge_count]     = candidates[best_index].r_edge->next->back;
+        regraft_nodes[redge_count + 1] = candidates[best_index].r_edge->next->next->back;
+        regraft_dist[redge_count] = regraft_dist[redge_count + 1] = candidates[best_index].r_dist + 1;
+        redge_count += 2;
+        next_candidate = 0;
+      }
+    }
+
     assert(j < total_edge_count);
   }
 
