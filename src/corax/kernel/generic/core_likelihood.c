@@ -35,7 +35,6 @@ corax_core_root_loglikelihood(unsigned int         states,
                               const int *          invar_indices,
                               const unsigned int * freqs_indices,
                               double *             persite_lnl,
-                              double *sitecat_lh,
                               unsigned int         attrib)
 {
   unsigned int  i, j, k;
@@ -354,6 +353,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
                                             const int *   invar_indices,
                                             const unsigned int *freqs_indices,
                                             double *            persite_lnl,
+                                            double *            sitecat_lh,
                                             unsigned int        attrib)
 {
   unsigned int n, i, j, k;
@@ -388,6 +388,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
                                                     invar_indices,
                                                     freqs_indices,
                                                     persite_lnl,
+                                                    sitecat_lh,
                                                     attrib);
   }
 #endif
@@ -407,6 +408,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
                                                     invar_indices,
                                                     freqs_indices,
                                                     persite_lnl,
+                                                    sitecat_lh,
                                                     attrib);
   }
 #endif
@@ -426,6 +428,7 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
                                                     invar_indices,
                                                     freqs_indices,
                                                     persite_lnl,
+                                                    sitecat_lh,
                                                     attrib);
   }
 #endif
@@ -511,6 +514,12 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       if (prop_invar > 0)
       {
@@ -585,6 +594,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                         const int *          invar_indices,
                                         const unsigned int * freqs_indices,
                                         double *             persite_lnl,
+                                        double *             sitecat_lh,
                                         unsigned int         attrib)
 {
   unsigned int n, i, j, k;
@@ -620,6 +630,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
+                                                      sitecat_lh,
                                                       attrib);
     }
     else
@@ -639,6 +650,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                   invar_indices,
                                                   freqs_indices,
                                                   persite_lnl,
+                                                  sitecat_lh,
                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -664,6 +676,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
+                                                      sitecat_lh,
                                                       attrib);
     }
     else if (states == 20)
@@ -683,6 +696,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                         invar_indices,
                                                         freqs_indices,
                                                         persite_lnl,
+                                                        sitecat_lh,
                                                         attrib);
     }
     else
@@ -702,6 +716,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                   invar_indices,
                                                   freqs_indices,
                                                   persite_lnl,
+                                                  sitecat_lh,
                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -727,6 +742,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
+                                                      sitecat_lh,
                                                       attrib);
     }
     else if (states == 20)
@@ -746,6 +762,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                          invar_indices,
                                                          freqs_indices,
                                                          persite_lnl,
+                                                         sitecat_lh,
                                                          attrib);
     }
     else
@@ -765,6 +782,7 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
                                                   invar_indices,
                                                   freqs_indices,
                                                   persite_lnl,
+                                                  sitecat_lh,
                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -853,6 +871,12 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       if (prop_invar > 0)
       {
@@ -928,6 +952,7 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
                                       const int *          invar_indices,
                                       const unsigned int * freqs_indices,
                                       double *             persite_lnl,
+                                      double *             sitecat_lh,
                                       const unsigned int * parent_site_id,
                                       const unsigned int * child_site_id,
                                       double *             bclv,
@@ -949,6 +974,7 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
                                     const int *          invar_indices,
                                     const unsigned int * freqs_indices,
                                     double *             persite_lnl,
+                                    double *             sitecat_lh,
                                     const unsigned int * parent_site_id,
                                     const unsigned int * child_site_id,
                                     double *             bclv,
@@ -1000,6 +1026,7 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
                                  invar_indices,
                                  freqs_indices,
                                  persite_lnl,
+                                 sitecat_lh,
                                  parent_site_id,
                                  child_site_id,
                                  bclv,
@@ -1025,6 +1052,7 @@ double corax_core_edge_loglikelihood_repeats_generic(
     const int *          invar_indices,
     const unsigned int * freqs_indices,
     double *             persite_lnl,
+    double *             sitecat_lh,
     const unsigned int * parent_site_id,
     const unsigned int * child_site_id,
     double *             bclv,
@@ -1125,6 +1153,12 @@ double corax_core_edge_loglikelihood_repeats_generic(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1198,7 +1232,8 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                         const int *          invar_indices,
                                         const unsigned int * freqs_indices,
                                         double *             persite_lnl,
-                                        double *sitecat_lh, unsigned int attrib) {
+                                        double *             sitecat_lh,
+                                        unsigned int         attrib) {
   unsigned int n, i, j, k;
   double       logl = 0;
 
@@ -1234,6 +1269,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
+                                                      sitecat_lh,
                                                       attrib);
     }
     else
@@ -1253,6 +1289,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                   invar_indices,
                                                   freqs_indices,
                                                   persite_lnl,
+                                                  sitecat_lh,
                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -1279,7 +1316,8 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                       invar_indices,
                                                       freqs_indices,
                                                       persite_lnl,
-                                                      NULL, attrib);
+                                                      sitecat_lh,
+                                                      attrib);
     }
     else
     {
@@ -1298,6 +1336,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                   invar_indices,
                                                   freqs_indices,
                                                   persite_lnl,
+                                                  sitecat_lh,
                                                   attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -1344,6 +1383,7 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
                                                    invar_indices,
                                                    freqs_indices,
                                                    persite_lnl,
+                                                   sitecat_lh,
                                                    attrib);
     }
     /* this line is never called, but should we disable the else case above,
@@ -1428,6 +1468,12 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
+      }
+
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
       }
 
       /* account for invariant sites */

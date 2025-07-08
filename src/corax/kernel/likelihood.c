@@ -165,7 +165,6 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
                                       partition->invariant,
                                       freqs_indices,
                                       persite_lnl,
-                                      sitecat_lh,
                                       partition->attributes);
   }
 
@@ -296,6 +295,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
         partition->invariant,
         freqs_indices,
         persite_lnl,
+        NULL,
         partition->attributes);
   }
   else
@@ -317,6 +317,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
         partition->invariant,
         freqs_indices,
         persite_lnl,
+        NULL,
         partition->attributes);
   }
 
@@ -497,7 +498,8 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
                                          int                child_scaler_index,
                                          unsigned int       matrix_index,
                                          const unsigned int *freqs_indices,
-                                         double *            persite_lnl)
+                                         double *            persite_lnl,
+                                         double *            sitecat_lh)
 {
   double logl = 0;
 
@@ -544,6 +546,7 @@ static double edge_loglikelihood_repeats(corax_partition_t *partition,
       partition->invariant,
       freqs_indices,
       persite_lnl,
+      sitecat_lh,
       inv ? parent_site_id : child_site_id,
       !inv ? parent_site_id : child_site_id,
       partition->repeats->bclv_buffer,
@@ -576,7 +579,8 @@ corax_compute_edge_loglikelihood(corax_partition_t * partition,
                                  int                 child_scaler_index,
                                  unsigned int        matrix_index,
                                  const unsigned int *freqs_indices,
-                                 double *persite_lnl, double *sitecat_lh) {
+                                 double             *persite_lnl,
+                                 double             *sitecat_lh) {
   double logl;
 
   if (corax_repeats_enabled(partition)
@@ -590,7 +594,8 @@ corax_compute_edge_loglikelihood(corax_partition_t * partition,
                                       child_scaler_index,
                                       matrix_index,
                                       freqs_indices,
-                                      persite_lnl);
+                                      persite_lnl,
+                                      sitecat_lh);
   }
 
   if (partition->attributes & CORAX_ATTRIB_PATTERN_TIP)

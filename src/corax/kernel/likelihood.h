@@ -74,7 +74,8 @@ extern "C"
                                    int                 child_scaler_index,
                                    unsigned int        matrix_index,
                                    const unsigned int *freqs_indices,
-                                   double *            persite_lnl, double *sitecat_lh);
+                                   double *            persite_lnl,
+                                   double *sitecat_lh);
 
   CORAX_EXPORT int
   corax_compute_node_ancestral(corax_partition_t * partition,

@@ -26,7 +26,8 @@ extern "C"
                                    const int *          invar_indices,
                                    const unsigned int * freqs_indices,
                                    double *             persite_lnl,
-                                   double *sitecat_lh, unsigned int         attrib);
+                                   double *             sitecat_lh,
+                                   unsigned int         attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti(unsigned int         states,
@@ -45,6 +46,7 @@ extern "C"
                                    const int *          invar_indices,
                                    const unsigned int * freqs_indices,
                                    double *             persite_lnl,
+                                   double *             sitecat_lh,
                                    unsigned int         attrib);
 
   CORAX_EXPORT double
@@ -61,6 +63,7 @@ extern "C"
                                        const int *          invar_indices,
                                        const unsigned int * freqs_indices,
                                        double *             persite_lnl,
+                                       double *             sitecat_lh,
                                        unsigned int         attrib);
 
   CORAX_EXPORT double
@@ -96,6 +99,7 @@ extern "C"
                                         const int *          invar_indices,
                                         const unsigned int * freqs_indices,
                                         double *             persite_lnl,
+                                        double *             sitecat_lh,
                                         const unsigned int * parent_site_id,
                                         const unsigned int * child_site_id,
                                         double *             bclv,
@@ -118,6 +122,7 @@ extern "C"
       const int *          invar_indices,
       const unsigned int * freqs_indices,
       double *             persite_lnl,
+      double *             sitecat_lh,
       const unsigned int * parent_site_id,
       const unsigned int * child_site_id,
       double *             bclv,
@@ -136,7 +141,6 @@ extern "C"
                                 const int *          invar_indices,
                                 const unsigned int * freqs_indices,
                                 double *             persite_lnl,
-                                double *             sitecat_lh,
                                 unsigned int         attrib);
 
 #ifdef __cplusplus
