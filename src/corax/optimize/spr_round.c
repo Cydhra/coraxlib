@@ -715,8 +715,8 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   retval = corax_utree_nodes_at_node_dist(treeinfo->root,
                                           &regraft_nodes[redge_count],
                                           &ncount,
-                                          0,
-                                          0);
+                                          1,
+                                          1);
   redge_count += ncount;
 
   if (!CORAX_UTREE_IS_TIP(treeinfo->root->back))
@@ -724,12 +724,12 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
     retval &= corax_utree_nodes_at_node_dist(treeinfo->root->back,
                                              &regraft_nodes[redge_count],
                                              &ncount,
-                                             0,
-                                             0);
+                                             1,
+                                             1);
     redge_count += ncount;
   }
   assert(retval == CORAX_SUCCESS);
-  assert(redge_count < 4);
+  assert(redge_count < 8);
 
   /* initialize regraft distances */
   regraft_dist = (unsigned int *)calloc(total_edge_count, sizeof(unsigned int));
