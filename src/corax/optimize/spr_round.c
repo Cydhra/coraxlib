@@ -616,7 +616,7 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   corax_unode_t  *orig_prune_edge;
   corax_unode_t **regraft_nodes;
 
-  DescendCandidate *candidates;
+  DescendCandidate candidates[8];
   unsigned int next_candidate = 0;
 
   corax_unode_t  *r_edge;
@@ -703,12 +703,6 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   {
     corax_set_error(CORAX_ERROR_MEM_ALLOC,
                     "Cannot allocate memory for regraft nodes\n");
-    return CORAX_FAILURE;
-  }
-
-  candidates = (DescendCandidate*) calloc(8, sizeof(DescendCandidate));
-  if (!candidates) {
-    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for descend candidates\n");
     return CORAX_FAILURE;
   }
 
