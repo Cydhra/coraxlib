@@ -262,7 +262,7 @@ extern "C"
 
   /* functions in em.c */
 
-  /** core Expectation-Maximization (EM) function */
+  /* core Expectation-Maximization (EM) function */
   CORAX_EXPORT void
   corax_opt_minimize_em(double             *w,
                         unsigned int        w_count,
@@ -272,6 +272,71 @@ extern "C"
                         unsigned int        l,
                         void               *params,
                         double (*update_sitecatlk_funk)(void *, double *));
+
+  /** In order to do multi-threaded Expectation Maximization simultaneously
+   * over multiple partitions, we need to know about the global state of
+   * partitions (i.e. across all threads), including the total number of sites
+   * (`pattern_weight_sum`) and the number of rate categories per partition.
+   *
+   * This struct keeps this information in addition to the working memory
+   * required to execute the EM algorithm.
+   */
+  typedef struct {
+      corax_treeinfo_t *treeinfo;
+
+      /** Total number of rate categories across all freerate partitions. */
+      unsigned int total_rate_cats;
+
+      /** Prefix sum of the rate category counts. Allows per-category indexing in a
+       * consecutive array across all partitions, which permits using a single
+       * reduce operation across all threads.
+       *
+       * If we have three partitions with 5, 3 and 4 rate categories, this
+       * array should look like this: {0, 5, 8, 12}.
+       * If there are partitions interspersed that do not utilize freerate,
+       * their category count is considered zero.
+       */
+      unsigned int *prefix_sum_category_count;
+
+      /** Number of sites per partition (\f$n\f$). Has type double for compat with parallel_reduce_cb */
+      double *pattern_weight_sum_per_part;
+
+      /** Per-partition buffer to store the likelihood per site per rate category (\f$L_{ci}\f$) */
+      double **sitecat_lh_per_part;
+
+
+      /* Working variables of EM algorithm */
+
+      /** Category weights for all partitions in a consecutive array (\f$w_{c,j}\f$). Required to track convergence */
+      double *weights;
+
+      /** Buffer that stores the newly calculated category weights (\f$w_{c,j+1}\f$) */
+      double *new_weights;
+
+      /** Ratio between current and previous weight (\f$\frac{w_{c,j+1}}{w_{c,j}}\f$). Used to update the `sitecat_lh_per_part` array without recomputing the likelihood. */
+      double *weight_ratio;
+
+      /** Flag per partition to track convergence */
+      bool *converged;
+  } corax_opt_multipart_em_data_t;
+
+  /** Instantiate working data for the EM algorithm from a given treeinfo */
+  CORAX_EXPORT corax_opt_multipart_em_data_t *
+  corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo);
+
+  CORAX_EXPORT void
+  corax_opt_multipart_em_free(corax_opt_multipart_em_data_t *data);
+
+  /**
+   * Parallelized multi-partition Expectation-Maximization (EM) of freerate category weights.
+   *
+   * Based on the paper H.-C. Wang, K. Li, E. Susko, and A. J. Roger, ‘A class
+   * frequency mixture model that adjusts for site-specific amino acid
+   * frequencies and improves inference of protein phylogeny’, BMC Evol Biol,
+   * vol. 8, no. 1, p. 331, Dec. 2008, doi: 10.1186/1471-2148-8-331.
+   */
+  CORAX_EXPORT void
+  corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data);
 
   /* functions in opt_generic.c */
 

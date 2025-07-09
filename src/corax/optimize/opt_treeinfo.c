@@ -23,6 +23,7 @@
 #include "callback.h"
 #include "corax/corax.h"
 #include "corax/core/common.h"
+#include "corax/core/partition.h"
 #include "corax/optimize/opt_generic.h"
 #include "corax/tree/treeinfo.h"
 #include "opt_branches.h"
@@ -1512,8 +1513,9 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
   return -1 * cur_logl;
 }
 
-CORAX_EXPORT
 
+
+CORAX_EXPORT
 double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
                                                 double min_rate,
                                                 double max_rate,
@@ -1647,35 +1649,29 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
   DBG("corax_algo_opt_rates_weights_em_treeinfo: START: logLH = %.15lf\n",
       cur_logl);
 
-  /* Current state of implementation only works for single partitions and single threads */
-  assert(treeinfo->partition_count == 1);
+  /* Instantiate variables required for EM */
+  corax_opt_multipart_em_data_t *em_data = corax_opt_multipart_em_initialize(treeinfo);
+  double *old_w = (double *) malloc(sizeof(double) * em_data->total_rate_cats);
 
-
-  double *old_w = (double *) malloc(sizeof(double) * treeinfo->partitions[0]->rate_cats);
-  double *sitecat_lh = (double *) malloc(
-    sizeof(double) * treeinfo->partitions[0]->sites * treeinfo->partitions[0]->rate_cats);
-  double **sitecat_lh_per_part = &sitecat_lh; // sitecat arrays per partition (only one at the moment)
-
-  /* EM variables per partition */
   do {
     prev_logl = cur_logl;
 
-    double loglh_before_weights = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 0, sitecat_lh_per_part);
-    DBG("corax_algo_opt_rates_weights_em_treeinfo: BEFORE WEIGHTS: logLH = %f\n", loglh_before_weights);
+    double loglh_before_weights = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 0, em_data->sitecat_lh_per_part);
 
-    memcpy(old_w, treeinfo->partitions[0]->rate_weights, sizeof(double) * treeinfo->partitions[0]->rate_cats);
+    /* Save old weights */
+    for (unsigned int p = 0; p < treeinfo->partition_count; ++p) {
+        corax_partition_t *part = treeinfo->partitions[p];
+        if (!part || !(treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) continue;
 
-    /* optimize mixture weights with EM */
-    for (p = 0; p < treeinfo->partition_count; ++p) {
-      if (treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS) {
-        corax_partition_t *partition = treeinfo->partitions[p];
-
-        corax_opt_minimize_em(partition->rate_weights, partition->rate_cats, sitecat_lh, partition->pattern_weights,
-                partition->pattern_weight_sum,
-                              partition->sites, NULL, NULL);
-      }
+        memcpy(&old_w[em_data->prefix_sum_category_count[p]], part->rate_weights, sizeof(double) * part->rate_cats);
     }
 
+
+
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: BEFORE WEIGHTS: logLH = %f\n", loglh_before_weights);
+
+    /* optimize mixture weights with EM */
+    corax_opt_minimize_em_multipartition(em_data);
 
     double loglh_after_weights = corax_treeinfo_compute_loglh(treeinfo, 1);
     DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER WEIGHTS: logLH = "
@@ -1684,7 +1680,12 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
 
     if(loglh_after_weights < loglh_before_weights) {
         DBG("corax_algo_opt_rates_weights_em_treeinfo: Likelihood worsened, rolling back previous weight values\n");
-        memcpy(treeinfo->partitions[0]->rate_weights, old_w, sizeof(double) * treeinfo->partitions[0]->rate_cats);
+        for (unsigned int p = 0; p < treeinfo->partition_count; ++p) {
+            corax_partition_t *part = treeinfo->partitions[p];
+
+            if (!part || !(treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) continue;
+            memcpy(part->rate_weights, &old_w[em_data->prefix_sum_category_count[p]], sizeof(double) * part->rate_cats);
+        }
     }
 
     /* optimize mixture rates */
@@ -1819,7 +1820,8 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
   }
 
   free(old_w);
-  free(sitecat_lh);
+
+  corax_opt_multipart_em_free(em_data);
 
   free(old_rates);
   free(old_weights);
