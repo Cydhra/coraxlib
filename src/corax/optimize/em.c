@@ -273,9 +273,22 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
             const unsigned partition_offset = data->prefix_sum_category_count[p];
 
             // Maximization step
+            double weight_sum = 0;
             for (unsigned int c = 0; c < category_count; c++) {
                 const unsigned int c_idx = partition_offset + c;
-                data->new_weights[c_idx] /= data->pattern_weight_sum_per_part[p];
+                data->new_weights[c_idx] = fmax(CORAX_OPT_MIN_RATE_WEIGHT,
+                    data->new_weights[c_idx] / data->pattern_weight_sum_per_part[p]);
+
+                weight_sum += data->new_weights[c_idx];
+            }
+
+            for (unsigned int c = 0; c < category_count; c++) {
+                const unsigned int c_idx = partition_offset + c;
+
+                // Normalize the weights if required
+                if (weight_sum > 1.0) {
+                    data->new_weights[c_idx] *= (1.0 / weight_sum);
+                }
 
                 partition_converged = partition_converged && fabs(data->weights[c_idx] - data->new_weights[c_idx]) < 1e-4;
                 data->weight_ratio[c_idx] = data->new_weights[c_idx] / data->weights[c_idx];
