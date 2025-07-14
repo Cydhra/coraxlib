@@ -1451,7 +1451,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
 
     /* now optimize all the branches */
     double loglh;
-    loglh = algo_optimize_bl_all(treeinfo, &params, epsilon, 0.25);
+    loglh = corax_treeinfo_compute_loglh(treeinfo, 0); //algo_optimize_bl_all(treeinfo, &params, epsilon, 0.25);
 
     if (!loglh)
     {
