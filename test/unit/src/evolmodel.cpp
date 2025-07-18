@@ -326,7 +326,7 @@ TEST(EvolModel, genotype16)
   EXPECT_EQ(1, model.num_ratecats());
   EXPECT_EQ(model.params_to_optimize(), CORAX_OPT_PARAM_SUBST_RATES | CORAX_OPT_PARAM_FREQUENCIES);
   EXPECT_NE(nullptr, model.charmap());
-  EXPECT_EQ(model.num_free_params(), 21);
+  EXPECT_EQ(model.num_free_params(), 20);
   EXPECT_EQ(list_to_string(model.state_names()), "ACGT");
   EXPECT_EQ(map_to_string(model.full_state_namemap()), "-ACGKMRSTWY");
 }
@@ -345,7 +345,7 @@ TEST(EvolModel, genotype10)
   EXPECT_EQ(1, model.num_ratecats());
   EXPECT_EQ(model.params_to_optimize(), CORAX_OPT_PARAM_SUBST_RATES | CORAX_OPT_PARAM_FREQUENCIES);
   EXPECT_NE(nullptr, model.charmap());
-  EXPECT_EQ(model.num_free_params(), 15);
+  EXPECT_EQ(model.num_free_params(), 14);
   EXPECT_EQ(list_to_string(model.state_names()), "ACGTMRWSYK");
   EXPECT_EQ(map_to_string(model.full_state_namemap()), "-ACGKMRSTWY");
 }
