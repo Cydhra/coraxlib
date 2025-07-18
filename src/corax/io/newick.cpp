@@ -123,6 +123,8 @@ corax_unode_t *trim_node(corax_unode_t *node)
   next = node->next;
   prev = node;
 
+  if (!next) return node;
+
   while (prev->next != node) { prev = prev->next; }
 
   prev->next  = next;
@@ -328,6 +330,10 @@ corax_utree_t *corax_newick_parser_t::parse_utree(bool auto_unroot,
   try
   {
     root_node = parse_subtree();
+
+    if (!root_node->back && !root_node->next)
+      throw std::invalid_argument{"Invalid newick tree!"};
+
     root_node = trim_node(root_node);
     /* We overcounted, because we assume there is an "upper" branch still */
     _edge_count--;
@@ -353,7 +359,7 @@ corax_utree_t *corax_newick_parser_t::parse_utree(bool auto_unroot,
     if (!_lexer.at_end())
     {
       throw std::runtime_error{
-          "There were extra charcters when we finished parsing"};
+          "There were extra characters when we finished parsing"};
     }
   }
   catch (...)
