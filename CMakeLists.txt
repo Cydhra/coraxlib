@@ -32,15 +32,6 @@ option(CORAX_BUILD_PORTABLE "Build a shared library" Off)
 set(CORAX_ENABLE_AUTOVEC_KERNELS On CACHE BOOL "Enable auto-vectorization of generic kernels")
 set(CORAX_ENABLE_AUTOVEC_OTHER On CACHE BOOL "Enable auto-vectorization of non-kernel code")
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
-    "${PROJECT_SOURCE_DIR}/bin"
-    CACHE PATH "Where put all LIBRARY target files when built."
-)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    "${PROJECT_SOURCE_DIR}/bin"
-    CACHE PATH "Where to put all ARCHIVE target files when built."
-)
-
 if (DEFINED BUILD_SHARED_LIBS AND NOT (CORAX_BUILD_SHARED))
     message(
             WARNING

@@ -61,6 +61,12 @@ const corax_subst_model_t M_MTART = {
     "MTART", 20, corax_aa_rates_mtart, corax_aa_freqs_mtart, NULL, NULL, 0};
 const corax_subst_model_t M_MTZOA = {
     "MTZOA", 20, corax_aa_rates_mtzoa, corax_aa_freqs_mtzoa, NULL, NULL, 0};
+const corax_subst_model_t M_MTMET = {
+    "MTMET", 20, corax_aa_rates_mtmet, corax_aa_freqs_mtmet, NULL, NULL, 0};
+const corax_subst_model_t M_MTINV = {
+    "MTINV", 20, corax_aa_rates_mtinv, corax_aa_freqs_mtinv, NULL, NULL, 0};
+const corax_subst_model_t M_MTVER = {
+    "MTVER", 20, corax_aa_rates_mtver, corax_aa_freqs_mtver, NULL, NULL, 0};
 const corax_subst_model_t M_PMB = {
     "PMB", 20, corax_aa_rates_pmb, corax_aa_freqs_pmb, NULL, NULL, 0};
 const corax_subst_model_t M_HIVB = {
@@ -76,6 +82,8 @@ const corax_subst_model_t M_JTTDCMUT = {"JTT-DCMUT",
                                         0};
 const corax_subst_model_t M_FLU      = {
     "FLU", 20, corax_aa_rates_flu, corax_aa_freqs_flu, NULL, NULL, 0};
+const corax_subst_model_t M_FLAVI      = {
+    "FLAVI", 20, corax_aa_rates_flavi, corax_aa_freqs_flavi, NULL, NULL, 0};
 const corax_subst_model_t M_STMTREV = {"STMTREV",
                                        20,
                                        corax_aa_rates_stmtrev,
@@ -129,8 +137,9 @@ const corax_subst_model_t M_PROTGTR = {
 
 static const corax_subst_model_t *prot_model_list[] = {
     &M_DAYHOFF, &M_LG,    &M_DCMUT,    &M_JTT,   &M_MTREV,   &M_WAG,   &M_RTREV,
-    &M_CPREV,   &M_VT,    &M_BLOSUM62, &M_MTMAM, &M_MTART,   &M_MTZOA, &M_PMB,
-    &M_HIVB,    &M_HIVW,  &M_JTTDCMUT, &M_FLU,   &M_STMTREV, &M_DEN,
+    &M_CPREV,   &M_VT,    &M_BLOSUM62, &M_MTMAM, &M_MTART,   &M_MTZOA, &M_MTMET,
+    &M_MTINV,   &M_MTVER, &M_PMB,      &M_HIVB,  &M_HIVW,    &M_JTTDCMUT,
+    &M_FLU,     &M_FLAVI, &M_STMTREV,  &M_DEN,
 
     &M_Q_PFAM,  &M_Q_PFAM_GB, &M_Q_LG, &M_Q_BIRD, &M_Q_INSECT, &M_Q_MAMMAL,
     &M_Q_PLANT, &M_Q_YEAST,

@@ -300,6 +300,20 @@ CORAX_EXPORT int corax_core_update_pmatrix(double            **pmatrix,
                                                inv_eigenvecs,
                                                count);
     }
+    else if (states == 16)
+    {
+      return corax_core_update_pmatrix_16x16_avx2(pmatrix,
+                                                  rate_cats,
+                                                  rates,
+                                                  branch_lengths,
+                                                  matrix_indices,
+                                                  params_indices,
+                                                  prop_invar,
+                                                  eigenvals,
+                                                  eigenvecs,
+                                                  inv_eigenvecs,
+                                                  count);
+    }
     else if (states == 20)
     {
       return corax_core_update_pmatrix_20x20_avx2(pmatrix,

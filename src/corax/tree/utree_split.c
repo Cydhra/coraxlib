@@ -1001,9 +1001,10 @@ CORAX_EXPORT bitv_hash_entry_t **
   }
   assert(splits_hash->entry_count == j);
 
-  __compar_fn_t cmp_fn = reverse ?  sort_entry_by_support_desc : sort_entry_by_support_asc;
-
-  qsort(split_list, splits_hash->entry_count, sizeof(bitv_hash_entry_t *), cmp_fn);
+  if (reverse)
+    qsort(split_list, splits_hash->entry_count, sizeof(bitv_hash_entry_t *), sort_entry_by_support_desc);
+  else
+    qsort(split_list, splits_hash->entry_count, sizeof(bitv_hash_entry_t *), sort_entry_by_support_asc);
 
   return split_list;
 }

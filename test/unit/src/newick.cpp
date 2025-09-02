@@ -1021,6 +1021,13 @@ TEST(NewickParser, badtrees_cinterface11)
       CORAX_ERROR_NEWICK_SYNTAX);
 }
 
+TEST(NewickParser, badtrees_cinterface12)
+{
+  check_error(
+      corax_utree_parse_newick_string_unroot("abc"),
+      CORAX_ERROR_INVALID_TREE);
+}
+
 TEST(NewickParser, rooted_as_unrooted0)
 {
   check_error(corax_utree_parse_newick_string("(a,(c,d));"),

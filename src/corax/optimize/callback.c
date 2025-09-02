@@ -529,7 +529,7 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged)
                                   : opt_rates[k++];
           for (j = 0; j < subst_params; j++)
           {
-            if ((unsigned int)symmetries[j] == l)
+            if (symmetries[j] >= 0 && (unsigned int)symmetries[j] == l)
             {
               subst_rates[j] = next_value;
             }

@@ -599,7 +599,7 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
       {
         for (k = 0; k < subst_params; ++k)
         {
-          if ((unsigned int)symmetries[k] > part_free_params)
+          if (symmetries[k] >= 0 && (unsigned int)symmetries[k] > part_free_params)
           {
             /* check that symmetries vector is correctly formatted */
             assert((unsigned int)symmetries[k] == (part_free_params + 1));
@@ -669,11 +669,11 @@ double corax_algo_opt_subst_rates_treeinfo(corax_treeinfo_t *treeinfo,
     {
       if (symmetries)
       {
-        if ((unsigned int)symmetries[subst_params - 1] == l) ++l;
+        if (symmetries[subst_params - 1] == (int) l) ++l;
 
         for (j = 0; j < subst_params; ++j)
         {
-          if ((unsigned int)symmetries[j] == l)
+          if (symmetries[j] >= 0 && (unsigned int)symmetries[j] == l)
           {
             x[part][k] = subst_rates[j];
             break;

@@ -405,6 +405,9 @@ CORAX_EXPORT int corax_utree_export_svg(corax_utree_t *           tree,
 
   if (!root || !(root->next)) return CORAX_FAILURE;
 
+  tree = corax_utree_clone(tree);
+  root = tree->vroot;
+
   /* open output file for writing */
   FILE *fp = fopen(filename, "w");
   if (!fp) { return CORAX_FAILURE; }
