@@ -89,8 +89,29 @@ corax_utree_create_parsimony_multipart(unsigned int       taxon_count,
                                        const char *const *taxon_names,
                                        unsigned int       partition_count,
                                        corax_partition_t *const *partitions,
-                                       unsigned int              random_seed,
-                                       unsigned int *            score)
+                                       unsigned int       random_seed,
+                                       unsigned int *     score)
+{
+  return corax_utree_create_parsimony_multipart_spr(taxon_count, taxon_names,
+                                                    partition_count, partitions,
+                                                    0, 0,
+                                                    random_seed, score);
+}
+
+/**
+ * Creates a maximum parsimony topology using randomized stepwise-addition
+ * and subsequent optimization with SPR rounds
+ */
+CORAX_EXPORT
+corax_utree_t *
+corax_utree_create_parsimony_multipart_spr(unsigned int       taxon_count,
+                                           const char *const *taxon_names,
+                                           unsigned int       partition_count,
+                                           corax_partition_t *const *partitions,
+                                           unsigned int       max_spr_rounds,
+                                           unsigned int       spr_cost_epsilon,
+                                           unsigned int       random_seed,
+                                           unsigned int *     score)
 {
   corax_utree_t *tree = NULL;
   unsigned int   i;
@@ -118,6 +139,10 @@ corax_utree_create_parsimony_multipart(unsigned int       taxon_count,
   tree = corax_fastparsimony_stepwise(
       parsimony, taxon_names, score, partition_count, random_seed);
 
+  /* apply SPR moves to improve parsimony score */
+  corax_utree_parsimony_spr(tree, partition_count, parsimony,
+                            max_spr_rounds, spr_cost_epsilon, random_seed, score);
+
   if (tree)
   {
     /* update pmatrix/scaler/node indices */
@@ -129,6 +154,7 @@ corax_utree_create_parsimony_multipart(unsigned int       taxon_count,
   }
   else
     assert(corax_errno);
+
 
 cleanup:
   /* destroy parsimony */
@@ -142,14 +168,15 @@ cleanup:
   return tree;
 }
 
-CORAX_EXPORT corax_utree_t * corax_utree_resolve_parsimony_multipart(const corax_utree_t * multi_tree,
-                                                                  unsigned int partition_count,
-                                                                  corax_partition_t * const * partitions,
-                                                                  const unsigned int * tip_msa_idmap,
-                                                                  unsigned int max_spr_rounds,
-                                                                  unsigned int random_seed,
-                                                                  int * clv_index_map,
-                                                                  unsigned int * score)
+CORAX_EXPORT corax_utree_t *
+corax_utree_resolve_parsimony_multipart(const corax_utree_t * multi_tree,
+                                        unsigned int partition_count,
+                                        corax_partition_t * const * partitions,
+                                        const unsigned int * tip_msa_idmap,
+                                        unsigned int max_spr_rounds,
+                                        unsigned int random_seed,
+                                        int * clv_index_map,
+                                        unsigned int * score)
 {
   int retval = CORAX_FAILURE;
   unsigned int i;
@@ -184,22 +211,12 @@ CORAX_EXPORT corax_utree_t * corax_utree_resolve_parsimony_multipart(const corax
     goto cleanup;
 
   /* if constraint tree was not fully resolved, apply SPR moves to improve parsimony score */
-  if (!multi_tree->binary && max_spr_rounds)
+  if (!multi_tree->binary)
   {
-    unsigned int spr_round = 0;
-    unsigned int best_score;
-
-    *score = ~0;
-    do
-    {
-      best_score = *score;
-      retval = corax_fastparsimony_stepwise_spr_round(tree, parsimony, partition_count,
-                                                 tip_msa_idmap, random_seed,
-                                                 clv_index_map, score);
-      ++spr_round;
-//      printf("spr_round: %u, cost: %u\n", spr_round, *score);
-    }
-    while (retval && spr_round < max_spr_rounds && *score < best_score);
+    retval = corax_utree_parsimony_spr_constrained(tree, partition_count, parsimony,
+                                                   tip_msa_idmap, clv_index_map,
+                                                   max_spr_rounds, 0,
+                                                   random_seed, score);
   }
   else
     retval = CORAX_SUCCESS;
@@ -235,14 +252,15 @@ CORAX_EXPORT corax_utree_t * corax_utree_resolve_parsimony_multipart(const corax
   return tree;
 }
 
-CORAX_EXPORT int corax_utree_extend_parsimony_multipart(corax_utree_t * tree,
-                                                        unsigned int taxon_count,
-                                                        char * const * taxon_names,
-                                                        const unsigned int * tip_msa_idmap,
-                                                        unsigned int partition_count,
-                                                        corax_partition_t * const * partitions,
-                                                        unsigned int random_seed,
-                                                        unsigned int * score)
+CORAX_EXPORT int
+corax_utree_extend_parsimony_multipart(corax_utree_t * tree,
+                                       unsigned int taxon_count,
+                                       char * const * taxon_names,
+                                       const unsigned int * tip_msa_idmap,
+                                       unsigned int partition_count,
+                                       corax_partition_t * const * partitions,
+                                       unsigned int random_seed,
+                                       unsigned int * score)
 {
   int retval = CORAX_FAILURE;
   unsigned int i;
@@ -303,3 +321,56 @@ cleanup:
 
   return retval;
 }
+
+
+CORAX_EXPORT int
+corax_utree_parsimony_spr(corax_utree_t * tree,
+                          unsigned int          partition_count,
+                          corax_parsimony_t **  parsimony,
+                          unsigned int          max_spr_rounds,
+                          unsigned int          spr_cost_epsilon,
+                          unsigned int          random_seed,
+                          unsigned int *        score)
+{
+  return corax_utree_parsimony_spr_constrained(tree, partition_count, parsimony,
+                                               NULL, NULL,
+                                               max_spr_rounds, spr_cost_epsilon,
+                                               random_seed, score);
+}
+
+CORAX_EXPORT int
+corax_utree_parsimony_spr_constrained(corax_utree_t * tree,
+                                      unsigned int          partition_count,
+                                      corax_parsimony_t **  parsimony,
+                                      const unsigned int *  tip_msa_idmap,
+                                      int *                 clv_index_map,
+                                      unsigned int          max_spr_rounds,
+                                      unsigned int          spr_cost_epsilon,
+                                      unsigned int          random_seed,
+                                      unsigned int *        score)
+{
+  int retval = CORAX_SUCCESS;
+
+  if (max_spr_rounds)
+  {
+    unsigned int spr_round = 0;
+    unsigned int best_score;
+
+//    printf("max spr_rounds: %u, cost epsilon: %u, cost: %u\n", max_spr_rounds, spr_cost_epsilon, *score);
+
+    *score = ~0;
+    do
+    {
+      best_score = *score;
+      retval = corax_fastparsimony_stepwise_spr_round(tree, parsimony, partition_count,
+                                                      tip_msa_idmap, random_seed,
+                                                      clv_index_map, score);
+      ++spr_round;
+//      printf("spr_round: %u, cost: %u\n", spr_round, *score);
+    }
+    while (retval && spr_round < max_spr_rounds && *score < (best_score - spr_cost_epsilon));
+  }
+
+  return retval;
+}
+
