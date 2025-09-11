@@ -25,6 +25,7 @@ extern "C"
    *
    * @param[out] persite_lnl Buffer to store the individual site likelihoods.
    * Optional. Set to `nullptr` to ignore.
+   * @param sitecat_lh
    *
    * @return The total likelihood of the partition.
    *
@@ -35,7 +36,7 @@ extern "C"
                                    unsigned int        clv_index,
                                    int                 scaler_index,
                                    const unsigned int *freqs_indices,
-                                   double *            persite_lnl);
+                                   double *            persite_lnl, double *sitecat_lh);
 
   /**
    * Computes the likelihood of an edge. It does this by "rootinng" the tree at
@@ -59,6 +60,7 @@ extern "C"
    *
    * @param[out] persite_lnl Buffer to store the individual site likelihoods.
    * Optional. Set to `nullptr` to ignore.
+   * @param sitecat_lh
    *
    * @return The total likelihood of the partition.
    *
@@ -72,7 +74,8 @@ extern "C"
                                    int                 child_scaler_index,
                                    unsigned int        matrix_index,
                                    const unsigned int *freqs_indices,
-                                   double *            persite_lnl);
+                                   double *            persite_lnl,
+                                   double *sitecat_lh);
 
   CORAX_EXPORT int
   corax_compute_node_ancestral(corax_partition_t * partition,

@@ -22,6 +22,10 @@
 #include "opt_treeinfo.h"
 #include "callback.h"
 #include "corax/corax.h"
+#include "corax/core/common.h"
+#include "corax/core/partition.h"
+#include "corax/optimize/opt_generic.h"
+#include "corax/tree/treeinfo.h"
 #include "opt_branches.h"
 #include "opt_model.h"
 
@@ -1488,6 +1492,336 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
   {
     if (x[i]) free(x[i]);
   }
+
+  free(old_rates);
+  free(old_weights);
+  free(old_brlens);
+  free(old_scalers);
+
+  free(lb[0]);
+  free(ub[0]);
+  free(bt[0]);
+
+  free(x);
+  free(lb);
+  free(ub);
+  free(bt);
+  free(num_free_params);
+
+  free(opt_params.fixed_var_index);
+
+  return -1 * cur_logl;
+}
+
+
+
+CORAX_EXPORT
+double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
+                                                double min_rate,
+                                                double max_rate,
+                                                double min_brlen,
+                                                double max_brlen,
+                                                double bfgs_factor,
+                                                double tolerance) {
+  const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
+
+  unsigned int p;
+  double old_logl, cur_logl, prev_logl;
+  double **x, **lb, **ub;
+  double *old_weights, *old_rates, *old_brlens, *old_scalers;
+  int **bt;
+  unsigned int *num_free_params;
+  size_t rw_span;
+
+  unsigned int part_count = 0;
+  unsigned int local_part_count = 0;
+  unsigned int part = 0;
+  unsigned int local_part = 0;
+  unsigned int max_free_params = 0;
+  unsigned int max_rate_cats = 0; // maximum number of categories of partitions local to this thread
+
+  /* check how many frequencies have to be optimized */
+  for (p = 0; p < treeinfo->partition_count; ++p) {
+    if (treeinfo->params_to_optimize[p]
+        & (CORAX_OPT_PARAM_FREE_RATES | CORAX_OPT_PARAM_RATE_WEIGHTS)) {
+      part_count++;
+
+      /* remote partition -> skip */
+      if (!treeinfo->partitions[p]) continue;
+
+      local_part_count++;
+
+      unsigned int nfree_params = treeinfo->partitions[p]->rate_cats;
+      if (nfree_params > max_free_params) max_free_params = nfree_params;
+
+      unsigned int nrate_cats = treeinfo->partitions[p]->rate_cats;
+      if (nrate_cats > max_rate_cats) max_rate_cats = nrate_cats;
+    }
+  }
+
+  old_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
+
+  /* nothing to optimize */
+  if (!part_count) return -1 * old_logl;
+
+  /* IMPORTANT: we need to know max_free_params among all threads! */
+  if (treeinfo->parallel_reduce_cb) {
+    double tmp = (double) max_free_params;
+    treeinfo->parallel_reduce_cb(
+      treeinfo->parallel_context, &tmp, 1, CORAX_REDUCE_MAX);
+    max_free_params = (unsigned int) tmp;
+  }
+
+  /* in doubles! */
+  rw_span = max_free_params;
+
+  x = (double **) calloc(part_count, sizeof(double *));
+  lb = (double **) calloc(part_count, sizeof(double *));
+  ub = (double **) calloc(part_count, sizeof(double *));
+  bt = (int **) calloc(part_count, sizeof(int *));
+  num_free_params = (unsigned int *) calloc(part_count, sizeof(unsigned int));
+
+  /* those values are the same for all partitions */
+  lb[0] = (double *) malloc(sizeof(double) * (max_free_params));
+  ub[0] = (double *) malloc(sizeof(double) * (max_free_params));
+  bt[0] = (int *) malloc(sizeof(int) * (max_free_params));
+
+  /* save old state for rollback: rates+weights+brlens+BL scalers */
+  old_rates = old_weights = old_brlens = old_scalers = NULL;
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED) {
+    old_rates =
+        (double *) calloc(local_part_count * max_free_params, sizeof(double));
+    old_weights =
+        (double *) calloc(local_part_count * max_free_params, sizeof(double));
+
+    old_brlens = (double *) calloc(treeinfo->tree->edge_count, sizeof(double));
+    memcpy(old_brlens,
+           treeinfo->linked_branch_lengths,
+           sizeof(double) * treeinfo->tree->edge_count);
+
+    if (treeinfo->brlen_scalers) {
+      old_scalers = (double *) calloc(treeinfo->partition_count, sizeof(double));
+      memcpy(old_scalers,
+             treeinfo->brlen_scalers,
+             sizeof(double) * treeinfo->partition_count);
+    }
+  }
+
+  for (p = 0; p < treeinfo->partition_count; ++p) {
+    if (!(treeinfo->params_to_optimize[p]
+          & (CORAX_OPT_PARAM_FREE_RATES | CORAX_OPT_PARAM_RATE_WEIGHTS)))
+      continue;
+
+    if (treeinfo->partitions[p]) {
+      x[part] = (double *) malloc(sizeof(double) * (max_free_params));
+      lb[part] = lb[0];
+      ub[part] = ub[0];
+      bt[part] = bt[0];
+
+      if (old_rates) {
+        size_t rw_size = treeinfo->partitions[p]->rate_cats * sizeof(double);
+        memcpy(old_rates + local_part * rw_span,
+               treeinfo->partitions[p]->rates,
+               rw_size);
+        memcpy(old_weights + local_part * rw_span,
+               treeinfo->partitions[p]->rate_weights,
+               rw_size);
+      }
+      local_part++;
+    }
+    part++;
+  }
+  assert(part == part_count);
+
+  struct treeinfo_opt_params opt_params;
+  opt_params.treeinfo = treeinfo;
+  opt_params.num_opt_partitions = part_count;
+  opt_params.params_index = 0;
+  opt_params.fixed_var_index =
+      (unsigned int *) calloc(part_count, sizeof(unsigned int));
+
+  /* check if we have rates which are outside the bounds, and correct them by
+   * scaling */
+  fix_free_rates(treeinfo, min_rate, max_rate);
+
+  /* EM (for the category weights) + BFGS (for the category rates) co-optimization */
+  cur_logl = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
+  DBG("corax_algo_opt_rates_weights_em_treeinfo: START: logLH = %.15lf\n",
+      cur_logl);
+
+  /* Instantiate variables required for EM */
+  corax_opt_multipart_em_data_t *em_data = corax_opt_multipart_em_initialize(treeinfo);
+  double *old_w = (double *) malloc(sizeof(double) * em_data->total_rate_cats);
+
+  do {
+    prev_logl = cur_logl;
+
+    double loglh_before_weights = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 0, em_data->sitecat_lh_per_part);
+
+    /* Save old weights */
+    for (unsigned int p = 0; p < treeinfo->partition_count; ++p) {
+        corax_partition_t *part = treeinfo->partitions[p];
+        if (!part || !(treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) continue;
+
+        memcpy(&old_w[em_data->prefix_sum_category_count[p]], part->rate_weights, sizeof(double) * part->rate_cats);
+    }
+
+
+
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: BEFORE WEIGHTS: logLH = %f\n", loglh_before_weights);
+
+    /* optimize mixture weights with EM */
+    corax_opt_minimize_em_multipartition(em_data);
+
+    double loglh_after_weights = corax_treeinfo_compute_loglh(treeinfo, 1);
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER WEIGHTS: logLH = "
+        "%.15lf\n",
+        loglh_after_weights);
+
+    if(loglh_after_weights < loglh_before_weights) {
+        DBG("corax_algo_opt_rates_weights_em_treeinfo: Likelihood worsened, rolling back previous weight values\n");
+        for (unsigned int p = 0; p < treeinfo->partition_count; ++p) {
+            corax_partition_t *part = treeinfo->partitions[p];
+
+            if (!part || !(treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) continue;
+            memcpy(part->rate_weights, &old_w[em_data->prefix_sum_category_count[p]], sizeof(double) * part->rate_cats);
+        }
+    }
+
+    /* optimize mixture rates */
+    part = 0;
+    for (p = 0; p < treeinfo->partition_count; ++p) {
+      if (treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES) {
+        corax_partition_t *partition = treeinfo->partitions[p];
+
+        /* remote partition -> skip */
+        if (!partition) {
+          part++;
+          continue;
+        }
+
+        num_free_params[part] = partition->rate_cats;
+
+        DBG("corax_algo_opt_rates_weights_em_treeinfo: OLD RATES = (%.12lf "
+            "%.12lf %.12lf %.12lf)\n",
+            partition->rates[0],
+            partition->rates[1],
+            partition->rates[2],
+            partition->rates[3]);
+
+        fill_rates(partition->rates,
+                   x[part],
+                   bt[part],
+                   lb[part],
+                   ub[part],
+                   min_rate,
+                   max_rate,
+                   partition->rate_cats);
+
+        part++;
+      }
+    }
+
+    opt_params.param_to_optimize = CORAX_OPT_PARAM_FREE_RATES;
+
+    cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
+                                               x,
+                                               lb,
+                                               ub,
+                                               bt,
+                                               num_free_params,
+                                               max_free_params,
+                                               factor,
+                                               tolerance,
+                                               (void *) &opt_params,
+                                               target_func_multidim_treeinfo);
+
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER RATES: logLH = %.15lf\n",
+        cur_logl);
+  } while (prev_logl - cur_logl > tolerance);
+
+  /* now re-normalize rates and scale the branches accordingly */
+  renormalize_free_rates(treeinfo);
+
+  /* update pmatrices and partials according to the new branches */
+  cur_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
+
+  /* normalize scalers and scale the branches accordingly */
+  if (treeinfo->brlen_linkage == CORAX_BRLEN_SCALED
+      && treeinfo->partition_count > 1)
+    corax_treeinfo_normalize_brlen_scalers(treeinfo);
+
+  if (treeinfo->brlen_linkage != CORAX_BRLEN_UNLINKED) {
+    /* check that all branch lengths are within bounds after normalization,
+     * and correct them as needed */
+    corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
+
+    if (brlen_fixed) {
+      /* update pmatrices and partials according to the new branches */
+      double new_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
+
+      DBG("corax_algo_opt_rates_weights_em_treeinfo: BRLEN_FIXED old/opt/fixed: "
+          "%.12lf / %.12lf / %.12lf\n",
+          old_logl,
+          cur_logl,
+          new_logl);
+
+      if (new_logl < old_logl) {
+        /* loglh worse than initial after enforcing min/max brlens -> rollback
+         */
+        assert(old_rates && old_weights && old_brlens);
+
+        /* restore initial rates & weights */
+        local_part = 0;
+        for (p = 0; p < treeinfo->partition_count; ++p) {
+          if (treeinfo->partitions[p]
+              && (treeinfo->params_to_optimize[p]
+                  & (CORAX_OPT_PARAM_FREE_RATES
+                     | CORAX_OPT_PARAM_RATE_WEIGHTS))) {
+            size_t rw_size =
+                treeinfo->partitions[p]->rate_cats * sizeof(double);
+            memcpy(treeinfo->partitions[p]->rates,
+                   old_rates + local_part * rw_span,
+                   rw_size);
+            memcpy(treeinfo->partitions[p]->rate_weights,
+                   old_weights + local_part * rw_span,
+                   rw_size);
+            local_part++;
+          }
+        }
+        /* restore initial branch lengths */
+        for (p = 0; p < treeinfo->subnode_count; ++p)
+          treeinfo->subnodes[p]->length =
+              old_brlens[treeinfo->subnodes[p]->pmatrix_index];
+
+        /* restore initial branch length scalers */
+        if (treeinfo->brlen_scalers) {
+          assert(old_scalers);
+          memcpy(treeinfo->brlen_scalers,
+                 old_scalers,
+                 sizeof(double) * treeinfo->partition_count);
+        }
+
+        renormalize_free_rates(treeinfo);
+
+        cur_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
+
+        DBG("corax_algo_opt_rates_weights_em_treeinfo: ROLLBACK, loglh = "
+            "%.12lf\n",
+            cur_logl);
+      } else
+        cur_logl = new_logl;
+    }
+  }
+
+  /* cleanup */
+  for (p = 0; p < part_count; ++p) {
+    if (x[p]) free(x[p]);
+  }
+
+  free(old_w);
+
+  corax_opt_multipart_em_free(em_data);
 
   free(old_rates);
   free(old_weights);

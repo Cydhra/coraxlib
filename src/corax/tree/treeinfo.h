@@ -268,16 +268,21 @@ extern "C"
   CORAX_EXPORT double corax_treeinfo_compute_loglh_persite(
       corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **persite_lnl);
 
-  CORAX_EXPORT
-  int corax_treeinfo_scale_branches_all(corax_treeinfo_t *treeinfo,
-                                        double            scaler);
+CORAX_EXPORT double corax_treeinfo_compute_loglh_sitecat(
+    corax_treeinfo_t *treeinfo, int incremental, int update_matrices, double **sitecat_lh);
 
-  CORAX_EXPORT
-  int corax_treeinfo_scale_branches_partition(corax_treeinfo_t *treeinfo,
-                                              unsigned int      partition_idx,
-                                              double            scaler);
+CORAX_EXPORT
 
-  CORAX_EXPORT
+int corax_treeinfo_scale_branches_all(corax_treeinfo_t *treeinfo,
+                                      double scaler);
+
+CORAX_EXPORT
+
+int corax_treeinfo_scale_branches_partition(corax_treeinfo_t *treeinfo,
+                                            unsigned int partition_idx,
+                                            double scaler);
+
+CORAX_EXPORT
   int corax_treeinfo_normalize_brlen_scalers(corax_treeinfo_t *treeinfo);
 
   CORAX_EXPORT int corax_treeinfo_set_tree(corax_treeinfo_t *treeinfo,

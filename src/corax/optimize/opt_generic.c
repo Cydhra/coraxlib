@@ -298,24 +298,24 @@ static double compute_negative_lnl_unrooted(void *p, double *x)
   {
     score = -1
             * corax_compute_root_loglikelihood(
-                partition,
-                params->lk_params.where.rooted_t.root_clv_index,
-                params->lk_params.where.rooted_t.scaler_index,
-                params->lk_params.params_indices,
-                NULL);
+              partition,
+              params->lk_params.where.rooted_t.root_clv_index,
+              params->lk_params.where.rooted_t.scaler_index,
+              params->lk_params.params_indices,
+              NULL,NULL);
   }
   else
   {
     score = -1
             * corax_compute_edge_loglikelihood(
-                partition,
-                params->lk_params.where.unrooted_t.parent_clv_index,
-                params->lk_params.where.unrooted_t.parent_scaler_index,
-                params->lk_params.where.unrooted_t.child_clv_index,
-                params->lk_params.where.unrooted_t.child_scaler_index,
-                params->lk_params.where.unrooted_t.edge_pmatrix_index,
-                params->lk_params.params_indices,
-                NULL);
+              partition,
+              params->lk_params.where.unrooted_t.parent_clv_index,
+              params->lk_params.where.unrooted_t.parent_scaler_index,
+              params->lk_params.where.unrooted_t.child_clv_index,
+              params->lk_params.where.unrooted_t.child_scaler_index,
+              params->lk_params.where.unrooted_t.edge_pmatrix_index,
+              params->lk_params.params_indices,
+              NULL,NULL);
   }
 
   return score;
@@ -743,6 +743,6 @@ CORAX_EXPORT double corax_opt_compute_lk(corax_partition_t * partition,
                                                  tree->back->scaler_index,
                                                  tree->pmatrix_index,
                                                  params_indices,
-                                                 NULL);
+                                                 NULL,NULL);
   return logl;
 }

@@ -26,6 +26,7 @@ extern "C"
                                        const int *          invar_indices,
                                        const unsigned int * freqs_indices,
                                        double *             persite_lnl,
+                                       double *             sitecat_lh,
                                        unsigned int         attrib);
 
   CORAX_EXPORT double
@@ -43,7 +44,7 @@ extern "C"
                                            const int *         invar_indices,
                                            const unsigned int *freqs_indices,
                                            double *            persite_lnl,
-                                           unsigned int        attrib);
+                                           double *sitecat_lh, unsigned int        attrib);
 
   CORAX_EXPORT double
   corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
@@ -59,6 +60,7 @@ extern "C"
                                            const int *         invar_indices,
                                            const unsigned int *freqs_indices,
                                            double *            persite_lnl,
+                                           double *            sitecat_lh,
                                            unsigned int        attrib);
 
   CORAX_EXPORT double corax_core_edge_loglikelihood_ti_20x20_avx(
@@ -77,6 +79,7 @@ extern "C"
       const int *          invar_indices,
       const unsigned int * freqs_indices,
       double *             persite_lnl,
+      double *             sitecat_lh,
       unsigned int         attrib);
 
   CORAX_EXPORT double
@@ -95,6 +98,7 @@ extern "C"
                                        const int *          invar_indices,
                                        const unsigned int * freqs_indices,
                                        double *             persite_lnl,
+                                       double *             sitecat_lh,
                                        unsigned int         attrib);
 
   CORAX_EXPORT double
@@ -156,6 +160,7 @@ extern "C"
       const int *          invar_indices,
       const unsigned int * freqs_indices,
       double *             persite_lnl,
+      double *             sitecat_lh,
       const unsigned int * parent_site_id,
       const unsigned int * child_site_id,
       double *             bclv,
@@ -178,6 +183,7 @@ extern "C"
       const int *          invar_indices,
       const unsigned int * freqs_indices,
       double *             persite_lnl,
+      double *             sitecat_lh,
       const unsigned int * parent_site_id,
       const unsigned int * child_site_id,
       double *             bclv,
@@ -200,6 +206,7 @@ extern "C"
       const int *          invar_indices,
       const unsigned int * freqs_indices,
       double *             persite_lnl,
+      double *             sitecat_lh,
       const unsigned int * parent_site_id,
       const unsigned int * child_site_id,
       double *             bclv,

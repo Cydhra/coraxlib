@@ -289,6 +289,7 @@ corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
                                          const int *          invar_indices,
                                          const unsigned int * freqs_indices,
                                          double *             persite_lnl,
+                                         double *             sitecat_lh,
                                          unsigned int         attrib)
 {
   unsigned int n, i;
@@ -459,6 +460,12 @@ corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -534,6 +541,7 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
                                            const int *         invar_indices,
                                            const unsigned int *freqs_indices,
                                            double *            persite_lnl,
+                                           double *            sitecat_lh,
                                            unsigned int        attrib)
 {
   unsigned int n, i, j, m;
@@ -704,6 +712,12 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -775,6 +789,7 @@ double corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
                                             const int *   invar_indices,
                                             const unsigned int *freqs_indices,
                                             double *            persite_lnl,
+                                            double *            sitecat_lh,
                                             unsigned int        attrib)
 {
   unsigned int n, i, j, k;
@@ -950,6 +965,12 @@ double corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1024,6 +1045,7 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
     const int *          invar_indices,
     const unsigned int * freqs_indices,
     double *             persite_lnl,
+    double *             sitecat_lh,
     const unsigned int * parent_site_id,
     const unsigned int * child_site_id,
     double *             bclv,
@@ -1201,6 +1223,12 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1274,6 +1302,7 @@ double corax_core_edge_loglikelihood_ii_avx(unsigned int         states,
                                             const int *   invar_indices,
                                             const unsigned int *freqs_indices,
                                             double *            persite_lnl,
+                                            double *            sitecat_lh,
                                             unsigned int        attrib)
 {
   unsigned int n, i, j, k;
@@ -1443,6 +1472,12 @@ double corax_core_edge_loglikelihood_ii_avx(unsigned int         states,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1516,8 +1551,7 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
                                          const int *          invar_indices,
                                          const unsigned int * freqs_indices,
                                          double *             persite_lnl,
-                                         unsigned int         attrib)
-{
+                                         double *sitecat_lh, unsigned int attrib) {
   unsigned int n, i;
   double       logl       = 0;
   double       prop_invar = 0;
@@ -1659,6 +1693,12 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1734,6 +1774,7 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
     const int *          invar_indices,
     const unsigned int * freqs_indices,
     double *             persite_lnl,
+    double *             sitecat_lh,
     const unsigned int * parent_site_id,
     const unsigned int * child_site_id,
     double *             bclv,
@@ -1883,6 +1924,12 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1958,6 +2005,7 @@ double corax_core_edge_loglikelihood_repeatsbclv_4x4_avx(
     const int *          invar_indices,
     const unsigned int * freqs_indices,
     double *             persite_lnl,
+    double *             sitecat_lh,
     const unsigned int * parent_site_id,
     const unsigned int * child_site_id,
     double *             bclv,
@@ -2115,6 +2163,12 @@ double corax_core_edge_loglikelihood_repeatsbclv_4x4_avx(
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
+      }
+
+      if (sitecat_lh != NULL) {
+        // TODO: invariant sites and SIMD optimization
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
       }
 
       /* account for invariant sites */
