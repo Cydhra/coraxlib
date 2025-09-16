@@ -119,10 +119,32 @@ corax_compute_root_loglikelihood(corax_partition_t * partition,
                                  unsigned int        clv_index,
                                  int                 scaler_index,
                                  const unsigned int *freqs_indices,
-                                 double *persite_lnl, double *sitecat_lh) {
+                                 double *persite_lnl)
+{
+  return corax_compute_root_loglikelihood_sitecat(partition, clv_index,
+                                                  scaler_index, freqs_indices,
+                                                  persite_lnl, NULL);
+}
+
+CORAX_EXPORT double
+corax_compute_root_loglikelihood_sitecat(corax_partition_t * partition,
+                                         unsigned int        clv_index,
+                                         int                 scaler_index,
+                                         const unsigned int *freqs_indices,
+                                         double *            persite_lnl,
+                                         double *            sitecat_lh)
+{
   double        logl = 0;
   unsigned int *scaler;
   unsigned int  identifiers;
+
+  if (sitecat_lh)
+  {
+    corax_set_error(CORAX_ERROR_NOT_IMPLEMENTED,
+                    "Per-category likelihoods for rooted trees not implemented!");
+    return CORAX_FAILURE;
+  }
+
   /* get scaler array if specified */
   if (scaler_index == CORAX_SCALE_BUFFER_NONE)
     scaler = NULL;
@@ -579,8 +601,26 @@ corax_compute_edge_loglikelihood(corax_partition_t * partition,
                                  int                 child_scaler_index,
                                  unsigned int        matrix_index,
                                  const unsigned int *freqs_indices,
+                                 double             *persite_lnl)
+{
+  return corax_compute_edge_loglikelihood_sitecat(partition,
+                                                  parent_clv_index, parent_scaler_index,
+                                                  child_clv_index, child_scaler_index,
+                                                  matrix_index, freqs_indices,
+                                                  persite_lnl, NULL);
+}
+
+CORAX_EXPORT double
+corax_compute_edge_loglikelihood_sitecat(corax_partition_t * partition,
+                                 unsigned int        parent_clv_index,
+                                 int                 parent_scaler_index,
+                                 unsigned int        child_clv_index,
+                                 int                 child_scaler_index,
+                                 unsigned int        matrix_index,
+                                 const unsigned int *freqs_indices,
                                  double             *persite_lnl,
-                                 double             *sitecat_lh) {
+                                 double             *sitecat_lh)
+{
   double logl;
 
   if (corax_repeats_enabled(partition)

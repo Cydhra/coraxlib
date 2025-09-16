@@ -25,18 +25,29 @@ extern "C"
    *
    * @param[out] persite_lnl Buffer to store the individual site likelihoods.
    * Optional. Set to `nullptr` to ignore.
-   * @param sitecat_lh
+   *
+   * @param[out] sitecat_lh  Buffer to store the individual per-site per-category likelihoods.
+   * Optional. Set to `nullptr` to ignore.
    *
    * @return The total likelihood of the partition.
    *
    * @ingroup corax_partition_t
    */
   CORAX_EXPORT double
+  corax_compute_root_loglikelihood_sitecat(corax_partition_t * partition,
+                                           unsigned int        clv_index,
+                                           int                 scaler_index,
+                                           const unsigned int *freqs_indices,
+                                           double *            persite_lnl,
+                                           double *            sitecat_lh);
+
+
+  CORAX_EXPORT double
   corax_compute_root_loglikelihood(corax_partition_t * partition,
                                    unsigned int        clv_index,
                                    int                 scaler_index,
                                    const unsigned int *freqs_indices,
-                                   double *            persite_lnl, double *sitecat_lh);
+                                   double *            persite_lnl);
 
   /**
    * Computes the likelihood of an edge. It does this by "rootinng" the tree at
@@ -60,12 +71,25 @@ extern "C"
    *
    * @param[out] persite_lnl Buffer to store the individual site likelihoods.
    * Optional. Set to `nullptr` to ignore.
-   * @param sitecat_lh
+   *
+   * @param[out] sitecat_lh  Buffer to store the individual per-site per-category likelihoods.
+   * Optional. Set to `nullptr` to ignore.
    *
    * @return The total likelihood of the partition.
    *
    * @ingroup corax_partition_t
    */
+  CORAX_EXPORT double
+  corax_compute_edge_loglikelihood_sitecat(corax_partition_t * partition,
+                                   unsigned int        parent_clv_index,
+                                   int                 parent_scaler_index,
+                                   unsigned int        child_clv_index,
+                                   int                 child_scaler_index,
+                                   unsigned int        matrix_index,
+                                   const unsigned int *freqs_indices,
+                                   double *            persite_lnl,
+                                   double *            sitecat_lh);
+
   CORAX_EXPORT double
   corax_compute_edge_loglikelihood(corax_partition_t * partition,
                                    unsigned int        parent_clv_index,
@@ -74,8 +98,7 @@ extern "C"
                                    int                 child_scaler_index,
                                    unsigned int        matrix_index,
                                    const unsigned int *freqs_indices,
-                                   double *            persite_lnl,
-                                   double *sitecat_lh);
+                                   double *            persite_lnl);
 
   CORAX_EXPORT int
   corax_compute_node_ancestral(corax_partition_t * partition,

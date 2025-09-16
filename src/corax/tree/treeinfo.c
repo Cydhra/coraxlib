@@ -1073,15 +1073,15 @@ static double treeinfo_compute_loglh(corax_treeinfo_t *treeinfo,
        matrix index for the concrete branch length, and the index of the model
        of whose frequency vector is to be used */
     treeinfo->partition_loglh[p] =
-        corax_compute_edge_loglikelihood(treeinfo->partitions[p],
-                                         treeinfo->root->clv_index,
-                                         treeinfo->root->scaler_index,
-                                         treeinfo->root->back->clv_index,
-                                         treeinfo->root->back->scaler_index,
-                                         treeinfo->root->pmatrix_index,
-                                         treeinfo->param_indices[p],
-                                         persite_lnl ? persite_lnl[p] : NULL,
-                                         sitecat_lh ? sitecat_lh[p] : NULL);
+        corax_compute_edge_loglikelihood_sitecat(treeinfo->partitions[p],
+                                                 treeinfo->root->clv_index,
+                                                 treeinfo->root->scaler_index,
+                                                 treeinfo->root->back->clv_index,
+                                                 treeinfo->root->back->scaler_index,
+                                                 treeinfo->root->pmatrix_index,
+                                                 treeinfo->param_indices[p],
+                                                 persite_lnl ? persite_lnl[p] : NULL,
+                                                 sitecat_lh ? sitecat_lh[p] : NULL);
   }
 
   /* sum up likelihood from all threads */

@@ -150,7 +150,7 @@ double calculate_likelihood(corax_partition_t *partition,
                                         node->back->scaler_index,
                                         node->pmatrix_index,
                                         params_indices,
-                                        NULL, NULL);
+                                        NULL);
 }
 
 

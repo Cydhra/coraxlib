@@ -155,7 +155,7 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
                                            tr_p->back->scaler_index,
                                            tr_p->pmatrix_index,
                                            params->params_indices,
-                                           NULL,NULL);
+                                           NULL);
 
       /* check if the optimal found value improves the likelihood score */
       if (eval_loglikelihood >= *loglikelihood_score)
@@ -436,7 +436,7 @@ static double compute_edge_loglikelihood_multi(
                                                     child_scaler_index,
                                                     matrix_index,
                                                     params_indices[p],
-                                                    NULL,NULL);
+                                                    NULL);
   }
 
   if (parallel_reduce_cb)
@@ -837,7 +837,7 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t * partition,
                                                    tree->scaler_index,
                                                    tree->pmatrix_index,
                                                    params_indices,
-                                                   NULL,NULL);
+                                                   NULL);
 
   /* set parameters for N-R optimization */
   corax_newton_tree_params_t params;
@@ -903,7 +903,7 @@ corax_opt_optimize_branch_lengths_local(corax_partition_t * partition,
                                          tree->scaler_index,
                                          tree->pmatrix_index,
                                          params_indices,
-                                         NULL,NULL);
+                                         NULL);
 
     DBG("corax_opt_optimize_branch_lengths_local: iters %u, old: %f, new: "
         "%f\n",
