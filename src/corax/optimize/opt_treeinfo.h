@@ -273,58 +273,7 @@ extern "C"
                         double                  bl_max,
                         int                     smoothings,
                         double                  lh_epsilon);
-
-
-  /**
-   * DEPRECATED! Use corax_algo_sh_support() instead.
-   *
-   * SH-like aLRT statistics calculation (support values for internal branches).
-   * SH-like aLRT values are defined for NNI optimal tree topologies. Hence, it
-   * is recommended for the user to call corax_algo_nni_round() function first.
-   * In case the tree topology is not NNI-optimal, a warning message will be
-   * printed.
-   *
-   * @param  treeinfo               the CORAX treeinfo structure
-   * @param  tolerance              tolerance value, to check for NNI-optimality
-   * and to avoid numerical issues. It can be equal to tolerance value used for
-   * the NNI otpimization in  corax_algo_nni_round() function (e.g. 0.1)
-   * @param[out] shSupportValues    Array where the SH-aLRT statistics will be
-   * stored. The size of the array must be 2*n-3, where n is the number of tip
-   * nodes. The SH-aLRT statistic for a branch with pmatrix_index = i is stored
-   * in shSupportValues[i]. The SH-like aLRT metric for non NNI-optimal internal
-   * branches will be SH-aLRT=-inf. Tip branches will also have SH-aLRT=-inf.
-   * For ambiguous branches, that is, internal branches in which there is a
-   * second NNI-optimal topology, the SH-like aLRT metric will be equal to 0.
-   * @param  nBootstrap             Number of bootstrap replicates (e.g. 1000)
-   * @param  shEpsilon              Confidence of SH-like criterion (e.g. 0.1)
-   * @param  brlen_opt_method       Branch length optimization method (e.g.
-   * CORAX_OPT_BLO_NEWTON_FAST)
-   * @param  bl_min                 Minimum branch length (e.g.
-   * CORAX_OPT_MIN_BRANCH_LEN)
-   * @param  bl_max                 Maximum branch length (e.g.
-   * CORAX_OPT_MAX_BRANCH_LEN)
-   * @param  smoothings             number of smoothings in local branch length
-   * optimization that takes place (e.g. CORAX_OPT_DEFAULT_SMOOTHINGS)
-   * @param  lh_epsilon             epsilon value in local branch length
-   * optimization that takes place (e.g. CORAX_OPT_DEFAULT_EPSILON)
-   * @param  print_in_console       TRUE, if anything to be printed in the
-   * console, otherwise FALSE. (Default TRUE)
-   * @return                        CORAX_SUCCESS, if the SH-like aLRT values
-   * are calculated successfully
-   */
-  CORAX_EXPORT int
-  corax_shSupport_values(corax_treeinfo_t     *treeinfo,
-                         double                tolerance,
-                         double               *shSupportValues,
-                         int                   nBootstrap,
-                         double                shEpsilon,
-                         int                   brlen_opt_method,
-                         double                bl_min,
-                         double                bl_max,
-                         int                   smoothings,
-                         double                lh_epsilon,
-                         bool print_in_console DEFAULT_VALUE(true));
-
+  
   /**
    * NNI round - Searches for the optimal tree topology based on NNI moves.
    * After calling this function the tree topology is probably changed.
