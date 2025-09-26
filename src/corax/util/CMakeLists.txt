@@ -9,7 +9,6 @@ target_sources_local(
             random.c
             stepwise.c
             absdiff.c
-            nni_parsimony.c
     PUBLIC stepwise.h
            random.h
            msa.h
@@ -17,5 +16,4 @@ target_sources_local(
            hardware.h
            compress.h
            absdiff.h
-           nni_parsimony.h
 )
