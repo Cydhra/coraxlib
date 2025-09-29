@@ -1,9 +1,9 @@
- #ifndef RAXML_NG_STATISTICS_H
+#ifndef RAXML_NG_STATISTICS_H
 #define RAXML_NG_STATISTICS_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
+
 #endif
 
 #include "corax/util/random.h"
@@ -28,7 +28,8 @@ extern "C"
 CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
                                        double **trees_persite_lnl,
                                        corax_random_state *rstate,
-                                       unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees, double scale);
+                                       unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees,
+                                       double scale);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
@@ -73,9 +74,9 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *replicates,
  * @param threshold the delta log-likelihood margin where trees still count as maximum likelihood.
  */
 CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
-                                                   unsigned int num_replicates,
-                                                   unsigned int tree,
-                                                   double threshold);
+                                                    unsigned int num_replicates,
+                                                    unsigned int tree,
+                                                    double threshold);
 
 
 #ifdef __cplusplus
