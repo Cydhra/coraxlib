@@ -2,6 +2,11 @@ include(targetSourcesLocal)
 
 target_sources_local(
     ${CORAX_LIB_TARGET}
-    PRIVATE bootstrap.h
+    PRIVATE
+        au.h
+        au.c
+        erfinv.h
+        erfinv.c
+        bootstrap.h
         bootstrap.c
 )
