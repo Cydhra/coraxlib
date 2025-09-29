@@ -19,15 +19,16 @@ extern "C"
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param rstate the state of a random number generator to generate sample distributions. Note that the state has to be
  *               equal on all participating threads to generate correct bootstrap replicates.
- * @param num_sites the number of sites of the original alignment (i.e., the length of the persite lnl vectors)
+ * @param num_sites the number of sites of the original alignment (i.e., the length of the per-site lnl vectors)
  * @param num_replicates the number of replicates to generate
+ * @param num_trees
  * @param scale the scaling factor of the RELL bootstrap method, 1.0 being canonical RELL bootstrap generating replicates
  *              of the same sequence length.
  */
-CORAX_EXPORT void corax_RELL_bootstrap(double ***replicates,
-                                       double ***trees_persite_lnl,
+CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
+                                       double **trees_persite_lnl,
                                        corax_random_state *rstate,
-                                       int num_sites, int num_replicates, double scale);
+                                       unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees, double scale);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
@@ -37,22 +38,44 @@ CORAX_EXPORT void corax_RELL_bootstrap(double ***replicates,
  * continuous BP value.
  * The canonical BP(i) value (i.e., the number of bootstrap replicates in the matrix where tree i is the maximum
  * likelihood tree) is #{L == 0} where L is the normalized likelihood.
+ *
  * The replicate vectors are then sorted per tree, meaning the BP(i) value can be simplified to a binary search for
  * the first element > 0.
- *
- * Conversely, we can calculate a quantile BP(i, t) of the empirical bootstrap distribution by searching for the first
+ * Analogously, we can calculate a quantile BP(i, t) of the empirical bootstrap distribution by searching for the first
  * element > t.
  * This represents the BP value with a margin delta-log-likelihood t, which we can use to check if the AU values converge
- * for BP(0, i).
+ * for BP(0, t).
  *
  * @param replicates the replicate matrix containing RELL-bootstrap log-likelihoods, one row per tree, numReplicates columns
  *                   per row
- * @param num_trees the number of trees (rows) in the matrix
  * @param num_replicates the number of replicates per row
+ * @param num_trees the number of trees (rows) in the matrix
  */
-CORAX_EXPORT void corax_normalize_lnl_bootstrap(double ***replicates,
-                                                int num_trees,
-                                                int num_replicates);
+CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *replicates,
+                                                unsigned int num_replicates,
+                                                unsigned int num_trees);
+
+/**
+ * Calculate the bootstrap count (i.e., the number of bootstrap replicates where the given tree is the maximum
+ * likelihood trees) with a delta log-likelihood margin threshold. Every bootstrap replicate which is not smaller than
+ * the maximum likelihood tree in that replicate by more than the threshold still counts towards the bootstrap count.
+ *
+ * To obtain the canonical BP value, calculate the bootstrap count at threshold 0.0, and divide by the number of
+ * replicates.
+ *
+ * Note that this function returns a floating point number, because it interpolates the discrete empirical distribution
+ * function induced by the bootstrap replicates into a continuous function to avoid numerical issues with the AU
+ * algorithm.
+ *
+ * @param replicates sorted, normalized bootstrap replicates matrix
+ * @param num_replicates number of replicates in the matrix
+ * @param tree the index of the tree in the bootstrap matrix
+ * @param threshold the delta log-likelihood margin where trees still count as maximum likelihood.
+ */
+CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
+                                                   unsigned int num_replicates,
+                                                   unsigned int tree,
+                                                   double threshold);
 
 
 #ifdef __cplusplus
