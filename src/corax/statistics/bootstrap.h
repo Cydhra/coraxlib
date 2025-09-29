@@ -4,6 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 
+
+
 #endif
 
 #include "corax/util/random.h"
@@ -25,11 +27,35 @@ extern "C" {
  * @param scale the scaling factor of the RELL bootstrap method, 1.0 being canonical RELL bootstrap generating replicates
  *              of the same sequence length.
  */
-CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
+CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
                                        double **trees_persite_lnl,
                                        corax_random_state *rstate,
                                        unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees,
                                        double scale);
+
+/**
+ * Perform general RELL bootstrap on a set of tree log-likelihood vectors.
+ * The log-likelihood vectors are sampled with replacement numReplicates * scale times, generating numReplicates
+ * log-likelihood replicates per tree per scale.
+ * The replicates are stored in matrices, which contain numReplicates replicates per row and one row per tree.
+ * There is one matrix per tree.
+ *
+ * @param replicate_matrices the out-parameter for an array of matrices of bootstrap replicates
+ * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
+ * @param rstate the state of a random number generator to generate sample distributions. Note that the state has to be
+ *               equal on all participating threads to generate correct bootstrap replicates.
+ * @param num_sites the number of sites of the original alignment (i.e., the length of the per-site lnl vectors)
+ * @param num_trees the number of trees in the persite_lnl array
+ * @param num_replicates an array defining how many bootstrap replicates to generate per scale
+ * @param scales an array of scaling factors for the multiscale bootstrap
+ * @param num_scales
+ */
+CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
+                                                  double **trees_persite_lnl,
+                                                  corax_random_state *rstate,
+                                                  unsigned int num_sites, unsigned int num_trees,
+                                                  unsigned int *num_replicates,
+                                                  double *scales, unsigned int num_scales);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
@@ -52,9 +78,11 @@ CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
  * @param num_replicates the number of replicates per row
  * @param num_trees the number of trees (rows) in the matrix
  */
-CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *replicates,
-                                                unsigned int num_replicates,
-                                                unsigned int num_trees);
+CORAX_EXPORT
+
+void corax_normalize_lnl_bootstrap(double *replicates,
+                                   unsigned int num_replicates,
+                                   unsigned int num_trees);
 
 /**
  * Calculate the bootstrap count (i.e., the number of bootstrap replicates where the given tree is the maximum
