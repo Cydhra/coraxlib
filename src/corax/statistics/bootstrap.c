@@ -16,7 +16,7 @@
  *
  * The vector is initialized with zeros before it is filled with data.
  */
-void generate_resample_vector(double *vector, corax_random_state *rstate, unsigned int num_sites, double scale) {
+void generate_resample_vector(double *const vector, corax_random_state *const rstate, const unsigned int num_sites, const double scale) {
     unsigned int num_samples = (unsigned int) ((double) num_sites * scale);
 
     // reset vector
@@ -33,7 +33,8 @@ void generate_resample_vector(double *vector, corax_random_state *rstate, unsign
  * Find the maximum in the `replicate`-th column of the `replicates` matrix, stored in row-major format with
  * `num_replicates` columns and `num_trees` rows.
  */
-double column_max(const double *replicates, unsigned int replicate, unsigned int num_replicates, unsigned int num_trees) {
+double column_max(const double *const replicates, const unsigned int replicate, const unsigned int num_replicates,
+                  const unsigned int num_trees) {
     double best_value = -INFINITY;
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
         if (replicates[id_tree * num_replicates + replicate] > best_value) {
@@ -47,16 +48,16 @@ double column_max(const double *replicates, unsigned int replicate, unsigned int
 /**
  * Compare two doubles for sorting
  */
-int cmp_double(const void *a, const void *b) {
-    const double da = *(const double*)a;
-    const double db = *(const double*)b;
+int cmp_double(const void *const a, const void *const b) {
+    const double da = *(const double *) a;
+    const double db = *(const double *) b;
     return (da > db) - (da < db);
 }
 
 /**
  * Binary-search for the position of the threshold element, if it was in the sorted vector.
  */
-unsigned int bposition(double *vector, double threshold, unsigned int len) {
+unsigned int bposition(const double *const vector, const double threshold, const unsigned int len) {
     unsigned int l = 0, r = len;
     while (l < r) {
         unsigned int mid = l + (r - l) / 2;
@@ -69,10 +70,11 @@ unsigned int bposition(double *vector, double threshold, unsigned int len) {
 }
 
 
-CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
-                                       double **trees_persite_lnl,
+CORAX_EXPORT void corax_RELL_bootstrap(double *const replicates,
+                                       double **const trees_persite_lnl,
                                        corax_random_state *rstate,
-                                       unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees, double scale) {
+                                       const unsigned int num_sites, const unsigned int num_replicates,
+                                       const unsigned int num_trees, const double scale) {
     double *weights = malloc(sizeof(double) * num_sites);
     // TODO proper handling
     if (!weights) {
@@ -85,17 +87,20 @@ CORAX_EXPORT void corax_RELL_bootstrap(double *replicates,
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             for (unsigned int id_site = 0; id_site < num_sites; id_site++) {
                 // TODO SIMD optimization
-                replicates[id_tree * num_replicates + replicate] += weights[id_site] * trees_persite_lnl[id_tree][id_site];
+                replicates[id_tree * num_replicates + replicate] += weights[id_site] * trees_persite_lnl[id_tree][
+                    id_site];
             }
+
+            replicates[id_tree * num_replicates + replicate] /= scale;
         }
     }
 
     free(weights);
 }
 
-CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *replicates,
-                                                unsigned int num_replicates,
-                                                unsigned int num_trees) {
+CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
+                                                const unsigned int num_replicates,
+                                                const unsigned int num_trees) {
     // calculate maximum of each replicate set
     double *maximum = malloc(sizeof(double) * num_replicates);
     // TODO proper handling
@@ -113,24 +118,25 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *replicates,
             replicates[id_tree * num_replicates + replicate] -= maximum[replicate];
         }
 
-        double* tree_vec = replicates + id_tree * num_replicates;
+        double *tree_vec = replicates + id_tree * num_replicates;
         qsort(tree_vec, num_replicates, sizeof(double), cmp_double);
     }
 
     free(maximum);
 }
 
-CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
-                                                   unsigned int num_replicates,
-                                                   unsigned int tree,
-                                                   double threshold) {
+CORAX_EXPORT double corax_empirical_bootstrap_count(double *const replicates,
+                                                    const unsigned int num_replicates,
+                                                    const unsigned int tree,
+                                                    const double threshold) {
     double *tree_vec = replicates + tree * num_replicates;
     const unsigned int cutoff = bposition(tree_vec, threshold, num_replicates);
 
     double smoothed;
     if (cutoff < num_replicates - 1) {
         if (tree_vec[cutoff + 1] > tree_vec[cutoff]) {
-            smoothed = 0.5 + (double) cutoff + (threshold - tree_vec[cutoff]) / (tree_vec[cutoff + 1] - tree_vec[cutoff]);
+            smoothed = 0.5 + (double) cutoff + (threshold - tree_vec[cutoff]) / (
+                           tree_vec[cutoff + 1] - tree_vec[cutoff]);
         } else if (cutoff > 0) {
             smoothed = 0.5 + (double) cutoff;
         } else {
@@ -138,7 +144,8 @@ CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
         }
     } else if (tree_vec[num_replicates - 1] - tree_vec[num_replicates - 2] > 0.0) {
         smoothed = 0.5 + (double) num_replicates +
-            (threshold - tree_vec[num_replicates - 2])/ (tree_vec[num_replicates - 1] - tree_vec[num_replicates]);
+                   (threshold - tree_vec[num_replicates - 2]) / (
+                       tree_vec[num_replicates - 1] - tree_vec[num_replicates]);
     } else {
         smoothed = num_replicates;
     }
