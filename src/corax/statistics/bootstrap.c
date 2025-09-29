@@ -16,7 +16,8 @@
  *
  * The vector is initialized with zeros before it is filled with data.
  */
-void generate_resample_vector(double *const vector, corax_random_state *const rstate, const unsigned int num_sites, const double scale) {
+void generate_resample_vector(double *const vector, corax_random_state *const rstate, const unsigned int num_sites,
+                              const double scale) {
     unsigned int num_samples = (unsigned int) ((double) num_sites * scale);
 
     // reset vector
@@ -70,7 +71,7 @@ unsigned int bposition(const double *const vector, const double threshold, const
 }
 
 
-CORAX_EXPORT void corax_RELL_bootstrap(double *const replicates,
+CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
                                        double **const trees_persite_lnl,
                                        corax_random_state *rstate,
                                        const unsigned int num_sites, const unsigned int num_replicates,
@@ -81,21 +82,54 @@ CORAX_EXPORT void corax_RELL_bootstrap(double *const replicates,
         exit(-1);
     }
 
+    if (!*replicates) {
+        *replicates = malloc(sizeof(double) * num_replicates * num_trees);
+
+        if (!*replicates) {
+            // TODO proper handling
+            exit(-1);
+        }
+    }
+
+
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
         generate_resample_vector(weights, rstate, num_sites, scale);
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             for (unsigned int id_site = 0; id_site < num_sites; id_site++) {
                 // TODO SIMD optimization
-                replicates[id_tree * num_replicates + replicate] += weights[id_site] * trees_persite_lnl[id_tree][
+                (*replicates)[id_tree * num_replicates + replicate] += weights[id_site] * trees_persite_lnl[id_tree][
                     id_site];
             }
 
-            replicates[id_tree * num_replicates + replicate] /= scale;
+            (*replicates)[id_tree * num_replicates + replicate] /= scale;
         }
     }
 
     free(weights);
+}
+
+CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
+                                                  double **const trees_persite_lnl,
+                                                  corax_random_state *rstate,
+                                                  const unsigned int num_sites, const unsigned int num_trees,
+                                                  unsigned int *const num_replicates,
+                                                  double *const scales, const unsigned int num_scales) {
+    if (!*replicate_matrices) {
+        *replicate_matrices = malloc(sizeof(double *) * num_scales);
+
+        if (!*replicate_matrices) {
+            // TODO proper handling
+            exit(-1);
+        }
+
+        memset(*replicate_matrices, 0, sizeof(double *) * num_scales);
+    }
+
+    for (unsigned int i = 0; i < num_scales; i++) {
+        corax_RELL_bootstrap(replicate_matrices[i], trees_persite_lnl, rstate, num_sites, num_replicates[i], num_trees,
+                             scales[i]);
+    }
 }
 
 CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
