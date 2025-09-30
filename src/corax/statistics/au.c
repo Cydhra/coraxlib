@@ -10,6 +10,11 @@
 const unsigned int CONVERGENCE_ITERATIONS = 100;
 
 /**
+ * The maximum number of iterations for the AU test's newton optimization.
+ */
+const unsigned int NEWTON_ITERATIONS = 30;
+
+/**
  * Epsilon used for zero-checks in BP and AU tests
  */
 const double EPS = 1E-16;
@@ -38,16 +43,20 @@ double compute_distance(const double bp) {
  * parameters d and c are initialized in both cases and can still be used as start parameters to a newton optimization of
  * c and d.
  */
-int fit_parameters_wls(const double *const bootstrap_counts, const double *const scales, const double *const scale_roots,
-                       const unsigned int *const num_replicates, const unsigned int num_scales, double* d, double* c) {
-    double* alloc = malloc(sizeof(double) * num_scales * 2);
+int fit_parameters_wls(const double *const bootstrap_counts,
+                       const double *const scales,
+                       const double *const scale_roots,
+                       const unsigned int *const num_replicates,
+                       const unsigned int num_scales,
+                       double *d, double *c) {
+    double *alloc = malloc(sizeof(double) * num_scales * 2);
     if (!alloc) {
         // TODO proper handling
         exit(-1);
     }
 
-    double* observed_distances = alloc;
-    double* weights = alloc + num_scales;
+    double *observed_distances = alloc;
+    double *weights = alloc + num_scales;
 
     unsigned int non_zero_observations = 0;
     for (unsigned int s = 0; s < num_scales; s++) {
@@ -103,10 +112,158 @@ clean_fail:
     return CORAX_FAILURE;
 }
 
+/**
+ * One instance of the Newton-Raphson optimizer used in the AU test.
+ * It optimizes a two-dimensional parameter, and is thus different from the standard optimizer in coraxlib.
+ */
+typedef struct _NewtonOptimizer {
+    const double *const bootstrap_counts;
+    const double *const scales;
+    const double *const scale_roots;
+    const unsigned int *const num_replicates;
+    const unsigned int num_scales;
+} NewtonOptimizer;
+
+/**
+ * Get the likelihood in the AU model.
+ *
+ * @param d signed distance estimate
+ * @param c curvature parameter estimate
+ * @param scale_root square root of the current scaling factor
+ * @return likelihood of the AU test model
+ */
+double likelihood(const double d, const double c, const double scale_root) {
+    return normal_cdf(-(d * scale_root + c / scale_root), 0.0, 1.0);
+}
+
+/**
+ * Calculate the gradient of the AU model's likelihood function at (d, c).
+ *
+ * @param instance current newton instance of the AU test
+ * @param d current estimate for d
+ * @param c current estimate for c
+ * @param grad_d out-parameter for the partial derivative for d
+ * @param grad_c out-parameter for the partial derivative for c
+ * @param df degrees of freedom, i.e., how many summands are not zero
+ */
+void gradient(const NewtonOptimizer *const instance, const double d, const double c, double *grad_d, double *grad_c, double *df) {
+    *grad_d = 0.0;
+    *grad_c = 0.0;
+    *df = 0;
+
+    for (unsigned int s = 0; s < instance->num_scales; s++) {
+        const double root = instance->scale_roots[s];
+        const double pi = likelihood(d, c, root);
+        if (pi > 0.0 && pi < 1.0) {
+            const double derivative = -normal_pdf(d * root + c / root, 0.0, 1.0)
+                                      * (instance->bootstrap_counts[s] - (double) instance->num_replicates[s] * pi)
+                                      / (pi * (1.0 - pi));
+            *grad_d += derivative * root;
+            *grad_c += derivative / root;
+            *df += 1;
+        } else {
+            // prevent division by zero and similar numerical issues
+            // ReSharper disable once CppRedundantControlFlowJump
+            continue;
+        }
+    }
+}
+
+/**
+ * Calculate the hessian  of the AU model's likelihood function at (d, c).
+ *
+ * @param instance current newton instance of the AU test
+ * @param d current estimate for d
+ * @param c current estimate for c
+ * @param hess_dd out-parameter for the partial derivative with respect to d squared
+ * @param hess_cd out-parameter for the partial derivative with respect to c and d
+ * @param hess_cc out-parameter for the partial derivative with respect to c squared
+ */
+void hessian(const NewtonOptimizer *const instance, const double d, const double c,
+             double *hess_dd, double *hess_cd, double *hess_cc) {
+    *hess_cc = 0.0;
+    *hess_cd = 0.0;
+    *hess_dd = 0.0;
+
+    for (unsigned int s = 0; s < instance->num_scales; s++) {
+        const double root = instance->scale_roots[s];
+        const double pi = likelihood(d, c, root);
+        if (pi > 0.0 && pi < 1.0) {
+            const double linear = d * root + c / root;
+            const double density = normal_pdf(linear, 0.0, 1.0);
+            const double count = instance->bootstrap_counts[s];
+            const double num_replicates = instance->num_replicates[s];
+
+            const double derivative = density * (density * (-count + 2.0 * count * pi - num_replicates * pi * pi)
+                / pi / pi / (1.0 - pi) / (1.0 - pi)
+                + linear * (count - num_replicates * pi) / (pi * (1.0 - pi)));
+
+            *hess_dd += derivative * instance->scales[s];
+            *hess_cd += derivative;
+            *hess_cc += derivative / instance->scales[s];
+        } else {
+            // prevent division by zero and other numerical issues
+            // ReSharper disable once CppRedundantControlFlowJump
+            continue;
+        }
+    }
+}
+
+/*
+ * Newton-Raphson optimization for the signed distance and curvature parameters of the AU-test.
+ * We don't use corax' Newton-Raphson optimizer for this, because we have to optimize two parameters at once.
+ */
+void fit_parameters_newton(const NewtonOptimizer *const instance,
+                          double *d, double *c, double *error, double *p_value, double *df) {
+
+    double prev_d = *d, prev_c = *c;
+
+    // inverse hessian
+    double inv_0 = 0.0, inv_12 = 0.0, inv_3 = 0.0;
+
+    for (unsigned int it = 0; it < NEWTON_ITERATIONS; it++) {
+        double grad_d, grad_c, hess_dd, hess_cd, hess_cc;
+        gradient(instance, *d, *c, &grad_d, &grad_c, df);
+        hessian(instance, *d, *c, &hess_dd, &hess_cd, &hess_cc);
+
+        double determinant = hess_dd * hess_cc - hess_cd * hess_cd;
+        if (fabs(determinant) == 0.0) {
+            // hessian is singular. We interpret this as convergence, despite it being mathematically unclear,
+            // because the convergence test should fail earlier if the function is degenerate.
+
+            // revert to previous parameters to make the fisher-information (inverse hessian) well-defined.
+            // we won't update the inverse hessian from last iteration.
+            *d = prev_d;
+            *c = prev_c;
+            break;
+        }
+
+        // invert hessian
+        inv_0 = hess_cc / determinant;
+        inv_12 = -hess_cd / determinant;
+        inv_3 = hess_dd / determinant;
+
+        // calculate newton step
+        double update_d = inv_0 * grad_d + inv_12 * grad_c;
+        double update_c = inv_12 * grad_d + inv_3 * grad_c;
+
+        prev_d = *d;
+        prev_c = *c;
+
+        *d -= update_d;
+        *c -= update_c;
+    }
+
+    const double deriv = normal_pdf(*d - *c, 0.0, 1.0);
+    *error = sqrt(deriv * deriv * -(-inv_0 - inv_3 + inv_12 + inv_12));
+    *p_value = normal_cdf(-(d - c), 0.0, 1.0);
+    *df -= 2; // subtract two degrees that we need to estimate c and d.
+}
+
 CORAX_EXPORT void au_p_value(double **const replicates,
                              const unsigned int tree,
-                             double *const scales,
-                             unsigned int *const num_replicates,
+                             const double *const scales,
+                             const unsigned int *const num_replicates,
                              const unsigned int num_scales,
                              const unsigned int num_trees,
                              const double initial_threshold) {
