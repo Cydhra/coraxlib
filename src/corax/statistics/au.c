@@ -117,11 +117,11 @@ clean_fail:
  * It optimizes a two-dimensional parameter, and is thus different from the standard optimizer in coraxlib.
  */
 typedef struct _NewtonOptimizer {
-    const double *const bootstrap_counts;
-    const double *const scales;
-    const double *const scale_roots;
-    const unsigned int *const num_replicates;
-    const unsigned int num_scales;
+    const double *bootstrap_counts;
+    const double *scales;
+    const double *scale_roots;
+    const unsigned int *num_replicates;
+    unsigned int num_scales;
 } NewtonOptimizer;
 
 /**
@@ -146,7 +146,8 @@ double likelihood(const double d, const double c, const double scale_root) {
  * @param grad_c out-parameter for the partial derivative for c
  * @param df degrees of freedom, i.e., how many summands are not zero
  */
-void gradient(const NewtonOptimizer *const instance, const double d, const double c, double *grad_d, double *grad_c, double *df) {
+void gradient(const NewtonOptimizer *const instance, const double d, const double c, double *grad_d, double *grad_c,
+              int *df) {
     *grad_d = 0.0;
     *grad_c = 0.0;
     *df = 0;
@@ -195,8 +196,8 @@ void hessian(const NewtonOptimizer *const instance, const double d, const double
             const double num_replicates = instance->num_replicates[s];
 
             const double derivative = density * (density * (-count + 2.0 * count * pi - num_replicates * pi * pi)
-                / pi / pi / (1.0 - pi) / (1.0 - pi)
-                + linear * (count - num_replicates * pi) / (pi * (1.0 - pi)));
+                                                 / pi / pi / (1.0 - pi) / (1.0 - pi)
+                                                 + linear * (count - num_replicates * pi) / (pi * (1.0 - pi)));
 
             *hess_dd += derivative * instance->scales[s];
             *hess_cd += derivative;
@@ -209,13 +210,20 @@ void hessian(const NewtonOptimizer *const instance, const double d, const double
     }
 }
 
-/*
+/**
  * Newton-Raphson optimization for the signed distance and curvature parameters of the AU-test.
  * We don't use corax' Newton-Raphson optimizer for this, because we have to optimize two parameters at once.
+ *
+* @param instance current newton instance of the AU test
+ * @param d out-parameter for the signed distance, initialized with the initial guess
+ * @param c out-parameter for the curvature, initialized with the initial guess
+ * @param error out-parameter for the standard error of the estimator
+ * @param p_value out-parameter for the final p-value of the AU test with the current parameters
+ * @param df out-parameter for the degrees of freedom during analysis. If this drops below 0.0, the problem is
+ *           degenerate.
  */
 void fit_parameters_newton(const NewtonOptimizer *const instance,
-                          double *d, double *c, double *error, double *p_value, double *df) {
-
+                           double *d, double *c, double *error, double *p_value, int *df) {
     double prev_d = *d, prev_c = *c;
 
     // inverse hessian
@@ -226,7 +234,7 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
         gradient(instance, *d, *c, &grad_d, &grad_c, df);
         hessian(instance, *d, *c, &hess_dd, &hess_cd, &hess_cc);
 
-        double determinant = hess_dd * hess_cc - hess_cd * hess_cd;
+        const double determinant = hess_dd * hess_cc - hess_cd * hess_cd;
         if (fabs(determinant) == 0.0) {
             // hessian is singular. We interpret this as convergence, despite it being mathematically unclear,
             // because the convergence test should fail earlier if the function is degenerate.
@@ -260,15 +268,16 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
     *df -= 2; // subtract two degrees that we need to estimate c and d.
 }
 
-CORAX_EXPORT void au_p_value(double **const replicates,
-                             const unsigned int tree,
-                             const double *const scales,
-                             const unsigned int *const num_replicates,
-                             const unsigned int num_scales,
-                             const unsigned int num_trees,
-                             const double initial_threshold) {
-    double *counts = malloc(sizeof(double) * num_scales);
-    double *roots = malloc(sizeof(double) * num_scales);
+CORAX_EXPORT int au_p_value(double **const replicates,
+                            const unsigned int tree,
+                            const double *const scales,
+                            const unsigned int *const num_replicates,
+                            const unsigned int num_scales,
+                            const double initial_threshold,
+                            double *p_value) {
+    double *alloc = malloc(sizeof(double) * num_scales * 2);
+    double *counts = alloc;
+    double *roots = alloc + num_scales;
 
     if (!counts || !roots) {
         // TODO proper handling
@@ -280,7 +289,17 @@ CORAX_EXPORT void au_p_value(double **const replicates,
         roots[s] = sqrt(scales[s]);
     }
 
-    double threshold = initial_threshold;
+    double threshold = initial_threshold, last_threshold = 0.0, target_threshold = 0.0;
+    double error, last_error = 0.0, last_p_value = 0.0;
+    int df, last_df = 0;
+
+    // initialize optimizer
+    NewtonOptimizer optimizer;
+    optimizer.scales = scales;
+    optimizer.scale_roots = roots;
+    optimizer.num_replicates = num_replicates;
+    optimizer.num_scales = num_scales;
+
     for (unsigned int loops = 0; loops < CONVERGENCE_ITERATIONS; loops++) {
         // obtain smoothed bootstrap counts for current iteration
         for (unsigned int s = 0; s < num_scales; s++) {
@@ -289,9 +308,53 @@ CORAX_EXPORT void au_p_value(double **const replicates,
 
         double d, c;
         fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, &d, &c);
+        optimizer.bootstrap_counts = counts;
 
+        fit_parameters_newton(&optimizer, &d, &c, &error, p_value, &df);
+
+        // check whether the optimization problem is unsolvable, or
+        if (df < 0
+            // whether the p value is decreasing despite the threshold also decreasing
+            || ((last_p_value - *p_value) * (threshold - last_threshold) > 0.0
+                // while the change in p-value is significant (i.e., larger than standard error)
+                && fabs(*p_value - last_p_value) > 0.1 * last_error
+                // and the function was fine before
+                && last_df >= 0)) {
+            // turn back a bit toward the previous threshold and prevent the threshold
+            // from crossing the non-monotone region again
+            target_threshold = threshold;
+            threshold = 0.5 * threshold + 0.5 * last_threshold;
+            continue;
+        }
+
+        // update threshold for well-definedness check next iteration
+        last_threshold = threshold;
+
+        // check whether change in p-value is much smaller than expected error
+        if (fabs(last_p_value - *p_value) < 0.01 * last_error) {
+            // we have reached convergence of the p-value
+            goto converged;
+        }
+
+        // approach target threshold
+        threshold = 0.5 * threshold + 0.5 * target_threshold;
+
+        // update remaining parameters for checks next iteration
+        last_p_value = *p_value;
+        last_error = error;
+        last_df = df;
+
+        // check whether we have reached the target threshold
+        if (fabs(threshold - target_threshold) < EPS) {
+            goto converged;
+        }
     }
 
+    // if we are here, convergence has not been reached.
+    free(alloc);
+    return CORAX_FAILURE;
 
-    free(counts);
+converged:
+    free(alloc);
+    return CORAX_SUCCESS;
 }
