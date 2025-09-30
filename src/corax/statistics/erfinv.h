@@ -24,8 +24,8 @@
  * SOFTWARE.
 */
 
-#ifndef RAXML_NG_STATS_H
-#define RAXML_NG_STATS_H
+#ifndef CORAX_STATISTICS_ERFINV_H_
+#define CORAX_STATISTICS_ERFINV_H_
 #include "corax/core/common.h"
 
 #ifdef __cplusplus
@@ -48,4 +48,4 @@ CORAX_EXPORT double erfinv_refine(long double x, int nr_iter);
 } /* extern "C" */
 #endif
 
-#endif //RAXML_NG_STATS_H
+#endif //CORAX_STATISTICS_ERFINV_H_
