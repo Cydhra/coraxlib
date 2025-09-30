@@ -1,5 +1,5 @@
-#ifndef RAXML_NG_STATISTICS_H
-#define RAXML_NG_STATISTICS_H
+#ifndef CORAX_STATISTICS_BOOTSTRAP_H_
+#define CORAX_STATISTICS_BOOTSTRAP_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,4 +111,4 @@ CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
 } /* extern "C" */
 #endif
 
-#endif //RAXML_NG_STATISTICS_H
+#endif //CORAX_STATISTICS_BOOTSTRAP_H_
