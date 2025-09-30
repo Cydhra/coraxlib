@@ -9,4 +9,6 @@ target_sources_local(
         erfinv.c
         bootstrap.h
         bootstrap.c
+        stats.h
+        stats.c
 )
