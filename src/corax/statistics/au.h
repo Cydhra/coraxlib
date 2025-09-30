@@ -9,8 +9,8 @@ extern "C" {
 
 CORAX_EXPORT void au_p_value(double **replicates,
                              unsigned int tree,
-                             double *scales,
-                             unsigned int *num_replicates,
+                             const double *scales,
+                             const unsigned int *num_replicates,
                              unsigned int num_scales,
                              unsigned int num_trees, double initial_threshold);
 
