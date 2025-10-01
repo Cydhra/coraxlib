@@ -113,8 +113,8 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
                                                   double **const trees_persite_lnl,
                                                   corax_random_state *rstate,
                                                   const unsigned int num_sites, const unsigned int num_trees,
-                                                  unsigned int *const num_replicates,
-                                                  double *const scales, const unsigned int num_scales) {
+                                                  const unsigned int *const num_replicates,
+                                                  const double *const scales, const unsigned int num_scales) {
     if (!*replicate_matrices) {
         *replicate_matrices = malloc(sizeof(double *) * num_scales);
 

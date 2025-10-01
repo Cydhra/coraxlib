@@ -54,8 +54,8 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
                                                   double **trees_persite_lnl,
                                                   corax_random_state *rstate,
                                                   unsigned int num_sites, unsigned int num_trees,
-                                                  unsigned int *num_replicates,
-                                                  double *scales, unsigned int num_scales);
+                                                  const unsigned int *num_replicates,
+                                                  const double *scales, unsigned int num_scales);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
