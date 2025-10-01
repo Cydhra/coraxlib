@@ -10,5 +10,4 @@ target_sources_local(
         bootstrap.h
         bootstrap.c
         stats.h
-        stats.c
 )
