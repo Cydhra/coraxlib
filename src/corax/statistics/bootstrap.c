@@ -89,6 +89,8 @@ CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
             // TODO proper handling
             exit(-1);
         }
+
+        memset(*replicates, 0, sizeof(double) * num_replicates * num_trees);
     }
 
 
