@@ -17,13 +17,16 @@ extern "C" {
  * log-likelihood replicates per tree.
  * The replicates are stored in a matrix, which contains numReplicates replicates per row and one row per tree.
  *
- * @param replicates the out-parameter for the matrix where to store bootstrap replicates
+ * @param replicates the out-parameter for the matrix where to store bootstrap replicates. The matrix needs space for
+ *                   num_replicates * num_trees double precision numbers. Alternatively a nullptr can be passed to the
+ *                   function, which will allocate the space for the caller. In any case, it is the caller's responsibility
+ *                   to free the memory.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param rstate the state of a random number generator to generate sample distributions. Note that the state has to be
  *               equal on all participating threads to generate correct bootstrap replicates.
  * @param num_sites the number of sites of the original alignment (i.e., the length of the per-site lnl vectors)
  * @param num_replicates the number of replicates to generate
- * @param num_trees
+ * @param num_trees the number of input trees
  * @param scale the scaling factor of the RELL bootstrap method, 1.0 being canonical RELL bootstrap generating replicates
  *              of the same sequence length.
  */
@@ -40,7 +43,10 @@ CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
  * The replicates are stored in matrices, which contain numReplicates replicates per row and one row per tree.
  * There is one matrix per tree.
  *
- * @param replicate_matrices the out-parameter for an array of matrices of bootstrap replicates
+ * @param replicate_matrices the out-parameter for an array of matrices of bootstrap replicates. Each matrix needs space
+*                            for num_replicates[i] * num_trees double precision numbers. Alternatively a nullptr can be
+*                            passed to the function, which will allocate the space for the caller. In any case, it is
+*                            the caller's responsibility to free both the matrices, and the pointer array.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param rstate the state of a random number generator to generate sample distributions. Note that the state has to be
  *               equal on all participating threads to generate correct bootstrap replicates.
@@ -48,7 +54,7 @@ CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
  * @param num_trees the number of trees in the persite_lnl array
  * @param num_replicates an array defining how many bootstrap replicates to generate per scale
  * @param scales an array of scaling factors for the multiscale bootstrap
- * @param num_scales
+ * @param num_scales the number of entries in the scales array.
  */
 CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
                                                   double **trees_persite_lnl,
