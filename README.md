@@ -35,7 +35,7 @@ some GNU/Linux distributions it might be necessary to add that standard path
 
 # Developing with coraxlib
 
-Please see the docs [here](docs/libpll.md)
+Please see the docs [here](docs/coraxlib.md)
 
 # coraxlib license and third party licenses
 
