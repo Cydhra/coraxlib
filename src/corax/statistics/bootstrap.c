@@ -134,7 +134,7 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
     }
 
     for (unsigned int i = 0; i < num_scales; i++) {
-        corax_RELL_bootstrap(replicate_matrices[i], trees_persite_lnl, rstate, num_sites, num_replicates[i], num_trees,
+        corax_RELL_bootstrap(*replicate_matrices + i, trees_persite_lnl, rstate, num_sites, num_replicates[i], num_trees,
                              scales[i]);
     }
 }
