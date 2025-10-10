@@ -33,7 +33,9 @@ extern "C" {
 CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
                                        double **trees_persite_lnl,
                                        corax_random_state *rstate,
-                                       unsigned int num_sites, unsigned int num_replicates, unsigned int num_trees,
+                                       unsigned int num_sites,
+                                       unsigned int num_replicates,
+                                       unsigned int num_trees,
                                        double scale);
 
 /**
@@ -44,9 +46,9 @@ CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
  * There is one matrix per tree.
  *
  * @param replicate_matrices the out-parameter for an array of matrices of bootstrap replicates. Each matrix needs space
-*                            for num_replicates[i] * num_trees double precision numbers. Alternatively a nullptr can be
-*                            passed to the function, which will allocate the space for the caller. In any case, it is
-*                            the caller's responsibility to free both the matrices, and the pointer array.
+ *                           for num_replicates[i] * num_trees double precision numbers. Alternatively a nullptr can be
+ *                           passed to the function, which will allocate the space for the caller. In any case, it is
+ *                           the caller's responsibility to free both the matrices, and the pointer array.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param rstate the state of a random number generator to generate sample distributions. Note that the state has to be
  *               equal on all participating threads to generate correct bootstrap replicates.
@@ -61,7 +63,8 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(double ***replicate_matrices,
                                                   corax_random_state *rstate,
                                                   unsigned int num_sites, unsigned int num_trees,
                                                   const unsigned int *num_replicates,
-                                                  const double *scales, unsigned int num_scales);
+                                                  const double *scales,
+                                                  unsigned int num_scales);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of

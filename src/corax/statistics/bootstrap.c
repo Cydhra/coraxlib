@@ -7,26 +7,29 @@
 
 /**
  * Fill the vector argument with weights corresponding to a uniform bootstrap resampling chosen from
- * an initial set with num_sites elements.
- * The vector will sum to num_sites * scale (rounded by normal casting rules), meaning we choose num_sites * scale
- * elements from the base set with replacement.
+ * an initial set with num_sites_original elements.
+ * The weight vector will not have the same length as the per-site likelihood vector because the weights are neither
+ * partitioned nor compressed.
+ * The vector will sum to num_sites_original * scale (rounded by normal casting rules),
+ * meaning we choose a number of sites with a factor of scale.
  * The weight vector can then be multiplied with the base set to obtain the final sum of the resampling.
  * The vector can be multiplied with all per-site likelihood rows of an alignment to obtain a bootstrap sample
  * log-likelihood of the alignment with corresponding sites chosen from each vector.
  *
  * The vector is initialized with zeros before it is filled with data.
  */
-void generate_resample_vector(double *const vector, corax_random_state *const rstate, const unsigned int num_sites,
+void generate_resample_vector(double *const vector, corax_random_state *const rstate,
+                              const unsigned int num_sites_original,
                               const double scale) {
-    unsigned int num_samples = (unsigned int) ((double) num_sites * scale);
+    const unsigned int num_samples = (unsigned int) ((double) num_sites_original * scale);
 
     // reset vector
-    for (unsigned int j = 0; j < num_sites; j++)
+    for (unsigned int j = 0; j < num_sites_original; j++)
         vector[j] = 0.0;
 
     // fill vector with uniform sample weights
     for (unsigned int j = 0; j < num_samples; j++) {
-        vector[corax_random_getint(rstate, num_sites)] += 1.0;
+        vector[corax_random_getint(rstate, num_sites_original)] += 1.0;
     }
 }
 
@@ -70,11 +73,12 @@ unsigned int bposition(const double *const vector, const double threshold, const
     return l;
 }
 
-
+// TODO the trees_persite_lnl has to be a 3D array, where we also pass in multiple partitions of the alignment
 CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
                                        double **const trees_persite_lnl,
                                        corax_random_state *rstate,
-                                       const unsigned int num_sites, const unsigned int num_replicates,
+                                       const unsigned int num_sites,
+                                       const unsigned int num_replicates,
                                        const unsigned int num_trees, const double scale) {
     double *weights = malloc(sizeof(double) * num_sites);
     // TODO proper handling
@@ -93,9 +97,10 @@ CORAX_EXPORT void corax_RELL_bootstrap(double **replicates,
         memset(*replicates, 0, sizeof(double) * num_replicates * num_trees);
     }
 
-
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
         generate_resample_vector(weights, rstate, num_sites, scale);
+
+        // TODO select only the compressed sites and the sites from the current partition from the resample vector
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             for (unsigned int id_site = 0; id_site < num_sites; id_site++) {
