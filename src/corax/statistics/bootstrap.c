@@ -129,14 +129,13 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
         // TODO select only the compressed sites and the sites from the current partition from the resample vector
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
+            double likelihood = 0.0;
             for (unsigned int id_site = 0; id_site < num_sites_uncompressed; id_site++) {
                 // TODO SIMD optimization
-                (*replicates)[id_tree * num_replicates + replicate] += compressed_weights[id_site] * trees_persite_lnl[
-                    id_tree][
-                    id_site];
+                likelihood += compressed_weights[id_site] * trees_persite_lnl[id_tree][id_site];
             }
 
-            (*replicates)[id_tree * num_replicates + replicate] /= scale;
+            (*replicates)[id_tree * num_replicates + replicate] += likelihood / scale;
         }
     }
 
