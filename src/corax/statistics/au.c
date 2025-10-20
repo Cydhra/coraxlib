@@ -268,13 +268,13 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
     *df -= 2; // subtract two degrees that we need to estimate c and d.
 }
 
-CORAX_EXPORT int au_p_value(double **const replicates,
-                            const unsigned int tree,
-                            const double *const scales,
-                            const unsigned int *const num_replicates,
-                            const unsigned int num_scales,
-                            const double initial_threshold,
-                            double *p_value) {
+CORAX_EXPORT int corax_au_p_value(double **const replicates,
+                                  const unsigned int tree,
+                                  const double *const scales,
+                                  const unsigned int *const num_replicates,
+                                  const unsigned int num_scales,
+                                  const double initial_threshold,
+                                  double *d, double *c, double *p_value) {
     double *alloc = malloc(sizeof(double) * num_scales * 2);
     double *counts = alloc;
     double *roots = alloc + num_scales;
@@ -304,13 +304,13 @@ CORAX_EXPORT int au_p_value(double **const replicates,
         // obtain smoothed bootstrap counts for current iteration
         for (unsigned int s = 0; s < num_scales; s++) {
             counts[s] = corax_empirical_bootstrap_count(replicates[s], num_replicates[s], tree, threshold);
+            printf("%d: %g\n", s, counts[s]);
         }
 
-        double d, c;
-        fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, &d, &c);
+        fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, d, c);
         optimizer.bootstrap_counts = counts;
 
-        fit_parameters_newton(&optimizer, &d, &c, &error, p_value, &df);
+        fit_parameters_newton(&optimizer, d, c, &error, p_value, &df);
 
         // check whether the optimization problem is unsolvable, or
         if (df < 0
