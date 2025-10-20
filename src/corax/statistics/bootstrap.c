@@ -127,7 +127,7 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             double likelihood = 0.0;
-            for (unsigned int id_site = 0; id_site < num_sites_uncompressed; id_site++) {
+            for (unsigned int id_site = 0; id_site < num_sites_compressed; id_site++) {
                 // TODO SIMD optimization
                 likelihood += compressed_weights[id_site] * trees_persite_lnl[id_tree][id_site];
             }
