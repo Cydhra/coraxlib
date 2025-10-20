@@ -86,7 +86,7 @@ unsigned int bposition(const double *const vector, const double threshold, const
     unsigned int l = 0, r = len;
     while (l < r) {
         unsigned int mid = l + (r - l) / 2;
-        if (vector[mid] < threshold)
+        if (vector[mid] <= threshold)
             l = mid + 1;
         else
             r = mid;
