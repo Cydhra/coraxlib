@@ -94,7 +94,6 @@ unsigned int bposition(const double *const vector, const double threshold, const
     return l;
 }
 
-// TODO the trees_persite_lnl has to be a 3D array, where we also pass in multiple partitions of the alignment
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        double **const trees_persite_lnl,
@@ -125,8 +124,6 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
         generate_resample_vector(weights, rstate, num_sites_uncompressed, scale);
         compress_resample_vector(weights, site_weights, compressed_weights, num_sites_compressed);
-
-        // TODO select only the compressed sites and the sites from the current partition from the resample vector
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             double likelihood = 0.0;
