@@ -184,7 +184,7 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
     // normalize vectors
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
         for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
-            replicates[id_tree * num_replicates + replicate] -= maximum[replicate];
+            replicates[id_tree * num_replicates + replicate] = maximum[replicate] - replicates[id_tree * num_replicates + replicate];
         }
 
         double *tree_vec = replicates + id_tree * num_replicates;
