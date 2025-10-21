@@ -194,6 +194,12 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
     free(maximum);
 }
 
+CORAX_EXPORT double corax_bootstrap_expectation(const double *const replicates,
+                                       const unsigned int num_replicates,
+                                       const unsigned int tree) {
+    return replicates[tree * num_replicates + num_replicates / 2];
+}
+
 CORAX_EXPORT double corax_empirical_bootstrap_count(double *const replicates,
                                                     const unsigned int num_replicates,
                                                     const unsigned int tree,
