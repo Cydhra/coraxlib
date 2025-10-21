@@ -105,6 +105,20 @@ void corax_normalize_lnl_bootstrap(double *replicates,
                                    unsigned int num_trees);
 
 /**
+ * Return the median normalized bootstrap count for the given tree, which is the expected bootstrap count under the
+ * assumption that the distribution is equivalent to a normal distribution.
+ * This method assumes the replicate matrix has been normalized with `corax_normalize_lnl_bootstrap`.
+ *
+ * @param replicates replicate array for a given scaling factor
+ * @param num_replicates number of replicates at that scaling factor
+ * @param tree id of the tree
+ * @return the median, normalized, smoothed number of maximum likelihood trees for the tree at that scale
+ */
+CORAX_EXPORT double corax_bootstrap_expectation(const double *replicates,
+                                       unsigned int num_replicates,
+                                       unsigned int tree);
+
+/**
  * Calculate the bootstrap count (i.e., the number of bootstrap replicates where the given tree is the maximum
  * likelihood trees) with a delta log-likelihood margin threshold. Every bootstrap replicate which is not smaller than
  * the maximum likelihood tree in that replicate by more than the threshold still counts towards the bootstrap count.
