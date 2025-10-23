@@ -37,7 +37,7 @@ extern "C" {
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        const double * const * trees_persite_lnl,
-                                       unsigned int *site_weights,
+                                       const unsigned int *site_weights,
                                        unsigned int num_sites_uncompressed,
                                        unsigned int num_sites_compressed,
                                        unsigned int num_replicates,
