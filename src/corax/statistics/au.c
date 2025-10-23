@@ -307,7 +307,6 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
         // obtain smoothed bootstrap counts for current iteration
         for (unsigned int s = 0; s < num_scales; s++) {
             counts[s] = corax_empirical_bootstrap_count(replicates[s], num_replicates[s], tree, threshold);
-            printf("%d: %g\n", s, counts[s]);
         }
 
         fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, d, c);
