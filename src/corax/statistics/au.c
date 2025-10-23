@@ -266,7 +266,7 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
     }
 
     const double deriv = normal_pdf(*d - *c, 0.0, 1.0);
-    *error = sqrt(deriv * deriv * -(-inv_0 - inv_3 + inv_12 + inv_12));
+    *error = sqrt(deriv * deriv * (-inv_0 - inv_3 + inv_12 + inv_12));
     *p_value = normal_cdf(-(d - c), 0.0, 1.0);
     *df -= 2; // subtract two degrees that we need to estimate c and d.
 }
