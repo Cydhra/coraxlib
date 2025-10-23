@@ -97,9 +97,9 @@ unsigned int bposition(const double *const vector, const double threshold, const
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        const double *const *const trees_persite_lnl,
-                                       unsigned int *site_weights,
+                                       const unsigned int *const site_weights,
                                        const unsigned int num_sites_uncompressed,
-                                       unsigned int num_sites_compressed,
+                                       const unsigned int num_sites_compressed,
                                        const unsigned int num_replicates,
                                        const unsigned int num_trees,
                                        const double scale) {
