@@ -225,6 +225,7 @@ void hessian(const NewtonOptimizer *const instance, const double d, const double
 void fit_parameters_newton(const NewtonOptimizer *const instance,
                            double *d, double *c, double *error, double *p_value, int *df) {
     double prev_d = *d, prev_c = *c;
+    int prev_df = 0;
 
     // inverse hessian
     double inv_0 = 0.0, inv_12 = 0.0, inv_3 = 0.0;
@@ -243,6 +244,7 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
             // we won't update the inverse hessian from last iteration.
             *d = prev_d;
             *c = prev_c;
+            *df = prev_df;
             break;
         }
 
@@ -257,6 +259,7 @@ void fit_parameters_newton(const NewtonOptimizer *const instance,
 
         prev_d = *d;
         prev_c = *c;
+        prev_df = *df;
 
         *d -= update_d;
         *c -= update_c;
