@@ -15,7 +15,7 @@ extern "C" {
  * @param stddev standard deviation of the normal distribution
  */
 static inline double normal_pdf(const double x, const double mean, const double stddev) {
-    return 1.0 / (stddev * sqrt(2.0 * M_PI)) * exp(-0.5 * pow((x - mean) / stddev, 2));
+    return 1.0 / (stddev * sqrt(M_2_PI)) * exp(-0.5 * pow((x - mean) / stddev, 2));
 }
 
 /**
@@ -26,7 +26,7 @@ static inline double normal_pdf(const double x, const double mean, const double 
  * @param stddev standard deviation of the normal distribution
  */
 static inline double normal_cdf(const double x, const double mean, const double stddev) {
-    return 0.5 * (1 + erf((x - mean) / (stddev * sqrt(2.0))));
+    return 0.5 * (1 + erf((x - mean) / (stddev * M_SQRT2)));
 }
 
 /**
