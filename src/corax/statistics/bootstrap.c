@@ -164,7 +164,7 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 
     for (unsigned int i = 0; i < num_scales; i++) {
         corax_RELL_bootstrap(rstate, *replicate_matrices + i, trees_persite_lnl, site_weights, num_sites_uncompressed,
-                             num_sites_compressed, num_replicates[i], num_trees, scales[i]);
+            num_sites_compressed, num_replicates[i], num_trees, scales[i]);
     }
 }
 
@@ -185,7 +185,8 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
     // normalize vectors
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
         for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
-            replicates[id_tree * num_replicates + replicate] = maximum[replicate] - replicates[id_tree * num_replicates + replicate];
+            replicates[id_tree * num_replicates + replicate] =
+                    maximum[replicate] - replicates[id_tree * num_replicates + replicate];
         }
 
         double *tree_vec = replicates + id_tree * num_replicates;
@@ -196,8 +197,8 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
 }
 
 CORAX_EXPORT double corax_bootstrap_expectation(const double *const replicates,
-                                       const unsigned int num_replicates,
-                                       const unsigned int tree) {
+                                                const unsigned int num_replicates,
+                                                const unsigned int tree) {
     return replicates[tree * num_replicates + num_replicates / 2];
 }
 
