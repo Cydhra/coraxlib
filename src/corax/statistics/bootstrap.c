@@ -129,7 +129,8 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
             double likelihood = 0.0;
             for (unsigned int id_site = 0; id_site < num_sites_compressed; id_site++) {
                 // TODO SIMD optimization
-                likelihood += compressed_weights[id_site] * trees_persite_lnl[id_tree][id_site];
+                // trees_persite_lnl are already multiplied with the msa weights, so we have to divide the original weight out
+                likelihood += compressed_weights[id_site] * trees_persite_lnl[id_tree][id_site] / site_weights[id_site];
             }
 
             (*replicates)[id_tree * num_replicates + replicate] += likelihood / scale;
