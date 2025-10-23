@@ -41,7 +41,8 @@ static inline double normal_quantile(const double p) {
         return NAN;
     }
 
-    return -(M_SQRT2 * erfinv(2.0 * p));
+    // erfinv(1-x) = erfcinv(x)
+    return -(M_SQRT2 * erfinv(1.0 - 2.0 * p));
 }
 
 #ifdef __cplusplus
