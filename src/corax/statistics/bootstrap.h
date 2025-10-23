@@ -36,7 +36,7 @@ extern "C" {
  */
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
-                                       const double * const * trees_persite_lnl,
+                                       const double *const *trees_persite_lnl,
                                        const unsigned int *site_weights,
                                        unsigned int num_sites_uncompressed,
                                        unsigned int num_sites_compressed,
@@ -70,12 +70,14 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
  */
 CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
                                                   double ***replicate_matrices,
-                                                  const double * const * trees_persite_lnl,
+                                                  const double *const *trees_persite_lnl,
                                                   const unsigned int *site_weights,
                                                   unsigned int num_sites_uncompressed,
                                                   unsigned int num_sites_compressed,
                                                   unsigned int num_trees,
-                                                  const unsigned int *num_replicates, const double *scales, unsigned int num_scales);
+                                                  const unsigned int *num_replicates,
+                                                  const double *scales,
+                                                  unsigned int num_scales);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
@@ -115,8 +117,8 @@ void corax_normalize_lnl_bootstrap(double *replicates,
  * @return the median, normalized, smoothed number of maximum likelihood trees for the tree at that scale
  */
 CORAX_EXPORT double corax_bootstrap_expectation(const double *replicates,
-                                       unsigned int num_replicates,
-                                       unsigned int tree);
+                                                unsigned int num_replicates,
+                                                unsigned int tree);
 
 /**
  * Calculate the bootstrap count (i.e., the number of bootstrap replicates where the given tree is the maximum
