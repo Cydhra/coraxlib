@@ -40,8 +40,19 @@ CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
  */
 CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
                                                          unsigned int num_trees,
-                                                         const unsigned int* num_replicates,
+                                                         const unsigned int *num_replicates,
                                                          unsigned int num_scales);
+
+/**
+ * Extract a matrix view starting at a row offset, splitting the original matrix into submatrices.
+ *
+ * @param matrix the test statistics matrix containing bootstrap replicates
+ * @param start_tree the id of the tree in the matrix where the new matrix view should start
+ * @param num_replicates the number of bootstrap replicates in the matrix
+ * @return a pointer to a view of the matrix starting at the `start_tree`-th row
+ */
+CORAX_EXPORT double **corax_RELL_submatrix(double **matrix,
+                                          unsigned int start_tree, unsigned int num_replicates);
 
 /**
  * Perform general RELL bootstrap on a set of tree log-likelihood vectors.
