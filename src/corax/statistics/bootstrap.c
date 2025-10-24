@@ -142,6 +142,12 @@ alloc_error:
     return CORAX_FAILURE;
 }
 
+CORAX_EXPORT double **corax_RELL_submatrix(double **matrix,
+                                          const unsigned int start_tree,
+                                          const unsigned int num_replicates) {
+    return matrix + start_tree * num_replicates;
+}
+
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        const double *const *const trees_persite_lnl,
