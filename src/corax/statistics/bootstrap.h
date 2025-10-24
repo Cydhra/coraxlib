@@ -12,6 +12,38 @@ extern "C" {
 #include "corax/corax_core.h"
 
 /**
+ * Allocate a test-statistics matrix for the designated number of trees and replicates.
+ * This method can be used when pre-allocating matrices for a designated number of trees that is larger than individual
+ * calls to `corax_RELL_bootstrap`.
+ * If the number of trees `corax_RELL_bootstrap` is called with matches the number of trees in the matrix,
+ * `corax_RELL_bootstrap` can allocate the memory itself.
+ *
+ * @param matrix the output parameter for the newly allocated matrix
+ * @param num_trees the number of trees (rows) of the matrix
+ * @param num_replicates the number of bootstrap replicates (columns) of the matrix
+ */
+CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
+                                            unsigned int num_trees,
+                                            unsigned int num_replicates);
+
+/**
+ * Allocate a list of pointers which will hold the matrices of the multiscale RELL bootstrap procedure.
+ * Allocates enough space to hold exactly `num_scales` pointers, and then allocates the matrices using
+ * the num_replicates array to determine how many columns each matrix has.
+ * This method can be used when pre-allocating matrices for a designated number of trees that is larger than arguments
+ * to individual calls to `corax_RELL_bootstrap`.
+ *
+ * @param matrices the output parameter for the newly allocated list which will hold the matrices.
+ * @param num_trees the number of input trees
+ * @param num_replicates the number of replicates for each individual scaling factor
+ * @param num_scales the number of scaling factors, which will determined how many matrices need to be held in the list
+ */
+CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
+                                                         unsigned int num_trees,
+                                                         const unsigned int* num_replicates,
+                                                         unsigned int num_scales);
+
+/**
  * Perform general RELL bootstrap on a set of tree log-likelihood vectors.
  * The log-likelihood vectors are sampled with replacement numReplicates * scale times, generating numReplicates
  * log-likelihood replicates per tree.

@@ -94,6 +94,54 @@ unsigned int bposition(const double *const vector, const double threshold, const
     return l;
 }
 
+CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
+                                            const unsigned int num_trees,
+                                            const unsigned int num_replicates) {
+    if (!*matrix) {
+        *matrix = malloc(sizeof(double) * num_replicates * num_trees);
+
+        if (!*matrix) {
+            return CORAX_FAILURE;
+        }
+
+        memset(*matrix, 0, sizeof(double) * num_replicates * num_trees);
+    }
+
+    return CORAX_SUCCESS;
+}
+
+CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
+                                                         const unsigned int num_trees,
+                                                         const unsigned int *const num_replicates,
+                                                         const unsigned int num_scales) {
+    int scale_idx;
+
+    if (!*matrices) {
+        *matrices = malloc(sizeof(double *) * num_scales);
+
+        if (!*matrices) {
+            return CORAX_FAILURE;
+        }
+
+        memset(*matrices, 0, sizeof(double *) * num_scales);
+
+        for (scale_idx = 0; (unsigned int) scale_idx < num_scales; scale_idx++) {
+            if (!corax_RELL_allocate_matrix((*matrices) + scale_idx, num_trees, num_replicates[scale_idx])) {
+                goto alloc_error;
+            }
+        }
+    }
+
+    return CORAX_SUCCESS;
+
+alloc_error:
+    for (; scale_idx >= 0; scale_idx--) {
+        free((*matrices) + scale_idx);
+    }
+    free(*matrices);
+    return CORAX_FAILURE;
+}
+
 CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        const double *const *const trees_persite_lnl,
@@ -110,15 +158,9 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
         exit(-1);
     }
 
-    if (!*replicates) {
-        *replicates = malloc(sizeof(double) * num_replicates * num_trees);
-
-        if (!*replicates) {
-            // TODO proper handling
-            exit(-1);
-        }
-
-        memset(*replicates, 0, sizeof(double) * num_replicates * num_trees);
+    if (!corax_RELL_allocate_matrix(replicates, num_trees, num_replicates)) {
+        // TODO proper handling
+        exit(-1);
     }
 
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
@@ -151,15 +193,9 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
                                                   const unsigned int *const num_replicates,
                                                   const double *const scales,
                                                   const unsigned int num_scales) {
-    if (!*replicate_matrices) {
-        *replicate_matrices = malloc(sizeof(double *) * num_scales);
-
-        if (!*replicate_matrices) {
-            // TODO proper handling
-            exit(-1);
-        }
-
-        memset(*replicate_matrices, 0, sizeof(double *) * num_scales);
+    if (!corax_RELL_allocate_multiscale_matrices(replicate_matrices, num_trees, num_replicates, num_scales)) {
+        // TODO proper handling
+        exit(-1);
     }
 
     for (unsigned int i = 0; i < num_scales; i++) {
