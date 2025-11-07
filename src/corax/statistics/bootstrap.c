@@ -142,7 +142,7 @@ alloc_error:
     return CORAX_FAILURE;
 }
 
-CORAX_EXPORT double **corax_RELL_submatrix(double **matrix,
+CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
                                           const unsigned int start_tree,
                                           const unsigned int num_replicates) {
     return matrix + start_tree * num_replicates;
