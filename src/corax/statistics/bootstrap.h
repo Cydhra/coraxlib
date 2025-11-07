@@ -51,7 +51,7 @@ CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
  * @param num_replicates the number of bootstrap replicates in the matrix
  * @return a pointer to a view of the matrix starting at the `start_tree`-th row
  */
-CORAX_EXPORT double **corax_RELL_submatrix(double **matrix,
+CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
                                           unsigned int start_tree, unsigned int num_replicates);
 
 /**
