@@ -293,35 +293,45 @@ CORAX_EXPORT void corax_utree_graph_destroy(corax_unode_t *root,
   dealloc_graph_recursive(root, cb_destroy, 0);
 }
 
+CORAX_EXPORT void corax_unode_destroy(corax_unode_t *node,
+                                      void (*cb_destroy)(void *))
+{
+   if (!node)
+     return;
+   else if (CORAX_UTREE_IS_TIP(node))
+   {
+     /* tip node*/
+     dealloc_data(node, cb_destroy);
+     if (node->label) free(node->label);
+     free(node);
+   }
+   else
+   {
+     /* inner node / triplet / pointer ring  */
+     corax_unode_t *first = node;
+
+     assert(first);
+
+     if (first->label) free(first->label);
+
+     corax_unode_t *node = first;
+     do {
+       corax_unode_t *next = node->next;
+       dealloc_data(node, cb_destroy);
+       free(node);
+       node = next;
+     } while (node && node != first);
+   }
+}
+
 CORAX_EXPORT void corax_utree_destroy(corax_utree_t *tree,
                                       void (*cb_destroy)(void *))
 {
   unsigned int i;
 
-  /* deallocate tip nodes */
-  for (i = 0; i < tree->tip_count; ++i)
+  for (i = 0; i < tree->tip_count + tree->inner_count; ++i)
   {
-    dealloc_data(tree->nodes[i], cb_destroy);
-    if (tree->nodes[i]->label) free(tree->nodes[i]->label);
-    free(tree->nodes[i]);
-  }
-
-  /* deallocate inner nodes */
-  for (i = tree->tip_count; i < tree->tip_count + tree->inner_count; ++i)
-  {
-    corax_unode_t *first = tree->nodes[i];
-
-    assert(first);
-
-    if (first->label) free(first->label);
-
-    corax_unode_t *node = first;
-    do {
-      corax_unode_t *next = node->next;
-      dealloc_data(node, cb_destroy);
-      free(node);
-      node = next;
-    } while (node && node != first);
+    corax_unode_destroy(tree->nodes[i], cb_destroy);
   }
 
   /* deallocate tree structure */

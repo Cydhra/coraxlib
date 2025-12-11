@@ -131,9 +131,18 @@ extern "C"
 {
 #endif
 
-  /**
-   * Deallocate the memory associated with a utree. `cb_destroy` is used to delete
-   * the user data allocated in data.
+/**
+   * Deallocate the memory associated with a unode. `cb_destroy` is used to delete
+   * the user data allocated in `data`.
+   *
+   * @ingroup corax_utree_t
+   */
+  CORAX_EXPORT void corax_unode_destroy(corax_unode_t *node,
+                                        void (*cb_destroy)(void *));
+
+/**
+   * Deallocate the memory associated with a utree and its nodes.
+   * `cb_destroy` is used to delete the user data allocated in node `data`.
    *
    * @ingroup corax_utree_t
    */
