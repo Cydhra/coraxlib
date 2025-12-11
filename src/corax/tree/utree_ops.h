@@ -29,6 +29,40 @@ extern "C"
   CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
                                                  double         min_brlen);
 
+  /**
+   * Add new tip nodes and attach them at specific positions in a tree
+   *
+   * @param tree Pointer to the `corax_utree_t`
+   * @param add_tip_count Number of tips to be removed
+   * @param add_tip_names Array of size `del_tip_count` with names of the new tips
+   * @param insert_node_ids Array of size `del_tip_count` with `node_index` values
+   * of nodes where new tips must be attached
+   * @param insert_branch_length Length for newly created branches
+   *
+   * @ingroup corax_utree_t
+   */
+  CORAX_EXPORT int corax_utree_insert_tips(corax_utree_t      *tree,
+                                           unsigned int        add_tip_count,
+                                           const char *const  *add_tip_names,
+                                           const unsigned int *insert_node_ids,
+                                           double              insert_branch_length);
+
+  /**
+   * Prune & remove tip nodes from a tree
+   *
+   * @param tree Pointer to the `corax_utree_t`
+   * @param del_tip_count Number of tips to be removed
+   * @param del_tip_ids Array of size `del_tip_count` with `node_index` values
+   * of tips to be removed
+   * @param cb_destroy Callback to destroy node `data` structure (NULL to ignore)
+   *
+   * @ingroup corax_utree_t
+   */
+  CORAX_EXPORT int corax_utree_remove_tips(corax_utree_t      *tree,
+                                           unsigned int        del_tip_count,
+                                           const unsigned int *del_tip_ids,
+                                           void (*cb_destroy)(void *));
+
   CORAX_EXPORT corax_unode_t *corax_utree_unroot_inplace(corax_unode_t *root);
 
   CORAX_EXPORT int corax_utree_root_inplace(corax_utree_t *tree);

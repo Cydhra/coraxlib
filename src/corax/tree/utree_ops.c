@@ -235,6 +235,195 @@ CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
   return CORAX_SUCCESS;
 }
 
+CORAX_EXPORT int corax_utree_insert_tips(corax_utree_t      *tree,
+                                         unsigned int        add_tip_count,
+                                         const char *const  *add_tip_names,
+                                         const unsigned int *insert_node_ids,
+                                         double              insert_branch_length)
+{
+  unsigned int old_taxa_count  = tree->tip_count;
+  unsigned int old_inner_count = tree->inner_count;
+  unsigned int old_node_count  = old_taxa_count + old_inner_count;
+  unsigned int new_taxa_count  = old_taxa_count + add_tip_count;
+  unsigned int new_inner_count = old_inner_count + add_tip_count;
+  unsigned int new_node_count  = new_taxa_count + new_inner_count;
+
+  unsigned int last_clv_id     = 0;
+  unsigned int last_pmatrix_id = 0;
+  unsigned int last_node_id    = 0;
+  int          next_scaler_id  = 0;
+
+  unsigned int i;
+
+  corax_unode_t **old_nodes = tree->nodes;
+  corax_unode_t **new_nodes =
+      (corax_unode_t **)calloc(new_node_count, sizeof(corax_unode_t *));
+
+  if (!new_nodes)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for nodes!");
+    return CORAX_FAILURE;
+  }
+
+  // copy old tips and sort by node_index
+  for (i = 0; i < old_taxa_count; ++i)
+  {
+    unsigned int node_idx = old_nodes[i]->node_index;
+    assert(node_idx < old_taxa_count);
+    new_nodes[node_idx] = old_nodes[i];
+  }
+
+  // copy old inner nodes and adjust clvs
+  for (i = old_taxa_count; i < old_node_count; ++i)
+  {
+    unsigned int new_idx = i + add_tip_count;
+    new_nodes[new_idx]   = old_nodes[i];
+    corax_unode_t *snode = new_nodes[new_idx];
+    assert(snode->next);
+    do {
+      snode->clv_index += add_tip_count;
+      snode->node_index += add_tip_count;
+      last_clv_id     = CORAX_MAX(last_clv_id, snode->clv_index);
+      last_node_id    = CORAX_MAX(last_node_id, snode->node_index);
+      next_scaler_id  = CORAX_MAX(next_scaler_id, snode->scaler_index);
+      last_pmatrix_id = CORAX_MAX(last_pmatrix_id, snode->pmatrix_index);
+      snode           = snode->next;
+    } while (snode != new_nodes[new_idx]);
+  }
+
+  // create new tip nodes
+  for (i = old_taxa_count; i < new_taxa_count; ++i)
+  {
+    corax_unode_t *node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
+    node->clv_index     = i;
+    node->node_index    = i;
+    node->scaler_index  = CORAX_SCALE_BUFFER_NONE;
+    node->pmatrix_index = ++last_pmatrix_id; // ????
+
+    node->label = add_tip_names ? strdup(add_tip_names[i - old_taxa_count]) : NULL;
+
+    new_nodes[i] = node;
+  }
+
+  // create new inner nodes
+  for (i = 0; i < add_tip_count; ++i)
+  {
+    corax_unode_t *node =
+        corax_utree_create_node(++last_clv_id, ++next_scaler_id, NULL, NULL);
+
+    node->node_index             = ++last_node_id;
+    node->next->node_index       = ++last_node_id;
+    node->next->next->node_index = ++last_node_id;
+
+    // connect to the respective tip node
+    corax_unode_t *tip = new_nodes[old_taxa_count + i];
+    corax_utree_connect_nodes(tip, node, insert_branch_length);
+
+    // graft into the tree
+    if (insert_node_ids)
+    {
+      unsigned int insert_node_id = insert_node_ids[i];
+      corax_unode_t *insert_node = new_nodes[insert_node_id];
+
+      assert(insert_node);
+
+//      printf("node_id: %u  %u  %s\n", insert_node_id, insert_node->node_index, insert_node->label);
+      assert(insert_node->node_index == insert_node_id);
+      corax_unode_t *insert_back = insert_node->back;
+
+      corax_utree_connect_nodes(node->next, insert_node, insert_branch_length);
+      corax_utree_connect_nodes(insert_back, node->next->next, insert_back->length);
+    }
+
+    new_nodes[old_node_count + add_tip_count + i] = node;
+  }
+
+  // update tree structure
+  free(tree->nodes);
+  tree->nodes       = new_nodes;
+  tree->tip_count   = new_taxa_count;
+  tree->inner_count = new_inner_count;
+  tree->edge_count += 2 * add_tip_count;
+
+  return CORAX_SUCCESS;
+}
+
+CORAX_EXPORT int corax_utree_remove_tips(corax_utree_t      *tree,
+                                         unsigned int        del_tip_count,
+                                         const unsigned int *del_tip_ids,
+                                         void (*cb_destroy)(void *))
+{
+  unsigned int old_taxa_count  = tree->tip_count;
+  unsigned int old_inner_count = tree->inner_count;
+  unsigned int old_node_count  = old_taxa_count + old_inner_count;
+  unsigned int new_taxa_count  = old_taxa_count - del_tip_count;
+  unsigned int new_inner_count = old_inner_count + del_tip_count;
+
+  unsigned int i;
+
+  if (!del_tip_count)
+    return CORAX_SUCCESS;
+
+  corax_unode_t *new_root = tree->vroot;
+  corax_unode_t **old_nodes = tree->nodes;
+  corax_unode_t **old_tips =
+      (corax_unode_t **)calloc(old_taxa_count, sizeof(corax_unode_t *));
+
+  if (!old_tips)
+  {
+    corax_set_error(CORAX_ERROR_MEM_ALLOC, "Cannot allocate memory for nodes!");
+    return CORAX_FAILURE;
+  }
+
+  // create a sorted array of old tip nodes
+  for (i = 0; i < old_node_count; ++i)
+  {
+    corax_unode_t *node = old_nodes[i];
+
+    if (CORAX_UTREE_IS_TIP(node))
+    {
+      unsigned int node_idx = node->node_index;
+      assert(node_idx < old_taxa_count);
+      old_tips[node_idx] = node;
+    }
+  }
+
+  for (i = 0; i < del_tip_count; ++i)
+  {
+    unsigned int del_idx = del_tip_ids[i];
+    assert(del_idx < old_taxa_count);
+
+    corax_unode_t *del_tip_node = old_tips[del_idx];
+    corax_unode_t *del_inner_node = del_tip_node->back;
+
+    // pruned both tip and the adjacent inner node
+    corax_utree_connect_nodes(del_inner_node->next->back, del_inner_node->next->next->back,
+                              del_inner_node->next->length + del_inner_node->next->next->length);
+
+    new_root = del_inner_node->next->back;
+
+//    printf("remove %s\n", del_tip_node->label);
+
+    // destroy pruned nodes
+    corax_unode_destroy(del_tip_node, cb_destroy);
+    corax_unode_destroy(del_inner_node, cb_destroy);
+  }
+
+  corax_utree_reset_template_indices(new_root, new_taxa_count);
+
+  corax_utree_t *tmp_tree = corax_utree_wraptree(new_root, 0);
+  assert(tmp_tree->tip_count == new_taxa_count);
+
+  // shallow copy tree -> nodes will be owned by the tree returned to func caller
+  *tree = *tmp_tree;
+
+  free(old_tips);
+  free(old_nodes);
+  free(tmp_tree);
+
+  return CORAX_SUCCESS;
+}
+
 CORAX_EXPORT corax_unode_t *corax_utree_unroot_inplace(corax_unode_t *root)
 {
   /* check for a bifurcation at the root */
