@@ -37,6 +37,8 @@ double compute_distance(const double bp) {
  * @param scale_roots pre-calculate square roots of the scaling factors
  * @param num_replicates number of replicates per scaling factor
  * @param num_scales number of scaling factors in the array
+ * @param df out-parameter for degrees of freedom encountered during estimation. If below 2, estimation is degenerate and
+ *           an error is returned.
  * @param d out-parameter for the estimator for d
  * @param c out-parameter for the estimator for c
  * @return CORAX_SUCCESS if the WLS system was solved, CORAX_FAILURE if there is no analytical solution. Note that the
@@ -48,6 +50,7 @@ int fit_parameters_wls(const double *const bootstrap_counts,
                        const double *const scale_roots,
                        const unsigned int *const num_replicates,
                        const unsigned int num_scales,
+                       int *df,
                        double *d, double *c) {
     double *alloc = malloc(sizeof(double) * num_scales * 2);
     if (!alloc) {
@@ -58,7 +61,7 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     double *observed_distances = alloc;
     double *weights = alloc + num_scales;
 
-    unsigned int non_zero_observations = 0;
+    *df = 0;
     for (unsigned int s = 0; s < num_scales; s++) {
         const double proportion = bootstrap_counts[s] / (double) num_replicates[s];
         if (proportion < EPS) {
@@ -68,10 +71,10 @@ int fit_parameters_wls(const double *const bootstrap_counts,
         observed_distances[s] = compute_distance(proportion);
         const double x = normal_pdf(observed_distances[s], 0.0, 1.0);
         weights[s] = (x * x * (double) num_replicates[s]) / ((1.0 - proportion) * proportion);
-        non_zero_observations++;
+        *df += 1;
     }
 
-    if (non_zero_observations < 2) {
+    if (*df < 2) {
         *d = 0;
         *c = 0;
         goto clean_fail;
@@ -309,19 +312,23 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
             counts[s] = corax_empirical_bootstrap_count(replicates[s], num_replicates[s], tree, threshold);
         }
 
-        fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, d, c);
-        optimizer.bootstrap_counts = counts;
+        if (fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, &df, d, c) == CORAX_SUCCESS) {
+            optimizer.bootstrap_counts = counts;
 
-        fit_parameters_newton(&optimizer, d, c, &error, p_value, &df);
+            fit_parameters_newton(&optimizer, d, c, &error, p_value, &df);
+        } else {
+            // p value and error stay the same as in previous iteration, because we ran into an error condition
+            // (which is df < 2)
+        }
 
         // check whether the optimization problem is unsolvable, or
-        if (df < 0
+        if (df < 2
             // whether the p value is decreasing despite the threshold also decreasing
             || ((last_p_value - *p_value) * (threshold - last_threshold) > 0.0
                 // while the change in p-value is significant (i.e., larger than standard error)
                 && fabs(*p_value - last_p_value) > 0.1 * last_error
                 // and the function was fine before
-                && last_df >= 0)) {
+                && last_df >= 2)) {
             // turn back a bit toward the previous threshold and prevent the threshold
             // from crossing the non-monotone region again
             target_threshold = threshold;
