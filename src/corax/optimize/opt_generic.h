@@ -304,6 +304,10 @@ extern "C"
       /** Per-partition buffer to store the likelihood per site per rate category (\f$L_{ci}\f$) */
       double **sitecat_lh_per_part;
 
+      // TODO: document
+      double **sitecat_posterior_per_part;
+      double *category_lh;
+
 
       /* Working variables of EM algorithm */
 

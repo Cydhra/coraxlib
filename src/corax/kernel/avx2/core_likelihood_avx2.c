@@ -885,7 +885,11 @@ double corax_core_edge_loglikelihood_repeats_generic_avx2(
 
       if (sitecat_lh != NULL) {
         // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
+        *sitecat_lh = terma_r * rate_weights[i];
+
+        if (site_scalings) {
+            *sitecat_lh *= site_scalings;
+        }
         ++sitecat_lh;
       }
 

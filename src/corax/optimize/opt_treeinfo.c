@@ -976,6 +976,7 @@ double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
   lb              = (double **)malloc(sizeof(double *) * part_count);
   ub              = (double **)malloc(sizeof(double *) * part_count);
   bt              = (int **)malloc(sizeof(int *) * part_count);
+    cur_logl = corax_treeinfo_compute_loglh(treeinfo, 1);
   num_free_params = (unsigned int *)calloc(sizeof(unsigned int), part_count);
 
   /* those values are the same for all partitions */
@@ -1514,6 +1515,120 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
 }
 
 
+struct single_freerate_opt_data {
+    corax_treeinfo_t *treeinfo;
+    corax_partition_t *partition;
+    corax_unode_t *tree;
+    corax_opt_multipart_em_data_t *em_data;
+    const unsigned int *params_indices;
+    unsigned int rate_category;
+};
+
+double target_func_single_freerate(void *data, double x) {
+    struct single_freerate_opt_data *params = (struct single_freerate_opt_data *) data;
+    
+    params->partition->rates[params->rate_category] = x;
+    
+    double score = -1 * corax_opt_compute_lk(params->partition, params->tree, params->params_indices, 1, 1);
+    DBG("target_func_single_freerate trying param %f, loglh %f\n", x, score);
+    return score;
+}
+
+double target_func_brent_all_freerate(void *data, double *rates, double *likelihoods, int *converged) {
+    corax_opt_multipart_em_data_t *em_data = (corax_opt_multipart_em_data_t *) data;
+
+    // Copy rates to treeinfo
+    for (unsigned int p = 0U; p < em_data->treeinfo->partition_count; ++p) {
+        if (!(em_data->treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES)) {
+                continue;
+        }
+
+        corax_partition_t *part = em_data->treeinfo->partitions[p];
+
+        for (unsigned int c = 0; c < part->rate_cats; ++c) {
+            unsigned int offset = em_data->prefix_sum_category_count[p] + c;
+
+            if (converged && converged[offset])  {
+                continue;
+            }
+
+            if (rates) {
+                part->rates[c] = rates[offset];
+            }
+        }
+    }
+
+
+    // Evaluate per-site per-category likelihood
+    double overall_lh = corax_treeinfo_compute_loglh_sitecat(em_data->treeinfo, 0, 1, em_data->sitecat_lh_per_part);
+
+    // Verify that per-cat per-site lh matches overall result.
+    // TODO: remove in prod
+    {
+        corax_partition_t *part = em_data->treeinfo->partitions[0];
+        double summed_lh = 0.0;
+        size_t idx = 0;
+        for (unsigned int i = 0; i < part->sites; ++i) {
+            double site_lh = 0.0;
+            for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                site_lh += em_data->sitecat_lh_per_part[0][idx++];
+            }
+            summed_lh += log(site_lh) * part->pattern_weights[i];
+        }
+        printf("corax_algo_opt_rates_weights_em_treeinfo overall loglh %f, summed %f\n", overall_lh, summed_lh);
+    }
+
+    // Compute likelihood sum weighted with posterior
+    memset(em_data->category_lh, 0, sizeof(double) * em_data->total_rate_cats);
+    for (unsigned int p = 0U; p < em_data->treeinfo->partition_count; ++p) {
+        if (!(em_data->treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES)) {
+                continue;
+        }
+
+        corax_partition_t *part = em_data->treeinfo->partitions[p];
+        
+        // TODO: possible optimization: skip this part if the category already converged
+        double *this_sitecat_lh = em_data->sitecat_lh_per_part[p];
+        for (unsigned int i = 0; i < part->sites; ++i) {
+            for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                unsigned int offset = em_data->prefix_sum_category_count[p] + c;
+                em_data->category_lh[offset] += em_data->sitecat_posterior_per_part[p][i * part->rate_cats + c] * log(this_sitecat_lh[c]);
+            }
+            this_sitecat_lh += part->rate_cats;
+        }
+    }
+
+    // Compute sum across all PEs
+    corax_treeinfo_parallel_reduce(em_data->treeinfo,
+            em_data->category_lh, em_data->total_rate_cats, CORAX_REDUCE_SUM);
+
+    // Divide by number of patterns
+    bool all_converged = true;
+    for (unsigned int p = 0U; p < em_data->treeinfo->partition_count; ++p) {
+        unsigned int num_rate_cats = em_data->prefix_sum_category_count[p + 1] - em_data->prefix_sum_category_count[p];
+        for (unsigned int c = 0; c < num_rate_cats; ++c) {
+            unsigned int offset = em_data->prefix_sum_category_count[p] + c;
+            if (converged && converged[offset]) {
+                continue;
+            }
+
+            double per_cat_lh = -em_data->category_lh[offset]; // / em_data->pattern_weight_sum_per_part[p];
+            printf("corax_algo_opt_rates_weights_em_treeinfo: brent target p %i, cat %i rate = %f lh = %f\n", p, c, rates[c], per_cat_lh);
+
+            if (likelihoods) {
+                likelihoods[offset] = per_cat_lh;
+            }
+
+            all_converged = false;
+        }
+    }
+
+    if (converged) {
+        converged[em_data->total_rate_cats] = all_converged;
+    }
+
+    return 0;
+}
 
 CORAX_EXPORT
 double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
@@ -1656,7 +1771,14 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
   do {
     prev_logl = cur_logl;
 
-    double loglh_before_weights = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 0, em_data->sitecat_lh_per_part);
+    for (unsigned int outer_step = 0; outer_step < 1 /*em_data->total_rate_cats*/; ++outer_step) {
+        double loglh_before_weights = corax_treeinfo_compute_loglh_flex(treeinfo, 0, 0);
+
+    DBG("corax_algo_opt_rates_weights_em_treeinfo: before weights %f, PARAMS = ", loglh_before_weights);
+    for (unsigned int i = 0; i < treeinfo->partitions[0]->rate_cats; ++i) {
+        DBG("(%.12lf, %.12lf) ", treeinfo->partitions[0]->rate_weights[i], treeinfo->partitions[0]->rates[i]);
+    }
+    DBG("\n");
 
     /* Save old weights */
     for (unsigned int p = 0; p < treeinfo->partition_count; ++p) {
@@ -1673,6 +1795,8 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     /* optimize mixture weights with EM */
     corax_opt_minimize_em_multipartition(em_data);
 
+    /*
+     * ROLLBACK
     double loglh_after_weights = corax_treeinfo_compute_loglh(treeinfo, 1);
     DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER WEIGHTS: logLH = "
         "%.15lf\n",
@@ -1687,58 +1811,130 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
             memcpy(part->rate_weights, &old_w[em_data->prefix_sum_category_count[p]], sizeof(double) * part->rate_cats);
         }
     }
+    */
+    /* optimize mixture rates with Brent's */
+    if (true) {
+        double *xmin = (double *) calloc(em_data->total_rate_cats, sizeof(double));
+        double *xmax = (double *) calloc(em_data->total_rate_cats, sizeof(double));
+        double *xguess = (double *) calloc(em_data->total_rate_cats, sizeof(double));
+        double *xopt = (double *) calloc(em_data->total_rate_cats, sizeof(double));
+        
+        for (unsigned int p = 0; p < em_data->treeinfo->partition_count; ++p) {
+            corax_partition_t *part = em_data->treeinfo->partitions[p];
 
-    /* optimize mixture rates */
-    part = 0;
-    for (p = 0; p < treeinfo->partition_count; ++p) {
-      if (treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES) {
-        corax_partition_t *partition = treeinfo->partitions[p];
+            unsigned int num_rate_cats = em_data->prefix_sum_category_count[p + 1] - em_data->prefix_sum_category_count[p];
+            for (unsigned int c = 0; c < num_rate_cats; ++c) {
+                unsigned int offset = em_data->prefix_sum_category_count[p] + c;
+                xmin[offset] = CORAX_OPT_MIN_RATE;
+                xmax[offset] = 1.0 / em_data->weights[offset];
+                //xmax[offset] = CORAX_OPT_MAX_RATE;
 
-        /* remote partition -> skip */
-        if (!partition) {
-          part++;
-          continue;
+                // TODO: does not work with remote partitions
+                if (part != NULL) {
+                    xguess[offset] = part->rates[c];
+                }
+            }
+
         }
 
-        num_free_params[part] = partition->rate_cats;
+        corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, xmin, xguess, xmax, 1e-4, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 0);
 
-        DBG("corax_algo_opt_rates_weights_em_treeinfo: OLD RATES = (%.12lf "
-            "%.12lf %.12lf %.12lf)\n",
-            partition->rates[0],
-            partition->rates[1],
-            partition->rates[2],
-            partition->rates[3]);
+        // Copy rates to treeinfo
+        printf("corax_algo_opt_rates_weights_em_treeinfo: new rates = ");
+        for (unsigned int p = 0U; p < em_data->treeinfo->partition_count; ++p) {
+            if (!(em_data->treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) {
+                    continue;
+            }
+            for (unsigned int i = 0; i < 3; ++i) {
+                printf("%f ", em_data->treeinfo->partitions[p]->rates[i]);
+            }
+            printf("\n");
 
-        fill_rates(partition->rates,
-                   x[part],
-                   bt[part],
-                   lb[part],
-                   ub[part],
-                   min_rate,
-                   max_rate,
-                   partition->rate_cats);
+            memcpy(em_data->treeinfo->partitions[p]->rates, &xopt[em_data->prefix_sum_category_count[p]], sizeof(double) * em_data->treeinfo->partitions[p]->rate_cats);
+        }
 
-        part++;
-      }
+        free(xopt);
+        free(xguess);
+        free(xmax);
+        free(xmin);
+    } else if (false) {
+        part = 0;
+        for (p = 0; p < treeinfo->partition_count; ++p) {
+        if (treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES) {
+            corax_partition_t *partition = treeinfo->partitions[p];
+
+            /* remote partition -> skip */
+            if (!partition) {
+            part++;
+            continue;
+            }
+
+            num_free_params[part] = partition->rate_cats;
+
+            DBG("corax_algo_opt_rates_weights_em_treeinfo: OLD RATES = (%.12lf "
+                "%.12lf %.12lf %.12lf)\n",
+                partition->rates[0],
+                partition->rates[1],
+                partition->rates[2],
+                partition->rates[3]);
+
+            fill_rates(partition->rates,
+                    x[part],
+                    bt[part],
+                    lb[part],
+                    ub[part],
+                    min_rate,
+                    max_rate,
+                    partition->rate_cats);
+
+            part++;
+        }
+        }
+        opt_params.param_to_optimize = CORAX_OPT_PARAM_FREE_RATES;
+
+        cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
+                                                x,
+                                                lb,
+                                                ub,
+                                                bt,
+                                                num_free_params,
+                                                max_free_params,
+                                                factor,
+                                                tolerance,
+                                                (void *) &opt_params,
+                                                target_func_multidim_treeinfo);
+
+    } else {
+     /* PREVIOUS ITER */
+    assert(treeinfo->partition_count == 1); // TODO: expand to multi partitioned datasets
+    corax_partition_t *part = treeinfo->partitions[0];
+
+    struct single_freerate_opt_data params;
+    unsigned int *params_indices = calloc(part->rate_cats, sizeof(unsigned int));
+    memset(params_indices, 0, sizeof(unsigned int) * part->rate_cats);
+    params.treeinfo = treeinfo;
+    params.partition = part;
+    params.tree = treeinfo->root;
+    params.params_indices = params_indices;
+
+    for (unsigned int c = 0; c < part->rate_cats; ++c) {
+        DBG("corax_algo_opt_rates_weights_em_treeinfo Brent start on cat %i (initial value %f)\n", c, part->rates[c]);
+        double cur_logl, f2x;
+        params.rate_category = c;
+        corax_opt_minimize_brent(1e-4, part->rates[c], 1.0/part->rates[c], 1e-3, &cur_logl, &f2x, &params, target_func_single_freerate);
+        DBG("corax_algo_opt_rates_weights_em_treeinfo Brent concluded cat %i (new value %f, loglh %f)\n", c, part->rates[c], cur_logl);
+    }
+    free(params_indices);
     }
 
-    opt_params.param_to_optimize = CORAX_OPT_PARAM_FREE_RATES;
-
-    cur_logl = corax_opt_minimize_lbfgsb_multi(part_count,
-                                               x,
-                                               lb,
-                                               ub,
-                                               bt,
-                                               num_free_params,
-                                               max_free_params,
-                                               factor,
-                                               tolerance,
-                                               (void *) &opt_params,
-                                               target_func_multidim_treeinfo);
+    cur_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
 
     DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER RATES: logLH = %.15lf\n",
         cur_logl);
-  } while (prev_logl - cur_logl > tolerance);
+
+  }
+  } while (prev_logl - cur_logl > 1e-4);
+  //} while (prev_logl - cur_logl > tolerance);
 
   /* now re-normalize rates and scale the branches accordingly */
   renormalize_free_rates(treeinfo);
