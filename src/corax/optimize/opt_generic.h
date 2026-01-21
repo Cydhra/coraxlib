@@ -304,10 +304,11 @@ extern "C"
       /** Per-partition buffer to store the likelihood per site per rate category (\f$L_{ci}\f$) */
       double **sitecat_lh_per_part;
 
-      // TODO: document
+      /** Per-partition array that stores for each site i and category j the posterior probability of site i belonging to category j */
       double **sitecat_posterior_per_part;
-      double *category_lh;
 
+      /** Per-category likelihood in a consecutive array with length `total_rate_cats` */
+      double *category_lh;
 
       /* Working variables of EM algorithm */
 
@@ -316,9 +317,6 @@ extern "C"
 
       /** Buffer that stores the newly calculated category weights (\f$w_{c,j+1}\f$) */
       double *new_weights;
-
-      /** Ratio between current and previous weight (\f$\frac{w_{c,j+1}}{w_{c,j}}\f$). Used to update the `sitecat_lh_per_part` array without recomputing the likelihood. */
-      double *weight_ratio;
 
       /** Flag per partition to track convergence */
       bool *converged;

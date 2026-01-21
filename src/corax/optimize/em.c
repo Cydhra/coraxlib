@@ -136,7 +136,6 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
 
     r->weights = (double *) malloc(sizeof(double) * r->total_rate_cats);
     r->new_weights = (double *) malloc(sizeof(double) * r->total_rate_cats);
-    r->weight_ratio = (double *) malloc(sizeof(double) * r->total_rate_cats);
     r->converged = (bool *) malloc(sizeof(bool) * treeinfo->partition_count);
     r->category_lh = (double *) malloc(sizeof(double) * r->total_rate_cats);
 
@@ -159,7 +158,6 @@ corax_opt_multipart_em_free(corax_opt_multipart_em_data_t *data)
 {
     free(data->category_lh); data->category_lh = NULL;
     free(data->converged); data->converged = NULL;
-    free(data->weight_ratio); data->weight_ratio = NULL;
     free(data->new_weights); data->new_weights= NULL;
     free(data->weights); data->weights = NULL;
 
@@ -269,7 +267,6 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
             }
 
             partition_converged = partition_converged && fabs(data->weights[c_idx] - data->new_weights[c_idx]) < 1e-4;
-            data->weight_ratio[c_idx] = data->new_weights[c_idx] / data->weights[c_idx];
             data->weights[c_idx] = data->new_weights[c_idx];
             DBG(" %f ", data->weights[c_idx]);
         }
