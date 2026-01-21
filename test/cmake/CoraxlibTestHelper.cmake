@@ -7,6 +7,7 @@
 include(warningFlags)
 include(sanitizers)
 include(targetSourcesLocal)
+include(GoogleTest)
 
 set(CORAX_TEST_WARNING_FLAGS ${CORAX_WARNING_FLAGS})
 

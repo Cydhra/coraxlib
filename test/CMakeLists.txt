@@ -1,10 +1,16 @@
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-include(CoraxlibTestHelper)
+include(FetchContent)
 
 # Load the GoogleTest included in the git submodule.
-add_subdirectory("${PROJECT_SOURCE_DIR}/lib/googletest" "lib/googletest")
-set(INSTALL_GTEST Off)
-include(GoogleTest)
+FetchContent_declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.17.0
+    GIT_SHALLOW true
+)
+FetchContent_MakeAvailable(googletest)
+
+include(CoraxlibTestHelper)
 
 # Keep cache nad IDEs which support folders clean. See:
 # https://cliutils.gitlab.io/modern-cmake/chapters/testing/googletest.html
