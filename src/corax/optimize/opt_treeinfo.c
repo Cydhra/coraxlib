@@ -1785,7 +1785,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     for (unsigned int p = 0; p < em_data->treeinfo->partition_count; ++p) {
         corax_partition_t *part = em_data->treeinfo->partitions[p];
 
-        if (!part || treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES) {
+        if (!part || !(treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_FREE_RATES)) {
             continue;
         }
 

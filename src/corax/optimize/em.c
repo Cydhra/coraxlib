@@ -226,56 +226,82 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
 
 CORAX_EXPORT void
 corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
-    // TODO: readd convergence check per partition
-    unsigned int overall_category_count = data->total_rate_cats;
-    memset(data->new_weights, 0, sizeof(double) * overall_category_count);
-
-    // Expectation step
-    corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 0, data->sitecat_lh_per_part);
-    transform_sitecatlh_to_posterior(data);
-
-    corax_treeinfo_parallel_reduce(data->treeinfo,
-            data->new_weights, overall_category_count, CORAX_REDUCE_SUM);
-
+    const unsigned int overall_category_count = data->total_rate_cats;
+    // Determine number of iterations = max rate category count
+    unsigned int total_steps = 1;
     for (unsigned int p = 0; p < data->treeinfo->partition_count; ++p) {
-        DBG("\tpart %i ", p);
-        if (data->converged[p] || !(data->treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) {
-            DBG("converged\n");
-            continue;
+        const unsigned int rate_cats = data->prefix_sum_category_count[p+1] - data->prefix_sum_category_count[p];
+
+        if (rate_cats > total_steps) {
+            total_steps = rate_cats;
         }
 
-        bool partition_converged = true;
-        const unsigned int category_count = data->prefix_sum_category_count[p + 1] - data->prefix_sum_category_count[p];
-        const unsigned partition_offset = data->prefix_sum_category_count[p];
+        data->converged[p] = false;
+    }
 
-        // Maximization step
-        double weight_sum = 0;
-        for (unsigned int c = 0; c < category_count; c++) {
-            const unsigned int c_idx = partition_offset + c;
-            data->new_weights[c_idx] = fmax(CORAX_OPT_MIN_RATE_WEIGHT,
-                data->new_weights[c_idx] / data->pattern_weight_sum_per_part[p]);
+    bool all_partitions_converged = false;
+    for (unsigned int step = 0; (step < total_steps) && !all_partitions_converged; ++step) {
+        memset(data->new_weights, 0, sizeof(double) * overall_category_count);
 
-            weight_sum += data->new_weights[c_idx];
-        }
+        // Expectation step
+        corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 0, data->sitecat_lh_per_part);
+        transform_sitecatlh_to_posterior(data);
 
-        for (unsigned int c = 0; c < category_count; c++) {
-            const unsigned int c_idx = partition_offset + c;
+        corax_treeinfo_parallel_reduce(data->treeinfo,
+                data->new_weights, overall_category_count, CORAX_REDUCE_SUM);
 
-            // Normalize the weights if required
-            if (weight_sum > 1.0) {
-                data->new_weights[c_idx] *= (1.0 / weight_sum);
+
+        all_partitions_converged = true;
+        for (unsigned int p = 0; p < data->treeinfo->partition_count; ++p) {
+            const unsigned int category_count = data->prefix_sum_category_count[p + 1] - data->prefix_sum_category_count[p];
+            const unsigned partition_offset = data->prefix_sum_category_count[p];
+            
+            // only update partitions which have less than step categories
+            data->converged[p] = data->converged[p] || (step > category_count);
+
+            DBG("\tpart %i ", p);
+            if (data->converged[p] || !(data->treeinfo->params_to_optimize[p] & CORAX_OPT_PARAM_RATE_WEIGHTS)) {
+                DBG("converged\n");
+                continue;
             }
 
-            partition_converged = partition_converged && fabs(data->weights[c_idx] - data->new_weights[c_idx]) < 1e-4;
-            data->weights[c_idx] = data->new_weights[c_idx];
-            DBG(" %f ", data->weights[c_idx]);
-        }
-        DBG("\n");
 
-        // Copy weights to partition if it is local
-        corax_partition_t *part = data->treeinfo->partitions[p];
-        if (part) {
-            memcpy(part->rate_weights, &data->weights[data->prefix_sum_category_count[p]], sizeof(double) * part->rate_cats);
+            // Maximization step
+            double weight_sum = 0;
+            for (unsigned int c = 0; c < category_count; c++) {
+                const unsigned int c_idx = partition_offset + c;
+                double w = data->new_weights[c_idx] / data->pattern_weight_sum_per_part[p];
+
+                if (w < CORAX_OPT_MIN_RATE_WEIGHT) {
+                    w = CORAX_OPT_MIN_RATE_WEIGHT;
+                    data->converged[p] = true;
+                }
+
+                weight_sum += w;
+                data->new_weights[c_idx] = w;
+            }
+
+            for (unsigned int c = 0; c < category_count; c++) {
+                const unsigned int c_idx = partition_offset + c;
+
+                // Normalize the weights if required
+                if (weight_sum > 1.0) {
+                    data->new_weights[c_idx] *= (1.0 / weight_sum);
+                }
+
+                data->converged[p] = data->converged[p] || fabs(data->weights[c_idx] - data->new_weights[c_idx]) < 1e-4;
+                data->weights[c_idx] = data->new_weights[c_idx];
+                DBG(" %f ", data->weights[c_idx]);
+            }
+            DBG("\n");
+
+            // Copy weights to partition if it is local
+            corax_partition_t *part = data->treeinfo->partitions[p];
+            if (part) {
+                memcpy(part->rate_weights, &data->weights[data->prefix_sum_category_count[p]], sizeof(double) * part->rate_cats);
+            }
+
+            all_partitions_converged = all_partitions_converged && data->converged[p];
         }
     }
 }

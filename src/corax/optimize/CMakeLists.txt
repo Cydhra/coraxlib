@@ -1,5 +1,9 @@
 include(targetSourcesLocal)
 
+if (FREERATE_OPT_EM_BRENT)
+    target_compile_definitions(${CORAX_LIB_TARGET} PRIVATE -DFREERATE_OPT_EM_BRENT=1)
+endif()
+
 target_sources_local(
     ${CORAX_LIB_TARGET}
     PRIVATE bfgs.c
@@ -20,3 +24,4 @@ target_sources_local(
 )
 
 add_subdirectory(lbfgsb)
+
