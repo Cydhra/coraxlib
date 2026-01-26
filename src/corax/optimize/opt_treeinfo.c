@@ -1696,17 +1696,18 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     }
   }
 
-#ifndef FREERATE_OPT_EM_BRENT
   for (p = 0; p < treeinfo->partition_count; ++p) {
     if (!(treeinfo->params_to_optimize[p]
           & (CORAX_OPT_PARAM_FREE_RATES | CORAX_OPT_PARAM_RATE_WEIGHTS)))
       continue;
 
     if (treeinfo->partitions[p]) {
+#ifndef FREERATE_OPT_EM_BRENT
       x[part] = (double *) malloc(sizeof(double) * (max_free_params));
       lb[part] = lb[0];
       ub[part] = ub[0];
       bt[part] = bt[0];
+#endif
 
       if (old_rates) {
         size_t rw_size = treeinfo->partitions[p]->rate_cats * sizeof(double);
@@ -1722,7 +1723,6 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     part++;
   }
   assert(part == part_count);
-#endif
 
   struct treeinfo_opt_params opt_params;
   opt_params.treeinfo = treeinfo;
