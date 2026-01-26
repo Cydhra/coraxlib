@@ -460,12 +460,6 @@ corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -481,6 +475,11 @@ corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvp += states_padded;
@@ -712,12 +711,6 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -734,7 +727,13 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
       {
         terma += terma_r * rate_weights[i];
       }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
+      }
     }
+
 
     /* compute site log-likelihood and scale if necessary */
     if (site_scalings)
@@ -965,12 +964,6 @@ double corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -986,6 +979,11 @@ double corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       pmat -= displacement;
@@ -1223,12 +1221,6 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1244,6 +1236,11 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvc += states_padded;
@@ -1472,12 +1469,6 @@ double corax_core_edge_loglikelihood_ii_avx(unsigned int         states,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1493,6 +1484,11 @@ double corax_core_edge_loglikelihood_ii_avx(unsigned int         states,
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvc += states_padded;
@@ -1693,12 +1689,6 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1714,6 +1704,11 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvp += states_padded;
@@ -1924,12 +1919,6 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -1945,6 +1934,11 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvp += states_padded;
@@ -2165,12 +2159,6 @@ double corax_core_edge_loglikelihood_repeatsbclv_4x4_avx(
         terma_r *= scale_minlh[rate_scalings[i] - 1];
       }
 
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
-      }
-
       /* account for invariant sites */
       prop_invar = invar_proportion ? invar_proportion[freqs_indices[i]] : 0;
       if (prop_invar > 0)
@@ -2186,6 +2174,11 @@ double corax_core_edge_loglikelihood_repeatsbclv_4x4_avx(
       else
       {
         terma += terma_r * rate_weights[i];
+      }
+
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
+        ++sitecat_lh;
       }
 
       clvp += states_padded;
