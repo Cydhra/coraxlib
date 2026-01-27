@@ -181,6 +181,7 @@ TEST_P(SitecatTest, dna_persitecat_lh) {
         const auto child_site_id = corax_get_site_id(part, treeinfo->root->back->clv_index);
         const auto parent_scaler = treeinfo->root->scaler_index;
         const auto child_scaler = treeinfo->root->back->scaler_index;
+        EXPECT_NE(parent_scaler, -1); EXPECT_NE(child_scaler, -1);
 
         unsigned int site_scalings;
 
@@ -274,6 +275,7 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
         const auto child_site_id = corax_get_site_id(part, treeinfo->root->back->clv_index);
         const auto parent_scaler = treeinfo->root->scaler_index;
         const auto child_scaler = treeinfo->root->back->scaler_index;
+        EXPECT_NE(parent_scaler, -1); EXPECT_NE(child_scaler, -1);
         unsigned int site_scalings;
 
         if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {

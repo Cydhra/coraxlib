@@ -238,8 +238,8 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
                 if (part->scale_buffers > 0) {
                     unsigned int pid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->clv_index), i);
                     unsigned int cid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->back->clv_index), i);
-                    unsigned int parent_scaler = data->treeinfo->root->scaler_index;
-                    unsigned int child_scaler = data->treeinfo->root->back->scaler_index;
+                    int parent_scaler = data->treeinfo->root->scaler_index;
+                    int child_scaler = data->treeinfo->root->back->scaler_index;
 
                     if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
                         // per-site scaling is minimum among rate scalers
@@ -247,15 +247,15 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
 
                         for (unsigned int c = 0; c < part->rate_cats; ++c) {
                             site_scalings = CORAX_MIN(site_scalings,
-                                part->scale_buffer[parent_scaler][pid * part->rate_cats + c] +
-                                part->scale_buffer[child_scaler][cid * part->rate_cats + c]);
+                                ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid * part->rate_cats + c]) +
+                                ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid * part->rate_cats + c]));
 
                         }
 
                     } else {
                         site_scalings = \
-                            part->scale_buffer[parent_scaler][pid] +
-                            part->scale_buffer[child_scaler][cid];
+                            ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid]) +
+                            ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid]);
                     }
                 }
 
