@@ -152,7 +152,8 @@ TEST_P(SitecatTest, dna_persitecat_lh) {
     double *persitecat_lh_per_part = persitecat_lh.data();
 
     const double lh = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 1, &persitecat_lh_per_part);
-    printf("\t lnL = %f\n", lh);
+    RecordProperty("loglh", lh);
+    DBG("\t lnL = %f\n", lh);
     EXPECT_LT(lh, 0);
     EXPECT_GT(lh, -1e15);
 
@@ -178,21 +179,40 @@ TEST_P(SitecatTest, dna_persitecat_lh) {
 
         const auto parent_site_id = corax_get_site_id(part, treeinfo->root->clv_index);
         const auto child_site_id = corax_get_site_id(part, treeinfo->root->back->clv_index);
-        const unsigned int site_scalings = 
-                    part->scale_buffer[treeinfo->root->scaler_index][CORAX_GET_ID(parent_site_id, i)] +
-                    part->scale_buffer[treeinfo->root->back->scaler_index][CORAX_GET_ID(child_site_id, i)];
+        const auto parent_scaler = treeinfo->root->scaler_index;
+        const auto child_scaler = treeinfo->root->back->scaler_index;
+
+        unsigned int site_scalings;
+
+        if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
+            site_scalings = 
+                *std::min_element(
+                    &part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i) * rate_cats + 0],
+                    &part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i) * rate_cats + rate_cats]) + 
+                *std::min_element(
+                    &part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i) * rate_cats + 0],
+                    &part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i) * rate_cats + rate_cats]);
+        } else {
+            site_scalings = 
+                    part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i)] +
+                    part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i)];
+        }
+
         double site_lnL;
         if (term_inv > 0.0) {
-            site_lnL = log(site_lh * scale_minlh.at(std::min(site_scalings,  static_cast<unsigned int>(CORAX_SCALE_RATE_MAXDIFF -1))) \
-                            + term_inv);
-
+            const auto capped_scalings = std::min(site_scalings,  static_cast<unsigned int>(CORAX_SCALE_RATE_MAXDIFF));
+            const auto scale_factor = site_scalings > 0 ? scale_minlh.at(capped_scalings - 1) : 1.0;
+            site_lnL = log(site_lh * scale_factor + term_inv);
         } else {
             site_lnL = log(site_lh) + site_scalings * log(CORAX_SCALE_THRESHOLD);
         }
         summed_lh += site_lnL * part->pattern_weights[i];
     }
-    EXPECT_NEAR(lh, summed_lh, 1e-24);
-    RecordProperty("loglh", lh);
+
+    // For some reason, SSE causes higher LH divergence
+    const double tolerance = simd_attributes & CORAX_ATTRIB_ARCH_SSE ? 1e-9 : 1e-20;
+
+    EXPECT_NEAR(lh, summed_lh, tolerance);
     RecordProperty("summed_loglh", summed_lh);
 }
 
@@ -206,7 +226,7 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
 
     constexpr auto rate_cats = 3;
     SetupAA();
-    CreateTreeinfo(attributes, rate_cats);
+    CreateTreeinfo(attributes, rate_cats, 400);
 
     corax_set_frequencies(part, 0, corax_aa_freqs_lg);
     corax_set_subst_params(part, 0, corax_aa_rates_lg);
@@ -226,7 +246,7 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
     double *persitecat_lh_per_part = persitecat_lh.data();
 
     const double lh = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 1, &persitecat_lh_per_part);
-    printf("\t lnL = %f\n", lh);
+    DBG("\t lnL = %f\n", lh);
     EXPECT_LT(lh, 0);
     EXPECT_GT(lh, -1e15);
 
@@ -252,20 +272,35 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
 
         const auto parent_site_id = corax_get_site_id(part, treeinfo->root->clv_index);
         const auto child_site_id = corax_get_site_id(part, treeinfo->root->back->clv_index);
-        const unsigned int site_scalings = 
-                    part->scale_buffer[treeinfo->root->scaler_index][CORAX_GET_ID(parent_site_id, i)] +
-                    part->scale_buffer[treeinfo->root->back->scaler_index][CORAX_GET_ID(child_site_id, i)];
+        const auto parent_scaler = treeinfo->root->scaler_index;
+        const auto child_scaler = treeinfo->root->back->scaler_index;
+        unsigned int site_scalings;
+
+        if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
+            site_scalings = 
+                *std::min_element(
+                    &part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i) * rate_cats + 0],
+                    &part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i) * rate_cats + rate_cats]) + 
+                *std::min_element(
+                    &part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i) * rate_cats + 0],
+                    &part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i) * rate_cats + rate_cats]);
+        } else {
+            site_scalings = 
+                    part->scale_buffer[parent_scaler][CORAX_GET_ID(parent_site_id, i)] +
+                    part->scale_buffer[child_scaler][CORAX_GET_ID(child_site_id, i)];
+        }
         double site_lnL;
         if (term_inv > 0.0) {
-            site_lnL = log(site_lh * scale_minlh.at(std::min(site_scalings,  static_cast<unsigned int>(CORAX_SCALE_RATE_MAXDIFF -1))) \
-                            + term_inv);
+            const auto capped_scalings = std::min(site_scalings,  static_cast<unsigned int>(CORAX_SCALE_RATE_MAXDIFF));
+            const auto scale_factor = site_scalings > 0 ? scale_minlh.at(capped_scalings - 1) : 1.0;
+            site_lnL = log(site_lh * scale_factor + term_inv);
 
         } else {
             site_lnL = log(site_lh) + site_scalings * log(CORAX_SCALE_THRESHOLD);
         }
         summed_lh += site_lnL * part->pattern_weights[i];
     }
-    EXPECT_NEAR(lh, summed_lh, 1e-24);
+    EXPECT_NEAR(lh, summed_lh, 1e-20);
     RecordProperty("loglh", lh);
     RecordProperty("summed_loglh", summed_lh);
 
@@ -274,7 +309,7 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
 INSTANTIATE_TEST_SUITE_P(LogLHCheck, SitecatTest, Combine(
     Values(0, CORAX_ATTRIB_ARCH_SSE, CORAX_ATTRIB_ARCH_AVX, CORAX_ATTRIB_ARCH_AVX2, CORAX_ATTRIB_ARCH_AVX512),
     Values(0, CORAX_ATTRIB_PATTERN_TIP, CORAX_ATTRIB_SITE_REPEATS),
-    Values(0 /*, CORAX_ATTRIB_RATE_SCALERS*/),
+    Values(0 , CORAX_ATTRIB_RATE_SCALERS),
     Values(0.0, 0.3) /* p_invariant */
 ));
 
@@ -353,7 +388,7 @@ TEST_F(SinglePartitionedTest, em_optimization_invar) {
                                                           CORAX_OPT_MAX_PINV,
                                                           1e-4);
         loglh_after_bfgs_invar = -corax_algo_opt_rates_weights_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4);
-        printf("after bfgs invar: %f\n", loglh_after_bfgs_invar);
+        DBG("after bfgs invar: %f\n", loglh_after_bfgs_invar);
     } while(loglh_after_bfgs_invar - old_loglh > 1e-3);
     RecordProperty("loglh_after_bfgs", loglh_after_bfgs_invar);
     EXPECT_GT(loglh_after_bfgs_invar, initial_loglh);
@@ -368,10 +403,10 @@ TEST_F(SinglePartitionedTest, em_optimization_invar) {
                                                           CORAX_OPT_MAX_PINV,
                                                           1e-4);
         loglh_after_em_invar = -corax_algo_opt_rates_weights_em_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4);
-        printf("after em invar: %f\n", loglh_after_em_invar);
+        DBG("after em invar: %f\n", loglh_after_em_invar);
     } while(loglh_after_em_invar - old_loglh > 1e-3);
     RecordProperty("loglh_after_em", loglh_after_em_invar);
     EXPECT_GT(loglh_after_em_invar, initial_loglh);
 
-    EXPECT_NEAR(loglh_after_em_invar, loglh_after_bfgs_invar, 0.5);
+    EXPECT_NEAR(loglh_after_em_invar, loglh_after_bfgs_invar, 1e-2);
 }

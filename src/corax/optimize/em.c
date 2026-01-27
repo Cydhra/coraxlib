@@ -2,6 +2,7 @@
 #include "corax/core/partition.h"
 #include "corax/tree/treeinfo.h"
 #include "opt_generic.h"
+#include <limits.h>
 
 /******************************************************************************/
 /* EXPECTATION-MAXIMIZATION (EM)     */
@@ -150,6 +151,12 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
         memcpy(&r->weights[r->prefix_sum_category_count[p]], part->rate_weights, sizeof(double) * part->rate_cats);
     }
 
+    /* Precompute scaling factors */
+    r->scale_factor_powers[0] = CORAX_SCALE_FACTOR;
+    for (unsigned int i = 1; i < CORAX_SCALE_RATE_MAXDIFF; ++i) {
+        r->scale_factor_powers[i] = r->scale_factor_powers[i - 1] * CORAX_SCALE_FACTOR;
+    }
+
     return r;
 }
 
@@ -200,12 +207,62 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
 
 
         for (unsigned int i = 0; i < part->sites; ++i) {
-            double pattern_likelihood = 0;
             const unsigned int pattern_weight = part->pattern_weights[i];
+
+            double pattern_likelihood = 0;
+            double term_inv = 0;
+
+            // Handle invariant sites
+            double prop_invar = part->prop_invar ? part->prop_invar[0] : 0.0;
+            // Possible optimization: precomputing the invariant proportion per-state outside of the site loop
+            if (prop_invar > 0.0 && part->invariant && part->invariant[i] != -1) {
+                int site_state = part->invariant[i];
+
+                for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                    term_inv += prop_invar \
+                                * part->rate_weights[c] \
+                                * part->frequencies[data->treeinfo->param_indices[p][c]][site_state];
+                }
+
+            }
 
             // compute \f$ \sum_{c=1}^k w_c L(D_i | T, S, r_c) \f$ (divisor of Eq. (1))
             for (unsigned int c = 0; c < part->rate_cats; ++c) {
                 pattern_likelihood += this_lk_cat[c];
+            }
+
+            // Scale pattern likelihood in case we have an invariant proportion
+            if (term_inv > 0.) {
+                unsigned int site_scalings = 0;
+
+                if (part->scale_buffers > 0) {
+                    unsigned int pid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->clv_index), i);
+                    unsigned int cid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->back->clv_index), i);
+                    unsigned int parent_scaler = data->treeinfo->root->scaler_index;
+                    unsigned int child_scaler = data->treeinfo->root->back->scaler_index;
+
+                    if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
+                        // per-site scaling is minimum among rate scalers
+                        site_scalings = UINT_MAX;
+
+                        for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                            site_scalings = CORAX_MIN(site_scalings,
+                                part->scale_buffer[parent_scaler][pid * part->rate_cats + c] +
+                                part->scale_buffer[child_scaler][cid * part->rate_cats + c]);
+
+                        }
+
+                    } else {
+                        site_scalings = \
+                            part->scale_buffer[parent_scaler][pid] +
+                            part->scale_buffer[child_scaler][cid];
+                    }
+                }
+
+                const unsigned int capped_scalings = CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+                const double scale_factor = capped_scalings > 0 ? data->scale_factor_powers[capped_scalings - 1] : 1.0;
+                pattern_likelihood = (1. - prop_invar) * pattern_likelihood + term_inv * scale_factor;
+                assert(pattern_likelihood > 0.);
             }
 
             for (unsigned int c = 0; c < part->rate_cats; ++c) {

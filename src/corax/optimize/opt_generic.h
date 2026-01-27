@@ -23,6 +23,7 @@
 
 #include "corax/corax_core.h"
 #include "corax/corax_tree.h"
+#include "corax/core/common.h"
 
 #ifdef DEBUG
 #define DBG(fmt, ...)                                                          \
@@ -320,6 +321,10 @@ extern "C"
 
       /** Flag per partition to track convergence */
       bool *converged;
+
+      /** Pre-compute scale factors */
+      double scale_factor_powers[CORAX_SCALE_RATE_MAXDIFF];
+
   } corax_opt_multipart_em_data_t;
 
   /** Instantiate working data for the EM algorithm from a given treeinfo */
