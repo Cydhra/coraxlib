@@ -977,7 +977,7 @@ double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
   ub              = (double **)malloc(sizeof(double *) * part_count);
   bt              = (int **)malloc(sizeof(int *) * part_count);
     cur_logl = corax_treeinfo_compute_loglh(treeinfo, 1);
-  num_free_params = (unsigned int *)calloc(sizeof(unsigned int), part_count);
+  num_free_params = (unsigned int *)calloc(part_count, sizeof(unsigned int));
 
   /* those values are the same for all partitions */
   lb[0] = (double *)malloc(sizeof(double) * 2);
