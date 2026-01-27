@@ -1,10 +1,5 @@
 include(targetSourcesLocal)
 
-option(FREERATE_OPT_EM_BRENT "Use Brent for during co-optimization of category weights and rates with EM")
-if (FREERATE_OPT_EM_BRENT)
-    target_compile_definitions(${CORAX_LIB_TARGET} PRIVATE -DFREERATE_OPT_EM_BRENT=1)
-endif()
-
 target_sources_local(
     ${CORAX_LIB_TARGET}
     PRIVATE bfgs.c

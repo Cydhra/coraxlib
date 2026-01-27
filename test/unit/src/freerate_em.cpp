@@ -345,7 +345,7 @@ TEST_F(SinglePartitionedTest, em_optimization) {
     // Optimize rates with EM algorithm (need multiple rounds of optimization when using Brent)
     double loglh_after_em;
     for (auto iteration = 0U; iteration < 3; ++iteration) {
-        loglh_after_em = -corax_algo_opt_rates_weights_em_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4);
+        loglh_after_em = -corax_algo_opt_rates_weights_em_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4, true);
     }
     RecordProperty("loglh_after_em", loglh_after_em);
 
@@ -402,7 +402,7 @@ TEST_F(SinglePartitionedTest, em_optimization_invar) {
                                                           CORAX_OPT_MIN_PINV,
                                                           CORAX_OPT_MAX_PINV,
                                                           1e-4);
-        loglh_after_em_invar = -corax_algo_opt_rates_weights_em_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4);
+        loglh_after_em_invar = -corax_algo_opt_rates_weights_em_treeinfo(treeinfo, CORAX_OPT_MIN_RATE, CORAX_OPT_MAX_RATE, CORAX_OPT_MIN_BRANCH_LEN, CORAX_OPT_MAX_BRANCH_LEN, 0, 1e-4, true);
         DBG("after em invar: %f\n", loglh_after_em_invar);
     } while(loglh_after_em_invar - old_loglh > 1e-3);
     RecordProperty("loglh_after_em", loglh_after_em_invar);

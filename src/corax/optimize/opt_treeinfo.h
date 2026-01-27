@@ -22,6 +22,7 @@
 #ifndef CORAX_OPTIMIZE_TREEINFO_H_
 #define CORAX_OPTIMIZE_TREEINFO_H_
 
+#include "corax/core/common.h"
 #include "corax/tree/treeinfo.h"
 #include "opt_generic.h"
 #include <stdio.h>
@@ -117,7 +118,8 @@ extern "C"
                                                double            min_brlen,
                                                double            max_brlen,
                                                double            bfgs_factor,
-                                               double            tolerance);
+                                               double            tolerance,
+                                               corax_bool_t      use_brent);
 
   CORAX_EXPORT
   double corax_algo_opt_alpha_pinv_treeinfo(corax_treeinfo_t *treeinfo,
