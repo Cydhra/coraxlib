@@ -185,6 +185,41 @@ corax_opt_multipart_em_free(corax_opt_multipart_em_data_t *data)
     free(data);
 }
 
+CORAX_EXPORT unsigned int
+corax_compute_root_edge_site_scalings(corax_treeinfo_t *treeinfo,
+                                      corax_partition_t *part,
+                                      unsigned int site) {
+    unsigned int site_scalings = 0;
+    unsigned int parent_clv_index = treeinfo->root->clv_index;
+    unsigned int child_clv_index = treeinfo->root->back->clv_index;
+    int parent_scaler = treeinfo->root->scaler_index;
+    int child_scaler = treeinfo->root->back->scaler_index;
+
+    if (part->scale_buffers > 0) {
+        unsigned int pid = CORAX_GET_ID(corax_get_site_id(part, parent_clv_index), site);
+        unsigned int cid = CORAX_GET_ID(corax_get_site_id(part, child_clv_index), site);
+
+        if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
+            // per-site scaling is minimum among rate scalers
+            site_scalings = UINT_MAX;
+
+            for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                site_scalings = CORAX_MIN(site_scalings,
+                    ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid * part->rate_cats + c]) +
+                    ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid * part->rate_cats + c]));
+
+            }
+
+        } else {
+            site_scalings = \
+                ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid]) +
+                ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid]);
+        }
+    }
+
+    return site_scalings;
+}
+
 /**
  * Transform the per-site per-category likelihood into the posterior probability
  * p_ij of site i belonging to category j and accumulate new weights.
@@ -204,6 +239,7 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
         double *this_lk_cat = data->sitecat_lh_per_part[p];
         double *this_posterior = data->sitecat_posterior_per_part[p];
         const unsigned partition_offset = data->prefix_sum_category_count[p];
+
 
 
         for (unsigned int i = 0; i < part->sites; ++i) {
@@ -232,36 +268,11 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
             }
 
             // Scale pattern likelihood in case we have an invariant proportion
+            unsigned int site_scalings = corax_compute_root_edge_site_scalings(data->treeinfo, part, i);
+            const unsigned int capped_scalings = CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+            const double scale_factor = capped_scalings > 0 ? data->scale_factor_powers[capped_scalings - 1] : 1.0;
             if (term_inv > 0.) {
-                unsigned int site_scalings = 0;
-
-                if (part->scale_buffers > 0) {
-                    unsigned int pid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->clv_index), i);
-                    unsigned int cid = CORAX_GET_ID(corax_get_site_id(part, data->treeinfo->root->back->clv_index), i);
-                    int parent_scaler = data->treeinfo->root->scaler_index;
-                    int child_scaler = data->treeinfo->root->back->scaler_index;
-
-                    if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
-                        // per-site scaling is minimum among rate scalers
-                        site_scalings = UINT_MAX;
-
-                        for (unsigned int c = 0; c < part->rate_cats; ++c) {
-                            site_scalings = CORAX_MIN(site_scalings,
-                                ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid * part->rate_cats + c]) +
-                                ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid * part->rate_cats + c]));
-
-                        }
-
-                    } else {
-                        site_scalings = \
-                            ((parent_scaler == -1) ? 0 : part->scale_buffer[parent_scaler][pid]) +
-                            ((child_scaler == -1) ? 0 : part->scale_buffer[child_scaler][cid]);
-                    }
-                }
-
-                const unsigned int capped_scalings = CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
-                const double scale_factor = capped_scalings > 0 ? data->scale_factor_powers[capped_scalings - 1] : 1.0;
-                pattern_likelihood = (1. - prop_invar) * pattern_likelihood + term_inv * scale_factor;
+                pattern_likelihood = pattern_likelihood + term_inv * scale_factor;
                 assert(pattern_likelihood > 0.);
             }
 
@@ -301,7 +312,7 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
         memset(data->new_weights, 0, sizeof(double) * overall_category_count);
 
         // Expectation step
-        corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 0, data->sitecat_lh_per_part);
+        double loglh = corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 0, data->sitecat_lh_per_part);
         transform_sitecatlh_to_posterior(data);
 
         corax_treeinfo_parallel_reduce(data->treeinfo,
