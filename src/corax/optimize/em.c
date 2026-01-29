@@ -353,7 +353,7 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
                 const unsigned int c_idx = partition_offset + c;
 
                 // Normalize the weights if required
-                if (weight_sum > 1.0) {
+                if (weight_sum < 1.0 || weight_sum > 1.0) {
                     data->new_weights[c_idx] *= (1.0 / weight_sum);
                 }
 
