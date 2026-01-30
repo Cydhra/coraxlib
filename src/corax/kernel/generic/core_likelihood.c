@@ -508,6 +508,11 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
@@ -528,11 +533,6 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
       else
       {
         terma += terma_r * rate_weights[i];
-      }
-
-      if (sitecat_lh != NULL) {
-        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
-        ++sitecat_lh;
       }
 
       clvp += states_padded;
@@ -864,6 +864,11 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
@@ -884,11 +889,6 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
       else
       {
         terma += terma_r * rate_weights[i];
-      }
-
-      if (sitecat_lh != NULL) {
-        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
-        ++sitecat_lh;
       }
 
       clvp += states_padded;
@@ -1145,6 +1145,11 @@ double corax_core_edge_loglikelihood_repeats_generic(
         pmat += states;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
@@ -1166,11 +1171,6 @@ double corax_core_edge_loglikelihood_repeats_generic(
       else
       {
         terma += terma_r * rate_weights[i];
-      }
-
-      if (sitecat_lh != NULL) {
-        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
-        ++sitecat_lh;
       }
 
       clvp += states;
@@ -1461,6 +1461,11 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
@@ -1482,11 +1487,6 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
       else
       {
         terma += terma_r * rate_weights[i];
-      }
-
-      if (sitecat_lh != NULL) {
-        *sitecat_lh = (1. - prop_invar) * rate_weights[i] * terma_r;
-        ++sitecat_lh;
       }
 
       clvp += states_padded;

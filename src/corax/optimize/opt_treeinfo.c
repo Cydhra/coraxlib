@@ -1554,11 +1554,8 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
         
         double *this_sitecat_lh = em_data->sitecat_lh_per_part[p];
         for (unsigned int i = 0; i < part->sites; ++i) {
-            const unsigned int site_scalings = corax_compute_root_edge_site_scalings(em_data->treeinfo, part, i);
-            const unsigned int capped_scalings = CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
-            const double scale_factor = pow(CORAX_SCALE_FACTOR, capped_scalings);//capped_scalings > 0 ? em_data->scale_factor_powers[capped_scalings - 1] : 1.0;
-
             for (unsigned int c = 0; c < part->rate_cats; ++c) {
+                const unsigned int scalings = corax_retrieve_root_edge_scalings(em_data->treeinfo, part, i, c);
                 unsigned int offset = em_data->prefix_sum_category_count[p] + c;
                 if (converged && converged[offset]) continue; // TODO: check if this conditional inside the loop makes it faster
 
@@ -1573,22 +1570,21 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
 
                 double site_lnL;
 
-                /* since the per-sitecat likelihood is already weighted, divide
-                 * by rate weight to get likelihood equivalent to single rate
-                 * category with the specified substitution rate */
-                double terma = this_sitecat_lh[c] / part->rate_weights[c]; 
+                double terma = (1. - part->prop_invar[0]) * this_sitecat_lh[c];
 
 
-                if (site_scalings) {
+                if (scalings > 0) {
                     assert(term_inv == 0.);
                     if (term_inv > 0.0) {
-                        site_lnL = log(terma * scale_factor + term_inv);
+                        site_lnL = log(terma * pow(CORAX_SCALE_THRESHOLD, scalings) + term_inv);
                     } else {
-                        site_lnL = log(terma) + site_scalings * log(CORAX_SCALE_THRESHOLD);
+                        site_lnL = log(terma) + scalings * log(CORAX_SCALE_THRESHOLD);
                     }
                 } else {
                     site_lnL = log(terma);
                 }
+
+                //printf("brent site %i category %i terma %e terminv %e scalings %u site lnL %f\n", i, c, terma, term_inv, scalings, site_lnL);
 
                 em_data->category_lh[offset] += em_data->sitecat_posterior_per_part[p][i * part->rate_cats + c] * site_lnL;
             }
@@ -1833,7 +1829,10 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
 
       }
 
-      corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, xmin, xguess, xmax, 1e-3, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 0);
+      //corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, xmin, xguess, xmax, 1e-3, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 0);
+      double global_xmin = CORAX_OPT_MIN_RATE;
+      double global_xmax = CORAX_OPT_MAX_RATE;
+      corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, &global_xmin, xguess, &global_xmax, 1e-3, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 1);
     } else {
       /* Optimize rates with L-BFGS-B */
       part = 0;

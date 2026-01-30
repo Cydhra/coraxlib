@@ -335,9 +335,10 @@ extern "C"
   corax_opt_multipart_em_free(corax_opt_multipart_em_data_t *data);
 
 CORAX_EXPORT unsigned int
-corax_compute_root_edge_site_scalings(corax_treeinfo_t *treeinfo,
+corax_retrieve_root_edge_scalings(corax_treeinfo_t *treeinfo,
                                  corax_partition_t *part,
-                                 unsigned int site);
+                                 unsigned int site,
+                                 unsigned int category);
   /**
    * Parallelized multi-partition Expectation-Maximization (EM) of freerate category weights.
    *
