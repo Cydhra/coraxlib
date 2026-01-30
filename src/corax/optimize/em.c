@@ -346,17 +346,22 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
         memset(data->new_weights, 0, sizeof(double) * overall_category_count);
 
         // Expectation step
-        double *persite_lnl = (double *) calloc(data->pattern_weight_sum_per_part[0], sizeof(double));
+        double *persite_lnl = NULL;
+        #ifdef CORAX_DEBUG
+        persite_lnl = (double *) calloc(data->pattern_weight_sum_per_part[0], sizeof(double));
         double **persite_lnl_part = &persite_lnl;
         corax_treeinfo_compute_loglh_persite(data->treeinfo, 0, 1, persite_lnl_part);
+        #endif
         double loglh = corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 1, data->sitecat_lh_per_part);
         double summed_loglh = transform_sitecatlh_to_posterior(data, persite_lnl);
 
         free(persite_lnl);
 
+        #ifdef CORAX_DEBUG
         if (fabs(loglh - summed_loglh) > 1e-3) {
             printf("transform_sitecatlh_to_posterior loglh ≠ summed (%f ≠ %f)\n", loglh, summed_loglh);
         }
+        #endif
 
         corax_treeinfo_parallel_reduce(data->treeinfo,
                 data->new_weights, overall_category_count, CORAX_REDUCE_SUM);
