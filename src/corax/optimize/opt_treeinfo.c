@@ -1564,31 +1564,12 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
                 if (converged && converged[offset]) continue; // TODO: check if this conditional inside the loop makes it faster
 
 
-                double term_inv = 0;
-                if (part->prop_invar[0] > 0.0 && part->invariant && part->invariant[i] != -1) {
-                    int site_state = part->invariant[i];
-                    term_inv = part->prop_invar[0] \
-                             * part->rate_weights[c] \
-                             * part->frequencies[em_data->treeinfo->param_indices[p][c]][site_state];
-                }
-
-                double site_lnL;
-
-//                double terma = (1. - part->prop_invar[0]) * this_sitecat_lh[c];
                 double terma = this_sitecat_lh[c];
+                double site_lnL = log(terma);
 
                 if (scalings > 0) {
-//                    assert(term_inv == 0.);
-                    if (term_inv > 0.0 && 0) {
-                        site_lnL = log(terma * pow(CORAX_SCALE_THRESHOLD, scalings) + term_inv);
-                    } else {
-                        site_lnL = log(terma) + scalings * logscale;
-                    }
-                } else {
-                    site_lnL = log(terma);
+                    site_lnL += scalings * logscale;
                 }
-
-                //printf("brent site %i category %i terma %e terminv %e scalings %u site lnL %f\n", i, c, terma, term_inv, scalings, site_lnL);
 
                 em_data->category_lh[offset] += em_data->sitecat_posterior_per_part[p][i * part->rate_cats + c] * site_lnL;
             }

@@ -152,9 +152,9 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
     }
 
     /* Precompute scaling factors */
-    r->scale_factor_powers[0] = CORAX_SCALE_FACTOR;
+    r->scale_threshold_powers[0] = CORAX_SCALE_THRESHOLD;
     for (unsigned int i = 1; i < CORAX_SCALE_RATE_MAXDIFF; ++i) {
-        r->scale_factor_powers[i] = r->scale_factor_powers[i - 1] * CORAX_SCALE_FACTOR;
+        r->scale_threshold_powers[i] = r->scale_threshold_powers[i - 1] * CORAX_SCALE_THRESHOLD;
     }
 
     return r;
@@ -222,8 +222,7 @@ corax_retrieve_root_edge_scalings(corax_treeinfo_t *treeinfo,
  * ‘ModelFinder: Fast Model Selection for Accurate Phylogenetic Estimates’.
  * Nature Methods 14 (6): 587–89. https://doi.org/10.1038/nmeth.4285.
  */
-double transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data, double *persite_lnl_check) {
-    double summed_lh = 0.;
+void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data) {
     for (unsigned int p = 0; p < data->treeinfo->partition_count; ++p) {
         corax_partition_t *part = data->treeinfo->partitions[p];
 
@@ -241,7 +240,7 @@ double transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data, dou
 
             // Handle invariant sites
             double prop_invar = part->prop_invar ? part->prop_invar[0] : 0.0;
-            // Possible optimization: precomputing the invariant proportion per-state outside of the site loop
+            // TODO: Possible optimization: precomputing the invariant proportion per-state outside of the site loop
             if (prop_invar > 0.0 && part->invariant && part->invariant[i] != -1) {
                 int site_state = part->invariant[i];
 
@@ -253,66 +252,48 @@ double transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data, dou
 
             }
 
-            // compute \f$ \sum_{c=1}^k w_c L(D_i | T, S, r_c) \f$ (divisor of Eq. (1))
-            unsigned int common_scaler = INT_MAX;
+            unsigned int site_scalings = INT_MAX;
             for (unsigned int c = 0; c < part->rate_cats; ++c) {
-                common_scaler = CORAX_MIN(common_scaler,
+                site_scalings = CORAX_MIN(site_scalings,
                                           corax_retrieve_root_edge_scalings(data->treeinfo, part, i, c));
             }
 
+            // compute \f$ \sum_{c=1}^k w_c L(D_i | T, S, r_c) \f$ (divisor of Eq. (1))
             double terma = 0.;
             for (unsigned int c = 0; c < part->rate_cats; ++c) {
                 double category_scaler = 1.0;
                 if (part->attributes & CORAX_ATTRIB_RATE_SCALERS) {
                     unsigned int per_cat_scaler = corax_retrieve_root_edge_scalings(data->treeinfo, part, i, c);
-                    unsigned int capped_scalings = CORAX_MIN(per_cat_scaler - common_scaler, CORAX_SCALE_RATE_MAXDIFF);
-                    category_scaler = pow(CORAX_SCALE_THRESHOLD, capped_scalings);
-                    //printf("site %i cat %i Applying cat scaling %u %e\n", i, c, capped_scalings, category_scaler);
+                    unsigned int capped_scalings = CORAX_MIN(per_cat_scaler - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+                    category_scaler = capped_scalings > 0 ? data->scale_threshold_powers[capped_scalings - 1] : 0;
                 }
                 terma += (1 - prop_invar) * part->rate_weights[c] * this_lk_cat[c] * category_scaler;
             }
 
-            // Scale pattern likelihood in case we have an invariant proportion
-            //if (term_inv > 0.) {
-            //    pattern_likelihood = pattern_likelihood * pow(CORAX_SCALE_THRESHOLD, common_scaler) + term_inv;
-            //    assert(pattern_likelihood > 0.);
-            //}
-
-            double site_lnL;
-            if (common_scaler > 0) {
-                if (term_inv  > 0.) {
-                    site_lnL = log(terma * pow(CORAX_SCALE_THRESHOLD, common_scaler) + term_inv);
+            double pattern_likelihood;
+            if (term_inv > 0.) {
+                if (site_scalings > 0) {
+                    const unsigned capped_scalings = CORAX_MIN(site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+                    pattern_likelihood = terma * data->scale_threshold_powers[capped_scalings - 1] + term_inv;
                 } else {
-                    site_lnL = log(terma) + common_scaler * log(CORAX_SCALE_THRESHOLD);
+                    pattern_likelihood = terma + term_inv;
                 }
             } else {
-                site_lnL = log(terma + term_inv);
+                pattern_likelihood = terma;
             }
-
-            if (persite_lnl_check != NULL) {
-                if (fabs(persite_lnl_check[i] - pattern_weight * site_lnL) > 1e-3) {
-                    printf("transform_posterior site %i site lnL mismatch %f ≠ %f\n", i, persite_lnl_check[i], pattern_weight * site_lnL);
-                    abort();
-                }
-
-            }
-
-            summed_lh += pattern_weight * site_lnL;
 
             for (unsigned int c = 0; c < part->rate_cats; ++c) {
                 // TODO: check if multiplication by reciprocal of pattern_likelihood would be faster
-                double category_scaler = 1.0;
                 unsigned int per_cat_scaler = corax_retrieve_root_edge_scalings(data->treeinfo, part, i, c);
-                unsigned int capped_scalings = CORAX_MIN(per_cat_scaler - common_scaler, CORAX_SCALE_RATE_MAXDIFF);
+                unsigned int capped_scalings = CORAX_MIN(per_cat_scaler - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
+
+                double cat_lh = (1. - prop_invar) * part->rate_weights[c] * this_lk_cat[c];
+                if (capped_scalings > 0) {
+                    cat_lh *= data->scale_threshold_powers[capped_scalings - 1];
+                }
 
                 // Compute Eq. (1)
-                if (term_inv > 0.) {
-                    const double cat_lh = (1. - prop_invar) * part->rate_weights[c] * this_lk_cat[c] * pow(CORAX_SCALE_THRESHOLD, per_cat_scaler);
-                    this_posterior[c] = pattern_weight *  cat_lh / (terma * pow(CORAX_SCALE_THRESHOLD, common_scaler) + term_inv);
-                } else {
-                    const double cat_lh = (1. - prop_invar) * part->rate_weights[c] * this_lk_cat[c] * pow(CORAX_SCALE_THRESHOLD, capped_scalings);
-                    this_posterior[c] = pattern_weight * cat_lh / terma;
-                }
+                this_posterior[c] = pattern_weight * cat_lh / pattern_likelihood;
 
                 // Eq. (3)
                 data->new_weights[partition_offset + c] += this_posterior[c];
@@ -322,8 +303,6 @@ double transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data, dou
             this_posterior += part->rate_cats;
         }
     }
-
-    return summed_lh;
 }
 
 CORAX_EXPORT void
@@ -346,22 +325,8 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data) {
         memset(data->new_weights, 0, sizeof(double) * overall_category_count);
 
         // Expectation step
-        double *persite_lnl = NULL;
-        #ifdef CORAX_DEBUG
-        persite_lnl = (double *) calloc(data->pattern_weight_sum_per_part[0], sizeof(double));
-        double **persite_lnl_part = &persite_lnl;
-        corax_treeinfo_compute_loglh_persite(data->treeinfo, 0, 1, persite_lnl_part);
-        #endif
-        double loglh = corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 1, data->sitecat_lh_per_part);
-        double summed_loglh = transform_sitecatlh_to_posterior(data, persite_lnl);
-
-        free(persite_lnl);
-
-        #ifdef CORAX_DEBUG
-        if (fabs(loglh - summed_loglh) > 1e-3) {
-            printf("transform_sitecatlh_to_posterior loglh ≠ summed (%f ≠ %f)\n", loglh, summed_loglh);
-        }
-        #endif
+        corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 1, data->sitecat_lh_per_part);
+        transform_sitecatlh_to_posterior(data);
 
         corax_treeinfo_parallel_reduce(data->treeinfo,
                 data->new_weights, overall_category_count, CORAX_REDUCE_SUM);

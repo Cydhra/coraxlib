@@ -323,7 +323,7 @@ extern "C"
       bool *converged;
 
       /** Pre-compute scale factors */
-      double scale_factor_powers[CORAX_SCALE_RATE_MAXDIFF];
+      double scale_threshold_powers[CORAX_SCALE_RATE_MAXDIFF];
 
   } corax_opt_multipart_em_data_t;
 
