@@ -29,6 +29,8 @@
 #include "opt_branches.h"
 #include "opt_model.h"
 
+//#define DBG printf
+
 static void fill_rates(double *     rates,
                        double *     x,
                        int *        bt,
@@ -1169,7 +1171,8 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
                                              double            min_brlen,
                                              double            max_brlen,
                                              double            bfgs_factor,
-                                             double            tolerance)
+                                             double            tolerance,
+                                             double            lh_epsilon)
 {
   const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
 
@@ -1405,7 +1408,7 @@ double corax_algo_opt_rates_weights_treeinfo(corax_treeinfo_t *treeinfo,
 
     DBG("corax_algo_opt_rates_weights_treeinfo: AFTER RATES: logLH = %.15lf\n",
         cur_logl);
-  } while (prev_logl - cur_logl > tolerance);
+  } while (prev_logl - cur_logl > lh_epsilon);
 
   /* now re-normalize rates and scale the branches accordingly */
   renormalize_free_rates(treeinfo);
@@ -1539,6 +1542,7 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
         }
     }
 
+    const double logscale = log(CORAX_SCALE_THRESHOLD);
 
     // Evaluate per-site per-category likelihood
     const double overall_loglh = corax_treeinfo_compute_loglh_sitecat(em_data->treeinfo, 0, 1, em_data->sitecat_lh_per_part);
@@ -1570,15 +1574,15 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
 
                 double site_lnL;
 
-                double terma = (1. - part->prop_invar[0]) * this_sitecat_lh[c];
-
+//                double terma = (1. - part->prop_invar[0]) * this_sitecat_lh[c];
+                double terma = this_sitecat_lh[c];
 
                 if (scalings > 0) {
-                    assert(term_inv == 0.);
-                    if (term_inv > 0.0) {
+//                    assert(term_inv == 0.);
+                    if (term_inv > 0.0 && 0) {
                         site_lnL = log(terma * pow(CORAX_SCALE_THRESHOLD, scalings) + term_inv);
                     } else {
-                        site_lnL = log(terma) + scalings * log(CORAX_SCALE_THRESHOLD);
+                        site_lnL = log(terma) + scalings * logscale;
                     }
                 } else {
                     site_lnL = log(terma);
@@ -1633,6 +1637,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
                                                 double max_brlen,
                                                 double bfgs_factor,
                                                 double tolerance,
+                                                double lh_epsilon,
                                                 corax_bool_t use_brent) {
   const corax_bool_t use_bfgs = !use_brent;
   const double factor = bfgs_factor > 0. ? bfgs_factor : CORAX_ALGO_BFGS_FACTR;
@@ -1783,7 +1788,9 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     xopt = (double *) calloc(em_data->total_rate_cats, sizeof(double));
   }
 
-  do {
+  unsigned int iters = 0;
+  do
+  {
     prev_logl = cur_logl;
 
     double loglh_before_weights = corax_treeinfo_compute_loglh_flex(treeinfo, 0, 0);
@@ -1833,7 +1840,9 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
       double global_xmin = CORAX_OPT_MIN_RATE;
       double global_xmax = CORAX_OPT_MAX_RATE;
       corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, &global_xmin, xguess, &global_xmax, 1e-3, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 1);
-    } else {
+    }
+    else
+    {
       /* Optimize rates with L-BFGS-B */
       part = 0;
       for (p = 0; p < treeinfo->partition_count; ++p) {
@@ -1881,12 +1890,14 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
                                               (void *) &opt_params,
                                               target_func_multidim_treeinfo);
     }
-    cur_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
+    cur_logl = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
     DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER RATES: logLH = %.15lf\n",
         cur_logl);
 
-  } while (prev_logl - cur_logl > tolerance);
+    ++iters;
+
+  } while (prev_logl - cur_logl > lh_epsilon);
 
   if (use_brent) {
     /* brent multi parameters from rate optimization */
@@ -1896,6 +1907,8 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     free(xmin);
     free(opt_mask);
   }
+
+  DBG("EM-BRENT iters: %u\n", iters);
 
   /* now re-normalize rates and scale the branches accordingly */
   renormalize_free_rates(treeinfo);
@@ -1914,7 +1927,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
      * and correct them as needed */
     corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
 
-    if (brlen_fixed) {
+    if (brlen_fixed || use_brent) {
       /* update pmatrices and partials according to the new branches */
       double new_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
 

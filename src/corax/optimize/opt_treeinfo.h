@@ -108,7 +108,8 @@ extern "C"
                                                double            min_brlen,
                                                double            max_brlen,
                                                double            bfgs_factor,
-                                               double            tolerance);
+                                               double            tolerance,
+                                               double            lh_epsilon);
 
   /** FreeRate optimization using Expectation-Maximization (EM) for the rates */
   CORAX_EXPORT
@@ -119,6 +120,7 @@ extern "C"
                                                double            max_brlen,
                                                double            bfgs_factor,
                                                double            tolerance,
+                                               double            lh_epsilon,
                                                corax_bool_t      use_brent);
 
   CORAX_EXPORT
