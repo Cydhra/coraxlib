@@ -196,10 +196,7 @@ TEST_P(SitecatTest, dna_persitecat_lh) {
         summed_lh += site_lnL * part->pattern_weights[i];
     }
 
-    // For some reason, SSE causes higher LH divergence
-    const double tolerance = simd_attributes & CORAX_ATTRIB_ARCH_SSE ? 1e-9 : 1e-20;
-
-    EXPECT_NEAR(lh, summed_lh, tolerance);
+    EXPECT_DOUBLE_EQ(lh, summed_lh);
     RecordProperty("summed_loglh", summed_lh);
 }
 
@@ -276,10 +273,7 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
         summed_lh += site_lnL * part->pattern_weights[i];
     }
 
-    // For some reason, SSE causes higher LH divergence
-    const double tolerance = simd_attributes & CORAX_ATTRIB_ARCH_SSE ? 1e-9 : 1e-20;
-
-    EXPECT_NEAR(lh, summed_lh, tolerance);
+    EXPECT_DOUBLE_EQ(lh, summed_lh);
     RecordProperty("summed_loglh", summed_lh);
 }
 
