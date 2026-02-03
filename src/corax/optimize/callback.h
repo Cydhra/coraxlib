@@ -114,4 +114,7 @@ target_subst_params_func_multi(void *p, double **x, double *fx, int *converged);
 
 double target_freqs_func_multi(void *p, double **x, double *fx, int *converged);
 
+double target_func_brent_all_freerate(void *data, double *rates,
+                                      double *likelihoods, int *converged);
+
 #endif /* CORAX_OPTIMIZE_CALLBACK_H_ */

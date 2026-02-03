@@ -32,6 +32,10 @@ class CoraxlibEnvironment : public ::testing::Environment {
   std::string small_msa_filename() {
       return std::string(STRINGIFY(DATAPATH/small.fasta));
   }
+
+  std::string aa_msa_filename() {
+      return std::string(STRINGIFY(DATAPATH/140.phy));
+  }
 };
 
 extern CoraxlibEnvironment *env;

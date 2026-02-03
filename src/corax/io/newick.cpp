@@ -169,7 +169,8 @@ std::string corax_newick_lexer_t::consume_value_as_string()
 char *corax_newick_lexer_t::consume_value_as_cstring()
 {
   char *label = (char *)calloc(
-      sizeof(char), (_value.size() + 1) /* Need to include space for the null */
+      (_value.size() + 1), /* Need to include space for the null */
+      sizeof(char) 
   );
 
   for (size_t i = 0; i < _value.size(); ++i) { label[i] = _value[i]; }
@@ -372,7 +373,7 @@ corax_utree_t *corax_newick_parser_t::parse_utree(bool auto_unroot,
     throw;
   }
 
-  auto current_tree         = (corax_utree_t *)calloc(sizeof(corax_utree_t), 1);
+  auto current_tree         = (corax_utree_t *)calloc(1, sizeof(corax_utree_t));
   current_tree->tip_count   = _tip_count;
   current_tree->inner_count = _inner_count;
   current_tree->edge_count  = _edge_count;
@@ -438,7 +439,7 @@ corax_unode_t *corax_newick_parser_t::parse_internal()
   try
   {
     _lexer.expect(OPENING_PAREN);
-    extra_node       = (corax_unode_t *)calloc(sizeof(corax_unode_t), 1);
+    extra_node       = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
     current_node     = parse_node_set();
     extra_node->next = current_node;
     auto node_count  = close_node_loop(extra_node);
@@ -469,7 +470,7 @@ corax_unode_t *corax_newick_parser_t::parse_node_set()
   corax_unode_t *child        = nullptr;
   try
   {
-    current_node = (corax_unode_t *)calloc(sizeof(corax_unode_t), 1);
+    current_node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
     auto child   = parse_subtree();
     set_mutual_back_pointers(current_node, child);
     auto token = _lexer.peak();
@@ -502,7 +503,7 @@ corax_unode_t *corax_newick_parser_t::parse_leaf()
   corax_unode_t *current_node = nullptr;
   try
   {
-    current_node = (corax_unode_t *)calloc(sizeof(corax_unode_t), 1);
+    current_node = (corax_unode_t *)calloc(1, sizeof(corax_unode_t));
     parse_node_attrs(current_node);
     if (current_node->label == nullptr)
     {

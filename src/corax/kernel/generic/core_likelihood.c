@@ -508,16 +508,15 @@ double corax_core_edge_loglikelihood_ti_4x4(unsigned int         sites,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -865,16 +864,15 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1147,16 +1145,15 @@ double corax_core_edge_loglikelihood_repeats_generic(
         pmat += states;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1464,16 +1461,15 @@ double corax_core_edge_loglikelihood_ii(unsigned int         states,
         pmat += states_padded;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */

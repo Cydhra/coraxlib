@@ -454,16 +454,15 @@ corax_core_edge_loglikelihood_ti_4x4_avx(unsigned int         sites,
       xmm1    = _mm256_hadd_pd(xmm0, xmm0);
       terma_r = ((double *)&xmm1)[0] + ((double *)&xmm1)[2];
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -706,16 +705,15 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
       xmm0    = _mm256_hadd_pd(xmm1, xmm1);
       terma_r = ((double *)&xmm0)[0] + ((double *)&xmm0)[2];
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -735,6 +733,7 @@ corax_core_edge_loglikelihood_ti_20x20_avx(unsigned int         sites,
         terma += terma_r * rate_weights[i];
       }
     }
+
 
     /* compute site log-likelihood and scale if necessary */
     if (site_scalings)
@@ -959,16 +958,15 @@ double corax_core_edge_loglikelihood_ti_avx(unsigned int         states,
         clvp += 4;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1217,16 +1215,15 @@ double corax_core_edge_loglikelihood_repeats_generic_avx(
         clvp += 4;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1466,16 +1463,15 @@ double corax_core_edge_loglikelihood_ii_avx(unsigned int         states,
         clvp += 4;
       }
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1687,16 +1683,15 @@ corax_core_edge_loglikelihood_ii_4x4_avx(unsigned int         sites,
       xmm1    = _mm256_hadd_pd(xmm0, xmm0);
       terma_r = ((double *)&xmm1)[0] + ((double *)&xmm1)[2];
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -1918,16 +1913,15 @@ double corax_core_edge_loglikelihood_repeats_4x4_avx(
       xmm1    = _mm256_hadd_pd(xmm0, xmm0);
       terma_r = ((double *)&xmm1)[0] + ((double *)&xmm1)[2];
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
@@ -2159,16 +2153,15 @@ double corax_core_edge_loglikelihood_repeatsbclv_4x4_avx(
       xmm1    = _mm256_hadd_pd(xmm0, xmm0);
       terma_r = ((double *)&xmm1)[0] + ((double *)&xmm1)[2];
 
+      if (sitecat_lh != NULL) {
+        *sitecat_lh = terma_r;
+        ++sitecat_lh;
+      }
+
       /* apply per-rate scalers, if necessary */
       if (rate_scalings && rate_scalings[i] > 0)
       {
         terma_r *= scale_minlh[rate_scalings[i] - 1];
-      }
-
-      if (sitecat_lh != NULL) {
-        // TODO: invariant sites and SIMD optimization
-        *sitecat_lh = terma_r;
-        ++sitecat_lh;
       }
 
       /* account for invariant sites */
