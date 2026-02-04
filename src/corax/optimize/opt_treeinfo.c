@@ -1689,6 +1689,11 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     xguess = (double *) calloc(em_data->total_rate_cats, sizeof(double));
     xopt = (double *) calloc(em_data->total_rate_cats, sizeof(double));
   }
+  else
+  {
+    opt_mask = NULL;
+    xmin = xmax = xguess = xopt = NULL;
+  }
 
   unsigned int iters = 0;
   do

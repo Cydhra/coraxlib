@@ -730,6 +730,7 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
 
   // Evaluate per-site per-category likelihood
   const double overall_loglh = corax_treeinfo_compute_loglh_sitecat(em_data->treeinfo, 0, 1, em_data->sitecat_lh_per_part);
+  CORAX_UNUSED(overall_loglh);
 
   // Compute likelihood sum weighted with posterior
   memset(em_data->category_lh, 0, sizeof(double) * em_data->total_rate_cats);
