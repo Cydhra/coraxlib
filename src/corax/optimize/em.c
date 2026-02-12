@@ -284,7 +284,9 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data)
         {
           unsigned int per_cat_scaler = corax_retrieve_root_edge_scalings(data->treeinfo, part, i, c);
           unsigned int capped_scalings = CORAX_MIN(per_cat_scaler - site_scalings, CORAX_SCALE_RATE_MAXDIFF);
-          category_scaler = capped_scalings > 0 ? data->scale_threshold_powers[capped_scalings - 1] : 0;
+          if (capped_scalings > 0) {
+            category_scaler = data->scale_threshold_powers[capped_scalings - 1];
+          }
         }
         terma += (1 - prop_invar) * part->rate_weights[c] * this_lk_cat[c] * category_scaler;
       }
