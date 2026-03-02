@@ -1909,6 +1909,8 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
 
         renormalize_free_rates(treeinfo);
 
+        fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
+
         cur_logl = corax_treeinfo_compute_loglh(treeinfo, 0);
 
         DBG("corax_algo_opt_rates_weights_em_treeinfo: ROLLBACK, loglh = "
