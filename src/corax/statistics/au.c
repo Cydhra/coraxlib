@@ -65,6 +65,8 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     for (unsigned int s = 0; s < num_scales; s++) {
         const double proportion = bootstrap_counts[s] / (double) num_replicates[s];
         if (proportion < EPS) {
+            weights[s] = 0.0;
+            observed_distances[s] = 0.0;
             continue;
         }
 
