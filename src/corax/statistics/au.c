@@ -98,8 +98,8 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     }
 
     // invert model matrix
-    double determinant = model_d * model_c - off_diagonal * off_diagonal;
-    if (fabs(off_diagonal) == 0.0) {
+    const double determinant = model_d * model_c - off_diagonal * off_diagonal;
+    if (fabs(determinant) == 0.0) {
         *d = 0.0;
         *c = 0.0;
         goto clean_fail;
