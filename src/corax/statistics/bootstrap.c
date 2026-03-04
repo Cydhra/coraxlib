@@ -91,6 +91,11 @@ unsigned int bposition(const double *const vector, const double threshold, const
         else
             r = mid;
     }
+
+    if (vector[l] <= threshold) {
+        return r;
+    }
+
     return l;
 }
 
@@ -206,7 +211,7 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 
     for (unsigned int i = 0; i < num_scales; i++) {
         corax_RELL_bootstrap(rstate, *replicate_matrices + i, trees_persite_lnl, site_weights, num_sites_uncompressed,
-            num_sites_compressed, num_replicates[i], num_trees, scales[i]);
+                             num_sites_compressed, num_replicates[i], num_trees, scales[i]);
     }
 }
 
@@ -248,25 +253,28 @@ CORAX_EXPORT double corax_empirical_bootstrap_count(double *const replicates,
                                                     const unsigned int num_replicates,
                                                     const unsigned int tree,
                                                     const double threshold) {
-    double *tree_vec = replicates + tree * num_replicates;
+    const double *tree_vec = replicates + tree * num_replicates;
     const unsigned int cutoff = bposition(tree_vec, threshold, num_replicates);
 
     double smoothed;
-    if (cutoff < num_replicates - 1) {
-        if (tree_vec[cutoff + 1] > tree_vec[cutoff]) {
-            smoothed = 0.5 + (double) cutoff + (threshold - tree_vec[cutoff]) / (
-                           tree_vec[cutoff + 1] - tree_vec[cutoff]);
-        } else if (cutoff > 0) {
-            smoothed = 0.5 + (double) cutoff;
+    if (cutoff < num_replicates) {
+        if (cutoff == 0) {
+            if (tree_vec[1] > tree_vec[0]) {
+                smoothed = 0.5 + (threshold - tree_vec[0]) / (tree_vec[1] - tree_vec[0]);
+            } else {
+                smoothed = 0.0;
+            }
+        } else if (tree_vec[cutoff] > tree_vec[cutoff - 1]) {
+            smoothed = -0.5 + (double) cutoff + (threshold - tree_vec[cutoff - 1]) / (
+                           tree_vec[cutoff] - tree_vec[cutoff - 1]);
         } else {
-            smoothed = 0.0;
+            smoothed = 0.5 + (double) cutoff;
         }
     } else if (tree_vec[num_replicates - 1] - tree_vec[num_replicates - 2] > 0.0) {
-        smoothed = 0.5 + (double) num_replicates +
-                   (threshold - tree_vec[num_replicates - 2]) / (
-                       tree_vec[num_replicates - 1] - tree_vec[num_replicates]);
+        smoothed = (double) num_replicates - 0.5 + (threshold - tree_vec[num_replicates - 1]) / (
+                       tree_vec[num_replicates - 1] - tree_vec[num_replicates - 2]);
     } else {
-        smoothed = num_replicates;
+        smoothed = (double) num_replicates;
     }
 
     if (smoothed > (double) num_replicates) {
