@@ -92,7 +92,7 @@ unsigned int bposition(const double *const vector, const double threshold, const
             r = mid;
     }
 
-    if (vector[l] <= threshold) {
+    if (l >= len || vector[l] <= threshold) {
         return r;
     }
 
