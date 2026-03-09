@@ -1112,7 +1112,7 @@ fix_free_rates(corax_treeinfo_t *treeinfo, double min_rate, double max_rate)
     unsigned int       rate_cats    = partition->rate_cats;
     double             lowest_rate  = rates[0];
     double             highest_rate = rates[0];
-    double             rate_scaler;
+    double             rate_scaler  = 0.0;
 
     /* force constraint sum(weights x rates) = 1.0 */
     for (j = 1; j < rate_cats; ++j)

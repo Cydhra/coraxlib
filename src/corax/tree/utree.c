@@ -679,6 +679,7 @@ static int cb_set_clv_minimal(corax_unode_t *node, void *data)
       }
     }
     assert(index_found);
+    CORAX_UNUSED(index_found);
 
     /* set clv index */
     node->clv_index = node->next->clv_index = node->next->next->clv_index =

@@ -357,7 +357,6 @@ CORAX_EXPORT int corax_utree_remove_tips(corax_utree_t      *tree,
   unsigned int old_inner_count = tree->inner_count;
   unsigned int old_node_count  = old_taxa_count + old_inner_count;
   unsigned int new_taxa_count  = old_taxa_count - del_tip_count;
-  unsigned int new_inner_count = old_inner_count + del_tip_count;
 
   unsigned int i;
 
@@ -733,6 +732,8 @@ CORAX_EXPORT corax_utree_t *corax_utree_expand(corax_unode_t *serialized_tree,
       t->node_index   = next_node_index++;
       t_r->node_index = next_node_index++;
       t_l->node_index = next_node_index++;
+
+      assert(tree_stack_top >= 2);
 
       /* pop and connect */
       t_cr       = tree_stack[--tree_stack_top];

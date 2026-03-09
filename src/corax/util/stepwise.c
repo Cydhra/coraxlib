@@ -560,6 +560,8 @@ static unsigned int utree_insert_best(pars_info_t * pars_info,
   if (!CORAX_UTREE_IS_TIP(inner_node->back))
     invalidate_node(inner_node->back);
 
+  CORAX_UNUSED(total_ops);
+
   return min_cost;
 }
 

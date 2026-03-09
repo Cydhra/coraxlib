@@ -306,6 +306,8 @@ static void fill_consensus_recurse(corax_consensus_utree_t *consensus_tree,
     node->back->data = node->data = consensus_tree->branch_data + *cur_branch;
     ++(*cur_branch);
   }
+
+  CORAX_UNUSED(max_degree);
 }
 
 static void fill_consensus(corax_consensus_utree_t *consensus_tree)
@@ -331,6 +333,8 @@ static void fill_consensus(corax_consensus_utree_t *consensus_tree)
     fill_consensus_recurse(consensus_tree, child->back, &cur_branch);
     child = child->next;
   }
+
+  CORAX_UNUSED(max_degree);
 }
 
 /**

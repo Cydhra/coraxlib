@@ -44,6 +44,7 @@ bitv_hashtable_t *hash_init(unsigned int n, unsigned int bit_count)
       maxSize         = (unsigned int)-1;
 
   assert(n <= maxSize);
+  CORAX_UNUSED(maxSize);
 
   i = 0;
 
@@ -104,6 +105,7 @@ void hash_destroy(bitv_hashtable_t *h)
   }
 
   assert(entry_count == h->entry_count);
+  CORAX_UNUSED(entry_count);
 
   free(h->table);
   free(h);
@@ -328,6 +330,7 @@ string_hashtable_t *string_hash_init(unsigned int n, unsigned int max_labels)
       max_size           = (hash_key_t)-1;
 
   assert(n <= max_size);
+  CORAX_UNUSED(max_size);
 
   i = 0;
 
@@ -370,6 +373,7 @@ void string_hash_destroy(string_hashtable_t *h)
   }
 
   assert(entry_count == h->entry_count);
+  CORAX_UNUSED(entry_count);
 
   free(h->labels);
   free(h->table);

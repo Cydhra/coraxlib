@@ -191,6 +191,8 @@ static int utree_insert_tips_random(corax_unode_t **nodes,
   free(branches);
   corax_random_destroy(rstate);
 
+  CORAX_UNUSED(start_branches);
+
   return CORAX_SUCCESS;
 }
 

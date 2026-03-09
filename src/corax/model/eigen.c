@@ -2,7 +2,7 @@
 
 static int mytqli(double *d, double *e, const unsigned int n, double **z)
 {
-  unsigned int m, l, iter, i, k;
+  unsigned int m, l, i, k;
   double       s, r, p, g, f, dd, c, b;
 
   for (i = 2; i <= n; i++) e[i - 2] = e[i - 1];
@@ -11,7 +11,7 @@ static int mytqli(double *d, double *e, const unsigned int n, double **z)
 
   for (l = 1; l <= n; l++)
   {
-    iter = 0;
+//    unsigned int iter = 0;
     do {
       for (m = l; m <= n - 1; m++)
       {
@@ -20,7 +20,7 @@ static int mytqli(double *d, double *e, const unsigned int n, double **z)
       }
       if (m != l)
       {
-        assert(iter < 30);
+//        assert(iter < 30);
 
         g = (d[l] - d[l - 1]) / (2.0 * e[l - 1]);
         r = sqrt((g * g) + 1.0);

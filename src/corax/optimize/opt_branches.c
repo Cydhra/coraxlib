@@ -105,6 +105,7 @@ static int recomp_iterative(corax_newton_tree_params_t *params,
 
   /* check branch length integrity */
   assert(d_equals(tr_p->length, tr_p->back->length));
+  CORAX_UNUSED(d_equals);
 
   /* prepare sumtable for current branch */
   corax_update_sumtable(params->partition,

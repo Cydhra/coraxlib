@@ -147,6 +147,9 @@ int algo_update_pmatrix_nni(corax_treeinfo_t *treeinfo, corax_unode_t *edge)
     }
   }
 
+  /* maybe use for debug etc. later */
+  CORAX_UNUSED(updated);
+
   return CORAX_SUCCESS;
 }
 

@@ -152,17 +152,17 @@ static inline int disjoint_split(const corax_split_t split1,
   return 1;
 }
 
-static inline const corax_split_t get_node_split(const corax_split_t * splits,
-                                        const corax_unode_t * node)
+static inline corax_split_t get_node_split(const corax_split_t * splits,
+                                           const corax_unode_t * node)
 {
   return splits[node->node_index];
 }
 
-static const corax_split_t find_nonempty_regraft_split(corax_split_t * splits,
-                                                       unsigned int split_len,
-                                                       unsigned int tip_count,
-                                                       const corax_split_t prune_split,
-                                                       corax_unode_t * r_edge)
+static corax_split_t find_nonempty_regraft_split(corax_split_t * splits,
+                                                 unsigned int split_len,
+                                                 unsigned int tip_count,
+                                                 const corax_split_t prune_split,
+                                                 corax_unode_t * r_edge)
 {
   corax_split_t regraft_split = NULL;
   corax_unode_t * left_node = r_edge;
@@ -609,6 +609,7 @@ CORAX_EXPORT corax_split_t *
     split_list[i] = split_nodes[i].split;
     assert(split_is_valid_and_normalized(split_list[i], tip_count));
   }
+  CORAX_UNUSED(split_is_valid_and_normalized);
 
   /* update output arrays */
   if (split_to_node_map)

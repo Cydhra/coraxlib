@@ -583,6 +583,7 @@ static int find_duplicate_strings(char **const    strings,
       }
     }
   }
+  CORAX_UNUSED(coll);
 
   //  printf("Collisions: %d, duplicates: %lu\n", coll, *duplicate_count);
 

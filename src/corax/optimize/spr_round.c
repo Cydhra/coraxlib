@@ -489,6 +489,9 @@ int algo_update_pmatrix(corax_treeinfo_t *treeinfo, corax_unode_t *edge)
     }
   }
 
+  /* maybe use for debug etc. later */
+  CORAX_UNUSED(updated);
+
   return CORAX_SUCCESS;
 }
 
@@ -897,6 +900,9 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
   free(regraft_nodes);
   free(regraft_dist);
 
+  CORAX_UNUSED(regraft_edges);
+  CORAX_UNUSED(retval);
+
   return CORAX_SUCCESS;
 }
 
@@ -1199,6 +1205,7 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
 
   unsigned int node_count = algo_query_allnodes(treeinfo->root, allnodes);
   assert(node_count == allnodes_count);
+  CORAX_UNUSED(node_count);
 
   loglh = reinsert_nodes(treeinfo,
                          allnodes,

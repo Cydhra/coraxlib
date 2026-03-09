@@ -867,6 +867,7 @@ CORAX_EXPORT corax_unode_t *corax_binary_utree_load(FILE *        bin_file,
   /* root vertices must be in the stack */
   assert(tree_stack_top == 2);
   assert(!n_tip_check);
+  CORAX_UNUSED(n_tip_check);
 
   tree             = tree_stack[--tree_stack_top];
   tree->back       = tree_stack[--tree_stack_top];
@@ -1011,6 +1012,7 @@ CORAX_EXPORT void *corax_binary_custom_load(FILE *        bin_file,
 
     /* unimplemented so far */
     assert(cur_alignment == alignment);
+    CORAX_UNUSED(cur_alignment);
 
     data = corax_aligned_alloc(*size, alignment);
   }
@@ -1074,5 +1076,6 @@ static unsigned int get_current_alignment(unsigned int attributes)
 #ifdef HAVE_AVX
   if (attributes & CORAX_ATTRIB_ARCH_AVX) alignment = CORAX_ALIGNMENT_AVX;
 #endif
+  CORAX_UNUSED(attributes);
   return alignment;
 }

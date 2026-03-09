@@ -155,6 +155,7 @@ corax_utree_create_parsimony_multipart_spr(unsigned int       taxon_count,
   else
     assert(corax_errno);
 
+  CORAX_UNUSED(taxon_count);
 
 cleanup:
   /* destroy parsimony */
@@ -308,6 +309,8 @@ corax_utree_extend_parsimony_multipart(corax_utree_t * tree,
   }
   else
     assert(corax_errno);
+
+  CORAX_UNUSED(total_tip_count);
 
 cleanup:
   /* destroy parsimony */
