@@ -102,7 +102,8 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     if (fabs(determinant) == 0.0) {
         *d = 0.0;
         *c = 0.0;
-        goto clean_fail;
+        free(alloc);
+        return CORAX_SUCCESS;
     }
 
     // compute vector product of inverse matrix with observations to solve the system
