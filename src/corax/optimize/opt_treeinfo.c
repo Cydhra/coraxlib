@@ -1838,6 +1838,7 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
   }
 
   DBG("EM-BRENT iters: %u\n", iters);
+  CORAX_UNUSED(iters);
 
   /* now re-normalize rates and scale the branches accordingly */
   renormalize_free_rates(treeinfo);

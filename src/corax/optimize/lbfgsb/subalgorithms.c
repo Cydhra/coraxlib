@@ -107,6 +107,8 @@ int active (int *n, double *l, double *u, int *nbd, double *x, int *iwhere,
   {
     DBG("[L-BFGS-B] This problem is unconstrained\n");
   } DBG("[L-BFGS-B] At X0, %d variables are exactly at the bounds\n", nbdd);
+#else
+  CORAX_UNUSED(nbdd);
 #endif
 
   return 0;

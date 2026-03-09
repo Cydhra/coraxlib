@@ -94,6 +94,8 @@ corax_core_update_sumtable_repeats(unsigned int        states,
   }
 #endif
 
+  CORAX_UNUSED(use_bclv);
+
   return core_update_sumtable(states,
                               sites,
                               parent_sites,
@@ -557,6 +559,8 @@ corax_core_update_sumtable_ti(unsigned int         states,
                                               attrib);
   }
 #endif
+
+  CORAX_UNUSED(tipmap_size);
 
   /* non-vectorized version, special case for 4 states */
   if (states == 4)

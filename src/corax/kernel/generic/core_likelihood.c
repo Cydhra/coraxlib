@@ -790,6 +790,8 @@ double corax_core_edge_loglikelihood_ti(unsigned int         states,
   }
 #endif
 
+  CORAX_UNUSED(tipmap_size);
+
   unsigned int  site_scalings;
   unsigned int *rate_scalings    = NULL;
   int           per_rate_scaling = (attrib & CORAX_ATTRIB_RATE_SCALERS) ? 1 : 0;
@@ -1008,6 +1010,9 @@ corax_core_edge_loglikelihood_repeats(unsigned int         states,
         corax_core_edge_loglikelihood_repeats_generic_avx2;
   }
 #endif
+
+  CORAX_UNUSED(use_bclv);
+
   return core_edge_loglikelihood(states,
                                  sites,
                                  child_sites,

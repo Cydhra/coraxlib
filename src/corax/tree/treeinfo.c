@@ -895,6 +895,8 @@ CORAX_EXPORT int corax_treeinfo_update_prob_matrices(corax_treeinfo_t *treeinfo,
     }
   }
 
+  CORAX_UNUSED(updated);
+
   return CORAX_SUCCESS;
 }
 
