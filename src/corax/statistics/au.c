@@ -299,7 +299,7 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
 
     double threshold = initial_threshold, last_threshold = 0.0, target_threshold = 0.0;
     double error, last_error = 0.0, last_p_value = 0.0;
-    int df, last_df = 0;
+    int df, last_df = -1;
 
     // initialize optimizer
     NewtonOptimizer optimizer;

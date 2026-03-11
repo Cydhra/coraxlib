@@ -58,16 +58,18 @@ void compress_resample_vector(const double *const uncompressed_vector,
  * Find the maximum in the `replicate`-th column of the `replicates` matrix, stored in row-major format with
  * `num_replicates` columns and `num_trees` rows.
  */
-double column_max(const double *const replicates, const unsigned int replicate, const unsigned int num_replicates,
-                  const unsigned int num_trees) {
-    double best_value = -INFINITY;
+void column_max(const double *const replicates, const unsigned int replicate, const unsigned int num_replicates,
+                const unsigned int num_trees, double *const best_value, double *const follow_up) {
+    *best_value = -INFINITY;
+    *follow_up = -INFINITY;
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
-        if (replicates[id_tree * num_replicates + replicate] > best_value) {
-            best_value = replicates[id_tree * num_replicates + replicate];
+        if (replicates[id_tree * num_replicates + replicate] > *best_value) {
+            *follow_up = *best_value;
+            *best_value = replicates[id_tree * num_replicates + replicate];
+        } else if (replicates[id_tree * num_replicates + replicate] > *follow_up) {
+            *follow_up = replicates[id_tree * num_replicates + replicate];
         }
     }
-
-    return best_value;
 }
 
 /**
@@ -85,7 +87,7 @@ int cmp_double(const void *const a, const void *const b) {
 unsigned int bposition(const double *const vector, const double threshold, const unsigned int len) {
     unsigned int l = 0, r = len;
     while (l < r) {
-        unsigned int mid = l + (r - l) / 2;
+        const unsigned int mid = l + (r - l) / 2;
         if (vector[mid] <= threshold)
             l = mid + 1;
         else
@@ -219,21 +221,28 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
                                                 const unsigned int num_replicates,
                                                 const unsigned int num_trees) {
     // calculate maximum of each replicate set
-    double *maximum = malloc(sizeof(double) * num_replicates);
+    double *maximum = malloc(sizeof(double) * 2 * num_replicates);
     // TODO proper handling
     if (!maximum) {
         exit(-1);
     }
 
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
-        maximum[replicate] = column_max(replicates, replicate, num_replicates, num_trees);
+        column_max(replicates, replicate, num_replicates, num_trees, &maximum[2 * replicate],
+                   &maximum[2 * replicate + 1]);
     }
 
     // normalize vectors
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
         for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
+            double competing_likelihood;
+            if (replicates[id_tree * num_replicates + replicate] == maximum[2 * replicate]) {
+                competing_likelihood = maximum[2 * replicate + 1];
+            } else {
+                competing_likelihood = maximum[2 * replicate];
+            }
             replicates[id_tree * num_replicates + replicate] =
-                    maximum[replicate] - replicates[id_tree * num_replicates + replicate];
+                    competing_likelihood - replicates[id_tree * num_replicates + replicate];
         }
 
         double *tree_vec = replicates + id_tree * num_replicates;
