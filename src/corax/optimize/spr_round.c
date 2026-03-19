@@ -608,6 +608,9 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
 {
   assert(treeinfo && entry && params);
 
+  // regrafting stops if it detects no reinsertion sites and there are none at radius 0.
+  assert(params->radius_min > 0);
+
   unsigned int    i, j;
   corax_unode_t  *orig_prune_edge;
   corax_unode_t **regraft_nodes;
