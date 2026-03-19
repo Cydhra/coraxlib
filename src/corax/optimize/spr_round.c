@@ -608,6 +608,9 @@ static int best_reinsert_edge(corax_treeinfo_t            *treeinfo,
 {
   assert(treeinfo && entry && params);
 
+  /* regrafting stops if it detects no reinsertion sites and there are none at radius 0 */
+  assert(params->radius_min > 0);
+
   unsigned int    i, j;
   corax_unode_t  *orig_prune_edge;
   corax_unode_t **regraft_nodes;
@@ -1149,6 +1152,13 @@ CORAX_EXPORT double corax_algo_spr_round(corax_treeinfo_t *treeinfo,
   {
     corax_set_error(CORAX_ERROR_INVALID_TREE,
                     "Constraint check failed before SPR round!");
+    return CORAX_FAILURE;
+  }
+
+  if (radius_min == 0 || radius_max == 0)
+  {
+    corax_set_error(CORAX_ERROR_INVALID_PARAM,
+                    "SPR round min/max radius must be positive!");
     return CORAX_FAILURE;
   }
 

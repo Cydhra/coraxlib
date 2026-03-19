@@ -166,7 +166,7 @@ extern "C"
    *
    * @param radius_min
    * @param radius_max Minimum and maximum thresholds for the SPR reinsertion
-   * distance.
+   * distance. IMPORTANT: radius_max >= radius_min > 0
    *
    * @param brlen_opt_method The optimization method to use when optimizing
    * branch lengths. Options are:
