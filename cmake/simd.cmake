@@ -6,7 +6,16 @@ set(NEON_FLAGS "-march=armv8-a+fp+simd")
 set(NATIVE_FLAGS "-march=native")
 
 if (NOT DEFINED CORAX_BUILD_PORTABLE_ARCH)
-  string(REPLACE "x86_64" "x86-64" CORAX_BUILD_PORTABLE_ARCH ${CMAKE_SYSTEM_PROCESSOR})    
+  if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    set(CORAX_BUILD_PORTABLE_ARCH "x86-64")
+  elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+    set(CORAX_BUILD_PORTABLE_ARCH "armv8-a")
+  elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+    set(CORAX_BUILD_PORTABLE_ARCH "armv8-a")
+  else()
+    # hope and pray
+    set(CORAX_BUILD_PORTABLE_ARCH ${CMAKE_SYSTEM_PROCESSOR})    
+  endif()  
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
