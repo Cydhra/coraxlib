@@ -315,7 +315,7 @@ target_func_onedim_treeinfo(void *p, double *x, double *fx, int *converged)
   /* compute negative score */
   if (x) score = -1 * corax_treeinfo_compute_loglh(treeinfo, 0);
 
-  //  printf("score: %lf\n", score);
+//  printf("score: %.9lf\n", score);
 
   /* copy per-partition likelihood to the output array */
   if (fx)
@@ -712,6 +712,11 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
 
     corax_partition_t *part = em_data->treeinfo->partitions[p];
 
+    /* skip remote partitions (they will be processed by other threads) */
+    if (!part) {
+      continue;
+    }
+
     for (unsigned int c = 0; c < part->rate_cats; ++c)
     {
       unsigned int offset = em_data->prefix_sum_category_count[p] + c;
@@ -722,6 +727,7 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
 
       if (rates) {
         part->rates[c] = rates[offset];
+        assert(part->rates[c] >= 0.);
       }
     }
   }
@@ -741,6 +747,11 @@ double target_func_brent_all_freerate(void *data, double *rates, double *likelih
     }
 
     corax_partition_t *part = em_data->treeinfo->partitions[p];
+
+    /* skip remote partitions (they will be processed by other threads) */
+    if (!part) {
+      continue;
+    }
 
     double *this_sitecat_lh = em_data->sitecat_lh_per_part[p];
     for (unsigned int i = 0; i < part->sites; ++i)

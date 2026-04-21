@@ -31,6 +31,9 @@
 
 //#define DBG printf
 
+// Uncomment to disable post-optimization loglh improvement checks and rollbacks:
+//#define CORAX_OPT_STRICT
+
 static void fill_rates(double *     rates,
                        double *     x,
                        int *        bt,
@@ -166,6 +169,7 @@ static int treeinfo_get_pinv(const corax_treeinfo_t *treeinfo,
 
   corax_partition_t *partition = treeinfo->partitions[part_num];
   param_vals[0] = partition->prop_invar[treeinfo->param_indices[part_num][0]];
+
   return CORAX_SUCCESS;
 }
 
@@ -254,6 +258,19 @@ static void fix_brlen_scalers(corax_treeinfo_t *treeinfo,
   if (lowest_scaler < min_scaler || highest_scaler > max_scaler)
   {
     double global_scaler;
+
+#ifndef CORAX_OPT_STRICT
+    if (lowest_scaler < min_scaler && highest_scaler > max_scaler)
+    {
+      // force-clamp scalers at  max_scaler
+      for (i = 0; i < treeinfo->partition_count; ++i)
+      {
+        if (treeinfo->brlen_scalers[i] > max_scaler)
+          treeinfo->brlen_scalers[i] = max_scaler;
+      }
+      highest_scaler = max_scaler;
+    }
+#endif
 
     assert(lowest_scaler >= min_scaler || highest_scaler <= max_scaler);
 
@@ -481,7 +498,11 @@ double corax_algo_opt_brlen_scalers_treeinfo(corax_treeinfo_t *treeinfo,
    * and correct them as needed */
   corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
 
+#ifdef CORAX_OPT_STRICT
   if (brlen_fixed)
+#else
+  CORAX_UNUSED(brlen_fixed);
+#endif
   {
     loglh = corax_treeinfo_compute_loglh(treeinfo, 0);
     if (loglh < old_loglh)
@@ -1727,12 +1748,17 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
     /* optimize mixture weights with EM */
     corax_opt_minimize_em_multipartition(em_data);
 
+    for (unsigned int p = 0; p < em_data->total_rate_cats; ++p)
+    {
+      assert(em_data->weights[p] >= 0.);
+    }
+
     DBG("corax_algo_opt_rates_weights_em_treeinfo: AFTER WEIGHTS: logLH = %f\n", corax_treeinfo_compute_loglh_flex(treeinfo, 0, 0));
 
     if (use_brent)
     {
       /* optimize mixture rates with Brent's */
-      
+      memset(xguess, 0, sizeof(double) * em_data->total_rate_cats);
       for (unsigned int p = 0; p < em_data->treeinfo->partition_count; ++p)
       {
         corax_partition_t *part = em_data->treeinfo->partitions[p];
@@ -1744,15 +1770,17 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
         {
           unsigned int offset = em_data->prefix_sum_category_count[p] + c;
           opt_mask[offset] = 1;
-          xmin[offset] = CORAX_OPT_MIN_RATE;
-          xmax[offset] = CORAX_OPT_MAX_RATE;
+          xmin[offset] = min_rate;
+          xmax[offset] = max_rate;
           xguess[offset] = part->rates[c];
         }
       }
 
+      corax_treeinfo_parallel_reduce(treeinfo, xguess, em_data->total_rate_cats, CORAX_REDUCE_MAX);
+
       //corax_opt_minimize_brent_multi(em_data->total_rate_cats, NULL, xmin, xguess, xmax, 1e-3, xopt, NULL, NULL, em_data, target_func_brent_all_freerate, 0);
-      double global_xmin = CORAX_OPT_MIN_RATE;
-      double global_xmax = CORAX_OPT_MAX_RATE;
+      double global_xmin = min_rate;
+      double global_xmax = max_rate;
       corax_opt_minimize_brent_multi(em_data->total_rate_cats,
                                      NULL,           /* opt_mask */
                                      &global_xmin,
@@ -1857,7 +1885,12 @@ double corax_algo_opt_rates_weights_em_treeinfo(corax_treeinfo_t *treeinfo,
      * and correct them as needed */
     corax_bool_t brlen_fixed = fix_brlen_minmax(treeinfo, min_brlen, max_brlen);
 
-    if (brlen_fixed || use_brent)
+#ifdef CORAX_OPT_STRICT
+   if (brlen_fixed)
+#else
+   if (brlen_fixed || use_brent)
+//  CORAX_UNUSED(brlen_fixed);
+#endif
     {
       /* update pmatrices and partials according to the new branches */
       double new_logl = corax_treeinfo_compute_loglh(treeinfo, 0);

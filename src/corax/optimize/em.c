@@ -142,6 +142,9 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
   r->category_lh = (double *) malloc(sizeof(double) * r->total_rate_cats);
 
   memset(r->converged, 0, sizeof(bool) * treeinfo->partition_count);
+  memset(r->weights, 0, sizeof(double) * r->total_rate_cats);
+  memset(r->new_weights, 0, sizeof(double) * r->total_rate_cats);
+  memset(r->category_lh, 0, sizeof(double) * r->total_rate_cats);
 
   // Copy initial weights from partition
   for (unsigned int p = 0; p < part_count; ++p)
@@ -154,6 +157,7 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
            part->rate_weights,
            sizeof(double) * part->rate_cats);
   }
+  corax_treeinfo_parallel_reduce(treeinfo, r->weights, r->total_rate_cats, CORAX_REDUCE_SUM);
 
   /* Precompute scaling factors */
   r->scale_threshold_powers[0] = CORAX_SCALE_THRESHOLD;
@@ -353,11 +357,16 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data)
 
     // Expectation step
     corax_treeinfo_compute_loglh_sitecat(data->treeinfo, 0, 1, data->sitecat_lh_per_part);
+
     transform_sitecatlh_to_posterior(data);
 
     corax_treeinfo_parallel_reduce(data->treeinfo,
             data->new_weights, overall_category_count, CORAX_REDUCE_SUM);
 
+    for (unsigned int p = 0; p < data->total_rate_cats; ++p)
+    {
+      assert(data->new_weights[p] >= 0.);
+    }
 
     all_partitions_converged = true;
     for (unsigned int p = 0; p < data->treeinfo->partition_count; ++p)
@@ -391,7 +400,7 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data)
         weight_sum += w;
         data->new_weights[c_idx] = w;
       }
-
+      assert(weight_sum >= 0);
       for (unsigned int c = 0; c < category_count; c++)
       {
         const unsigned int c_idx = partition_offset + c;
@@ -415,5 +424,10 @@ corax_opt_minimize_em_multipartition(corax_opt_multipart_em_data_t *data)
 
       all_partitions_converged = all_partitions_converged && data->converged[p];
     }
+
+    /* check if all partitions across all threads have converged */
+    double unconverged = all_partitions_converged ? 0 : 1;
+    corax_treeinfo_parallel_reduce(data->treeinfo, &unconverged, 1, CORAX_REDUCE_SUM);
+    all_partitions_converged = unconverged > 0. ? false : true;
   }
 }

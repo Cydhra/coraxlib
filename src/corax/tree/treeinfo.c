@@ -1200,6 +1200,8 @@ int corax_treeinfo_normalize_brlen_scalers(corax_treeinfo_t *treeinfo)
     }
   }
 
+  assert(sum_scalers >= 0.);
+
   /* sum up scalers and sites from all threads */
   if (treeinfo->parallel_reduce_cb)
   {
