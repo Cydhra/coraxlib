@@ -124,8 +124,8 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
- * replicates has likelihood 0, and all other replicates have the positive difference to the maximum likelihood in their
- * entry.
+ * replicates is represented with the negative likelihood difference to the next-best replicate.
+ * All suboptimal replicates have the positive difference to the maximum likelihood in their entry.
  * This is required for estimating the empirical bootstrap distribution function, i.e., the distribution of the
  * continuous BP value.
  * The canonical BP(i) value (i.e., the number of bootstrap replicates in the matrix where tree i is the maximum
@@ -140,12 +140,15 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
  *
  * @param replicates the replicate matrix containing RELL-bootstrap log-likelihoods, one row per tree, numReplicates columns
  *                   per row
+ * @param target the target matrix which will be filled with the likelihood difference of each replicate. It has to have
+ *               the same size as the replicates matrix, but the entries will be sorted per-row.
  * @param num_replicates the number of replicates per row
  * @param num_trees the number of trees (rows) in the matrix
  */
 CORAX_EXPORT
 
-void corax_normalize_lnl_bootstrap(double *replicates,
+void corax_normalize_lnl_bootstrap(const double *replicates,
+                                   double * target,
                                    unsigned int num_replicates,
                                    unsigned int num_trees);
 

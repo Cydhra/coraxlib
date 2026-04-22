@@ -217,7 +217,8 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
     }
 }
 
-CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
+CORAX_EXPORT void corax_normalize_lnl_bootstrap(const double *const replicates,
+                                                double *const target,
                                                 const unsigned int num_replicates,
                                                 const unsigned int num_trees) {
     // calculate maximum of each replicate set
@@ -241,11 +242,11 @@ CORAX_EXPORT void corax_normalize_lnl_bootstrap(double *const replicates,
             } else {
                 competing_likelihood = maximum[2 * replicate];
             }
-            replicates[id_tree * num_replicates + replicate] =
+            target[id_tree * num_replicates + replicate] =
                     competing_likelihood - replicates[id_tree * num_replicates + replicate];
         }
 
-        double *tree_vec = replicates + id_tree * num_replicates;
+        double *tree_vec = target + id_tree * num_replicates;
         qsort(tree_vec, num_replicates, sizeof(double), cmp_double);
     }
 
