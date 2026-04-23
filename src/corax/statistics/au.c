@@ -21,14 +21,15 @@ const double EPS = 1E-16;
 
 /**
  * Transform an observed Bootstrap Proportion into the linear parameter of the observed distribution (i.e., the
- * signed distance with curvature correction).
+ * signed distance with curvature correction under the null model).
+ * This transforms the observed frequency into a linear parameter within the AU null model.
  */
 double compute_distance(const double bp) {
     return -normal_quantile(bp);
 }
 
 /**
- * Solve the Weighted Least Squares system for a set of observed BP values and the model BP distribution analytically.
+ * Solve the Weighted Least Squares system for a set of observed BP values and the null model's BP distribution analytically.
  * The function minimizes the loss between observed and the expected distance under normally distributed BP
  * values and uses those values to obtain estimators for the signed distance and curvature parameters.
  *
@@ -41,9 +42,13 @@ double compute_distance(const double bp) {
  *           an error is returned.
  * @param d out-parameter for the estimator for d
  * @param c out-parameter for the estimator for c
- * @return CORAX_SUCCESS if the WLS system was solved, CORAX_FAILURE if there is no analytical solution. Note that the
- * parameters d and c are initialized in both cases and can still be used as start parameters to a newton optimization of
- * c and d.
+ *
+ * @return CORAX_SUCCESS if the WLS system was solved, CORAX_FAILURE if there was a problem with memory allocation.
+ * Special return code AU_MATH_ERROR is used if the problem is degenerate (degrees of freedom insufficient for estimation).
+ * Note that the parameters d and c are initialized in that case and can still be used as start parameters to a newton
+ * optimization of c and d; the df parameter is initialized with the degrees of freedom which are left (0 or 1).
+ * If the determinant of the hessian is zero (the function is at a degenerate critical point), d and c are initialized
+ * to 0 and CORAX_SUCCESS is returned.
  */
 int fit_parameters_wls(const double *const bootstrap_counts,
                        const double *const scales,
@@ -54,8 +59,7 @@ int fit_parameters_wls(const double *const bootstrap_counts,
                        double *d, double *c) {
     double *alloc = malloc(sizeof(double) * num_scales * 2);
     if (!alloc) {
-        // TODO proper handling
-        exit(-1);
+        return CORAX_FAILURE;
     }
 
     double *observed_distances = alloc;
@@ -79,7 +83,7 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     if (*df < 2) {
         *d = 0;
         *c = 0;
-        goto clean_fail;
+        goto math_fail;
     }
 
     // compute model matrix
@@ -113,9 +117,9 @@ int fit_parameters_wls(const double *const bootstrap_counts,
     free(alloc);
     return CORAX_SUCCESS;
 
-clean_fail:
+math_fail:
     free(alloc);
-    return CORAX_FAILURE;
+    return AU_MATH_ERROR;
 }
 
 /**
@@ -131,7 +135,7 @@ typedef struct _NewtonOptimizer {
 } NewtonOptimizer;
 
 /**
- * Get the likelihood in the AU model.
+ * Get the likelihood in the AU null model.
  *
  * @param d signed distance estimate
  * @param c curvature parameter estimate
@@ -143,7 +147,7 @@ double likelihood(const double d, const double c, const double scale_root) {
 }
 
 /**
- * Calculate the gradient of the AU model's likelihood function at (d, c).
+ * Calculate the gradient of the AU null model's likelihood function at (d, c).
  *
  * @param instance current newton instance of the AU test
  * @param d current estimate for d
@@ -177,7 +181,7 @@ void gradient(const NewtonOptimizer *const instance, const double d, const doubl
 }
 
 /**
- * Calculate the hessian  of the AU model's likelihood function at (d, c).
+ * Calculate the hessian  of the AU null model's likelihood function at (d, c).
  *
  * @param instance current newton instance of the AU test
  * @param d current estimate for d
@@ -288,8 +292,7 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
     double *roots = alloc + num_scales;
 
     if (!counts || !roots) {
-        // TODO proper handling
-        exit(-1);
+        goto alloc_error;
     }
 
     // prepare roots of scales so we don't need to compute them as often
@@ -314,13 +317,17 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
             counts[s] = corax_empirical_bootstrap_count(replicates[s], num_replicates[s], tree, threshold);
         }
 
-        if (fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, &df, d, c) == CORAX_SUCCESS) {
+        const int status = fit_parameters_wls(counts, scales, roots, num_replicates, num_scales, &df, d, c);
+        if (status == CORAX_SUCCESS) {
             optimizer.bootstrap_counts = counts;
 
             fit_parameters_newton(&optimizer, d, c, &error, p_value, &df);
-        } else {
+        } else if (status == AU_MATH_ERROR) {
             // p value and error stay the same as in previous iteration, because we ran into an error condition
             // (which is df < 2)
+        } else {
+            // wls had an allocation error
+            goto alloc_error;
         }
 
         // check whether the optimization problem is unsolvable, or
@@ -362,6 +369,10 @@ CORAX_EXPORT int corax_au_p_value(double **const replicates,
     }
 
     // if we are here, convergence has not been reached.
+    free(alloc);
+    return AU_MATH_ERROR;
+
+alloc_error:
     free(alloc);
     return CORAX_FAILURE;
 
