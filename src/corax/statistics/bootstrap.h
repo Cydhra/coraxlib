@@ -76,8 +76,10 @@ CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
  * @param num_trees the number of input trees
  * @param scale the scaling factor of the RELL bootstrap method, 1.0 being canonical RELL bootstrap generating replicates
  *              of the same sequence length.
+ *
+ * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
-CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
+CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
                                        double **replicates,
                                        const double *const *trees_persite_lnl,
                                        const unsigned int *site_weights,
@@ -110,8 +112,10 @@ CORAX_EXPORT void corax_RELL_bootstrap(corax_random_state *rstate,
  * @param num_replicates an array defining how many bootstrap replicates to generate per scale
  * @param scales an array of scaling factors for the multiscale bootstrap
  * @param num_scales the number of entries in the scales array.
+ *
+ * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
-CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
+CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
                                                   double ***replicate_matrices,
                                                   const double *const *trees_persite_lnl,
                                                   const unsigned int *site_weights,
@@ -144,10 +148,10 @@ CORAX_EXPORT void corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
  *               the same size as the replicates matrix, but the entries will be sorted per-row.
  * @param num_replicates the number of replicates per row
  * @param num_trees the number of trees (rows) in the matrix
+ *
+ * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
-CORAX_EXPORT
-
-void corax_normalize_lnl_bootstrap(const double *replicates,
+CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *replicates,
                                    double * target,
                                    unsigned int num_replicates,
                                    unsigned int num_trees);
