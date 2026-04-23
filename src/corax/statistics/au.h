@@ -8,7 +8,13 @@ extern "C" {
 #include "corax/core/common.h"
 
 /**
+ * Returned by statistics function if theory collapses.
+ */
+#define AU_MATH_ERROR 2
+
+/**
  * Perform the AU test on a single tree, identified by its index in the `replicates` matrix.
+ * This method automatically applies a bias correction to ensure the solution is stable.
  *
  * @param replicates normalized and sorted bootstrap replicate statistics
  * @param tree the index of the test tree in the replicate matrix
@@ -19,8 +25,10 @@ extern "C" {
  * @param d out-parameter for the signed distance parameter estimate
  * @param c out-parameter for the curvature estimate
  * @param p_value out-parameter for the AU p-value
- * @return CORAX_SUCCESS if the p-value converged, CORAX_FAILURE otherwise. The p_value parameter will be set in both
- *         cases.
+ *
+ * @return CORAX_SUCCESS if the AU test completed successfully, AU_MATH_ERROR if no bias correction was found to
+ * stabilize the problem. The p_value parameter will be set in both cases.
+ * Returns CORAX_FAILURE if memory allocation failed.
  */
 CORAX_EXPORT int corax_au_p_value(double **replicates,
                                   unsigned int tree,
