@@ -1,8 +1,10 @@
 #include "corax/core/common.h"
 #include "corax/core/partition.h"
+#include "corax/core/repeats.h"
 #include "corax/tree/treeinfo.h"
 #include "opt_generic.h"
 #include <limits.h>
+#include <math.h>
 
 /******************************************************************************/
 /* EXPECTATION-MAXIMIZATION (EM)     */
@@ -120,8 +122,9 @@ corax_opt_multipart_em_initialize(corax_treeinfo_t *treeinfo)
         continue;
     }
     r->pattern_weight_sum_per_part[p] = part->pattern_weight_sum;
-    r->sitecat_lh_per_part[p] = (double *) malloc(sizeof(double) * part->sites * part->rate_cats);
-    r->sitecat_posterior_per_part[p] = (double *) malloc(sizeof(double) * part->sites * part->rate_cats);
+    r->sitecat_lh_per_part[p] = (double *) calloc(part->sites * part->rate_cats, sizeof(double));
+    r->sitecat_posterior_per_part[p] = (double *) calloc(part->sites * part->rate_cats, sizeof(double));
+
     rate_cats_per_part[p] = part->rate_cats;
   }
 
@@ -250,6 +253,9 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data)
     double *this_posterior = data->sitecat_posterior_per_part[p];
     const unsigned partition_offset = data->prefix_sum_category_count[p];
 
+    // site repeats should not affect number of sites at vroot
+    assert(part->sites == corax_get_sites_number(part, data->treeinfo->tree->vroot->clv_index));
+
     for (unsigned int i = 0; i < part->sites; ++i)
     {
       const unsigned int pattern_weight = part->pattern_weights[i];
@@ -292,6 +298,7 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data)
             category_scaler = data->scale_threshold_powers[capped_scalings - 1];
           }
         }
+
         terma += (1 - prop_invar) * part->rate_weights[c] * this_lk_cat[c] * category_scaler;
       }
 
@@ -308,6 +315,8 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data)
       } else {
         pattern_likelihood = terma;
       }
+
+      assert(pattern_likelihood > 0.0);
 
       for (unsigned int c = 0; c < part->rate_cats; ++c)
       {

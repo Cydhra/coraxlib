@@ -120,6 +120,19 @@ public:
 using SitecatTestConfig = std::tuple<unsigned int, unsigned int, unsigned int, double>;
 class SitecatTest : public testing::WithParamInterface<SitecatTestConfig>, public SinglePartitionedTest { };
 
+void place_vroot_at_tip(corax_treeinfo_t *treeinfo)
+{
+    auto new_vroot = treeinfo->tree->nodes[0];
+    ASSERT_TRUE(CORAX_UTREE_IS_TIP(new_vroot))
+        << "Please adapt vroot placement to tip node, to ensure tip inner optimization is actually called";
+
+    auto parent_clv_index = new_vroot->clv_index;
+    auto child_clv_index = new_vroot->back->clv_index;
+    ASSERT_TRUE((parent_clv_index < treeinfo->tip_count) || (child_clv_index < treeinfo->tip_count));
+
+    corax_treeinfo_set_root(treeinfo, new_vroot);
+}
+
 TEST_P(SitecatTest, dna_persitecat_lh) {
     const auto simd_attributes = std::get<0>(GetParam());
     const auto opt_attributes = std::get<1>(GetParam());
@@ -150,6 +163,11 @@ TEST_P(SitecatTest, dna_persitecat_lh) {
 
     std::vector<double> persitecat_lh(rate_cats * msa->length, 0.0);
     double *persitecat_lh_per_part = persitecat_lh.data();
+
+    // Update virtual root so that tip-inner optimimzation can actually be applied
+    if (attributes & CORAX_ATTRIB_PATTERN_TIP) {
+        place_vroot_at_tip(treeinfo);
+    }
 
     const double lh = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 1, &persitecat_lh_per_part);
     RecordProperty("loglh", lh);
@@ -228,6 +246,11 @@ TEST_P(SitecatTest, aa_persitecat_lh) {
 
     std::vector<double> persitecat_lh(rate_cats * msa->length, 0.0);
     double *persitecat_lh_per_part = persitecat_lh.data();
+
+    // Update virtual root so that tip-inner optimimzation can actually be applied
+    if (attributes & CORAX_ATTRIB_PATTERN_TIP) {
+        place_vroot_at_tip(treeinfo);
+    }
 
     const double lh = corax_treeinfo_compute_loglh_sitecat(treeinfo, 0, 1, &persitecat_lh_per_part);
     DBG("\t lnL = %f\n", lh);

@@ -289,7 +289,8 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
                                           unsigned int child_clv_index,
                                           unsigned int matrix_index,
                                           const unsigned int *freqs_indices,
-                                          double *            persite_lnl)
+                                          double *            persite_lnl,
+                                          double *            sitecat_lh)
 {
   double       logl   = 0;
   unsigned int states = partition->states;
@@ -317,7 +318,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
         partition->invariant,
         freqs_indices,
         persite_lnl,
-        NULL,
+        sitecat_lh,
         partition->attributes);
   }
   else
@@ -339,7 +340,7 @@ static double edge_loglikelihood_tipinner(corax_partition_t *partition,
         partition->invariant,
         freqs_indices,
         persite_lnl,
-        NULL,
+        sitecat_lh,
         partition->attributes);
   }
 
@@ -651,7 +652,9 @@ corax_compute_edge_loglikelihood_sitecat(corax_partition_t * partition,
                                                : child_clv_index,
           matrix_index,
           freqs_indices,
-          persite_lnl);
+          persite_lnl,
+          sitecat_lh);
+
 
   logl = edge_loglikelihood(partition,
                             parent_clv_index,
