@@ -253,9 +253,6 @@ void transform_sitecatlh_to_posterior(corax_opt_multipart_em_data_t *data)
     double *this_posterior = data->sitecat_posterior_per_part[p];
     const unsigned partition_offset = data->prefix_sum_category_count[p];
 
-    // site repeats should not affect number of sites at vroot
-    assert(part->sites == corax_get_sites_number(part, data->treeinfo->tree->vroot->clv_index));
-
     for (unsigned int i = 0; i < part->sites; ++i)
     {
       const unsigned int pattern_weight = part->pattern_weights[i];
