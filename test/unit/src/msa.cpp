@@ -5,7 +5,7 @@
 
 TEST(MSA, column_entropies)
 {
-    std::string filename = env->msa_filename();
+    std::string filename = env->datapath("example.phy");
     const char* c_filename = filename.c_str();
     corax_msa_t* msa = corax_phylip_load(c_filename, CORAX_TRUE);
 
@@ -28,7 +28,7 @@ TEST(MSA, column_entropies)
 
 TEST(MSA, entropy)
 {
-    std::string filename = env->msa_filename();
+    std::string filename = env->datapath("example.phy");
     const char* c_filename = filename.c_str();
 
     corax_msa_t* msa = corax_phylip_load(c_filename, CORAX_TRUE);
@@ -41,7 +41,7 @@ TEST(MSA, entropy)
 
 TEST(MSA, weighted_entropy)
 {
-    std::string filename = env->msa_filename();
+    std::string filename = env->datapath("example.phy");
     const char* c_filename = filename.c_str();
 
     corax_msa_t* msa = corax_phylip_load(c_filename, CORAX_TRUE);
@@ -72,7 +72,7 @@ TEST(MSA, weighted_entropy)
 
 TEST(MSA, pattern_entropy)
 {
-  std::string filename = env->small_msa_filename();
+  std::string filename = env->datapath("small.fasta");
   const char* c_filename = filename.c_str();
   corax_msa_t* msa = corax_fasta_load(c_filename);
   unsigned int* site_pattern_map = (unsigned int *)calloc(msa->length, sizeof(unsigned int));
@@ -100,7 +100,7 @@ TEST(MSA, pattern_entropy)
 
 TEST(MSA, bollback)
 {
-    std::string filename = env->small_msa_filename();
+    std::string filename = env->datapath("small.fasta");
     const char* c_filename = filename.c_str();
     corax_msa_t* msa = corax_fasta_load(c_filename);
     unsigned int* site_pattern_map = (unsigned int *)calloc(msa->length, sizeof(unsigned int));

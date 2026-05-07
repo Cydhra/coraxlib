@@ -1035,7 +1035,7 @@ TEST(NewickParser, rooted_as_unrooted0)
 }
 
 TEST(NewickParser, manytrees) {
-  auto        treefile    = env->get_datafile();
+  auto        treefile    = std::ifstream(env->datapath("random_test_trees"));
   size_t      line_number = 1;
   std::string line;
   if(!treefile.is_open()){
@@ -1064,7 +1064,7 @@ TEST(NewickParser, manytrees) {
 }
 
 TEST(NewickParser, pathologic0) {
-  auto treefile = env->get_pathological_data();
+  auto treefile = std::ifstream(env->datapath("pathological_trees"));
 
   size_t      line_number = 1;
   std::string line;
