@@ -26,8 +26,38 @@ extern "C"
   corax_utree_scale_subtree_branches(corax_unode_t *root,
                                      double         branch_length_scaler);
 
+  /**
+   * Collapse all branches in a tree which are smaller than the given threshold.
+   *
+   * @param tree Tree topology to collapse
+   * @param min_brlen minimum length (inclusive) which a branch may have to stay in the tree.
+   */
   CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
                                                  double         min_brlen);
+
+  /**
+   * Collapse all branches in a tree which are longer than the given threshold.
+   *
+   * @param tree Tree topology to collapse
+   * @param max_brlen maximum length (exclusive) which a branch can have before it is collapsed
+   */
+  CORAX_EXPORT int corax_utree_collapse_long_branches(corax_utree_t *tree,
+                                               double         max_brlen);
+
+  /**
+   * Collapse all branches in a tree for which a predicate holds. Convenience functions with pre-defined predicates
+   * are given as corax_utree_collapse_branches (for a minimum length predicate)
+   * and corax_utree_collapse_long_branches (for a maximum length predicate).
+   *
+   * @param tree Tree topology to collapse
+   * @param predicate callback which takes a data pointer (next argument) and the tree node. Returns true if the branch
+   *                  should be collapsed
+   * @param closure a closure of all state required by the predicate. This value is passed to the predicate as its first
+   *                argument unchanged.
+   */
+  CORAX_EXPORT int corax_utree_collapse_branches_predicate(corax_utree_t *tree,
+                                                 bool (*predicate)(void *, corax_unode_t*),
+                                                 void *closure);
 
   /**
    * Add new tip nodes and attach them at specific positions in a tree
