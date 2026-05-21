@@ -140,8 +140,32 @@ corax_utree_scale_subtree_branches(corax_unode_t *root,
   }
 }
 
+bool collapse_if_smaller(void *brlen_cutoff, corax_unode_t* node) {
+  return node->length > *((double*) brlen_cutoff);
+}
+
+bool collapse_if_larger(void *brlen_cutoff, corax_unode_t* node) {
+  return node->length < *((double*) brlen_cutoff);
+}
+
 CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
-                                               double         min_brlen)
+                                               double         min_brlen) {
+  double        brlen_cutoff  = min_brlen + CORAX_ONE_EPSILON;
+
+  return corax_utree_collapse_branches_predicate(tree, collapse_if_smaller, &brlen_cutoff);
+}
+
+CORAX_EXPORT int corax_utree_collapse_long_branches(corax_utree_t *tree,
+                                               double         max_brlen) {
+  double        brlen_cutoff  = max_brlen - CORAX_ONE_EPSILON;
+
+  return corax_utree_collapse_branches_predicate(tree, collapse_if_larger, &brlen_cutoff);
+}
+
+
+CORAX_EXPORT int corax_utree_collapse_branches_predicate(corax_utree_t *tree,
+                                               bool (*predicate)(void *, corax_unode_t*),
+                                               void *closure)
 {
   if (!tree || !tree->vroot)
   {
@@ -149,7 +173,6 @@ CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
     return CORAX_FAILURE;
   }
 
-  double        brlen_cutoff  = min_brlen + CORAX_ONE_EPSILON;
   unsigned int  tip_count     = tree->tip_count;
   unsigned int  inner_count   = tree->inner_count;
   unsigned int  node_count    = inner_count + tip_count;
@@ -184,7 +207,7 @@ CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
     corax_unode_t *start_node = NULL;
     do {
       corax_unode_t *anode = node->back;
-      if (CORAX_UTREE_IS_TIP(anode) || node->length > brlen_cutoff)
+      if (CORAX_UTREE_IS_TIP(anode) || !predicate(closure, node))
       {
         if (!start_node) start_node = node;
         node = node->next;
