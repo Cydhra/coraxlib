@@ -3,7 +3,7 @@
 ![corax logo](./docs/images/corax_logo.png)
 
 `coraxlib` (COre RAXml LIBrary) encapsulates common routines used by likelihood-based
-phylogenetic software such as [raxml-ng](https://github.com/amkozlov/raxml-ng). 
+phylogenetic software such as [raxml-ng](https://codeberg.org/amkozlov/raxml-ng). 
 It will eventually supersede both [libpll-2](https://github.com/xflouris/libpll-2)
  and [pll-modules](https://github.com/ddarriba/pll-modules).
 
