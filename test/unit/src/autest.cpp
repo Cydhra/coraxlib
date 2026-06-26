@@ -302,3 +302,23 @@ void run_fixture(AuTestFixture *fixture, std::string site_lh, std::string refere
 TEST_F(AuTestFixture, garbage) {
     run_fixture(this, "autest/garbage.siteLH", "autest/garbage.reference");
 }
+
+TEST_F(AuTestFixture, implausible16) {
+    run_fixture(this, "autest/implausible16.siteLH", "autest/implausible16.reference");
+}
+
+TEST_F(AuTestFixture, optimization) {
+    run_fixture(this, "autest/optimization.siteLH", "autest/optimization.reference");
+}
+
+TEST_F(AuTestFixture, plausible5) {
+    run_fixture(this, "autest/plausible5.siteLH", "autest/plausible5.reference");
+}
+
+TEST_F(AuTestFixture, random6) {
+    run_fixture(this, "autest/random6.siteLH", "autest/random6.reference");
+}
+
+TEST_F(AuTestFixture, tool_comparison) {
+    run_fixture(this, "autest/tool_comparison.siteLH", "autest/tool_comparison.reference");
+}
