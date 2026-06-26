@@ -13,19 +13,30 @@
 #include "../../../src/corax/statistics/au.h"
 #include "../../../src/corax/util/random.h"
 
+#include <stdexcept>
+#include <cmath>
+#include <sstream>
+
 const std::vector<double> AU_DEFAULT_SCALES = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4};
 const std::vector<unsigned int> AU_DEFAULT_REPS = {
     10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000
 };
 
+struct TreeStatistics {
+    std::vector<double> mean;
+    std::vector<double> variance;
+};
+
 class AuTestFixture : public testing::Test {
 public:
     unsigned int trees = 0, sites = 0;
+    unsigned int samples = 0;
     corax_random_state *rstate = nullptr;
     const double *const *trees_persite_lnl = nullptr;
     double **test_statistics = nullptr;
+    TreeStatistics reference_statistics;
 
-    bool LoadSiteLH(const char *filename) {
+    bool LoadSiteLH(const char *filename, const char* reference) {
         std::ifstream file(filename);
         if (!file) {
             return false;
@@ -49,6 +60,26 @@ public:
         }
 
         trees_persite_lnl = const_cast<const double *const *>(data);
+
+        std::ifstream ref_data(reference);
+        if (!ref_data) {
+            return false;
+        }
+
+        ref_data >> samples;
+
+        for (unsigned int s = 0; s < trees; ++s) {
+            double mean;
+            ref_data >> mean;
+            reference_statistics.mean.push_back(mean);
+        }
+
+        for (unsigned int s = 0; s < trees; ++s) {
+            double variance;
+            ref_data >> variance;
+            reference_statistics.variance.push_back(variance);
+        }
+
         return true;
     }
 
@@ -91,6 +122,12 @@ public:
         }
     }
 
+    void ResetStatistics() {
+        for (unsigned int scale = 0; scale < AU_DEFAULT_SCALES.size(); scale++) {
+            memset(test_statistics[scale], 0, sizeof(double) * trees * AU_DEFAULT_REPS[scale]);
+        }
+    }
+
     void SetUp() override {
         rstate = corax_random_create(1);
     }
@@ -102,17 +139,6 @@ public:
         delete[] trees_persite_lnl;
         corax_random_destroy(rstate);
     }
-};
-
-#include <stdexcept>
-#include <cmath>
-#include <sstream>
-
-#include <boost/math/distributions/students_t.hpp>
-
-struct TreeStatistics {
-    std::vector<double> mean;
-    std::vector<double> variance;
 };
 
 // generated approximation of the quantile function of students-t-distribution because C++ doesn't have that
@@ -215,20 +241,64 @@ void reject_hypotheses(
     }
 
     std::ostringstream oss;
-    oss << "failed to reject inequality hypotheses for " << unrejected.size() << " trees";
+    oss << "failed to reject inequality hypotheses for " << unrejected.size() << " trees" << std::endl;
+    for (unsigned int i = 0; i < unrejected.size(); i++) {
+        oss << "tree " << unrejected[i].i << " failed to reject "
+        << (unrejected[i].lower ? (unrejected[i].upper ? "both bounds" : "the lower bound") : "the upper bound") << ". "
+        << "(consel mean: " << unrejected[i].ref_mean << ", variance: "
+        << unrejected[i].ref_var << "; corax mean: "
+        << unrejected[i].test_mean << ", variance: " << unrejected[i].test_var << ")" << std::endl;
+    }
 
     ASSERT_EQ(unrejected.size(), 0) << oss.str();
 }
 
-TEST_F(AuTestFixture, garbage) {
-    std::string filename = env->datapath("garbage.siteLH");
-    ASSERT_TRUE(LoadSiteLH(filename.c_str()));
+void run_fixture(AuTestFixture *fixture, std::string site_lh, std::string reference_file) {
+    std::string filename = env->datapath(site_lh);
+    std::string refname = env->datapath(reference_file);
+    ASSERT_TRUE(fixture->LoadSiteLH(filename.c_str(), refname.c_str()));
 
-    Bootstrap();
-    ComputeDeltas();
+    std::cout << "Running " << fixture->samples << " au tests per tree." << std::endl;
 
-    std::vector<double> p_values = {};
-    ComputePValues(p_values);
+    std::vector<std::vector<double>> all_p_values = {};
+    TreeStatistics raxml_statistics;
+
+    for (unsigned int s = 0; s < fixture->samples; s++) {
+        all_p_values.emplace_back();
+
+        fixture->Bootstrap();
+        fixture->ComputeDeltas();
+
+        std::vector<double> p_values = {};
+        fixture->ComputePValues(all_p_values[s]);
+
+        fixture->ResetStatistics();
+    }
+
+    for (unsigned int t = 0; t < fixture->trees; t++) {
+        double mean = 0;
+        for (unsigned int s = 0; s < fixture->samples; s++) {
+            mean += all_p_values[s][t];
+        }
+
+        mean /= fixture->samples;
+
+        double variance = 0;
+        for (unsigned int s = 0; s < fixture->samples; s++) {
+            variance += (mean - all_p_values[s][t]) * (mean - all_p_values[s][t]);
+        }
+
+        variance /= fixture->samples;
+
+        raxml_statistics.mean.push_back(mean);
+        raxml_statistics.variance.push_back(variance);
+    }
+
+    reject_hypotheses(fixture->reference_statistics, raxml_statistics, fixture->samples);
 
     ASSERT_EQ(1.0, 1.0);
+}
+
+TEST_F(AuTestFixture, garbage) {
+    run_fixture(this, "autest/garbage.siteLH", "autest/garbage.reference");
 }
