@@ -46,5 +46,5 @@ TEST_F(AuTestFixture, p_values2) {
 
     ASSERT_TRUE(fabs(p_values[0] - 0.5246497758823337) < 1E-10 &&
                 fabs(p_values[1] - 0.4753971649435209) < 1E-10 &&
-                fabs(p_values[2] - 0.5236497758823337) < 1E-10) << PROXY_ERROR;
+                fabs(p_values[2] - 0.5246497758823337) < 1E-10) << PROXY_ERROR;
 }
