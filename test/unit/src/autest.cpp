@@ -27,6 +27,23 @@ struct TreeStatistics {
     std::vector<double> variance;
 };
 
+/**
+ * These tests are disabled by default.
+ * They read in reference results from consel, and then execute the au-test N times (where the reference data includes
+ * a value for N). Then, two one-sided t-tests are performed to reject the hypothesis that the AU-Tests of corax yield
+ * a different distribution of p-values than the consel implementation.
+ * This procedure can be used to safely conclude that the corax AU-test implementation is equivalent to consel.
+ *
+ * The tests are disabled by default because they take minutes to run each.
+ * In gtest, the command line option `--gtest_also_run_disabled_tests` can be used to run them anyway.
+ * Note that this does not work in ctest, because ctest assumes disabled tests can never run and never calls gtest in
+ * this case.
+ *
+ * To force ctest to run the disabled tests, run it with the following command, which prompts ctest to print the exact
+ * gtest commands, and then runs the commands manually:
+ *
+ * $(ctest -R AuTestFixture --gtest_also_run_disabled_tests -V -N | perl -ne 'if (/Test command: (.+)/) { printf "$1\n";}')
+ */
 class AuTestFixture : public testing::Test {
 public:
     unsigned int trees = 0, sites = 0;
@@ -299,26 +316,26 @@ void run_fixture(AuTestFixture *fixture, std::string site_lh, std::string refere
     ASSERT_EQ(1.0, 1.0);
 }
 
-TEST_F(AuTestFixture, garbage) {
+TEST_F(AuTestFixture, DISABLED_garbage) {
     run_fixture(this, "autest/garbage.siteLH", "autest/garbage.reference");
 }
 
-TEST_F(AuTestFixture, implausible16) {
+TEST_F(AuTestFixture, DISABLED_implausible16) {
     run_fixture(this, "autest/implausible16.siteLH", "autest/implausible16.reference");
 }
 
-TEST_F(AuTestFixture, optimization) {
+TEST_F(AuTestFixture, DISABLED_optimization) {
     run_fixture(this, "autest/optimization.siteLH", "autest/optimization.reference");
 }
 
-TEST_F(AuTestFixture, plausible5) {
+TEST_F(AuTestFixture, DISABLED_plausible5) {
     run_fixture(this, "autest/plausible5.siteLH", "autest/plausible5.reference");
 }
 
-TEST_F(AuTestFixture, random6) {
+TEST_F(AuTestFixture, DISABLED_random6) {
     run_fixture(this, "autest/random6.siteLH", "autest/random6.reference");
 }
 
-TEST_F(AuTestFixture, tool_comparison) {
+TEST_F(AuTestFixture, DISABLED_tool_comparison) {
     run_fixture(this, "autest/tool_comparison.siteLH", "autest/tool_comparison.reference");
 }
