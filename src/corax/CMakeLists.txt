@@ -43,6 +43,7 @@ add_subdirectory(io)
 add_subdirectory(kernel)
 add_subdirectory(model)
 add_subdirectory(util)
+add_subdirectory(statistics)
 
 # Add include directories.
 target_include_directories(${CORAX_LIB_TARGET} PUBLIC ${CORAX_INCLUDE_DIRS})
