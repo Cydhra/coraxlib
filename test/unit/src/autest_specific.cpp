@@ -2,6 +2,9 @@
 
 #include "autest_fixture.hpp"
 #include "environment.hpp"
+#include <string>
+#include <vector>
+#include <math.h>
 
 const std::string PROXY_ERROR = "The proxy test for AU bit-compatibility failed. "
             "This is purely a regression test designed to notify about changes to the AU implementation. "
