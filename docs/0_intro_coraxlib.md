@@ -1,3 +1,7 @@
+An Introduction to coraxlib
+============================
+
+
 Scope
 ================================================================================
 
@@ -16,15 +20,15 @@ At a high level, `coraxlib` exists to implement efficient versions of core funct
 runtime during phylogenetic inference. To do this, `coraxlib` has a few important data structures which contain most of
 the data required for likelihood computation:
 
-- [`corax_utree_t`](corax_utree_t.md)
-- [`corax_partition_t`](corax_partition_t.md)
-- [`corax_operation_t`](corax_operation_t.md)
+- [`corax_utree_t`](./10_corax_utree_t.md)
+- [`corax_partition_t`](./30_corax_partition_t.md)
+- [`corax_operation_t`](./20_corax_operation_t.md)
 
 The `corax_utree_t` data structure contains the information that is relevant to the tree portion of the model, while
 `corax_partitition_t` contains the other model parameters, as well as buffers to store intermediate values called
 conditional likelihood vectors ([CLVs][clvs]), and information about the state of computation and the machine.
 
-[clvs]: corax_partition_t.md#clv
+[clvs]: ./corax_partition_t.md#clv
 
 For most use cases (especially those involving likelihood calculations) of `coraxlib`, both a `corax_utree_t` and a
 `corax_partition_t` will be required. Information on how to create and interact with this data structures can be found

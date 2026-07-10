@@ -1,3 +1,6 @@
+Trees
+=======================================================
+
 This will cover both the structures `corax_utree_t` and `corax_unode_t`, as well as the concepts and design around the
 tree data structure in [`coraxlib`](coraxlib.md)
 
@@ -16,7 +19,7 @@ the node. If the `next` pointer is `null`, then that `corax_unode_t` represents 
 The `back` pointer represents edges. It points to a `corax_unode_t` associated with another node. Suppose that we have
 the tree `((a,b),c,d)`, then the `coraxlib` representation of that would what is shown in the following figure.
 
-![Figure explaining back and next pointers](images/coraxlib_utree_figure.png)
+![Figure explaining back and next pointers](./images/coraxlib_utree_figure.png)
 
 Here, the dotted arcs indicate `next` pointers, and the solid lines represent `back` pointers. Please note that `back`
 pointers are always mirrored, and that a mirrored pair of `back` pointers corresponds to a single edge in the tree.
