@@ -141,11 +141,11 @@ corax_utree_scale_subtree_branches(corax_unode_t *root,
 }
 
 bool collapse_if_smaller(void *brlen_cutoff, corax_unode_t* node) {
-  return node->length > *((double*) brlen_cutoff);
+  return node->length < *((double*) brlen_cutoff);
 }
 
 bool collapse_if_larger(void *brlen_cutoff, corax_unode_t* node) {
-  return node->length < *((double*) brlen_cutoff);
+  return node->length > *((double*) brlen_cutoff);
 }
 
 CORAX_EXPORT int corax_utree_collapse_branches(corax_utree_t *tree,
