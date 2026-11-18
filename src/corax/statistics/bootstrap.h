@@ -11,6 +11,12 @@ extern "C" {
 #include "corax/util/random.h"
 #include "corax/corax_core.h"
 
+typedef double ***ReplicateWeights;
+typedef ReplicateWeights *MultiscaleReplicateWeights;
+
+typedef double **BootstrapMatrix;
+typedef BootstrapMatrix *MultiscaleBootstrapMatrices;
+
 /**
  * Allocate a test-statistics matrix for the designated number of trees and replicates.
  * This method can be used when pre-allocating matrices for a designated number of trees that is larger than individual
@@ -22,7 +28,7 @@ extern "C" {
  * @param num_trees the number of trees (rows) of the matrix
  * @param num_replicates the number of bootstrap replicates (columns) of the matrix
  */
-CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
+CORAX_EXPORT int corax_RELL_allocate_matrix(BootstrapMatrix matrix,
                                             unsigned int num_trees,
                                             unsigned int num_replicates);
 
@@ -38,10 +44,54 @@ CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
  * @param num_replicates the number of replicates for each individual scaling factor
  * @param num_scales the number of scaling factors, which will determined how many matrices need to be held in the list
  */
-CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
+CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(MultiscaleBootstrapMatrices matrices,
                                                          unsigned int num_trees,
                                                          const unsigned int *num_replicates,
                                                          unsigned int num_scales);
+
+/**
+ * Initialize a matrix per scaling factor which contains the bootstrap weights.
+ * That is, one weight vector for each bootstrap replicate which is multiplied onto each sequence which decides how often each
+ * site is selected in the bootstrap process.
+ * These weight vectors can be calculated by `corax_RELL_bootstrap` on the fly, but if the AU Test will be executed from
+ * the same seed more than once, it can be benefitial to pre-calculate the weights as their generation is a substantial
+ * part of the AU Test's runtime.
+ *
+ * The matrices are allocated and initialized at the address given as `stored_compressed_weights`.
+ * If it is a nullpointer the method is a no-op.
+ * The address can then be given to the multiscale bootstrap function to use the vectors rather than calculating them
+ * from scratch.
+ *
+ * @param rstate corax random state seeded with the AU test seed
+ * @param stored_compressed_weights the address where to store the matrices
+ * @param num_sites_uncompressed length of the MSA without pattern compression
+ * @param num_sites_compressed number of patterns in the MSA
+ * @param site_weights partition weights for the MSA
+ * @param scales vector containing the scaling factors for the multiscale bootstrap
+ * @param num_replicates vector containing the replication factors for the multiscale bootstrap
+ * @param num_scales number of scaling factors
+ * @return CORAX_SUCCESS if the allocation succeeded, CORAX_FAILURE otherwise.
+ */
+CORAX_EXPORT int corax_RELL_initialize_weight_matrices(corax_random_state *rstate,
+                                                       MultiscaleReplicateWeights stored_compressed_weights,
+                                                       unsigned int num_sites_uncompressed,
+                                                       unsigned int num_sites_compressed,
+                                                       const unsigned int *site_weights,
+                                                       const double *scales,
+                                                       const unsigned int *num_replicates,
+                                                       unsigned int num_scales);
+
+/**
+ * Delete the allocations for the MultiscaleReplicateWeights matrices allocated in `corax_RELL_initialize_weight_matrices`.
+ * If the pointer is a nullptr, this function is a no-op.
+ *
+ * @param stored_compressed_weights address of multiscale bootstrap matrices allocated in `corax_RELL_initialize_weight_matrices`
+ * @param num_replicates vector containing the replication factors for the multiscale bootstrap
+ * @param num_scales number of scaling factors of the multiscale bootstrap
+ */
+void corax_RELL_delete_weight_matrices(MultiscaleReplicateWeights stored_compressed_weights,
+                                       const unsigned int * num_replicates,
+                                       unsigned int num_scales);
 
 /**
  * Extract a matrix view starting at a row offset, splitting the original matrix into submatrices.
@@ -52,7 +102,8 @@ CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
  * @return a pointer to a view of the matrix starting at the `start_tree`-th row
  */
 CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
-                                          unsigned int start_tree, unsigned int num_replicates);
+                                          unsigned int start_tree,
+                                          unsigned int num_replicates);
 
 /**
  * Perform general RELL bootstrap on a set of tree log-likelihood vectors.
@@ -66,6 +117,12 @@ CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
  *                   num_replicates * num_trees double precision numbers. Alternatively a nullptr can be passed to the
  *                   function, which will allocate the space for the caller. In any case, it is the caller's responsibility
  *                   to free the memory.
+ * @param stored_compressed_weights an out-parameter for a matrix of pattern-compressed replicate weights. If the
+ *                                  AU-Test is to be repeated with the same seed, the generated weights can be reused.
+ *                                  If this parameter is a null-ptr, weights are not stored. If it is an address to
+ *                                  an array of num_replicates null-ptrs, bootstrap will store the compressed replicate
+ *                                  weights in the array. If it is an address to an allocated array of replicate weight
+ *                                  arrays, bootstrap will reuse this array.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param site_weights the per-site weights of pattern compression
  * @param num_sites_uncompressed the number of sites of the original alignment (i.e., the length of the per-site lnl
@@ -80,14 +137,15 @@ CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
  * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
 CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
-                                       double **replicates,
-                                       const double *const *trees_persite_lnl,
-                                       const unsigned int *site_weights,
-                                       unsigned int num_sites_uncompressed,
-                                       unsigned int num_sites_compressed,
-                                       unsigned int num_replicates,
-                                       unsigned int num_trees,
-                                       double scale);
+                                      BootstrapMatrix replicates,
+                                      ReplicateWeights stored_compressed_weights,
+                                      const double *const *trees_persite_lnl,
+                                      const unsigned int *site_weights,
+                                      unsigned int num_sites_uncompressed,
+                                      unsigned int num_sites_compressed,
+                                      unsigned int num_replicates,
+                                      unsigned int num_trees,
+                                      double scale);
 
 /**
  * Perform general RELL bootstrap on a set of tree log-likelihood vectors.
@@ -102,6 +160,15 @@ CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
  *                           for num_replicates[i] * num_trees double precision numbers. Alternatively a nullptr can be
  *                           passed to the function, which will allocate the space for the caller. In any case, it is
  *                           the caller's responsibility to free both the matrices, and the pointer array.
+* @param stored_compressed_weights an out-parameter for a matrix of pattern-compressed replicate weights. If the
+ *                                  AU-Test is to be repeated with the same seed, the generated weights can be reused.
+ *                                  If this parameter is a null-ptr, weights are not stored. If it is an address to
+ *                                  an array of num_replicates null-ptrs, an array of pointers to per-scale arrays will
+ *                                  be created.
+ *                                  Each scale's bootstrap will store the compressed replicate
+ *                                  weights in the provided arrays.
+ *                                  If it is an address to an allocated array of replicate weight
+ *                                  arrays, bootstrap will reuse this array.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param site_weights the per-site weights of pattern compression
  * @param num_sites_uncompressed the number of sites of the original alignment (i.e., the length of the per-site lnl
@@ -116,15 +183,16 @@ CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
  * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
 CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
-                                                  double ***replicate_matrices,
-                                                  const double *const *trees_persite_lnl,
-                                                  const unsigned int *site_weights,
-                                                  unsigned int num_sites_uncompressed,
-                                                  unsigned int num_sites_compressed,
-                                                  unsigned int num_trees,
-                                                  const unsigned int *num_replicates,
-                                                  const double *scales,
-                                                  unsigned int num_scales);
+                                                 MultiscaleBootstrapMatrices replicate_matrices,
+                                                 MultiscaleReplicateWeights stored_compressed_weights,
+                                                 const double *const *trees_persite_lnl,
+                                                 const unsigned int *site_weights,
+                                                 unsigned int num_sites_uncompressed,
+                                                 unsigned int num_sites_compressed,
+                                                 unsigned int num_trees,
+                                                 const unsigned int *num_replicates,
+                                                 const double *scales,
+                                                 unsigned int num_scales);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
@@ -152,9 +220,9 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
  * @return CORAX_SUCCESS on successful execution, CORAX_FAILURE when allocation fails.
  */
 CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *replicates,
-                                   double * target,
-                                   unsigned int num_replicates,
-                                   unsigned int num_trees);
+                                               double *target,
+                                               unsigned int num_replicates,
+                                               unsigned int num_trees);
 
 /**
  * Return the median normalized bootstrap count for the given tree, which is the expected bootstrap count under the

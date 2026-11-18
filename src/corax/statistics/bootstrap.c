@@ -18,7 +18,8 @@
  *
  * The vector is initialized with zeros before it is filled with data.
  */
-void generate_resample_vector(double *const vector, corax_random_state *const rstate,
+void generate_resample_vector(double *const vector,
+                              corax_random_state *const rstate,
                               const unsigned int num_sites_original,
                               const double scale) {
     const unsigned int num_samples = (unsigned int) ((double) num_sites_original * scale);
@@ -58,8 +59,12 @@ void compress_resample_vector(const double *const uncompressed_vector,
  * Find the maximum in the `replicate`-th column of the `replicates` matrix, stored in row-major format with
  * `num_replicates` columns and `num_trees` rows.
  */
-void column_max(const double *const replicates, const unsigned int replicate, const unsigned int num_replicates,
-                const unsigned int num_trees, double *const best_value, double *const follow_up) {
+void column_max(const double *const replicates,
+                const unsigned int replicate,
+                const unsigned int num_replicates,
+                const unsigned int num_trees,
+                double *const best_value,
+                double *const follow_up) {
     *best_value = -INFINITY;
     *follow_up = -INFINITY;
     for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
@@ -117,7 +122,7 @@ CORAX_EXPORT int corax_RELL_allocate_matrix(double **matrix,
     return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(double ***matrices,
+CORAX_EXPORT int corax_RELL_allocate_multiscale_matrices(ReplicateWeights matrices,
                                                          const unsigned int num_trees,
                                                          const unsigned int *const num_replicates,
                                                          const unsigned int num_scales) {
@@ -149,6 +154,67 @@ alloc_error:
     return CORAX_FAILURE;
 }
 
+CORAX_EXPORT int corax_RELL_initialize_weight_matrices(corax_random_state *rstate,
+                                                       MultiscaleReplicateWeights stored_compressed_weights,
+                                                       const unsigned int num_sites_uncompressed,
+                                                       const unsigned int num_sites_compressed,
+                                                       const unsigned int *const site_weights,
+                                                       const double *const scales,
+                                                       const unsigned int *const num_replicates,
+                                                       const unsigned int num_scales) {
+    double *weights = malloc(sizeof(double) * num_sites_uncompressed);
+    if (!weights)
+        return CORAX_FAILURE;
+
+    if (stored_compressed_weights) {
+        if (!*stored_compressed_weights) {
+            *stored_compressed_weights = malloc(sizeof(double **) * num_scales);
+            if (!*stored_compressed_weights)
+                goto alloc_error;
+
+            for (unsigned int scale_idx = 0; scale_idx < num_scales; scale_idx++) {
+                (*stored_compressed_weights)[scale_idx] = malloc(sizeof(double *) * num_replicates[scale_idx]);
+                if (!(*stored_compressed_weights)[scale_idx])
+                    goto alloc_error;
+
+                for (unsigned int replicate = 0; replicate < num_replicates[scale_idx]; replicate++) {
+                    (*stored_compressed_weights)[scale_idx][replicate] = malloc(sizeof(double) * num_sites_compressed);
+                    if (!(*stored_compressed_weights)[scale_idx][replicate])
+                        goto alloc_error;
+
+                    generate_resample_vector(weights, rstate, num_sites_uncompressed, scales[scale_idx]);
+                    compress_resample_vector(weights, site_weights, (*stored_compressed_weights)[scale_idx][replicate],
+                                             num_sites_compressed);
+                }
+            }
+        }
+    }
+
+    free(weights);
+    return CORAX_SUCCESS;
+
+alloc_error:
+    free(weights);
+    corax_RELL_delete_weight_matrices(stored_compressed_weights, num_replicates, num_scales);
+    return CORAX_FAILURE;
+}
+
+void corax_RELL_delete_weight_matrices(MultiscaleReplicateWeights stored_compressed_weights,
+                                       const unsigned int *const num_replicates,
+                                       const unsigned int num_scales) {
+    if (stored_compressed_weights) {
+        for (unsigned int i = 0; i < num_scales; i++) {
+            if (!stored_compressed_weights[i]) continue;
+            for (unsigned int j = 0; j < num_replicates[i]; j++) {
+                if (!stored_compressed_weights[i][j]) continue;
+                free(stored_compressed_weights[i][j]);
+            }
+            free(stored_compressed_weights[i]);
+        }
+        free(stored_compressed_weights);
+    }
+}
+
 CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
                                           const unsigned int start_tree,
                                           const unsigned int num_replicates) {
@@ -156,20 +222,29 @@ CORAX_EXPORT double *corax_RELL_submatrix(double *matrix,
 }
 
 CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
-                                       double **replicates,
-                                       const double *const *const trees_persite_lnl,
-                                       const unsigned int *const site_weights,
-                                       const unsigned int num_sites_uncompressed,
-                                       const unsigned int num_sites_compressed,
-                                       const unsigned int num_replicates,
-                                       const unsigned int num_trees,
-                                       const double scale) {
-    double *weights = malloc(sizeof(double) * num_sites_uncompressed);
-    double *compressed_weights = malloc(sizeof(double) * num_sites_compressed);
-    if (!weights || !compressed_weights) {
-        free(weights);
-        free(compressed_weights);
-        return CORAX_FAILURE;
+                                      BootstrapMatrix replicates,
+                                      ReplicateWeights stored_compressed_weights,
+                                      const double *const *const trees_persite_lnl,
+                                      const unsigned int *const site_weights,
+                                      const unsigned int num_sites_uncompressed,
+                                      const unsigned int num_sites_compressed,
+                                      const unsigned int num_replicates,
+                                      const unsigned int num_trees,
+                                      const double scale) {
+    const int use_storage = stored_compressed_weights != 0;
+
+    double *weights = 0;
+    double *compressed_weights = 0;
+
+    if (!use_storage) {
+        weights = malloc(sizeof(double) * num_sites_uncompressed);
+        compressed_weights = malloc(sizeof(double) * num_sites_compressed);
+
+        if (!weights || !compressed_weights) {
+            free(weights);
+            free(compressed_weights);
+            return CORAX_FAILURE;
+        }
     }
 
     if (!corax_RELL_allocate_matrix(replicates, num_trees, num_replicates)) {
@@ -177,8 +252,12 @@ CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
     }
 
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
-        generate_resample_vector(weights, rstate, num_sites_uncompressed, scale);
-        compress_resample_vector(weights, site_weights, compressed_weights, num_sites_compressed);
+        if (use_storage) {
+            compressed_weights = (*stored_compressed_weights)[replicate];
+        } else {
+            generate_resample_vector(weights, rstate, num_sites_uncompressed, scale);
+            compress_resample_vector(weights, site_weights, compressed_weights, num_sites_compressed);
+        }
 
         for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
             double likelihood = 0.0;
@@ -191,27 +270,32 @@ CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
         }
     }
 
-    free(weights);
-    free(compressed_weights);
+    if (!use_storage) {
+        free(weights);
+        free(compressed_weights);
+    }
     return CORAX_SUCCESS;
 }
 
 CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
-                                                  double ***replicate_matrices,
-                                                  const double *const *const trees_persite_lnl,
-                                                  const unsigned int *const site_weights,
-                                                  const unsigned int num_sites_uncompressed,
-                                                  const unsigned int num_sites_compressed,
-                                                  const unsigned int num_trees,
-                                                  const unsigned int *const num_replicates,
-                                                  const double *const scales,
-                                                  const unsigned int num_scales) {
+                                                 MultiscaleBootstrapMatrices replicate_matrices,
+                                                 MultiscaleReplicateWeights stored_compressed_weights,
+                                                 const double *const *const trees_persite_lnl,
+                                                 const unsigned int *const site_weights,
+                                                 const unsigned int num_sites_uncompressed,
+                                                 const unsigned int num_sites_compressed,
+                                                 const unsigned int num_trees,
+                                                 const unsigned int *const num_replicates,
+                                                 const double *const scales,
+                                                 const unsigned int num_scales) {
     if (!corax_RELL_allocate_multiscale_matrices(replicate_matrices, num_trees, num_replicates, num_scales)) {
         return CORAX_FAILURE;
     }
 
     for (unsigned int i = 0; i < num_scales; i++) {
-        corax_RELL_bootstrap(rstate, *replicate_matrices + i, trees_persite_lnl, site_weights, num_sites_uncompressed,
+        corax_RELL_bootstrap(rstate, *replicate_matrices + i,
+                             stored_compressed_weights ? &(*stored_compressed_weights)[i] : 0, trees_persite_lnl,
+                             site_weights, num_sites_uncompressed,
                              num_sites_compressed, num_replicates[i], num_trees, scales[i]);
     }
 
@@ -219,9 +303,9 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 }
 
 CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *const replicates,
-                                                double *const target,
-                                                const unsigned int num_replicates,
-                                                const unsigned int num_trees) {
+                                               double *const target,
+                                               const unsigned int num_replicates,
+                                               const unsigned int num_trees) {
     // calculate maximum of each replicate set
     double *maximum = malloc(sizeof(double) * 2 * num_replicates);
 
