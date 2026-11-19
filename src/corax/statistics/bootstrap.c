@@ -302,24 +302,41 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
     return CORAX_SUCCESS;
 }
 
-CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *const replicates,
-                                               double *const target,
-                                               const unsigned int num_replicates,
-                                               const unsigned int num_trees) {
+CORAX_EXPORT int corax_find_replicate_maximum(const double *const replicates,
+                                              const unsigned int num_replicates,
+                                              const unsigned int num_trees,
+                                              const double **maximum) {
     // calculate maximum of each replicate set
-    double *maximum = malloc(sizeof(double) * 2 * num_replicates);
+    double *target = malloc(sizeof(double) * 2 * num_replicates);
 
-    if (!maximum) {
+    if (!target) {
+        corax_set_error(CORAX_ERROR_MEM_ALLOC, "Unable to allocate enough memory.");
         return CORAX_FAILURE;
     }
 
     for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
-        column_max(replicates, replicate, num_replicates, num_trees, &maximum[2 * replicate],
-                   &maximum[2 * replicate + 1]);
+        column_max(replicates, replicate, num_replicates, num_trees, &target[2 * replicate],
+                   &target[2 * replicate + 1]);
     }
 
+    if (!maximum) {
+        free(target);
+        corax_set_error(CORAX_ERROR_INVALID_PARAM, "No output parameter set.");
+        return CORAX_FAILURE;
+    }
+
+    *maximum = target;
+    return CORAX_SUCCESS;
+}
+
+CORAX_EXPORT void corax_calculate_bp_distribution(const double *const replicates,
+                                                 double *const target,
+                                                 const unsigned int num_replicates,
+                                                 const unsigned int start_tree,
+                                                 const unsigned int num_trees,
+                                                 const double *maximum) {
     // normalize vectors
-    for (unsigned int id_tree = 0; id_tree < num_trees; id_tree++) {
+    for (unsigned int id_tree = start_tree; id_tree < start_tree + num_trees; id_tree++) {
         for (unsigned int replicate = 0; replicate < num_replicates; replicate++) {
             double competing_likelihood;
             if (replicates[id_tree * num_replicates + replicate] == maximum[2 * replicate]) {
@@ -334,6 +351,19 @@ CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *const replicates,
         double *tree_vec = target + id_tree * num_replicates;
         qsort(tree_vec, num_replicates, sizeof(double), cmp_double);
     }
+}
+
+CORAX_EXPORT int corax_normalize_lnl_bootstrap(const double *const replicates,
+                                               double *const target,
+                                               const unsigned int num_replicates,
+                                               const unsigned int num_trees) {
+    // calculate maximum of each replicate set
+    double *maximum;
+    if (!corax_find_replicate_maximum(replicates, num_replicates, num_trees, &maximum)) {
+        return CORAX_FAILURE;
+    }
+
+    corax_calculate_bp_distribution(replicates, target, num_replicates, 0, num_trees, maximum);
 
     free(maximum);
     return CORAX_SUCCESS;

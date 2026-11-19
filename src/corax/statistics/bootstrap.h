@@ -161,14 +161,14 @@ CORAX_EXPORT int corax_RELL_bootstrap(corax_random_state *rstate,
  *                           passed to the function, which will allocate the space for the caller. In any case, it is
  *                           the caller's responsibility to free both the matrices, and the pointer array.
 * @param stored_compressed_weights an out-parameter for a matrix of pattern-compressed replicate weights. If the
- *                                  AU-Test is to be repeated with the same seed, the generated weights can be reused.
- *                                  If this parameter is a null-ptr, weights are not stored. If it is an address to
- *                                  an array of num_replicates null-ptrs, an array of pointers to per-scale arrays will
- *                                  be created.
- *                                  Each scale's bootstrap will store the compressed replicate
- *                                  weights in the provided arrays.
- *                                  If it is an address to an allocated array of replicate weight
- *                                  arrays, bootstrap will reuse this array.
+ *                                 AU-Test is to be repeated with the same seed, the generated weights can be reused.
+ *                                 If this parameter is a null-ptr, weights are not stored. If it is an address to
+ *                                 an array of num_replicates null-ptrs, an array of pointers to per-scale arrays will
+ *                                 be created.
+ *                                 Each scale's bootstrap will store the compressed replicate
+ *                                 weights in the provided arrays.
+ *                                 If it is an address to an allocated array of replicate weight
+ *                                 arrays, bootstrap will reuse this array.
  * @param trees_persite_lnl the matrix of per-site log-likelihoods of input trees, one row of likelihoods per tree
  * @param site_weights the per-site weights of pattern compression
  * @param num_sites_uncompressed the number of sites of the original alignment (i.e., the length of the per-site lnl
@@ -193,6 +193,53 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
                                                  const unsigned int *num_replicates,
                                                  const double *scales,
                                                  unsigned int num_scales);
+
+/**
+ * Find the maximum likelihood for each replicate in the given replicate matrix.
+ * The maximum is written into an array which is allocated at the address given as `maximum`.
+ * It is the callers responsibility to free the allocation inside `maximum` after the call to
+ * `corax_calculate_bp_distribution`.
+ * This call cannot be performed in parallel.
+ * For a parallel implementation of the AU test, this call has to be performed by a single thread, after which
+ * the thread group can perform `corax_calculate_bp_distribution` in parallel.
+ * If a single thread is performing the calculation, the convenience-method `corax_normalize_lnl_bootstrap` performs this step
+ * and the calculation of bp distributions at once.
+ *
+ * @param replicates replicate matrix
+ * @param num_replicates number of replicates in the matrix
+ * @param num_trees number of trees in the matrix
+ * @param maximum out parameter for storing the maximum likelihood for each replicate
+ * @return success, if allocation of the outparameter succeeded.
+ */
+CORAX_EXPORT int corax_find_replicate_maximum(const double * replicates,
+                                              unsigned int num_replicates,
+                                              unsigned int num_trees,
+                                              const double **maximum);
+
+/**
+ * Calculate the bp distribution for each tree in the replicate matrix in the range [`start_tree`, `start_tree` + `num_trees`).
+ * If a single thread is performing this calculation, simply give the interval [0, num_trees).
+ * This calculation can be performed in parallel by giving non-overlapping intervals.
+ * The results are stored in the `target` matrix, which can be the same as `replicates` for in-place calculation.
+ * If a single thread is performing the calculation, the convenience-method `corax_normalize_lnl_bootstrap` performs this step
+ * and the calculation of `maximum`.
+ *
+ * @param replicates replicate matrix
+ * @param target output matrix; can be the same as replicates for in-place operation
+ * @param num_replicates number of replicates in the matrix
+ * @param start_tree offset within the range of trees at which to start calculating the distributions. Set to 0 and give
+ *                   the number of input trees in the `num_trees` parameter to calculate all distributions. Give a range
+ *                   in those two parameters
+ * @param num_trees number of trees beginning from `start_tree` to include in this calculation
+ * @param maximum per-replicate likelihood maximum. Calculated in `corax_find_replicate_maximum`. This state will not
+ * be freed by this method.
+ */
+CORAX_EXPORT void corax_calculate_bp_distribution(const double *replicates,
+                                                 double *target,
+                                                 unsigned int num_replicates,
+                                                 unsigned int start_tree,
+                                                 unsigned int num_trees,
+                                                 const double *maximum);
 
 /**
  * Normalize a matrix of log-likelihood replicates in such a way that the maximum likelihood replicate of each set of
