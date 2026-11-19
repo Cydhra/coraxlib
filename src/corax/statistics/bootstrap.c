@@ -305,7 +305,7 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 CORAX_EXPORT int corax_find_replicate_maximum(const double *const replicates,
                                               const unsigned int num_replicates,
                                               const unsigned int num_trees,
-                                              const double **maximum) {
+                                              double **const maximum) {
     // calculate maximum of each replicate set
     double *target = malloc(sizeof(double) * 2 * num_replicates);
 

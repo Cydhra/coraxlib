@@ -214,7 +214,7 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
 CORAX_EXPORT int corax_find_replicate_maximum(const double * replicates,
                                               unsigned int num_replicates,
                                               unsigned int num_trees,
-                                              const double **maximum);
+                                              double **maximum);
 
 /**
  * Calculate the bp distribution for each tree in the replicate matrix in the range [`start_tree`, `start_tree` + `num_trees`).
