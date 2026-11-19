@@ -7,12 +7,12 @@
  * The maximum number of iterations for the AU test convergence test until non-convergence is reported. Each iteration
  * adds one WLS computation and one Newton optimization.
  */
-const unsigned int CONVERGENCE_ITERATIONS = 100;
+static const unsigned int CONVERGENCE_ITERATIONS = 100;
 
 /**
  * The maximum number of iterations for the AU test's newton optimization.
  */
-const unsigned int NEWTON_ITERATIONS = 30;
+static const unsigned int NEWTON_ITERATIONS = 30;
 
 /**
  * Epsilon used for zero-checks in BP and AU tests
