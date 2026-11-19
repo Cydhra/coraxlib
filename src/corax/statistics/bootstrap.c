@@ -375,7 +375,7 @@ CORAX_EXPORT double corax_bootstrap_expectation(const double *const replicates,
     return replicates[tree * num_replicates + num_replicates / 2];
 }
 
-CORAX_EXPORT double corax_empirical_bootstrap_count(double *const replicates,
+CORAX_EXPORT double corax_empirical_bootstrap_count(const double *const replicates,
                                                     const unsigned int num_replicates,
                                                     const unsigned int tree,
                                                     const double threshold) {

@@ -208,7 +208,8 @@ CORAX_EXPORT int corax_RELL_multiscale_bootstrap(corax_random_state *rstate,
  * @param replicates replicate matrix
  * @param num_replicates number of replicates in the matrix
  * @param num_trees number of trees in the matrix
- * @param maximum out parameter for storing the maximum likelihood for each replicate
+ * @param maximum out parameter for storing the maximum likelihood for each replicate. The function assigns the
+ *                allocation, so the inner pointer need not be valid.
  * @return success, if allocation of the outparameter succeeded.
  */
 CORAX_EXPORT int corax_find_replicate_maximum(const double * replicates,
@@ -302,7 +303,7 @@ CORAX_EXPORT double corax_bootstrap_expectation(const double *replicates,
  * @param tree the index of the tree in the bootstrap matrix
  * @param threshold the delta log-likelihood margin where trees still count as maximum likelihood.
  */
-CORAX_EXPORT double corax_empirical_bootstrap_count(double *replicates,
+CORAX_EXPORT double corax_empirical_bootstrap_count(const double *replicates,
                                                     unsigned int num_replicates,
                                                     unsigned int tree,
                                                     double threshold);
