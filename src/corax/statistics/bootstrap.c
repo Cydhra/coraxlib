@@ -204,14 +204,14 @@ void corax_RELL_delete_weight_matrices(MultiscaleReplicateWeights stored_compres
                                        const unsigned int num_scales) {
     if (stored_compressed_weights) {
         for (unsigned int i = 0; i < num_scales; i++) {
-            if (!stored_compressed_weights[i]) continue;
+            if (!(*stored_compressed_weights)[i]) continue;
             for (unsigned int j = 0; j < num_replicates[i]; j++) {
-                if (!stored_compressed_weights[i][j]) continue;
-                free(stored_compressed_weights[i][j]);
+                if (!(*stored_compressed_weights)[i][j]) continue;
+                free((*stored_compressed_weights)[i][j]);
             }
-            free(stored_compressed_weights[i]);
+            free((*stored_compressed_weights)[i]);
         }
-        free(stored_compressed_weights);
+        free(*stored_compressed_weights);
     }
 }
 
