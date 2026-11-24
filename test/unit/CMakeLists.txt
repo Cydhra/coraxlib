@@ -14,3 +14,4 @@ corax_register_test(test_freerate_em FILES src/freerate_em.cpp DEFINES DATAPATH=
 corax_register_test(test_au_test FILES src/autest.cpp DEFINES DATAPATH=${CORAX_TEST_DATA_DIR})
 corax_register_test(test_au_p_value FILES src/autest_specific.cpp DEFINES DATAPATH=${CORAX_TEST_DATA_DIR})
 corax_register_test(test_gamma FILES src/gamma.cpp)
+corax_register_test(test_patristic FILES src/patristic.cpp)

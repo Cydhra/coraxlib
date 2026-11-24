@@ -718,3 +718,172 @@ CORAX_EXPORT int corax_utree_set_clv_minimal(corax_unode_t *root,
 
   return CORAX_SUCCESS;
 }
+
+
+static int cb_full_traversal(corax_unode_t *node)
+{
+  CORAX_UNUSED(node);
+  return 1;
+}
+
+int corax_utree_binary_patristic_distances(corax_unode_t *root, unsigned int tip_count, double *dist_matrix) {
+  assert(tip_count >= 3);
+
+  // generate traversal order
+  unsigned int n_inner  = tip_count - 2;
+  unsigned int n_nodes  = tip_count + n_inner;
+  unsigned int trav_size;
+
+  corax_unode_t **travbuffer = malloc(n_nodes * sizeof(corax_unode_t *));
+  if (!corax_utree_traverse(root,
+                          CORAX_TREE_TRAVERSE_POSTORDER,
+                          cb_full_traversal,
+                          travbuffer,
+                          &trav_size))
+  {
+    corax_set_error(CORAX_ERROR_INVALID_TREE, "Error traversing utree");
+    return CORAX_FAILURE;
+  }
+
+  assert(trav_size == n_nodes);
+
+  // delete existing data so we can use NULL as sentinels
+  for (unsigned int i = 0; i < trav_size; ++i) {
+    travbuffer[i]->data = NULL;
+  }
+
+  for (unsigned int i = 0; i < trav_size; ++i) {
+    // allocate new state
+    unsigned int *state = malloc(sizeof(unsigned int) * tip_count);
+    if (!state) {
+      corax_set_error(CORAX_ERROR_MEM_ALLOC, "could not allocate scratch space");
+      return CORAX_FAILURE;
+    }
+
+    memset(state, -1, sizeof(unsigned int) * tip_count);
+
+    // handle node
+    const int is_inner = travbuffer[i]->next != NULL;
+    if (is_inner) {
+      const corax_unode_t *node = travbuffer[i];
+      const corax_unode_t *first_child = node->next->back;
+      const corax_unode_t *second_child = node->next->next->back;
+      unsigned int *first_child_subtree = first_child->data;
+      unsigned int *second_child_subtree = second_child->data;
+
+      // check if we reached root
+      if (i == trav_size - 1) {
+        // third child should already have been processed
+        assert(node->back->data);
+        free(state);
+        break;
+      }
+
+      // parent should contain no data
+      assert(!node->back->data);
+
+      // assign patristic distances and collect children in new array
+      unsigned int child_counter = 0;
+      for (unsigned left_child_index = 0; first_child_subtree[left_child_index] < tip_count; left_child_index++) {
+        assert(left_child_index < tip_count);
+        dist_matrix[first_child_subtree[left_child_index] * tip_count + first_child_subtree[left_child_index]] += first_child->length;
+
+        for (unsigned right_child_index = 0; second_child_subtree[right_child_index] < tip_count; right_child_index++) {
+          dist_matrix[first_child_subtree[left_child_index] * tip_count + second_child_subtree[right_child_index]] =
+            dist_matrix[first_child_subtree[left_child_index] * tip_count + first_child_subtree[left_child_index]] +
+              dist_matrix[second_child_subtree[right_child_index] * tip_count + second_child_subtree[right_child_index]] +
+                second_child->length;
+          dist_matrix[second_child_subtree[right_child_index] * tip_count + first_child_subtree[left_child_index]] =
+           dist_matrix[first_child_subtree[left_child_index] * tip_count + second_child_subtree[right_child_index]];
+        }
+
+        // add child to this node's children
+        state[child_counter++] = first_child_subtree[left_child_index];
+      }
+
+      for (unsigned right_child_index = 0; second_child_subtree[right_child_index] < tip_count; right_child_index++) {
+        assert(right_child_index < tip_count);
+        // update right child and this node's children
+        dist_matrix[second_child_subtree[right_child_index] * tip_count + second_child_subtree[right_child_index]] += second_child->length;
+        state[child_counter++] = second_child_subtree[right_child_index];
+      }
+
+      free(first_child_subtree);
+      free(second_child_subtree);
+    } else {
+      dist_matrix[travbuffer[i]->node_index * tip_count + travbuffer[i]->node_index] = 0;
+      state[0] = travbuffer[i]->node_index;
+    }
+
+    travbuffer[i]->data = state;
+  }
+
+  // handle root with special case
+  const corax_unode_t *node = travbuffer[trav_size - 1];
+  const corax_unode_t *first_child = node->next->back;
+  const corax_unode_t *second_child = node->next->next->back;
+  const corax_unode_t *third_child = node->back;
+  unsigned int *first_child_subtree = first_child->data;
+  unsigned int *second_child_subtree = second_child->data;
+  unsigned int *third_child_subtree = third_child->data;
+
+  unsigned int child_counter = 0;
+  for (unsigned left_child_index = 0; first_child_subtree[left_child_index] < tip_count; left_child_index++) {
+    assert(left_child_index < tip_count);
+    dist_matrix[first_child_subtree[left_child_index] * tip_count + first_child_subtree[left_child_index]] += first_child->length;
+    child_counter++;
+
+    // calculate distances to each right-hand child
+    for (unsigned right_child_index = 0; second_child_subtree[right_child_index] < tip_count; right_child_index++) {
+      dist_matrix[first_child_subtree[left_child_index] * tip_count + second_child_subtree[right_child_index]] =
+        dist_matrix[first_child_subtree[left_child_index] * tip_count + first_child_subtree[left_child_index]] +
+          dist_matrix[second_child_subtree[right_child_index] * tip_count + second_child_subtree[right_child_index]] +
+            second_child->length;
+      dist_matrix[second_child_subtree[right_child_index] * tip_count + first_child_subtree[left_child_index]] =
+        dist_matrix[first_child_subtree[left_child_index] * tip_count + second_child_subtree[right_child_index]];
+    }
+
+    // calculate distances to each third child
+    for (unsigned right_child_index = 0; third_child_subtree[right_child_index] < tip_count; right_child_index++) {
+      dist_matrix[first_child_subtree[left_child_index] * tip_count + third_child_subtree[right_child_index]] =
+        dist_matrix[first_child_subtree[left_child_index] * tip_count + first_child_subtree[left_child_index]] +
+          dist_matrix[third_child_subtree[right_child_index] * tip_count + third_child_subtree[right_child_index]] +
+            third_child->length;
+      dist_matrix[third_child_subtree[right_child_index] * tip_count + first_child_subtree[left_child_index]] =
+        dist_matrix[first_child_subtree[left_child_index] * tip_count + third_child_subtree[right_child_index]];
+    }
+  }
+
+  // calculate distance between second and third
+  for (unsigned left_child_index = 0; second_child_subtree[left_child_index] < tip_count; left_child_index++) {
+    assert(left_child_index < tip_count);
+    // update right child and this node's children
+    dist_matrix[second_child_subtree[left_child_index] * tip_count + second_child_subtree[left_child_index]] += second_child->length;
+    child_counter++;
+
+    // calculate distances to each third-hand child
+    for (unsigned right_child_index = 0; third_child_subtree[right_child_index] < tip_count; right_child_index++) {
+      dist_matrix[second_child_subtree[left_child_index] * tip_count + third_child_subtree[right_child_index]] =
+        dist_matrix[second_child_subtree[left_child_index] * tip_count + second_child_subtree[left_child_index]] +
+          dist_matrix[third_child_subtree[right_child_index] * tip_count + third_child_subtree[right_child_index]] +
+            third_child->length;
+      dist_matrix[third_child_subtree[right_child_index] * tip_count + second_child_subtree[left_child_index]] =
+        dist_matrix[second_child_subtree[left_child_index] * tip_count + third_child_subtree[right_child_index]];
+    }
+  }
+
+  // update distance to root
+  for (unsigned child_index = 0; third_child_subtree[child_index] < tip_count; child_index++) {
+    dist_matrix[third_child_subtree[child_index] * tip_count + third_child_subtree[child_index]] += third_child->length;
+    child_counter++;
+  }
+
+  assert(child_counter == tip_count);
+
+  free(travbuffer);
+  free(first_child_subtree);
+  free(second_child_subtree);
+  free(third_child_subtree);
+
+  return CORAX_SUCCESS;
+}
