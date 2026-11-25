@@ -750,6 +750,10 @@ int corax_utree_binary_patristic_distances(corax_unode_t *root, unsigned int tip
   // delete existing data so we can use NULL as sentinels
   for (unsigned int i = 0; i < trav_size; ++i) {
     travbuffer[i]->data = NULL;
+    if (travbuffer[i]->next) {
+      travbuffer[i]->next->data = NULL;
+      travbuffer[i]->next->next->data = NULL;
+    }
   }
 
   for (unsigned int i = 0; i < trav_size; ++i) {
