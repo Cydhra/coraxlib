@@ -235,11 +235,15 @@ extern "C"
 
     /**
      * Calculate a full square matrix of tip-to-tip patristic distances.
+     * Diagonal entries contain the tip's distance to the selected virtual root.
+     * The matrix is indexed row * num_tips + column.
+     * It is fully symmetric.
      * The tree must be fully resolved, polytomies will create memory errors.
+     * This function is not thread-safe.
      *
      * @param root virtual root to start traversal from, does not influence result.
      * @param tip_count number of tips in the tree, and size of the arrays
-     * @param dist_matrix pre-allocated two-dimensional array of tips x tips size.
+     * @param dist_matrix pre-allocated two-dimensional array of tips x tips size. Any existing data will be overwritten.
      */
     CORAX_EXPORT int corax_utree_binary_patristic_distances(corax_unode_t *root, unsigned int tip_count, double *dist_matrix);
 
